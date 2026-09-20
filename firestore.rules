@@ -1,13 +1,17 @@
 rules_version = '2';
 
 /*
- * AfterBI — security rules. Paste this whole file into
- * Firebase console → Firestore Database → Rules → Publish.
+ * AfterBI — security rules. The GitHub Action publishes this file whenever it
+ * changes (or paste it into Firebase console → Firestore Database → Rules).
  *
- * Every organisation's data lives at `orgs/{orgId}/…`, so one membership test
- * on the catch-all covers every collection, present and future. A later rule
- * never loosens an earlier one: Firestore grants access if ANY matching rule
- * allows it, so the narrower blocks below only ever add permission.
+ * Two kinds of people inside an organisation:
+ *   insiders — super admin, admin, staff, finance, operations, warehouse —
+ *              read every account. The super admin oversees everything.
+ *   partners — distributors and sales reps — read only their own accounts:
+ *              a distributor its own, a rep the ones assigned to it.
+ *
+ * Firestore allows a request if ANY matching rule does, so every block below
+ * only ever adds permission to the catch-all.
  */
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -20,8 +24,7 @@ service cloud.firestore {
 
     /* The signed-in user's own profile. One billed read, cached per request.
        Fields are read with .get() and a default: a missing field in a rule is
-       an error, and an error denies — a hand-made profile without `active`
-       used to lock the owner out of everything. */
+       an error, and an error denies. */
     function profile() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
@@ -45,7 +48,7 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/orgs/$(orgId)).data.get('status', 'active') != 'suspended';
     }
 
-    /* A working member. The single test the whole model rests on. */
+    /* A working member. */
     function member(orgId) {
       return belongs(orgId) && tenantOpen(orgId);
     }
@@ -63,12 +66,48 @@ service cloud.firestore {
       return activeProfile() && role() == 'owner';
     }
 
-    function ownDistributor(orgId, distributorId) {
-      return member(orgId) && profile().get('distributorId', '') == distributorId;
+    /* Inside the business: every account, every record. */
+    function insider(orgId) {
+      return hasRole(orgId, [
+        'super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager', 'warehouse_manager'
+      ]);
     }
 
     function isPartnerRole(orgId) {
       return hasRole(orgId, ['distributor', 'sales_rep']);
+    }
+
+    /* The accounts a partner works on — the same list as partnerScope() in the app. */
+    function ownAccount() {
+      return profile().get('distributorId', '') is string && profile().get('distributorId', '') != ''
+        ? [profile().get('distributorId', '')]
+        : [];
+    }
+
+    function accounts() {
+      return role() == 'sales_rep'
+        ? profile().get('distributorIds', []).concat(ownAccount())
+        : ownAccount();
+    }
+
+    /* A distributor or rep, on one of its own accounts. */
+    function partnerOf(orgId, distributorId) {
+      return isPartnerRole(orgId) && distributorId in accounts();
+    }
+
+    /* A write naming an account: insiders any, partners only their own. */
+    function mayUseAccount(distributorId) {
+      return !(role() in ['distributor', 'sales_rep']) || distributorId in accounts();
+    }
+
+    /* The order value from which a signature is needed. Zero: never. */
+    function threshold(orgId) {
+      return get(/databases/$(database)/documents/orgs/$(orgId)/settings/org).data.get('approvalThreshold', 0);
+    }
+
+    /* Straight to approved: under the threshold, or raised by the super admin. */
+    function mayApproveAtOnce(orgId, total) {
+      return role() == 'super_admin' || threshold(orgId) == 0 || total < threshold(orgId);
     }
 
     /* Nothing in this app is hard-deleted by a client. */
@@ -89,27 +128,43 @@ service cloud.firestore {
     /* -------------------------------------------------------------- users */
     /*
      * A root collection: signing in gives a uid and nothing else, and this
-     * document is what says which organisation the session belongs to.
-     * The platform owner's own document is created by hand in the console.
+     * document says which organisation the session belongs to. The platform
+     * owner's own document is created by hand in the console.
      */
     match /users/{uid} {
+      /* Yourself, the owner, insiders their whole organisation — and a
+         partner only the people who can sign an order. */
       allow get: if signedIn() && (
         request.auth.uid == uid
         || owner()
-        || profile().get('orgId', '') == resource.data.get('orgId', 'none')
+        || (
+          activeProfile()
+          && profile().get('orgId', '') == resource.data.get('orgId', 'none')
+          && (
+            role() in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager', 'warehouse_manager']
+            || resource.data.get('role', '') in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager']
+          )
+        )
       );
 
-      /* Must be filtered to the caller's own organisation, and capped. */
+      /* Filtered to the caller's organisation and capped; for a partner, to signatories. */
       allow list: if signedIn() && (
         owner()
-        || (request.query.limit <= 500 && resource.data.orgId == profile().get('orgId', ''))
+        || (
+          activeProfile()
+          && request.query.limit <= 500
+          && resource.data.orgId == profile().get('orgId', '')
+          && (
+            role() in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager', 'warehouse_manager']
+            || resource.data.role in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager']
+          )
+        )
       );
 
       /*
-       * Accounts are made in the app (`src/lib/accounts.ts`): the sign-in by a
-       * second Firebase app, this profile by the person adding them. The owner
-       * may add anyone to any organisation; an administrator only to their own,
-       * and only a super admin may make another super admin. Nobody makes an owner.
+       * Accounts are made in the app (`src/lib/accounts.ts`). The owner may add
+       * anyone to any organisation; an administrator only to their own, and
+       * only a super admin may make another super admin. Nobody makes an owner.
        */
       allow create: if signedIn()
         && request.resource.data.role != 'owner'
@@ -127,16 +182,21 @@ service cloud.firestore {
           )
         );
 
-      /* Your own name, phone, title and photograph — never your role, organisation or active flag. */
+      /* Your own name, phone, title and photograph — never your role, organisation, accounts or active flag. */
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['firstName', 'lastName', 'title', 'phone', 'photoURL', 'updatedAt', 'lastSeenAt']);
 
-      /* An administrator, on anybody in their own organisation except themselves. */
-      allow update: if admin(resource.data.orgId)
+      /* An administrator, on anybody in their own organisation except themselves.
+         Only a super admin may change a super admin, or make one. */
+      allow update: if admin(resource.data.get('orgId', ''))
         && request.auth.uid != uid
         && request.resource.data.orgId == resource.data.orgId
-        && request.resource.data.role != 'owner';
+        && request.resource.data.role != 'owner'
+        && (
+          role() == 'super_admin'
+          || (resource.data.role != 'super_admin' && request.resource.data.role != 'super_admin')
+        );
 
       /* The owner, on anybody but another owner. */
       allow update: if owner()
@@ -148,11 +208,7 @@ service cloud.firestore {
     }
 
     /* ---------------------------------------------------- the tenant record */
-    /*
-     * What the PLATFORM knows about a customer: that it exists and whether it
-     * pays. Members read it (so a suspended one can be told why); only the
-     * owner writes it.
-     */
+
     match /orgs/{orgId} {
       allow get: if owner() || belongs(orgId);
       allow list: if owner();
@@ -161,69 +217,99 @@ service cloud.firestore {
 
     /* ------------------------------------------------- everything an org owns */
 
+    /* Insiders read everything. Partners get only what is granted below. */
     match /orgs/{orgId}/{document=**} {
-      allow read: if owner() || member(orgId);
+      allow read: if owner() || insider(orgId);
     }
 
+    /* Shared with every member: the organisation's details, catalogue, depots. */
     match /orgs/{orgId}/settings/{docId} {
+      allow read: if member(orgId);
       allow write: if owner() || admin(orgId);
     }
 
     match /orgs/{orgId}/products/{productId} {
+      allow read: if member(orgId);
       allow create, update: if admin(orgId);
       allow delete: if immutable();
     }
 
+    match /orgs/{orgId}/warehouses/{warehouseId} {
+      allow read: if member(orgId);
+      allow write: if hasRole(orgId, ['super_admin', 'admin', 'operations_manager']);
+    }
+
+    /* Document numbers (PO-2026-0041), read and bumped inside a transaction. */
+    match /orgs/{orgId}/counters/{counterId} {
+      allow read, write: if member(orgId);
+    }
+
     match /orgs/{orgId}/distributors/{distributorId} {
+      allow get: if partnerOf(orgId, distributorId);
       allow create: if hasRole(orgId, ['super_admin', 'admin', 'staff']);
       allow update: if admin(orgId);
       /* Contact details, yes; commercial terms, no. */
-      allow update: if (
-          hasRole(orgId, ['staff'])
-          || (hasRole(orgId, ['sales_rep', 'distributor']) && ownDistributor(orgId, distributorId))
-        )
+      allow update: if (hasRole(orgId, ['staff']) || partnerOf(orgId, distributorId))
         && !request.resource.data.diff(resource.data).affectedKeys()
              .hasAny(['category', 'creditLimit', 'paymentTermsDays', 'status', 'userId']);
       allow delete: if immutable();
     }
 
     match /orgs/{orgId}/orders/{orderId} {
-      allow list: if admin(orgId)
-        || hasRole(orgId, ['staff', 'warehouse_manager', 'finance_manager', 'operations_manager'])
-        || (isPartnerRole(orgId) && request.query.limit <= 500);
+      allow get: if partnerOf(orgId, resource.data.distributorId);
+      allow list: if partnerOf(orgId, resource.data.distributorId) && request.query.limit <= 500;
 
+      /* Nobody signs their own order, and nothing over the threshold skips a signature. */
       allow create: if hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep', 'distributor'])
+        && mayUseAccount(request.resource.data.distributorId)
         && request.resource.data.createdBy == request.auth.uid
+        && !(request.auth.uid in request.resource.data.get('approvers', []))
         && (
           request.resource.data.status in ['draft', 'pending_approval']
-          || (request.resource.data.status == 'approved' && request.resource.data.approvers.size() == 0)
+          || (
+            request.resource.data.status == 'approved'
+            && request.resource.data.get('approvers', []).size() == 0
+            && mayApproveAtOnce(orgId, request.resource.data.total)
+          )
         )
         && request.resource.data.total >= 0;
 
-      /* Amendment — mirrors `src/lib/amend.ts`. */
+      /* A draft: the office, its author, or a partner on its own account.
+         Mirrors `src/lib/amend.ts`. */
       allow update: if resource.data.status == 'draft'
         && (
-          resource.data.createdBy == request.auth.uid
-          || hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep'])
+          hasRole(orgId, ['super_admin', 'admin', 'staff'])
+          || resource.data.createdBy == request.auth.uid
+          || partnerOf(orgId, resource.data.distributorId)
+        )
+        && mayUseAccount(request.resource.data.distributorId)
+        && !(request.auth.uid in request.resource.data.get('approvers', []))
+        && (
+          request.resource.data.status != 'approved'
+          || (
+            request.resource.data.get('approvers', []).size() == 0
+            && mayApproveAtOnce(orgId, request.resource.data.total)
+          )
         );
+
+      /* Signing: a named approver may decide, but not change what was ordered. */
       allow update: if resource.data.status == 'pending_approval'
         && request.auth.uid in resource.data.approvers
         && request.resource.data.total == resource.data.total
         && request.resource.data.lines == resource.data.lines
         && request.resource.data.distributorId == resource.data.distributorId;
+
+      /* Recalling: the author takes it back to draft before anyone has signed. */
       allow update: if resource.data.status == 'pending_approval'
         && resource.data.createdBy == request.auth.uid
         && request.resource.data.status == 'draft'
         && request.resource.data.approvals.size() == 0
         && request.resource.data.total == resource.data.total
         && request.resource.data.lines == resource.data.lines;
+
+      /* A super admin or admin can decide any pending order. */
       allow update: if resource.data.status == 'pending_approval' && admin(orgId);
-      allow update: if resource.data.status == 'draft'
-        && request.resource.data.status in ['pending_approval', 'approved']
-        && (
-          resource.data.createdBy == request.auth.uid
-          || hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep'])
-        );
+
       allow update: if resource.data.status == 'approved'
         && hasRole(orgId, ['super_admin', 'admin', 'warehouse_manager', 'operations_manager'])
         && request.resource.data.status == 'fulfilled'
@@ -236,10 +322,6 @@ service cloud.firestore {
         && request.resource.data.lines == resource.data.lines
         && request.resource.data.total == resource.data.total;
       allow delete: if immutable();
-    }
-
-    match /orgs/{orgId}/warehouses/{warehouseId} {
-      allow write: if hasRole(orgId, ['super_admin', 'admin', 'operations_manager']);
     }
 
     match /orgs/{orgId}/stock/{positionId} {
@@ -257,15 +339,23 @@ service cloud.firestore {
     }
 
     match /orgs/{orgId}/sales/{saleId} {
+      allow read: if partnerOf(orgId, resource.data.distributorId);
       allow create: if hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep', 'distributor'])
+        && mayUseAccount(request.resource.data.distributorId)
         && request.resource.data.capturedBy == request.auth.uid
         && request.resource.data.quantity > 0;
       allow update: if admin(orgId)
-        || (resource.data.capturedBy == request.auth.uid && inCurrentMonth(resource.data.saleDate));
+        || (
+          resource.data.capturedBy == request.auth.uid
+          && inCurrentMonth(resource.data.saleDate)
+          && request.resource.data.distributorId == resource.data.distributorId
+        );
       allow delete: if admin(orgId) || resource.data.capturedBy == request.auth.uid;
     }
 
+    /* A rep's own pipeline. */
     match /orgs/{orgId}/leads/{leadId} {
+      allow read: if hasRole(orgId, ['sales_rep']) && resource.data.ownerId == request.auth.uid;
       allow create: if hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep'])
         && request.resource.data.ownerId == request.auth.uid;
       allow update: if admin(orgId) || resource.data.ownerId == request.auth.uid;
@@ -273,6 +363,7 @@ service cloud.firestore {
     }
 
     match /orgs/{orgId}/invoices/{invoiceId} {
+      allow read: if partnerOf(orgId, resource.data.distributorId);
       allow create: if hasRole(orgId, ['super_admin', 'admin', 'finance_manager'])
         && request.resource.data.amountPaid == 0;
       allow update: if hasRole(orgId, ['super_admin', 'admin', 'finance_manager'])
@@ -282,6 +373,7 @@ service cloud.firestore {
 
     /* Append-only, like the stock ledger. */
     match /orgs/{orgId}/payments/{paymentId} {
+      allow read: if partnerOf(orgId, resource.data.distributorId);
       allow create: if hasRole(orgId, ['super_admin', 'admin', 'finance_manager'])
         && request.resource.data.recordedBy == request.auth.uid
         && request.resource.data.amount > 0;
@@ -289,7 +381,9 @@ service cloud.firestore {
     }
 
     match /orgs/{orgId}/returns/{returnId} {
+      allow read: if partnerOf(orgId, resource.data.distributorId);
       allow create: if member(orgId)
+        && mayUseAccount(request.resource.data.distributorId)
         && request.resource.data.requestedBy == request.auth.uid
         && request.resource.data.status == 'requested'
         && request.resource.data.quantity > 0;
@@ -300,17 +394,16 @@ service cloud.firestore {
           resource.data.status == 'requested'
           && resource.data.requestedBy == request.auth.uid
           && request.resource.data.status == 'requested'
+          && request.resource.data.distributorId == resource.data.distributorId
         );
       allow delete: if immutable();
     }
 
+    /* A partner sees its own target and its accounts'. */
     match /orgs/{orgId}/targets/{targetId} {
+      allow read: if isPartnerRole(orgId)
+        && (resource.data.ownerId == request.auth.uid || resource.data.ownerId in accounts());
       allow write: if admin(orgId);
-    }
-
-    /* Document numbers (PO-2026-0041), incremented inside a transaction. */
-    match /orgs/{orgId}/counters/{counterId} {
-      allow write: if member(orgId);
     }
 
     /* Deny everything else, on purpose. */
