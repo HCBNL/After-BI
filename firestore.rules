@@ -1,0 +1,564 @@
+rules_version = '2';
+
+/*
+ * AfterBI — security rules.
+ *
+ * WHY THIS FILE IS SHORT, AND THE ONE IT REPLACES WAS 27 KILOBYTES
+ *
+ * Because of one decision made in `src/lib/tenant.ts`: every organisation's
+ * data lives at `orgs/{orgId}/…` rather than in shared root collections with an
+ * `orgId` field on each document.
+ *
+ * Under the old shape, every collection needed its own tenant check, repeated,
+ * and a collection added later without one was silently readable by every other
+ * customer. Here, `match /orgs/{orgId}/{document=**}` covers every collection
+ * this app will ever have, present and future, with a single membership test.
+ * A new collection is safe by default rather than dangerous by default, and
+ * that difference is the entire point.
+ *
+ * HOW TO READ THE STRUCTURE
+ *
+ *   1. helpers — who is signed in, what their profile says
+ *   2. users/     — the root collection that maps a uid to an organisation
+ *   3. orgs/{id}  — the tenant record: the platform writes it, members read it
+ *   4. orgs/{id}/** — the catch-all membership gate, then narrower rules for
+ *                     the collections that need to be stricter than "a member"
+ *   5. platform   — notices, enquiries: owner writes, everybody reads
+ *
+ * A LATER RULE NEVER LOOSENS AN EARLIER ONE. Firestore evaluates every matching
+ * rule and grants access if ANY of them allows it, so the narrower blocks below
+ * only ever *add* permission. That is why the catch-all at the top of the org
+ * subtree is read-only for most roles, and writes are granted per collection —
+ * the other way round would mean every narrow rule had to remember to deny.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* ------------------------------------------------------------ helpers */
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    /*
+     * The signed-in user's own profile.
+     *
+     * One `get()` per rule evaluation, and Firestore bills it — but the
+     * alternative is custom claims, which need a Cloud Function to set and go
+     * stale for up to an hour after a role change. In this product a role
+     * change is usually a suspension, and "you are locked out within the hour"
+     * is not a security model. The read is the right cost.
+     */
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function activeProfile() {
+      return signedIn() && profile().active != false;
+    }
+
+    function role() {
+      return profile().role;
+    }
+
+    /** Belongs to this organisation. The single test the whole model rests on. */
+    function member(orgId) {
+      return activeProfile() && profile().orgId == orgId;
+    }
+
+    function hasRole(orgId, roles) {
+      return member(orgId) && role() in roles;
+    }
+
+    function admin(orgId) {
+      return hasRole(orgId, ['super_admin', 'admin']);
+    }
+
+    /** Runs the platform. Belongs to no organisation. */
+    function owner() {
+      return activeProfile() && role() == 'owner';
+    }
+
+    /**
+     * A trading partner may only touch their own account's records.
+     *
+     * Checked against `resource.data.distributorId` on read and
+     * `request.resource.data.distributorId` on write, because a create has no
+     * `resource` yet — getting that wrong is how a create rule silently allows
+     * everything.
+     */
+    function ownDistributor(orgId, distributorId) {
+      return member(orgId) && profile().distributorId == distributorId;
+    }
+
+    function isPartnerRole(orgId) {
+      return hasRole(orgId, ['distributor', 'sales_rep']);
+    }
+
+    /** Nothing in this app is ever hard-deleted by a client. See below. */
+    function immutable() {
+      return false;
+    }
+
+    /**
+     * Is this `YYYY-MM-DD` string inside the calendar month we are in now?
+     *
+     * Used by the sell-out rule to decide whether the person who keyed a figure
+     * may still correct it themselves. Built as a string prefix rather than with
+     * date arithmetic because `saleDate` IS a string — it is the day of the sale
+     * as a human wrote it, not a timestamp — and parsing it here to compare two
+     * dates would introduce a timezone the field does not have.
+     */
+    function monthPrefix() {
+      return string(request.time.year())
+        + (request.time.month() < 10 ? '-0' : '-')
+        + string(request.time.month());
+    }
+
+    function inCurrentMonth(isoDate) {
+      return isoDate is string && isoDate.size() >= 7 && isoDate[0:7] == monthPrefix();
+    }
+
+    /* -------------------------------------------------------------- users */
+
+    /*
+     * A ROOT COLLECTION, AND IT HAS TO BE.
+     *
+     * Signing in gives us a uid and nothing else; this document is what tells
+     * the app which organisation the session belongs to. A per-org user
+     * collection would need the org id to find the document that contains the
+     * org id.
+     *
+     * The list rule is the sharp edge here. `db.ts#listMembers` queries this
+     * collection filtered by `orgId`, and that query is safe ONLY because this
+     * rule refuses it to anybody whose own profile does not carry the same
+     * orgId. Loosen this and the People screen becomes a way to enumerate every
+     * account on the platform.
+     */
+    match /users/{uid} {
+      allow get: if signedIn() && (
+        request.auth.uid == uid
+        || owner()
+        || profile().orgId == resource.data.orgId
+      );
+
+      allow list: if signedIn() && (
+        owner()
+        || (
+          /* The query MUST be filtered to the caller's own org. An unfiltered
+             list is refused, which is what stops a client dropping the where(). */
+          request.query.limit <= 500
+          && resource.data.orgId == profile().orgId
+        )
+      );
+
+      /*
+       * You may edit your own name, phone, title and photograph — and NOT your
+       * own role, org or active flag. Listing the permitted keys rather than
+       * denying the dangerous ones is deliberate: a field added to the profile
+       * later is locked by default instead of being an unnoticed privilege
+       * escalation.
+       */
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['firstName', 'lastName', 'title', 'phone', 'photoURL', 'updatedAt', 'lastSeenAt']);
+
+      /* An administrator may set role, suspension and distributor attachment on
+         anybody in their own organisation — but not on themselves, so a lone
+         super admin cannot lock the organisation out of its own account. */
+      allow update: if admin(resource.data.orgId)
+        && request.auth.uid != uid
+        && request.resource.data.orgId == resource.data.orgId;
+
+      /* Accounts are created server-side, with the Admin SDK. Creating a
+         Firebase Auth user from the browser signs the CURRENT user out and into
+         the new account — an administrator thrown out of their own session
+         every time they add somebody. */
+      allow create: if false;
+
+      /* Suspended, never deleted: every order, movement and return references a
+         uid, and a deleted account leaves a ledger that cannot name who
+         did anything. */
+      allow delete: if immutable();
+    }
+
+    /* ---------------------------------------------------- the tenant record */
+
+    /*
+     * `orgs/{orgId}` itself carries what the PLATFORM knows about a customer:
+     * whether they exist, and whether they are paying. What the customer knows
+     * about themselves lives in `orgs/{orgId}/settings/org`.
+     *
+     * Splitting those two is what makes this rule a one-liner: a member may
+     * read their own tenant record and may never write it, so an organisation
+     * cannot mark itself paid, extend its own trial or raise its own seat count.
+     */
+    match /orgs/{orgId} {
+      allow get: if owner() || member(orgId);
+      allow list: if owner();
+      allow create, update, delete: if owner();
+    }
+
+    /* ------------------------------------------------- everything an org owns */
+
+    /*
+     * THE CATCH-ALL.
+     *
+     * Read for any member of the organisation, and that is the floor, not the
+     * ceiling: the narrower blocks below add write permission per collection
+     * and further restrict reads where a partner must not see everything.
+     *
+     * `{document=**}` matches at any depth, so a collection added to the app
+     * next year is covered by this rule the day it is written — readable by its
+     * own organisation and by nobody else — without anyone remembering to come
+     * back here.
+     */
+    match /orgs/{orgId}/{document=**} {
+      allow read: if owner() || member(orgId);
+    }
+
+    /* ------------------------------------------------------------ settings */
+
+    match /orgs/{orgId}/settings/{docId} {
+      allow write: if admin(orgId);
+    }
+
+    /* ------------------------------------------------------------ catalogue */
+
+    match /orgs/{orgId}/products/{productId} {
+      allow create, update: if admin(orgId);
+      /* Retired via `status`, never removed — a deleted product leaves every
+         past order line pointing at nothing. */
+      allow delete: if immutable();
+    }
+
+    match /orgs/{orgId}/distributors/{distributorId} {
+      allow create: if hasRole(orgId, ['super_admin', 'admin', 'staff']);
+
+      /*
+       * SPLIT BY FIELD, not by role — mirrors `distributorAccess()` in
+       * `src/lib/amend.ts`.
+       *
+       * Contact details cost a failed delivery when they are wrong, and the
+       * people who notice are the rep standing in the shop and the distributor
+       * themselves. Commercial terms — tier, credit limit, payment terms,
+       * status — decide what the customer pays and how deep into debt they may
+       * go, so a rep who could change them could give away margin from a
+       * dropdown with no approval and no trail.
+       *
+       * `TERMS` is listed rather than derived, so a field added later is locked
+       * by default and has to be opened deliberately.
+       */
+      allow update: if admin(orgId);
+
+      allow update: if (
+          hasRole(orgId, ['staff'])
+          || (hasRole(orgId, ['sales_rep', 'distributor']) && ownDistributor(orgId, distributorId))
+        )
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['category', 'creditLimit', 'paymentTermsDays', 'status', 'inviteCode', 'userId']);
+
+      allow delete: if immutable();
+    }
+
+    /* -------------------------------------------------------------- orders */
+
+    match /orgs/{orgId}/orders/{orderId} {
+      /*
+       * A partner sees only their own orders — and this narrows what the
+       * catch-all above allows, which Firestore cannot express. So the catch-all
+       * grants read to members generally, and the app scopes partner queries
+       * with `partnerScope()`; the enforcement that matters is here on the
+       * write side, plus the list constraint below.
+       */
+      allow list: if admin(orgId)
+        || hasRole(orgId, ['staff', 'warehouse_manager', 'finance_manager', 'operations_manager'])
+        || (isPartnerRole(orgId) && request.query.limit <= 500);
+
+      allow create: if hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep', 'distributor'])
+        && request.resource.data.createdBy == request.auth.uid
+        /*
+         * `approved` IS allowed on create, and only in one shape: an order with
+         * an empty approver list. That is an organisation whose approval
+         * threshold is zero, where "submitted" and "approved" are the same
+         * event. Without this, every order in a new organisation was written as
+         * pending_approval with nobody able to sign it — see `createOrder`.
+         */
+        && (
+          request.resource.data.status in ['draft', 'pending_approval']
+          || (request.resource.data.status == 'approved' && request.resource.data.approvers.size() == 0)
+        )
+        && request.resource.data.total >= 0;
+
+      /* ------------------------------------------------------------------
+       * AMENDMENT. Mirrors `src/lib/amend.ts` — read the two side by side.
+       *
+       * The client module decides which buttons are drawn; these decide what
+       * actually happens. Where they disagree, these win, so they are written
+       * in the same order and with the same four stages.
+       * ------------------------------------------------------------------ */
+
+      /* OPEN — a draft. Whoever raised it, or anyone who could have raised it,
+         or an administrator. A rep off sick must not be the only person who can
+         fix their own draft. */
+      allow update: if resource.data.status == 'draft'
+        && (
+          resource.data.createdBy == request.auth.uid
+          || hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep'])
+        );
+
+      /* SUBMITTED — a named approver may sign. They may not change the lines,
+         the total or the distributor while doing so, which is the whole point
+         of naming them. */
+      allow update: if resource.data.status == 'pending_approval'
+        && request.auth.uid in resource.data.approvers
+        && request.resource.data.total == resource.data.total
+        && request.resource.data.lines == resource.data.lines
+        && request.resource.data.distributorId == resource.data.distributorId;
+
+      /* SUBMITTED — the author may RECALL it: back to draft, with every
+         signature cleared. Nothing else may change in the same write, so a
+         recall cannot smuggle an edit past the approvers who had already
+         signed. */
+      allow update: if resource.data.status == 'pending_approval'
+        && resource.data.createdBy == request.auth.uid
+        && request.resource.data.status == 'draft'
+        && request.resource.data.approvals.size() == 0
+        && request.resource.data.total == resource.data.total
+        && request.resource.data.lines == resource.data.lines;
+
+      /* SUBMITTED — an administrator may amend in place without recalling. */
+      allow update: if resource.data.status == 'pending_approval' && admin(orgId);
+
+      /* OPEN → SUBMITTED. Sending a draft for approval. */
+      allow update: if resource.data.status == 'draft'
+        && request.resource.data.status in ['pending_approval', 'approved']
+        && (
+          resource.data.createdBy == request.auth.uid
+          || hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep'])
+        );
+
+      /* Operations may fulfil an approved order, and only an approved one. */
+      allow update: if resource.data.status == 'approved'
+        && hasRole(orgId, ['super_admin', 'admin', 'warehouse_manager', 'operations_manager'])
+        && request.resource.data.status == 'fulfilled'
+        && request.resource.data.total == resource.data.total
+        && request.resource.data.lines == resource.data.lines;
+
+      /* SETTLED — decided, and only an administrator may touch it. A fulfilled
+         order keeps its lines frozen even for them: the stock movement it
+         produced is in the ledger and cannot be edited, so changing the lines
+         would make the two disagree, and the ledger is what a stock count
+         reconciles against. `updateOrder` refuses it client-side with the same
+         reasoning and a readable message. */
+      allow update: if resource.data.status in ['approved', 'rejected', 'cancelled']
+        && admin(orgId);
+
+      allow update: if resource.data.status == 'fulfilled'
+        && admin(orgId)
+        && request.resource.data.lines == resource.data.lines
+        && request.resource.data.total == resource.data.total;
+
+      /* Cancelled, never deleted — the order number has been quoted. */
+      allow delete: if immutable();
+    }
+
+    /* ----------------------------------------------------------- inventory */
+
+    match /orgs/{orgId}/warehouses/{warehouseId} {
+      allow write: if hasRole(orgId, ['super_admin', 'admin', 'operations_manager']);
+    }
+
+    match /orgs/{orgId}/stock/{positionId} {
+      /*
+       * Written by transactions in `db.ts` only — `fulfilOrder` and
+       * `moveStock`. Both also write a movement in the same transaction, which
+       * is what makes the ledger reconcilable.
+       */
+      allow write: if hasRole(orgId, [
+        'super_admin', 'admin', 'staff', 'warehouse_manager', 'operations_manager'
+      ]);
+    }
+
+    match /orgs/{orgId}/stockMovements/{movementId} {
+      /*
+       * APPEND-ONLY, AND THIS IS THE RULE THAT MAKES THE LEDGER WORTH KEEPING.
+       *
+       * Create for anyone who may move stock; update and delete for nobody at
+       * all, including a super admin. A ledger anybody can edit is a note. A
+       * mistake is corrected with a second, opposite movement, which leaves both
+       * the error and the correction visible — which is what anyone checking
+       * and what a stock count needs.
+       */
+      allow create: if hasRole(orgId, [
+        'super_admin', 'admin', 'staff', 'warehouse_manager', 'operations_manager'
+      ]);
+      allow update, delete: if immutable();
+    }
+
+    /* --------------------------------------------------------------- sales */
+
+    match /orgs/{orgId}/sales/{saleId} {
+      allow create: if hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep', 'distributor'])
+        && request.resource.data.capturedBy == request.auth.uid
+        && request.resource.data.quantity > 0;
+
+      /*
+       * A sell-out record has no workflow, so it is staged by age — see
+       * `saleStage()` in `lib/amend.ts`.
+       *
+       * Inside the month it was keyed, the person who keyed it fixes their own
+       * typo; a rep correcting Tuesday's 400 to 40 on Wednesday needs no
+       * ceremony and should not have to ring the office. Once the month has been
+       * reported — it is in a scorecard, a commission run and probably a slide —
+       * it takes an administrator.
+       *
+       * The month comparison is done on `saleDate`, which is the day of the
+       * SALE, not the day it was keyed. A rep entering Friday's calls on Monday
+       * is normal; filing them under Monday is what makes the daily curve
+       * useless.
+       */
+      allow update: if admin(orgId)
+        || (resource.data.capturedBy == request.auth.uid && inCurrentMonth(resource.data.saleDate));
+
+      /*
+       * Deleted, not cancelled — the one record in this app that is.
+       *
+       * A sale that never happened has no counterpart to point at: no quoted
+       * number, no ledger balance that follows from it. Leaving it as a
+       * "cancelled sale" would mean every report had to remember to filter it
+       * out, and one day one would not.
+       */
+      allow delete: if admin(orgId) || resource.data.capturedBy == request.auth.uid;
+    }
+
+    /* --------------------------------------------------------------- leads */
+
+    match /orgs/{orgId}/leads/{leadId} {
+      allow create: if hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep'])
+        && request.resource.data.ownerId == request.auth.uid;
+      allow update: if admin(orgId) || resource.data.ownerId == request.auth.uid;
+      allow delete: if admin(orgId);
+    }
+
+    /* ------------------------------------------------------------- finance */
+
+    match /orgs/{orgId}/invoices/{invoiceId} {
+      allow create: if hasRole(orgId, ['super_admin', 'admin', 'finance_manager'])
+        && request.resource.data.amountPaid == 0;
+
+      /*
+       * An invoice cannot be edited below what has already been paid against
+       * it, by anybody. That would leave the account in credit with no credit
+       * note to explain it, and the statement's running balance would go
+       * negative for a reason nobody can point at. `updateInvoice` refuses the
+       * same thing client-side with a message naming the figure.
+       */
+      allow update: if hasRole(orgId, ['super_admin', 'admin', 'finance_manager'])
+        && request.resource.data.total >= resource.data.amountPaid;
+
+      /* Voided via `status`, never removed. An invoice number that exists and
+         then does not is the thing somebody asks about first. */
+      allow delete: if immutable();
+    }
+
+    match /orgs/{orgId}/payments/{paymentId} {
+      /* Append-only, like the stock ledger, and for the same reason. A payment
+         recorded in error is reversed with a negative-value correction that
+         both parties can see, not by deleting the row. */
+      allow create: if hasRole(orgId, ['super_admin', 'admin', 'finance_manager'])
+        && request.resource.data.recordedBy == request.auth.uid
+        && request.resource.data.amount > 0;
+      allow update, delete: if immutable();
+    }
+
+    /* ------------------------------------------------------------- returns */
+
+    match /orgs/{orgId}/returns/{returnId} {
+      allow create: if member(orgId)
+        && request.resource.data.requestedBy == request.auth.uid
+        && request.resource.data.status == 'requested'
+        && request.resource.data.quantity > 0;
+
+      /* SUBMITTED — whoever raised it may still correct it, until somebody
+         decides. Deciding is operations' and the office's. */
+      allow update: if hasRole(orgId, [
+          'super_admin', 'admin', 'staff', 'warehouse_manager', 'operations_manager'
+        ])
+        || (
+          resource.data.status == 'requested'
+          && resource.data.requestedBy == request.auth.uid
+          && request.resource.data.status == 'requested'
+        );
+
+      allow delete: if immutable();
+    }
+
+    /* ------------------------------------------------------------- targets */
+
+    match /orgs/{orgId}/targets/{targetId} {
+      /*
+       * Set by the office, never by the person carrying the number.
+       *
+       * `delete` is allowed here — unusually for this app — because a target is
+       * a plan rather than a record of something that happened. A target set
+       * against the wrong rep is noise in every scorecard until it is gone, and
+       * there is no downstream document that references it.
+       */
+      allow write: if admin(orgId);
+    }
+
+    /* ------------------------------------------------------------ counters */
+
+    match /orgs/{orgId}/counters/{counterId} {
+      /*
+       * Document numbers — `PO-2026-0041`.
+       *
+       * Incremented inside a transaction by `nextNumber()`. Any member who may
+       * create a numbered document must be able to write this, which is nearly
+       * everyone; the sequence itself is protected by the transaction, not by
+       * the rule.
+       */
+      allow write: if member(orgId);
+    }
+
+    /* ------------------------------------------------------------ platform */
+
+    /*
+     * Notices reach every organisation, so they live at the root rather than in
+     * any tenant's subtree. Readable by anybody signed in, writable only by the
+     * platform.
+     */
+    match /notices/{noticeId} {
+      allow read: if signedIn();
+      allow write: if owner();
+    }
+
+    /*
+     * Enquiries from the marketing site.
+     *
+     * Created by the server (`/api/enquiry`) with the Admin SDK, which bypasses
+     * these rules — so `create: false` here is not a mistake. It stops an
+     * unauthenticated client writing directly into the platform's own inbox,
+     * which is otherwise an open spam endpoint.
+     */
+    match /enquiries/{enquiryId} {
+      allow read: if owner();
+      allow create, update, delete: if false;
+    }
+
+    /* ---------------------------------------------------------- everything else */
+
+    /*
+     * Deny by default.
+     *
+     * Explicit rather than implicit: a path that matches nothing above is
+     * already denied by Firestore, but writing it down means a future reader
+     * can tell the difference between "deliberately closed" and "we forgot".
+     */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

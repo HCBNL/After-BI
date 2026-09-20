@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      `user-scalable=no` and `maximum-scale=1` are two of the three things that
+      stop a phone zooming this app. The other two are `touch-action: pan-y` in
+      index.css and the gesture guard in `lib/lockZoom.ts` — no one of the three
+      covers Android, desktop and iOS on its own. Every form control in the app
+      is also at least 16px on a touch device, which is what actually stops
+      Mobile Safari zooming on focus; the meta tag alone is ignored there.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#10b981" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0d10" media="(prefers-color-scheme: dark)" />
+    <title>AfterBI — distribution management</title>
+    <meta name="description" content="Orders, stock, invoices and claims for Nigerian FMCG distribution — and the sell-out figure behind them." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!--
+      THE STATIC SHELL.
+
+      Painted by the browser before a single byte of JavaScript has run, and it
+      is the same shape `ShellSkeleton` draws once React takes over — so there
+      is no frame where the layout changes and no white flash on a cold load
+      over a slow connection. It is removed by the first React render.
+
+      The dark variables are inlined here rather than waiting for the stylesheet
+      because this markup paints first; without them somebody on a dark phone
+      gets a white rectangle for the length of one network round trip.
+    -->
+    <style>
+      :root { --sk-page: #ffffff; --sk-card: #ffffff; --sk-line: rgba(20,23,28,.1); --sk-fill: #f4f6f8; }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) { --sk-page: #0b0d10; --sk-card: #14171c; --sk-line: rgba(255,255,255,.1); --sk-fill: #101317; }
+      }
+      html[data-theme='dark'] { --sk-page: #0b0d10; --sk-card: #14171c; --sk-line: rgba(255,255,255,.1); --sk-fill: #101317; }
+      html, body { margin: 0; height: 100%; background: var(--sk-page); }
+      #boot { display: flex; min-height: 100dvh; font-family: Inter, system-ui, sans-serif; }
+      #boot .rail { display: none; width: 232px; flex-shrink: 0; border-right: 1px solid var(--sk-line); background: var(--sk-card); padding: 12px; }
+      @media (min-width: 1024px) { #boot .rail { display: block; } }
+      #boot .bar { height: 56px; border-bottom: 1px solid var(--sk-line); background: var(--sk-card); }
+      #boot .strip { height: env(safe-area-inset-top, 0px); background: linear-gradient(135deg, #10b981, #047857); }
+      #boot .body { flex: 1; min-width: 0; }
+      #boot .blk { background: var(--sk-fill); border-radius: 12px; }
+      #boot .pad { padding: 16px; }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="boot" aria-hidden="true">
+        <div class="rail">
+          <div class="blk" style="height:40px"></div>
+          <div class="blk" style="height:36px;margin-top:16px"></div>
+          <div class="blk" style="height:36px;margin-top:8px"></div>
+          <div class="blk" style="height:36px;margin-top:8px"></div>
+          <div class="blk" style="height:36px;margin-top:8px"></div>
+        </div>
+        <div class="body">
+          <div class="strip"></div>
+          <div class="bar"></div>
+          <div class="pad">
+            <div class="blk" style="height:180px;max-width:720px"></div>
+            <div class="blk" style="height:120px;margin-top:20px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--
+      A BOOT FAILURE THAT SAYS WHAT IS WRONG, RATHER THAN A WHITE SCREEN.
+
+      `lib/firebase.ts` throws at module scope when a `VITE_FIREBASE_*` variable
+      is missing. That is deliberate — the build this replaced shipped a real
+      project's keys as literals, so every fork pointed at production — but a
+      module-scope throw happens while the bundle is still evaluating, before
+      React exists. `ErrorBoundary` cannot catch it. Nothing in the bundle can.
+      The page stays blank and the only evidence is a console line that whoever
+      just deployed is probably not looking at.
+
+      That is precisely the state a first deploy lands in, because nothing about
+      a missing environment variable stops the build: Vite writes these values
+      into the bundle at build time, so it compiles perfectly and then has
+      nothing to connect to.
+
+      This is inline, and before the module, for two reasons. It is the only
+      code guaranteed to have run when the bundle throws — and it is the only
+      code that runs at all if the bundle 404s, which is what a wrong output
+      directory looks like from the browser.
+    -->
+    <script>
+      (function () {
+        var painted = false;
+
+        function paint(message) {
+          if (painted) return;
+          painted = true;
+          var root = document.getElementById('root');
+          if (!root) return;
+
+          var missing = /(VITE_[A-Z_]+) is not set/.exec(message || '');
+
+          /* Built with the DOM, not innerHTML: `message` is an exception string
+             and nothing has sanitised it. Styles are inline because the
+             stylesheet may be the thing that did not load. */
+          var box = document.createElement('div');
+          box.setAttribute(
+            'style',
+            'max-width:34rem;margin:12vh auto;padding:0 1.5rem;font:15px/1.65 -apple-system,' +
+              'BlinkMacSystemFont,Segoe UI,Arial,sans-serif;color:#1a1d21'
+          );
+
+          var h = document.createElement('h1');
+          h.setAttribute('style', 'font-size:19px;font-weight:800;margin:0 0 .75rem');
+          h.textContent = missing
+            ? 'This deployment is missing its configuration'
+            : 'AfterBI could not start';
+
+          var p = document.createElement('p');
+          p.setAttribute('style', 'margin:0 0 1rem;color:#41474d');
+          p.textContent = missing
+            ? missing[1] +
+              ' is not set. The Firebase web config has to be set as an environment variable ' +
+              'wherever this is hosted, and then the site rebuilt — a variable added after a ' +
+              'build is not in the bundle, because these values are written in at build time.'
+            : message || 'The application bundle did not load.';
+
+          var q = document.createElement('p');
+          q.setAttribute('style', 'margin:0;font-size:13px;color:#7a8087');
+          q.textContent = missing
+            ? 'The full list is in .env.example. None of it is secret: a Firebase web key ' +
+              'identifies the project, it does not grant access — firestore.rules does that.'
+            : 'The full error is in the browser console.';
+
+          box.appendChild(h);
+          box.appendChild(p);
+          box.appendChild(q);
+          root.replaceChildren ? root.replaceChildren(box) : ((root.innerHTML = ''), root.appendChild(box));
+        }
+
+        /* `true` for the capture phase, which is the only way to see a script
+           that failed to LOAD: a resource error fires on the element and does
+           not bubble, so a normal listener never hears it. That case is what a
+           wrong output directory looks like from inside the browser. */
+        window.addEventListener(
+          'error',
+          function (event) {
+            /* Only while the skeleton is still the only thing on screen. Once
+               React has mounted, its own ErrorBoundary owns the failure, and
+               painting over a working app would be the bug. */
+            if (!document.getElementById('boot')) return;
+
+            var target = event && event.target;
+            if (target && target !== window && target.tagName) {
+              /*
+               * A RESOURCE FAILED, NOT THE APP.
+               *
+               * Capturing catches every one of these, and the first version of
+               * this guard treated them all as fatal — so a blocked Google
+               * Fonts request painted "the bundle did not load" and, because it
+               * arrives before the app's own error, buried the real message
+               * naming the missing variable. A font that does not arrive is a
+               * different typeface, not a broken app; the same goes for an
+               * image. Only the bundle itself matters here.
+               */
+              if (target.tagName === 'SCRIPT' && target.type === 'module') paint('');
+              return;
+            }
+
+            paint((event && event.message) || '');
+          },
+          true
+        );
+
+        /*
+         * Last resort, and deliberately patient.
+         *
+         * This app's users are on mid-range Android phones on metered Nigerian
+         * data, in depots with two bars — a cold load genuinely can take ten
+         * seconds, and telling somebody it is broken while it is merely slow is
+         * worse than the skeleton they were already looking at. Twenty-five
+         * seconds is past any real cold start; if React does mount afterwards
+         * it replaces this anyway, so the failure mode is self-correcting.
+         */
+        window.setTimeout(function () {
+          if (document.getElementById('boot')) paint('');
+        }, 25000);
+      })();
+    </script>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

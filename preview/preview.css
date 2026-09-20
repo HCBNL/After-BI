@@ -1,0 +1,12 @@
+/*
+ * The app's real stylesheet, plus a pointer at where the classes actually live.
+ *
+ * Tailwind v4 detects content relative to the CSS file and the Vite root, and
+ * this harness's root is `preview/` — so without this `@source` it scans two
+ * mock files, finds forty utilities and emits a 13KB stylesheet. The screens
+ * then render with correct markup and almost no styling, which looks like a
+ * design bug and is not one. The shipped build has the whole of `src` under its
+ * root and needs no such hint.
+ */
+@import '../src/index.css';
+@source '../src/**/*.{ts,tsx}';
