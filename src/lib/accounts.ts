@@ -40,6 +40,8 @@ export interface NewAccount {
   phone?: string;
   distributorId?: string;
   distributorCategory?: PriceTier;
+  /** Sales reps: the distributor accounts they manage. */
+  distributorIds?: string[];
   warehouseIds?: string[];
 }
 
@@ -99,6 +101,7 @@ export async function createAccount(input: NewAccount): Promise<{ uid: string; p
     ...(input.phone?.trim() ? { phone: input.phone.trim() } : {}),
     ...(input.distributorId ? { distributorId: input.distributorId } : {}),
     ...(input.distributorCategory ? { distributorCategory: input.distributorCategory } : {}),
+    ...(input.distributorIds?.length ? { distributorIds: input.distributorIds } : {}),
     ...(input.warehouseIds?.length ? { warehouseIds: input.warehouseIds } : {}),
   };
 

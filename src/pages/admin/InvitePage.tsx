@@ -10,6 +10,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { RefreshCw, UserPlus, Users } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Credentials } from '@/components/Credentials';
+import { Checklist } from '@/components/Checklist';
 import { Alert, Button, Field, Input, LinkButton, Select } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
@@ -42,6 +43,7 @@ export default function InvitePage() {
   const [role, setRole] = useState<TeamRole>('sales_rep');
   const [distributorId, setDistributorId] = useState('');
   const [warehouseIds, setWarehouseIds] = useState<string[]>([]);
+  const [distributorIds, setDistributorIds] = useState<string[]>([]);
   const [password, setPassword] = useState(() => suggestPassword());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +51,8 @@ export default function InvitePage() {
 
   /* Only a super admin can make another super admin; the rules say the same. */
   const roles = useMemo(() => ORDER.filter((r) => r !== 'super_admin' || user?.role === 'super_admin'), [user?.role]);
-  const needsDistributor = role === 'distributor' || role === 'sales_rep';
+  const needsDistributor = role === 'distributor';
+  const needsAccounts = role === 'sales_rep';
   const needsDepots = role === 'warehouse_manager';
   const root = user ? PORTAL_ROOT[user.role] : '/';
 
@@ -60,6 +63,7 @@ export default function InvitePage() {
     setPhone('');
     setDistributorId('');
     setWarehouseIds([]);
+    setDistributorIds([]);
     setPassword(suggestPassword());
     setError(null);
     setMade(null);
@@ -77,7 +81,7 @@ export default function InvitePage() {
       return;
     }
     if (needsDistributor && !distributorId) {
-      setError('Choose the distributor this person acts for.');
+      setError('Choose the distributor this login belongs to.');
       return;
     }
 
@@ -94,6 +98,7 @@ export default function InvitePage() {
         distributorId: needsDistributor ? distributorId : undefined,
         distributorCategory: needsDistributor ? distributor?.category : undefined,
         warehouseIds: needsDepots ? warehouseIds : undefined,
+        distributorIds: needsAccounts ? distributorIds : undefined,
       });
       /* The distributor's own login is remembered on its record. Not fatal if it fails. */
       if (role === 'distributor' && distributor && !distributor.userId) {
@@ -173,7 +178,7 @@ export default function InvitePage() {
             </Field>
 
             {needsDistributor && (
-              <Field label="Distributor" required hint="Whose account they act for">
+              <Field label="Distributor" required hint="The distributor this login belongs to">
                 <Select value={distributorId} onChange={(e) => setDistributorId(e.target.value)}>
                   <option value="">Choose…</option>
                   {distributors.map((d) => (
@@ -183,6 +188,21 @@ export default function InvitePage() {
                   ))}
                 </Select>
               </Field>
+            )}
+
+            {needsAccounts && (
+              <fieldset>
+                <legend className="mb-1 text-[13px] font-semibold text-primary">Distributors they manage</legend>
+                <p className="mb-2 text-[12px] leading-snug text-muted">
+                  Optional, and changeable later. A distributor can have several reps.
+                </p>
+                <Checklist
+                  items={distributors.map((d) => ({ id: d.id, label: d.company }))}
+                  value={distributorIds}
+                  onChange={setDistributorIds}
+                  empty="No distributors yet. Add them under Distributors first."
+                />
+              </fieldset>
             )}
 
             {needsDepots && (

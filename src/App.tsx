@@ -213,6 +213,7 @@ export default function App() {
 
             <Route path="orders" element={<OrdersPage />} />
             <Route path="approvals" element={<ApprovalsPage />} />
+            <Route path="deliveries" element={<DeliveriesPage />} />
             <Route path="sell-out" element={<SellOutPage />} />
             <Route path="catalogue" element={<CataloguePage />} />
             <Route path="leads" element={<LeadsPage />} />

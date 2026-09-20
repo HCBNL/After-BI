@@ -24,6 +24,9 @@ import { useOrg } from '@/context/OrgContext';
 import { saveOrgSettings } from '@/lib/db';
 import { naira } from '@/lib/format';
 import type { BankAccount, OrgSettings } from '@/types';
+import { ROLE_LABEL, type Role } from '@/types';
+import { APPROVER_ROLES } from '@/lib/approvals';
+import { Checklist } from '@/components/Checklist';
 
 export default function SettingsPage() {
   const { settings, warehouses, reload } = useOrg();
@@ -257,7 +260,7 @@ export default function SettingsPage() {
           <div className="mt-4 space-y-4">
             <Field
               label="Approval threshold"
-              hint="Set this where it catches the orders worth reading. Too low and three administrators spend their mornings approving ₦40,000 orders until they stop reading them, which is worse than no approval at all. Zero means nothing needs a signature."
+              hint="Orders at or above this figure need a signature. Zero means none do."
             >
               <Input
                 type="number"
@@ -272,6 +275,19 @@ export default function SettingsPage() {
                 {draft.approvalThreshold
                   ? `Over ${naira(draft.approvalThreshold)}, an order needs a signature.`
                   : 'Every order is approved the moment it is raised.'}
+              </p>
+            </Field>
+            <Field label="Who signs" hint="Any one of them can approve. Tick nobody and your super admin signs.">
+              <Checklist
+                items={APPROVER_ROLES.map((r) => ({ id: r, label: ROLE_LABEL[r] }))}
+                value={draft.approverRoles ?? []}
+                onChange={(next) => set('approverRoles', next as Role[])}
+                empty=""
+              />
+              <p className="mt-2 text-[12px] leading-snug text-muted">
+                {draft.approverRoles?.length
+                  ? 'Any one of them signs. If nobody holds those roles, your super admin does.'
+                  : 'Your super admin signs every order over the threshold.'}
               </p>
             </Field>
 

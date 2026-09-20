@@ -59,7 +59,7 @@ export default function SetupPage() {
     },
     {
       id: 'people',
-      title: 'Invite your team',
+      title: 'Add your team',
       body: 'Reps raise orders, the warehouse fulfils them, finance takes the money. Each role sees a different home screen, built from what that job actually does.',
       to: `${root}/invite`,
       done: false,

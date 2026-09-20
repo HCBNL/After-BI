@@ -6,9 +6,10 @@ import { railFor, resolveTo, PORTAL_ROOT } from '@/lib/tiles';
 import type { Role } from '@/types';
 
 /**
- * The laptop's navigation: every section open, its main jobs listed, and it
- * never scrolls. The shortlist is `RAIL` in tiles.ts; a few `extra` rows show
- * only on a screen tall enough for them. Everything else is in All actions.
+ * The laptop's navigation, in three parts: the mark and Home pinned at the
+ * top, the sections in the middle — which scroll when the screen is too short
+ * for them, with a soft fade at either end to say there is more — and All
+ * actions and Sign out pinned at the bottom.
  */
 export function NavRail({ role, onSignOut }: { role: Role; onSignOut: () => void }) {
   const root = PORTAL_ROOT[role];
@@ -23,21 +24,22 @@ export function NavRail({ role, onSignOut }: { role: Role; onSignOut: () => void
         'border-r border-hairline surface-card',
       )}
     >
-      <div className="flex h-14 shrink-0 items-center px-5">
-        <Wordmark />
+      <div className="shrink-0 px-2.5">
+        <div className="flex h-14 items-center px-2.5">
+          <Wordmark />
+        </div>
+        <RailLink to={root} end icon={<Home size={17} aria-hidden />} label="Home" />
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 pb-2 pt-1">
-        <RailLink to={root} end icon={<Home size={17} aria-hidden />} label="Home" />
-
+      <div className="rail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-2.5 pb-5 pt-1">
         {sections.map(({ group, items }) => (
           <section key={group} aria-label={group} className="mt-3.5">
             <p className="px-3 pb-1 text-[12px] font-semibold text-muted">{group}</p>
             <ul className="space-y-0.5">
-              {items.map(({ action, extra }) => {
+              {items.map(({ action }) => {
                 const Icon = action.icon;
                 return (
-                  <li key={action.id} className={extra ? 'rail-extra' : undefined}>
+                  <li key={action.id}>
                     <RailLink to={resolveTo(action, role)} icon={<Icon size={17} aria-hidden />} label={action.label} />
                   </li>
                 );
@@ -47,7 +49,7 @@ export function NavRail({ role, onSignOut }: { role: Role; onSignOut: () => void
         ))}
       </div>
 
-      <div className="border-t border-hairline px-2.5 py-3">
+      <div className="shrink-0 border-t border-hairline px-2.5 py-3">
         <RailLink to={`${root}/all`} icon={<LayoutGrid size={17} aria-hidden />} label="All actions" />
         <button
           type="button"

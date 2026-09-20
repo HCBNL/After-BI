@@ -42,7 +42,9 @@ export default function StatementPage() {
   const brand = useBrand();
   const toast = useToast();
 
-  const scoped = partnerScope(user);
+  const scope = partnerScope(user);
+  const scoped = scope && scope.length === 1 ? scope[0] : null;
+  const choices = scope ? distributors.filter((d) => scope.includes(d.id)) : distributors;
   const [distributorId, setDistributorId] = useState(scoped ?? '');
 
   /*
@@ -54,7 +56,7 @@ export default function StatementPage() {
    * nobody has chosen one.
    */
   useEffect(() => {
-    if (!distributorId && distributors.length) setDistributorId(scoped ?? distributors[0].id);
+    if (!distributorId && choices.length) setDistributorId(scoped ?? choices[0].id);
   }, [distributors, distributorId, scoped]);
 
   const distributor = distributors.find((d) => d.id === distributorId);
@@ -157,7 +159,7 @@ export default function StatementPage() {
             className="max-w-sm"
             aria-label="Distributor"
           >
-            {distributors.map((d) => (
+            {choices.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.company}
               </option>

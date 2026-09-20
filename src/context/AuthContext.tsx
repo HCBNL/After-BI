@@ -114,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             photoURL: (data.photoURL as string) ?? undefined,
             orgId: orgId ?? undefined,
             distributorId: data.distributorId as string | undefined,
+            distributorIds: Array.isArray(data.distributorIds) ? (data.distributorIds as string[]) : undefined,
             distributorCategory: data.distributorCategory,
             territories: data.territories as string[] | undefined,
             warehouseIds: data.warehouseIds as string[] | undefined,

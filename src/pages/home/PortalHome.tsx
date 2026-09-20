@@ -93,7 +93,7 @@ function tipsFor(role: Role, root: string): Tip[] {
         tone: 'ink',
         icon: Settings,
         title: 'Decide who signs big orders',
-        body: 'Leave the approval threshold at zero until more than one person raises orders.',
+        body: 'Set a threshold and choose who signs. Choose nobody and it comes to you.',
         cta: { label: 'Open settings', to: `${root}/settings` },
       },
       {

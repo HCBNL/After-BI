@@ -370,7 +370,8 @@ function RaiseReturnModal({
   const { distributors, products } = useOrg();
   const toast = useToast();
 
-  const scoped = user?.distributorId;
+  const scope = partnerScope(user);
+  const scoped = scope && scope.length === 1 ? scope[0] : undefined;
   const [distributorId, setDistributorId] = useState(scoped ?? '');
   const [productId, setProductId] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -424,7 +425,7 @@ function RaiseReturnModal({
         <Field label="Account" required>
           <Select value={distributorId} disabled={Boolean(scoped)} onChange={(e) => setDistributorId(e.target.value)}>
             <option value="">Choose…</option>
-            {distributors.map((d) => (
+            {distributors.filter((d) => !scope || scope.includes(d.id)).map((d) => (
               <option key={d.id} value={d.id}>
                 {d.company}
               </option>

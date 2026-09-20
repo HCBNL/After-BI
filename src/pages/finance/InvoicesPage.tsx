@@ -364,6 +364,8 @@ function RaiseInvoiceModal({
      how a distributor gets billed twice for the same delivery. */
   const { data: orders } = useAsyncOrders(
     async () => {
+      /* Only finance raises invoices; nobody else needs this list. */
+      if (!user || !isFinance(user.role)) return [];
       const [fulfilled, invoices] = await Promise.all([
         listOrders({ status: 'fulfilled', max: 200 }),
         listInvoices({ max: 500 }),
@@ -512,7 +514,7 @@ function PaymentModal({
    * in this component runs on every render; only the markup is conditional.
    */
   const { data: payments } = useAsync(
-    async () => (invoice ? listPayments(invoice.id) : []),
+    async () => (invoice ? listPayments(invoice.id, invoice.distributorId) : []),
     [invoice?.id, invoice?.amountPaid],
   );
 

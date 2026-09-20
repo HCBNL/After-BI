@@ -52,7 +52,7 @@ export default function TargetsPage() {
       const from = `${period}-01`;
       const to = `${period}-31`;
       const [targets, sales] = await Promise.all([
-        listTargets(period),
+        listTargets(period, scope ? [user?.id ?? '', ...scope] : null),
         listSales({ distributorId: scope, from, to, max: 1000 }),
       ]);
       return { targets, sales };
@@ -74,7 +74,7 @@ export default function TargetsPage() {
     }
 
     return data.targets
-      .filter((target) => (isAdmin(user?.role ?? 'distributor') ? true : target.ownerId === user?.id || target.ownerId === user?.distributorId))
+      .filter((target) => (isAdmin(user?.role ?? 'distributor') ? true : target.ownerId === user?.id || (scope ?? []).includes(target.ownerId)))
       .map((target) => ({
         ...target,
         achieved: achieved.get(target.ownerId) ?? 0,
@@ -277,7 +277,10 @@ function TargetModal({
   const [busy, setBusy] = useState(false);
   const [seed, setSeed] = useState<string | undefined>(undefined);
 
-  const { data: members } = useAsyncMembers(() => listMembers(), []);
+  const { data: members } = useAsyncMembers(
+    () => (user && isAdmin(user.role) ? listMembers() : Promise.resolve([] as Awaited<ReturnType<typeof listMembers>>)),
+    [user?.role],
+  );
 
   if (target && target.id !== seed) {
     setSeed(target.id);

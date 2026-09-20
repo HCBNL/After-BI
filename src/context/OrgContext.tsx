@@ -28,7 +28,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { getOrgSettings, listDistributors, listProducts, listWarehouses } from '@/lib/db';
+import { getOrgSettings, listDistributors, listDistributorsById, listProducts, listWarehouses } from '@/lib/db';
+import { partnerScope } from '@/lib/roles';
 import { getActiveOrg } from '@/lib/tenant';
 import { useAuth } from '@/context/AuthContext';
 import type { Distributor, OrgSettings, Product, Warehouse } from '@/types';
@@ -62,6 +63,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const [nonce, setNonce] = useState(0);
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
+  /* A distributor or rep loads only the accounts it works on — the rules allow no more. */
+  const scope = partnerScope(user);
 
   useEffect(() => {
     /* An owner has no organisation. The platform console reads tenants, not
@@ -75,7 +78,12 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
 
-    Promise.all([getOrgSettings(), listProducts(), listDistributors(), listWarehouses()])
+    Promise.all([
+      getOrgSettings(),
+      listProducts(),
+      scope ? listDistributorsById(scope) : listDistributors(),
+      listWarehouses(),
+    ])
       .then(([s, p, d, w]) => {
         if (!live) return;
         setSettings(s);
@@ -93,7 +101,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     return () => {
       live = false;
     };
-  }, [user?.id, user?.orgId, nonce]);
+  }, [user?.id, user?.orgId, nonce, scope]);
 
   const value = useMemo<OrgValue>(() => {
     const productMap = new Map(products.map((p) => [p.id, p]));

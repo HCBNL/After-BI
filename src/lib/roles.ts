@@ -112,20 +112,32 @@ export function isPartner(role: Role): boolean {
 
 /* ------------------------------------------------------------------ scoping */
 
+const SCOPES = new Map<string, string[]>();
+
 /**
- * Which distributor's data this account may see, or `null` for all of them.
- *
- * The one question every list screen has to ask before it queries. Returning
- * `null` rather than `undefined` or an empty string is deliberate: `null` means
- * "no restriction", and a caller that forgets to handle it gets a type error
- * rather than a `where('distributorId','==',undefined)`, which Firestore
- * rejects at runtime with a message that does not mention scoping at all.
+ * The distributor accounts a partner works on. `null` means every account
+ * (office roles). A distributor login has its own account; a sales rep has
+ * every account assigned to them — so one account can have several reps
+ * (branches, split books) and one rep can cover several accounts.
+ * The same list always comes back as the same array, so it is safe to use
+ * in a hook's dependencies.
  */
-export function partnerScope(user: Pick<UserProfile, 'role' | 'distributorId'> | null): string | null {
+export function partnerScope(
+  user: (Pick<UserProfile, 'role'> & Partial<Pick<UserProfile, 'distributorId' | 'distributorIds'>>) | null,
+): string[] | null {
   if (!user) return null;
   const role = normaliseRole(user.role);
-  if (role === 'distributor' || role === 'sales_rep') return user.distributorId ?? null;
-  return null;
+  if (role !== 'distributor' && role !== 'sales_rep') return null;
+  const own = user.distributorId ? [user.distributorId] : [];
+  const ids = role === 'distributor' ? own : [...(user.distributorIds ?? []), ...own];
+  const unique = [...new Set(ids.filter(Boolean))].sort();
+  const key = unique.join('|');
+  let hit = SCOPES.get(key);
+  if (!hit) {
+    hit = unique;
+    SCOPES.set(key, hit);
+  }
+  return hit;
 }
 
 /**

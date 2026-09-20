@@ -141,6 +141,8 @@ export interface UserProfile {
 
   /** For a `distributor` or a `sales_rep`: the partner they act for. */
   distributorId?: string;
+  /** Sales reps: every distributor account they manage. An account may have several reps. */
+  distributorIds?: string[];
   /** Snapshot of that partner's price tier, so the catalogue needs no join. */
   distributorCategory?: PriceTier;
 
@@ -565,6 +567,8 @@ export interface OrgSettings {
   defaultWarehouseId?: string;
   /** Naira ceiling above which an order needs a second signature. */
   approvalThreshold?: number;
+  /** Roles that sign orders over the threshold. None chosen: the super admin signs. */
+  approverRoles?: Role[];
   /**
    * The accounts a distributor may pay into.
    *

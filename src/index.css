@@ -648,9 +648,11 @@
     .ab-panel { margin-inline: calc((min(1400px, 100cqw) - 100cqw) / 2 - 1.25rem); }
   }
 
-  /* The laptop rail's optional rows, only on a screen tall enough for them. */
-  @media (max-height: 820px) {
-    .rail-extra { display: none; }
+  /* The laptop rail's middle scrolls; a soft fade at each end says there is more. */
+  .rail-scroll {
+    scrollbar-width: thin;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 24px), transparent 100%);
   }
 
   /*

@@ -32,8 +32,9 @@ import { Alert, Badge, Button, ConfirmDialog, Divider, Drawer, Field, Hint, Sele
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
-import { cancelOrder, decideOrder, fulfilOrder, getOrder, listMembers, recallOrder, submitOrder } from '@/lib/db';
-import { isAdmin, isOperations } from '@/lib/roles';
+import { cancelOrder, decideOrder, fulfilOrder, getOrder, listApproverPool, recallOrder, submitOrder } from '@/lib/db';
+import { isOperations } from '@/lib/roles';
+import { pickApprovers } from '@/lib/approvals';
 import { orderAmendment } from '@/lib/amend';
 import { formatDateTime, naira, count } from '@/lib/format';
 import { printDocument } from '@/lib/print';
@@ -80,7 +81,7 @@ export function OrderDrawer({
    * The pool of approvers for a draft being sent on, same as `NewOrderDrawer`
    * builds when raising one.
    */
-  const { data: members } = useAsync(() => listMembers(), []);
+  const { data: members } = useAsync(() => listApproverPool(), []);
 
   if (!orderId) return null;
 
@@ -109,7 +110,7 @@ export function OrderDrawer({
   };
 
   const canDecide =
-    user && order?.status === 'pending_approval' && (order.approvers ?? []).includes(user.id);
+    user && order?.status === 'pending_approval' && ((order.approvers ?? []).includes(user.id) || user.role === 'super_admin');
 
   const canFulfil = user && order?.status === 'approved' && isOperations(user.role);
 
@@ -119,13 +120,7 @@ export function OrderDrawer({
   /* The one source of truth for edit / recall / cancel. See `lib/amend.ts`. */
   const amend = orderAmendment(user, order ?? null);
 
-  const approversFor = () =>
-    !user
-      ? []
-      : (members ?? [])
-          .filter((m) => isAdmin(m.role) && m.id !== user.id)
-          .slice(0, 3)
-          .map((m) => ({ uid: m.id, name: `${m.firstName} ${m.lastName}` }));
+  const approversFor = () => (user ? pickApprovers(members, settings, user) : []);
 
   return (
     <Drawer

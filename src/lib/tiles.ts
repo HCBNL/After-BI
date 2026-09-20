@@ -235,7 +235,7 @@ export const ACTIONS: AppAction[] = [
     description: 'Confirm what arrived, against what was sent. A shortage raises a return here.',
     icon: Truck,
     to: 'deliveries',
-    roles: ['distributor', 'warehouse_manager', 'operations_manager'],
+    roles: ['super_admin', 'admin', 'distributor', 'warehouse_manager', 'operations_manager'],
     group: 'Daily',
   },
 

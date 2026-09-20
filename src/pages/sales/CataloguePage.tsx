@@ -35,7 +35,8 @@ export default function CataloguePage() {
    * internal: a chooser, because an admin looking at the catalogue is usually
    * answering "what would this cost an MT account" on the phone.
    */
-  const ownTier = user?.distributorCategory;
+  /* A distributor sees its own tier; a rep covering several accounts sees them all. */
+  const ownTier = user?.role === 'distributor' ? user.distributorCategory : undefined;
   const [tier, setTier] = useState<PriceTier>(ownTier ?? 'OT');
   const locked = Boolean(ownTier);
   const shown = locked ? ownTier! : tier;

@@ -52,7 +52,7 @@
  * side.
  */
 
-import { isAdmin, normaliseRole } from './roles';
+import { isAdmin, normaliseRole, partnerScope } from './roles';
 import type {
   Invoice,
   InvoiceStatus,
@@ -196,7 +196,7 @@ export function amendmentFor(user: UserProfile | null, subject: Subject): Verdic
    * of the organisation selling to them. The rules enforce the same ordering.
    */
   if (role === 'distributor' || role === 'sales_rep') {
-    if (subject.distributorId && subject.distributorId !== user.distributorId) {
+    if (subject.distributorId && !(partnerScope(user) ?? []).includes(subject.distributorId)) {
       return NO(subject.stage, `This ${subject.noun} belongs to another account.`);
     }
   }
@@ -398,7 +398,7 @@ export function distributorAccess(
   const admin = isAdmin(role);
   const office = role === 'staff';
   const rep = role === 'sales_rep';
-  const own = Boolean(distributorId && user.distributorId === distributorId);
+  const own = Boolean(distributorId && (partnerScope(user) ?? []).includes(distributorId));
 
   if (admin) return { canEditContact: true, canEditTerms: true, reason: '' };
 

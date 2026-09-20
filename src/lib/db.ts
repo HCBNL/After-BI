@@ -26,6 +26,7 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -41,6 +42,7 @@ import {
   type DocumentData,
   type QueryConstraint,
 } from 'firebase/firestore';
+import { APPROVER_POOL } from './approvals';
 import { db } from './firebase';
 import { COLLECTIONS, orgPath, requireOrg, TENANTS, type CollectionKey } from './tenant';
 import { naira, todayISO } from './format';
@@ -175,6 +177,19 @@ export async function updateProfile(uid: string, patch: Partial<UserProfile>): P
 }
 
 /**
+ * The distributor accounts a sales rep manages. Replaces the whole list, and
+ * clears the single link older reps were given, so it lives in one place.
+ */
+export async function setRepDistributors(uid: string, distributorIds: string[]): Promise<void> {
+  await updateDoc(doc(db, 'users', uid), {
+    distributorIds: [...new Set(distributorIds)],
+    distributorId: deleteField(),
+    distributorCategory: deleteField(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
  * Everybody in this organisation.
  *
  * Queried by `orgId` on the root collection rather than from a subtree — the
@@ -183,6 +198,20 @@ export async function updateProfile(uid: string, patch: Partial<UserProfile>): P
  * match the filter. See the `users` block in `firestore.rules`; if that rule
  * is ever loosened, this function becomes a way to enumerate the platform.
  */
+/**
+ * The people who can sign an order, found one role at a time — the only part
+ * of the team a distributor or rep is allowed to list.
+ */
+export async function listApproverPool(): Promise<UserProfile[]> {
+  const orgId = requireOrg();
+  const snaps = await Promise.all(
+    APPROVER_POOL.map((role) =>
+      getDocs(query(collection(db, 'users'), where('orgId', '==', orgId), where('role', '==', role), fsLimit(500))),
+    ),
+  );
+  return byText<UserProfile>('firstName')(snaps.flatMap((snap) => snap.docs.map((d) => shape<UserProfile>(d.id, d.data()))));
+}
+
 export async function listMembers(): Promise<UserProfile[]> {
   const snap = await getDocs(
     query(collection(db, 'users'), where('orgId', '==', requireOrg()), fsLimit(500)),
@@ -245,6 +274,15 @@ export async function retireProduct(id: string): Promise<void> {
 
 /* ----------------------------------------------------------- distributors */
 
+/** The given accounts, one read each — how a distributor or rep loads only its own. */
+export async function listDistributorsById(ids: string[]): Promise<Distributor[]> {
+  const snaps = await Promise.all(ids.map((id) => getDoc(doc(db, orgPath('distributors'), id))));
+  return snaps
+    .filter((snap) => snap.exists())
+    .map((snap) => shape<Distributor>(snap.id, snap.data()))
+    .sort((a, b) => a.company.localeCompare(b.company));
+}
+
 export function listDistributors(): Promise<Distributor[]> {
   return list<Distributor>('distributors', orderBy('company'));
 }
@@ -267,21 +305,58 @@ export async function saveDistributor(
 
 /* ----------------------------------------------------------------- orders */
 
+/**
+ * Which distributor accounts a list covers: one id, several, or `null` for
+ * all. An empty list covers none — a rep with nothing assigned sees nothing.
+ */
+export type DistributorScope = string | string[] | null | undefined;
+
+/**
+ * Runs a list once per account and merges the results. One `==` query per
+ * account keeps every query provably inside the rules (a partner may only
+ * read its own accounts) and is served by the same indexes as before.
+ */
+async function scopedList<T>(
+  scope: DistributorScope,
+  run: (clause: QueryConstraint[]) => Promise<T[]>,
+  sort: (rows: T[]) => T[],
+  max?: number,
+): Promise<T[]> {
+  let rows: T[];
+  if (scope == null || scope === '') {
+    rows = await run([]);
+  } else {
+    const ids = [...new Set(Array.isArray(scope) ? scope : [scope])].filter(Boolean);
+    if (!ids.length) return [];
+    rows = (await Promise.all(ids.map((id) => run([where('distributorId', '==', id)])))).flat();
+  }
+  const sorted = sort(rows);
+  return max ? sorted.slice(0, max) : sorted;
+}
+
 export interface OrderFilter {
   status?: OrderStatus;
   /** Set by `partnerScope()` — a distributor or rep sees only their account. */
-  distributorId?: string | null;
+  distributorId?: DistributorScope;
   max?: number;
 }
 
 export async function listOrders(filter: OrderFilter = {}): Promise<Order[]> {
-  const constraints: QueryConstraint[] = [];
-  if (filter.status) constraints.push(where('status', '==', filter.status));
-  if (filter.distributorId) constraints.push(where('distributorId', '==', filter.distributorId));
-  constraints.push(orderBy('createdAt', 'desc'));
   /* Always capped: the rules refuse an uncapped list to a partner. */
-  constraints.push(fsLimit(filter.max ?? 500));
-  return list<Order>('orders', ...constraints);
+  const max = filter.max ?? 500;
+  return scopedList<Order>(
+    filter.distributorId,
+    (clause) =>
+      list<Order>(
+        'orders',
+        ...(filter.status ? [where('status', '==', filter.status)] : []),
+        ...clause,
+        orderBy('createdAt', 'desc'),
+        fsLimit(max),
+      ),
+    newestFirst<Order>('createdAt'),
+    max,
+  );
 }
 
 export const getOrder = (id: string) => one<Order>('orders', id);
@@ -389,12 +464,9 @@ export async function decideOrder(
     ];
 
     const rejected = approvals.some((a) => a.decision === 'rejected');
-    const required = order.approvers ?? [];
-    const allSigned = required.every((uid) =>
-      approvals.some((a) => a.uid === uid && a.decision === 'approved'),
-    );
-
-    const status: OrderStatus = rejected ? 'rejected' : allSigned ? 'approved' : 'pending_approval';
+    /* One signature is enough: any approver named on the order, or a super admin. */
+    const signed = approvals.some((a) => a.decision === 'approved');
+    const status: OrderStatus = rejected ? 'rejected' : signed ? 'approved' : 'pending_approval';
 
     tx.update(ref, {
       approvals,
@@ -609,15 +681,22 @@ export async function setThreshold(
 /* ------------------------------------------------------------------ sales */
 
 export function listSales(
-  filter: { distributorId?: string | null; from?: string; to?: string; max?: number } = {},
+  filter: { distributorId?: DistributorScope; from?: string; to?: string; max?: number } = {},
 ): Promise<Sale[]> {
-  const constraints: QueryConstraint[] = [];
-  if (filter.distributorId) constraints.push(where('distributorId', '==', filter.distributorId));
-  if (filter.from) constraints.push(where('saleDate', '>=', filter.from));
-  if (filter.to) constraints.push(where('saleDate', '<=', filter.to));
-  constraints.push(orderBy('saleDate', 'desc'));
-  if (filter.max) constraints.push(fsLimit(filter.max));
-  return list<Sale>('sales', ...constraints);
+  return scopedList<Sale>(
+    filter.distributorId,
+    (clause) =>
+      list<Sale>(
+        'sales',
+        ...clause,
+        ...(filter.from ? [where('saleDate', '>=', filter.from)] : []),
+        ...(filter.to ? [where('saleDate', '<=', filter.to)] : []),
+        orderBy('saleDate', 'desc'),
+        ...(filter.max ? [fsLimit(filter.max)] : []),
+      ),
+    newestFirst<Sale>('saleDate'),
+    filter.max,
+  );
 }
 
 export async function recordSale(input: {
@@ -674,18 +753,30 @@ export async function saveLead(lead: Partial<Lead> & { id?: string }): Promise<s
 /* ---------------------------------------------------------------- finance */
 
 export function listInvoices(
-  filter: { distributorId?: string | null; status?: Invoice['status']; max?: number } = {},
+  filter: { distributorId?: DistributorScope; status?: Invoice['status']; max?: number } = {},
 ): Promise<Invoice[]> {
-  const constraints: QueryConstraint[] = [];
-  if (filter.distributorId) constraints.push(where('distributorId', '==', filter.distributorId));
-  if (filter.status) constraints.push(where('status', '==', filter.status));
-  constraints.push(orderBy('issuedOn', 'desc'));
-  if (filter.max) constraints.push(fsLimit(filter.max));
-  return list<Invoice>('invoices', ...constraints);
+  return scopedList<Invoice>(
+    filter.distributorId,
+    (clause) =>
+      list<Invoice>(
+        'invoices',
+        ...clause,
+        ...(filter.status ? [where('status', '==', filter.status)] : []),
+        orderBy('issuedOn', 'desc'),
+        ...(filter.max ? [fsLimit(filter.max)] : []),
+      ),
+    newestFirst<Invoice>('issuedOn'),
+    filter.max,
+  );
 }
 
-export function listPayments(invoiceId: string): Promise<Payment[]> {
-  return list<Payment>('payments', where('invoiceId', '==', invoiceId)).then(newestFirst<Payment>('paidOn'));
+export function listPayments(invoiceId: string, distributorId?: string): Promise<Payment[]> {
+  /* The account filter lets a distributor read its own payments under the rules. */
+  return list<Payment>(
+    'payments',
+    where('invoiceId', '==', invoiceId),
+    ...(distributorId ? [where('distributorId', '==', distributorId)] : []),
+  ).then(newestFirst<Payment>('paidOn'));
 }
 
 /**
@@ -784,16 +875,25 @@ export async function creditPosition(
 
 /* ------------------------------------------------------------- returns */
 
-export function listReturns(distributorId?: string | null): Promise<ReturnRecord[]> {
-  return distributorId
-    ? list<ReturnRecord>('returns', where('distributorId', '==', distributorId)).then(newestFirst<ReturnRecord>('createdAt'))
-    : list<ReturnRecord>('returns', orderBy('createdAt', 'desc'));
+export function listReturns(scope?: DistributorScope): Promise<ReturnRecord[]> {
+  if (scope == null || scope === '') return list<ReturnRecord>('returns', orderBy('createdAt', 'desc'));
+  return scopedList<ReturnRecord>(
+    scope,
+    (clause) => list<ReturnRecord>('returns', ...clause),
+    newestFirst<ReturnRecord>('createdAt'),
+  );
 }
 
 /* ---------------------------------------------------------------- targets */
 
-export function listTargets(period: string): Promise<Target[]> {
-  return list<Target>('targets', where('period', '==', period)).then(byText<Target>('ownerName'));
+export async function listTargets(period: string, owners?: string[] | null): Promise<Target[]> {
+  if (!owners) return list<Target>('targets', where('period', '==', period)).then(byText<Target>('ownerName'));
+  /* A partner reads only its own targets and its accounts' — one query each. */
+  const ids = [...new Set(owners)].filter(Boolean);
+  const rows = await Promise.all(
+    ids.map((id) => list<Target>('targets', where('period', '==', period), where('ownerId', '==', id))),
+  );
+  return byText<Target>('ownerName')(rows.flat());
 }
 
 /* ------------------------------------------------------------- home summary */
@@ -819,7 +919,7 @@ export interface HomeSummary {
 export async function getHomeSummary(input: {
   role: Role;
   uid: string;
-  distributorId?: string | null;
+  distributorId?: DistributorScope;
 }): Promise<HomeSummary> {
   const scope = input.distributorId ?? undefined;
   const monthStart = `${todayISO().slice(0, 7)}-01`;
@@ -827,7 +927,8 @@ export async function getHomeSummary(input: {
   const [orders, pending, stock, sales, invoices] = await Promise.all([
     listOrders({ distributorId: scope, max: 200 }),
     listOrders({ status: 'pending_approval', distributorId: scope, max: 100 }),
-    lowStock(),
+    /* Stock is inside information; a distributor or rep never reads it. */
+    input.distributorId == null ? lowStock() : Promise.resolve([] as StockPosition[]),
     listSales({ distributorId: scope, from: monthStart, max: 500 }),
     listInvoices({ distributorId: scope, max: 300 }),
   ]);

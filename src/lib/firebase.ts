@@ -68,5 +68,7 @@ export const auth = getAuth(app);
  * the second tab throw on open.
  */
 export const db = initializeFirestore(app, {
+  /* A field left undefined is skipped rather than failing the whole write. */
+  ignoreUndefinedProperties: true,
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 });

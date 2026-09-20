@@ -30,14 +30,20 @@ import {
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
-import { listMembers, updateProfile } from '@/lib/db';
-import { fullName } from '@/lib/roles';
+import { listMembers, setRepDistributors, updateProfile } from '@/lib/db';
+import { fullName, partnerScope } from '@/lib/roles';
+import { Checklist } from '@/components/Checklist';
 import { PORTAL_ROOT } from '@/lib/tiles';
 import { formatDate } from '@/lib/format';
 import { ROLE_LABEL, ROLE_SHORT, ROLES, type Role, type UserProfile } from '@/types';
 
 /** Roles an administrator may assign. `owner` is the platform's, never a tenant's. */
 const ASSIGNABLE: Role[] = ROLES.filter((r) => r !== 'owner');
+
+/** The accounts a person works on, as shown in the list: a distributor's own, a rep's assigned. */
+function accountsOf(member: UserProfile | null): string[] {
+  return member && (member.role === 'sales_rep' || member.role === 'distributor') ? [...(partnerScope(member) ?? [])] : [];
+}
 
 export default function UsersPage() {
   const { user } = useAuth();
@@ -86,9 +92,9 @@ export default function UsersPage() {
       header: 'Account',
       hideOnMobile: true,
       cell: (row) => {
-        const distributor = distributors.find((d) => d.id === row.distributorId);
+        const names = accountsOf(row).map((id) => distributors.find((d) => d.id === id)?.company).filter(Boolean);
         return (
-          <span className="text-[12.5px] text-muted">{distributor?.company ?? '—'}</span>
+          <span className="text-[12.5px] text-muted">{names.length ? names.join(', ') : '—'}</span>
         );
       },
     },
@@ -160,6 +166,7 @@ function MemberModal({
 
   const [role, setRole] = useState<Role>(member?.role ?? 'staff');
   const [distributorId, setDistributorId] = useState(member?.distributorId ?? '');
+  const [distributorIds, setDistributorIds] = useState<string[]>(() => (member?.role === 'sales_rep' ? accountsOf(member) : []));
   const [active, setActive] = useState(member?.active !== false);
   const [busy, setBusy] = useState(false);
   const [seed, setSeed] = useState(member?.id);
@@ -168,17 +175,23 @@ function MemberModal({
     setSeed(member.id);
     setRole(member.role);
     setDistributorId(member.distributorId ?? '');
+    setDistributorIds(member.role === 'sales_rep' ? accountsOf(member) : []);
     setActive(member.active !== false);
   }
 
   if (!member) return null;
 
   const self = user?.id === member.id;
-  const needsDistributor = role === 'distributor' || role === 'sales_rep';
+  const needsDistributor = role === 'distributor';
+  /* Only a super admin may change a super admin, or make one. The rules say the same. */
+  const canTouch = user?.role === 'super_admin' || member.role !== 'super_admin';
+  const roleOptions = ASSIGNABLE.filter(
+    (r) => r !== 'super_admin' || user?.role === 'super_admin' || member.role === 'super_admin',
+  );
 
   const save = async () => {
     if (needsDistributor && !distributorId) {
-      toast.warning('Which account?', 'A distributor or rep has to be attached to a distributor.');
+      toast.warning('Which account?', 'A distributor login has to be attached to its distributor.');
       return;
     }
     setBusy(true);
@@ -193,6 +206,7 @@ function MemberModal({
            whenever the attachment changes or it goes stale. */
         distributorCategory: needsDistributor ? distributor?.category : undefined,
       });
+      if (role === 'sales_rep') await setRepDistributors(member.id, distributorIds);
       onSaved();
     } catch (err) {
       toast.error('Not saved', err instanceof Error ? err.message : undefined);
@@ -212,7 +226,7 @@ function MemberModal({
           <Button variant="ghost" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
-          <Button onClick={() => void save()} loading={busy}>
+          <Button onClick={() => void save()} loading={busy} disabled={!canTouch}>
             Save
           </Button>
         </>
@@ -220,8 +234,8 @@ function MemberModal({
     >
       <div className="space-y-4">
         <Field label="Role" required>
-          <Select value={role} onChange={(e) => setRole(e.target.value as Role)} disabled={self}>
-            {ASSIGNABLE.map((r) => (
+          <Select value={role} onChange={(e) => setRole(e.target.value as Role)} disabled={self || !canTouch}>
+            {roleOptions.map((r) => (
               <option key={r} value={r}>
                 {ROLE_LABEL[r]}
               </option>
@@ -230,7 +244,7 @@ function MemberModal({
         </Field>
 
         {needsDistributor && (
-          <Field label="Distributor" required hint="Whose account they act for">
+          <Field label="Distributor" required hint="The distributor this login belongs to">
             <Select value={distributorId} onChange={(e) => setDistributorId(e.target.value)}>
               <option value="">Choose…</option>
               {distributors.map((d) => (
@@ -242,11 +256,47 @@ function MemberModal({
           </Field>
         )}
 
+        {role === 'sales_rep' && (
+
+          <fieldset>
+
+            <legend className="mb-1 text-[13px] font-semibold text-primary">Distributors they manage</legend>
+
+            <p className="mb-2 text-[12px] leading-snug text-muted">
+
+              A distributor can have several reps. Untick an account to hand it to someone else.
+
+            </p>
+
+            <Checklist
+
+              items={distributors.map((d) => ({ id: d.id, label: d.company }))}
+
+              value={distributorIds}
+
+              onChange={setDistributorIds}
+
+              disabled={!canTouch}
+
+              empty="No distributors yet."
+
+            />
+
+          </fieldset>
+
+        )}
+
+        {!canTouch && (
+
+          <p className="text-[12px] leading-snug text-muted">Only a super admin can change another super admin.</p>
+
+        )}
+
         <div className="rounded-xl border border-hairline p-4">
           <Switch
             checked={active}
             onChange={setActive}
-            disabled={self}
+            disabled={self || !canTouch}
             label="Active"
             description={
               active

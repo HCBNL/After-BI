@@ -405,7 +405,8 @@ function SaleModal({
   const { products, distributors } = useOrg();
   const toast = useToast();
 
-  const scoped = user?.distributorId;
+  const scope = partnerScope(user);
+  const scoped = scope && scope.length === 1 ? scope[0] : undefined;
   const [distributorId, setDistributorId] = useState(scoped ?? '');
   const [productId, setProductId] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -470,7 +471,7 @@ function SaleModal({
           >
             <option value="">Choose…</option>
             {distributors
-              .filter((d) => d.status === 'active')
+              .filter((d) => d.status === 'active' && (!scope || scope.includes(d.id)))
               .map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.company}

@@ -45,7 +45,9 @@ export default function ApprovalsPage() {
    * thing that will fall over.
    */
   const mine = useMemo(
-    () => (data ?? []).filter((order) => user && (order.approvers ?? []).includes(user.id)),
+    () => (data ?? []).filter(
+        (order) => user && ((order.approvers ?? []).includes(user.id) || user.role === 'super_admin'),
+      ),
     [data, user],
   );
 
@@ -115,8 +117,7 @@ export default function ApprovalsPage() {
                   */}
                   {order.approvers.length > 1 && (
                     <p className="mt-1 text-[11.5px] text-muted">
-                      {order.approvals?.filter((a) => a.decision === 'approved').length ?? 0} of{' '}
-                      {order.approvers.length} have signed
+                      Any one of the {order.approvers.length} named can sign
                     </p>
                   )}
                 </div>
@@ -124,7 +125,7 @@ export default function ApprovalsPage() {
                 <div className="shrink-0 text-right">
                   <p className="tabular text-[15px] font-extrabold text-primary">{naira(order.total)}</p>
                   <Badge tone="gold" className="mt-1">
-                    Awaiting you
+                    {user && (order.approvers ?? []).includes(user.id) ? 'Awaiting you' : 'Super admin'}
                   </Badge>
                 </div>
               </Link>

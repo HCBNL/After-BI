@@ -19,7 +19,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useOptionalOrg } from '@/context/OrgContext';
 import { updateProfile } from '@/lib/db';
 import { useBrand } from '@/lib/brand';
-import { fullName } from '@/lib/roles';
+import { fullName, partnerScope } from '@/lib/roles';
 import { formatDate } from '@/lib/format';
 import { ROLE_LABEL, TIER_LABEL } from '@/types';
 
@@ -49,7 +49,9 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const distributor = user.distributorId ? org?.distributorById(user.distributorId) : undefined;
+  const distributor =
+    user.role === 'distributor' && user.distributorId ? org?.distributorById(user.distributorId) : undefined;
+  const managed = user.role === 'sales_rep' ? (partnerScope(user) ?? []).length : 0;
 
   const save = async () => {
     setBusy(true);
@@ -81,6 +83,11 @@ export default function ProfilePage() {
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               <Badge tone="brand">{ROLE_LABEL[user.role]}</Badge>
               {distributor && <Badge tone="neutral">{distributor.company}</Badge>}
+              {managed > 0 && (
+                <Badge tone="neutral">
+                  {managed} distributor{managed === 1 ? '' : 's'}
+                </Badge>
+              )}
             </div>
           </div>
         </div>

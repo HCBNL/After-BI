@@ -54,8 +54,9 @@ import {
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
-import { createOrder, creditPosition, listMembers, submitOrder, updateOrder } from '@/lib/db';
-import { isAdmin, partnerScope } from '@/lib/roles';
+import { createOrder, creditPosition, listApproverPool, submitOrder, updateOrder } from '@/lib/db';
+import { partnerScope } from '@/lib/roles';
+import { pickApprovers } from '@/lib/approvals';
 import { naira, count } from '@/lib/format';
 import { TIER_LABEL, type Order, type Product } from '@/types';
 
@@ -75,7 +76,9 @@ export function NewOrderDrawer({
   const { products, distributors, settings } = useOrg();
   const toast = useToast();
 
-  const scoped = partnerScope(user);
+  const scope = partnerScope(user);
+  /* Locked when there is exactly one account to order for. */
+  const scoped = scope && scope.length === 1 ? scope[0] : null;
   const editing = Boolean(order);
 
   const [distributorId, setDistributorId] = useState(order?.distributorId ?? scoped ?? '');
@@ -129,7 +132,7 @@ export function NewOrderDrawer({
 
   /* Who has to sign. Admins are the approver pool; the threshold decides
      whether anybody does. */
-  const { data: members } = useAsync(() => listMembers(), []);
+  const { data: members } = useAsync(() => listApproverPool(), []);
 
   const chosen = useMemo(
     () =>
@@ -192,13 +195,7 @@ export function NewOrderDrawer({
     if (!user || !distributor || !chosen.length) return;
     setBusy(true);
     try {
-      const approvers =
-        send && needsApproval
-          ? (members ?? [])
-              .filter((m) => isAdmin(m.role) && m.id !== user.id)
-              .slice(0, 3)
-              .map((m) => ({ uid: m.id, name: `${m.firstName} ${m.lastName}` }))
-          : [];
+      const approvers = send && needsApproval ? pickApprovers(members, settings, user) : [];
 
       if (order) {
         /*
@@ -273,7 +270,7 @@ export function NewOrderDrawer({
           >
             <option value="">Choose a distributor…</option>
             {distributors
-              .filter((d) => d.status === 'active')
+              .filter((d) => d.status === 'active' && (!scope || scope.includes(d.id)))
               .map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.company} — {TIER_LABEL[d.category]}

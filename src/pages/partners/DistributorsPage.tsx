@@ -34,11 +34,13 @@ import {
 } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { useOrg } from '@/context/OrgContext';
-import { creditPosition, saveDistributor } from '@/lib/db';
+import { creditPosition, listMembers, saveDistributor, setRepDistributors } from '@/lib/db';
+import { fullName, isAdmin, partnerScope } from '@/lib/roles';
+import { Checklist } from '@/components/Checklist';
 import { distributorAccess } from '@/lib/amend';
 import { useAuth } from '@/context/AuthContext';
 import { naira } from '@/lib/format';
-import { PRICE_TIERS, TIER_LABEL, type Distributor, type DistributorStatus } from '@/types';
+import { PRICE_TIERS, TIER_LABEL, type Distributor, type DistributorStatus, type UserProfile } from '@/types';
 
 const STATUS_TONE: Record<DistributorStatus, 'good' | 'gold' | 'neutral'> = {
   active: 'good',
@@ -52,6 +54,17 @@ export default function DistributorsPage() {
 
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Partial<Distributor> | null>(null);
+  const { data: members, reload: reloadMembers } = useAsync(() => listMembers(), []);
+
+  /* Who manages each account: every active rep whose list includes it. */
+  const repsByAccount = useMemo(() => {
+    const map = new Map<string, UserProfile[]>();
+    for (const m of members ?? []) {
+      if (m.role !== 'sales_rep' || m.active === false) continue;
+      for (const id of partnerScope(m) ?? []) map.set(id, [...(map.get(id) ?? []), m]);
+    }
+    return map;
+  }, [members]);
 
   /*
    * One credit read per distributor, fired once when the list lands.
@@ -102,6 +115,17 @@ export default function DistributorsPage() {
       header: 'Tier',
       sortValue: (row) => row.category,
       cell: (row) => <Badge tone="brand">{row.category}</Badge>,
+    },
+    {
+      key: 'reps',
+      header: 'Sales reps',
+      hideOnMobile: true,
+      cell: (row) => {
+        const reps = repsByAccount.get(row.id) ?? [];
+        return (
+          <span className="text-[12.5px] text-muted">{reps.length ? reps.map((r) => r.firstName).join(', ') : '—'}</span>
+        );
+      },
     },
     {
       key: 'outstanding',
@@ -194,6 +218,8 @@ export default function DistributorsPage() {
       />
 
       <DistributorModal
+        members={members ?? []}
+        onAssigned={reloadMembers}
         distributor={editing}
         onClose={() => setEditing(null)}
         onSaved={() => {
@@ -208,12 +234,16 @@ export default function DistributorsPage() {
 
 function DistributorModal({
   distributor,
+  members,
   onClose,
   onSaved,
+  onAssigned,
 }: {
   distributor: Partial<Distributor> | null;
+  members: UserProfile[];
   onClose: () => void;
   onSaved: () => void;
+  onAssigned: () => void;
 }) {
   const { user } = useAuth();
   const toast = useToast();
@@ -223,6 +253,15 @@ function DistributorModal({
   /* Contact details and commercial terms are two different permissions on one
      form. See `distributorAccess`. */
   const access = distributorAccess(user, distributor?.id);
+
+  /* The reps who manage this account. Only an administrator can change them. */
+  const reps = useMemo(() => members.filter((m) => m.role === 'sales_rep' && m.active !== false), [members]);
+  const canAssign = Boolean(user && isAdmin(user.role));
+  const [repIds, setRepIds] = useState<string[]>([]);
+  useEffect(() => {
+    const id = distributor?.id;
+    setRepIds(id ? reps.filter((r) => (partnerScope(r) ?? []).includes(id)).map((r) => r.id) : []);
+  }, [distributor?.id, reps]);
 
   useEffect(() => {
     if (distributor) setDraft(distributor);
@@ -240,12 +279,22 @@ function DistributorModal({
     }
     setBusy(true);
     try {
-      await saveDistributor({
+      const id = await saveDistributor({
         ...draft,
         company: draft.company.trim(),
         contactName: draft.contactName.trim(),
         email: draft.email?.trim() ?? '',
       });
+      if (canAssign) {
+        const changes = reps.filter((rep) => (partnerScope(rep) ?? []).includes(id) !== repIds.includes(rep.id));
+        await Promise.all(
+          changes.map((rep) => {
+            const current = partnerScope(rep) ?? [];
+            return setRepDistributors(rep.id, repIds.includes(rep.id) ? [...current, id] : current.filter((x) => x !== id));
+          }),
+        );
+        if (changes.length) onAssigned();
+      }
       onSaved();
     } catch (err) {
       toast.error('Not saved', err instanceof Error ? err.message : undefined);
@@ -296,7 +345,7 @@ function DistributorModal({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Email" hint="Where the invite goes">
+          <Field label="Email" hint="Their contact email">
             <Input type="email" value={draft.email ?? ''} onChange={(e) => set('email', e.target.value)} />
           </Field>
           <Field label="Phone">
@@ -365,11 +414,26 @@ function DistributorModal({
             disabled={!access.canEditTerms}
             onChange={(e) => set('status', e.target.value as DistributorStatus)}
           >
-            <option value="pending">Pending — invited, not yet registered</option>
+            <option value="pending">Pending — not trading yet</option>
             <option value="active">Active — trading</option>
             <option value="inactive">Inactive — no new orders</option>
           </Select>
         </Field>
+        <fieldset>
+          <legend className="mb-1 text-[13px] font-semibold text-primary">Sales reps</legend>
+          <p className="mb-2 text-[12px] leading-snug text-muted">
+            {canAssign
+              ? 'Tick everyone who manages this account. Several is fine, one per branch say. Untick to hand it to someone else.'
+              : 'An administrator chooses who manages this account.'}
+          </p>
+          <Checklist
+            items={reps.map((r) => ({ id: r.id, label: fullName(r) }))}
+            value={repIds}
+            onChange={setRepIds}
+            disabled={!canAssign}
+            empty="No sales reps yet. Add them under People, then Add person."
+          />
+        </fieldset>
       </div>
     </Modal>
   );
