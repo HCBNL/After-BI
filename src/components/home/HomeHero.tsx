@@ -22,7 +22,7 @@ import { cn } from '@/lib/cn';
 import type { UserProfile } from '@/types';
 import type { Kpi } from './HomeSlides';
 import { KpiGlass } from './HomeSlides';
-import { PanelTexture } from './HomeArt';
+import { BrandBars } from './HomeArt';
 
 /** Three rows of four before "Show all". */
 const COLLAPSED = 12;
@@ -233,7 +233,7 @@ export function HomeHero({
   return (
     /* The negative margins match the page's own padding exactly, so the panel meets the top of the glass. */
     <section className="ab-hero relative isolate -mx-3 -mb-3 -mt-4 overflow-hidden pb-12 sm:-mx-5 sm:-mt-6 lg:hidden">
-      <PanelTexture className="pointer-events-none absolute -right-14 -top-8 -z-10 h-64 w-64 text-white/[0.045]" />
+      <BrandBars className="pointer-events-none absolute -right-14 -top-8 -z-10 h-64 w-64 text-white/[0.045]" />
       <div aria-hidden style={{ height: 'var(--safe-top)' }} />
 
       {layout === 'cards' ? (

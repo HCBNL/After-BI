@@ -26,7 +26,7 @@ import { MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useAsync } from '@/hooks/useAsync';
 import { getSiteHome, type SiteHome } from '@/lib/siteDoc';
-import { SOCIAL } from '@/lib/site';
+import { WHATSAPP_URL } from '@/lib/site';
 import { SiteFooter, SiteHeader } from './chrome';
 import { BookDemo } from './BookDemo';
 import { btn, container } from './tokens';
@@ -200,7 +200,7 @@ export function ClosingBand() {
             Book a walkthrough
           </button>
           <a
-            href={SOCIAL[2].href}
+            href={WHATSAPP_URL}
             target="_blank"
             rel="noreferrer noopener"
             className={cn(btn.lineWhite, 'focus-visible:outline-white')}
@@ -227,7 +227,7 @@ export function ClosingBand() {
 function WhatsAppButton() {
   return (
     <a
-      href={SOCIAL[2].href}
+      href={WHATSAPP_URL}
       target="_blank"
       rel="noreferrer noopener"
       aria-label="Message AfterBI on WhatsApp"

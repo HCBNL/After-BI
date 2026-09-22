@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Slider } from './Slider';
-import { PanelTexture } from './HomeArt';
+import { BrandBars } from './HomeArt';
 
 export interface Kpi {
   key: string;
@@ -127,7 +127,7 @@ function BannerCard({ item, index }: { item: Kpi; index: number }) {
       className="relative isolate flex min-h-[164px] w-full flex-col overflow-hidden rounded-[22px] p-4 text-white shadow-card lg:min-h-[184px] lg:p-5"
       style={{ backgroundImage: GROUNDS[index % GROUNDS.length] }}
     >
-      <PanelTexture className="pointer-events-none absolute -bottom-10 -right-8 -z-10 h-40 w-40 text-white/[0.08]" />
+      <BrandBars className="pointer-events-none absolute -bottom-10 -right-8 -z-10 h-40 w-40 text-white/[0.08]" />
       <div className="flex items-start justify-between gap-3">
         <p className="pt-1 text-[13px] font-semibold text-white/80">{item.label}</p>
         {item.icon && (
@@ -178,7 +178,7 @@ export function KpiBanners({
 function GlassCard({ item }: { item: Kpi }) {
   return (
     <article className="relative isolate flex min-h-[178px] w-full flex-col overflow-hidden rounded-[22px] border border-white/[0.14] bg-white/[0.09] p-4 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md">
-      <PanelTexture className="pointer-events-none absolute -right-5 -top-7 -z-10 h-32 w-32 text-white/[0.05]" />
+      <BrandBars className="pointer-events-none absolute -right-5 -top-7 -z-10 h-32 w-32 text-white/[0.05]" />
       <div className="flex items-center gap-2.5">
         {item.icon && (
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/15" aria-hidden>
@@ -260,7 +260,7 @@ function TipCard({ tip }: { tip: Tip }) {
       className="relative isolate flex min-h-[152px] w-full gap-3 overflow-hidden rounded-[22px] p-4 text-white shadow-card"
       style={{ backgroundImage: TIP_GROUNDS[tip.tone] }}
     >
-      <PanelTexture className="pointer-events-none absolute -bottom-12 -right-10 -z-10 h-44 w-44 text-white/[0.07]" />
+      <BrandBars className="pointer-events-none absolute -bottom-12 -right-10 -z-10 h-44 w-44 text-white/[0.07]" />
       <div className="flex min-w-0 flex-1 flex-col">
         <h3 className="font-display text-[17px] font-bold leading-[1.22] tracking-[-0.01em]">{tip.title}</h3>
         <p className="mt-1.5 line-clamp-3 text-[12.5px] leading-snug text-white/80">{tip.body}</p>

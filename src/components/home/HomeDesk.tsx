@@ -15,7 +15,7 @@ import type { HomeLayout } from '@/hooks/useHomeLayout';
 import type { Role, UserProfile } from '@/types';
 import type { Kpi } from './HomeSlides';
 import { KpiGlassGrid } from './HomeSlides';
-import { PanelTexture } from './HomeArt';
+import { BrandBars } from './HomeArt';
 import { displayName, greeting, LayoutButton, ProfilePhoto } from './HomeHero';
 
 export const HERO_ICON =
@@ -102,8 +102,8 @@ export function DeskHero({
 
   return (
     <section className={cn('ab-hero ab-desk relative isolate overflow-hidden pb-[4.75rem]', className)}>
-      <PanelTexture className="pointer-events-none absolute -right-20 -top-16 -z-10 h-[28rem] w-[28rem] text-white/[0.045]" />
-      <PanelTexture className="pointer-events-none absolute -bottom-24 left-[42%] -z-10 h-64 w-64 text-white/[0.03]" />
+      <BrandBars className="pointer-events-none absolute -right-20 -top-16 -z-10 h-[28rem] w-[28rem] text-white/[0.045]" />
+      <BrandBars className="pointer-events-none absolute -bottom-24 left-[42%] -z-10 h-64 w-64 text-white/[0.03]" />
 
       <div className="mx-auto max-w-[1440px] px-5 pt-6">
         <div className="flex items-center justify-between gap-4">
@@ -208,7 +208,7 @@ export function MonthCard({ footnote }: { footnote?: string }) {
       aria-label="This month"
       className="relative isolate flex w-full flex-col overflow-hidden rounded-[22px] border border-hairline surface-card p-5 shadow-card"
     >
-      <PanelTexture className="pointer-events-none absolute -right-6 -top-8 -z-10 h-36 w-36 text-brand-600/[0.07] dark:text-brand-400/[0.09]" />
+      <BrandBars className="pointer-events-none absolute -right-6 -top-8 -z-10 h-36 w-36 text-brand-600/[0.07] dark:text-brand-400/[0.09]" />
       <p className="text-[13px] font-semibold text-secondary">
         Sales month, {m.name} {m.year}
       </p>

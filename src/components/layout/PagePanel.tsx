@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useBrowserChrome } from '@/hooks/useBrowserChrome';
-import { PanelTexture } from '@/components/home/HomeArt';
+import { BrandBars } from '@/components/home/HomeArt';
 import { HeroThemeButton } from '@/components/home/HomeDesk';
 import { ProfilePhoto } from '@/components/home/HomeHero';
 import { cn } from '@/lib/cn';
@@ -44,7 +44,7 @@ export function PagePanel({
     <section
       className={cn('ab-hero ab-panel relative isolate overflow-hidden pb-12 text-white lg:pb-[4.5rem]', className)}
     >
-      <PanelTexture className="pointer-events-none absolute -right-14 -top-8 -z-10 h-64 w-64 text-white/[0.05] lg:h-[24rem] lg:w-[24rem]" />
+      <BrandBars className="pointer-events-none absolute -right-14 -top-8 -z-10 h-64 w-64 text-white/[0.05] lg:h-[24rem] lg:w-[24rem]" />
 
       <div aria-hidden style={{ height: 'var(--safe-top)' }} />
 

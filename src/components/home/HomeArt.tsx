@@ -1,44 +1,38 @@
 /**
- * The texture behind the panels.
+ * The brand signature, as scenery.
  *
- * WHY IT IS A RULED GRID AND NOT THE LOGO
+ * Four rising bars — a bar chart and a signal-strength meter at once, which is
+ * this whole product in a shape: what you sold, and how well it is going.
+ * Drawn enormous and at a twentieth of the surface's contrast behind the
+ * panels, the sign-in screen and the sheets, the way a bank lets its own shape
+ * sit behind the balance.
  *
- * It used to be the four-bar mark, and when that was retired the obvious
- * replacement was the wordmark drawn huge. It was the wrong shape. An abstract
- * mark crops beautifully — half a square at the edge of a panel still reads as
- * a square — but half a word reads as text that has gone wrong, and every
- * placement in this app hangs its scenery off a corner. Two rotated,
- * overflowing copies of "AfterBI." looked like a rendering bug.
+ * WHY THIS IS SCENERY AND NOT THE LOGO
  *
- * So the scenery is the ruled grid instead: the ledger every one of these
- * businesses already keeps, which is the same material `.ink-rule` paints on
- * the public pages. It tiles, so it cannot crop wrongly at any size or in any
- * corner, and it is AfterBI's own rather than a stock blob.
+ * The logo is the wordmark, "AfterBI.", and only the wordmark — see
+ * `brand/Wordmark.tsx`. This is the signature underneath it: an abstract shape
+ * the brand owns, which is a different job. The distinction matters in
+ * practice, because an abstract shape crops beautifully (half a bar at the
+ * edge of a panel still reads as a bar) and a word does not — half a word
+ * reads as text that has gone wrong. That is exactly why the wordmark was
+ * tried here and taken out again.
  *
- * The logo is now exactly one thing, at one aspect ratio, and it appears only
- * where a logo belongs. See `brand/Wordmark.tsx`.
+ * It paints in `currentColor` and carries none of the mark's old four colours:
+ * a signature is one shape in one tint, and a full-colour logo tiled across a
+ * background is a logo somebody has misused.
  */
 
 import type { CSSProperties } from 'react';
-import { cn } from '@/lib/cn';
 
-export function PanelTexture({ className, style }: { className?: string; style?: CSSProperties }) {
+export function BrandBars({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
-    <div
-      aria-hidden
-      className={cn('pointer-events-none', className)}
-      style={{
-        /*
-          `currentColor` rather than a fixed rgba, so every existing caller's
-          `text-white/[0.045]` still tints it exactly as it tinted the glyph it
-          replaces. That is what let nine placements survive the change without
-          being re-tuned by hand.
-        */
-        backgroundImage:
-          'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)',
-        backgroundSize: '3.5rem 3.5rem',
-        ...style,
-      }}
-    />
+    <svg viewBox="0 0 32 32" className={className} style={style} fill="currentColor" aria-hidden focusable="false">
+      <rect x="2" y="18" width="5.5" height="12" rx="2" />
+      <rect x="10" y="13" width="5.5" height="17" rx="2" />
+      <rect x="18" y="8" width="5.5" height="22" rx="2" />
+      {/* The tallest one half out, as it is in the wordmark's own lock-up: it is
+          the bar that has not happened yet, which is the product's argument. */}
+      <rect x="26" y="2" width="4" height="28" rx="2" opacity="0.5" />
+    </svg>
   );
 }

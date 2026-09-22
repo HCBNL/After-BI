@@ -14,7 +14,7 @@ import {
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AccentPicker } from '@/components/AccentPicker';
 import { Avatar } from '@/components/ui';
-import { PanelTexture } from '@/components/home/HomeArt';
+import { BrandBars } from '@/components/home/HomeArt';
 import { ROLE_LABEL, type Role } from '@/types';
 
 /**
@@ -163,7 +163,7 @@ export function MenuSheet({
         )}
       >
         <div className="ab-hero relative isolate shrink-0 overflow-hidden px-4 pb-11 pt-2 text-white">
-          <PanelTexture className="pointer-events-none absolute -right-12 -top-10 -z-10 h-56 w-56 text-white/[0.05]" />
+          <BrandBars className="pointer-events-none absolute -right-12 -top-10 -z-10 h-56 w-56 text-white/[0.05]" />
           <div aria-hidden className="sm:hidden" style={{ height: 'var(--safe-top)' }} />
 
           <div className="relative flex h-11 items-center justify-center">
