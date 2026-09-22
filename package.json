@@ -3,7 +3,7 @@
   "private": true,
   "version": "4.0.0",
   "type": "module",
-  "description": "AfterBI — multi-tenant distribution management for Nigerian FMCG.",
+  "description": "AfterBI: multi-tenant distribution management for Nigerian FMCG.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

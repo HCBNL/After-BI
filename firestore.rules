@@ -1,13 +1,13 @@
 rules_version = '2';
 
 /*
- * AfterBI — security rules. The GitHub Action publishes this file whenever it
+ * AfterBI: security rules. The GitHub Action publishes this file whenever it
  * changes (or paste it into Firebase console → Firestore Database → Rules).
  *
  * Two kinds of people inside an organisation:
- *   insiders — super admin, admin, staff, finance, operations, warehouse —
- *              read every account. The super admin oversees everything.
- *   partners — distributors and sales reps — read only their own accounts:
+ *   insiders (super admin, admin, staff, finance, operations, warehouse)
+ *     read every account. The super admin oversees everything.
+ *   partners (distributors and sales reps) read only their own accounts:
  *              a distributor its own, a rep the ones assigned to it.
  *
  * Firestore allows a request if ANY matching rule does, so every block below
@@ -16,7 +16,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /* ------------------------------------------------------------ helpers */
+    /* helpers */
 
     function signedIn() {
       return request.auth != null;
@@ -77,7 +77,7 @@ service cloud.firestore {
       return hasRole(orgId, ['distributor', 'sales_rep']);
     }
 
-    /* The accounts a partner works on — the same list as partnerScope() in the app. */
+    /* The accounts a partner works on: the same list as partnerScope() in the app. */
     function ownAccount() {
       return profile().get('distributorId', '') is string && profile().get('distributorId', '') != ''
         ? [profile().get('distributorId', '')]
@@ -125,14 +125,14 @@ service cloud.firestore {
       return isoDate is string && isoDate.size() >= 7 && isoDate[0:7] == monthPrefix();
     }
 
-    /* -------------------------------------------------------------- users */
+    /* users */
     /*
      * A root collection: signing in gives a uid and nothing else, and this
      * document says which organisation the session belongs to. The platform
      * owner's own document is created by hand in the console.
      */
     match /users/{uid} {
-      /* Yourself, the owner, insiders their whole organisation — and a
+      /* Yourself, the owner, insiders their whole organisation: and a
          partner only the people who can sign an order. */
       allow get: if signedIn() && (
         request.auth.uid == uid
@@ -182,7 +182,7 @@ service cloud.firestore {
           )
         );
 
-      /* Your own name, phone, title and photograph — never your role, organisation, accounts or active flag. */
+      /* Your own name, phone, title and photograph: never your role, organisation, accounts or active flag. */
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['firstName', 'lastName', 'title', 'phone', 'photoURL', 'updatedAt', 'lastSeenAt']);
@@ -207,7 +207,29 @@ service cloud.firestore {
       allow delete: if immutable();
     }
 
-    /* ---------------------------------------------------- the tenant record */
+    /*
+      THE ONE PUBLIC DOCUMENT IN THIS DATABASE.
+
+      `site/home` holds the landing page's cover images and nothing else: no
+      tenant's data, no figures, no names. It is read by anybody at all,
+      including a visitor who has never signed in, because that is precisely
+      what a shop window is for — and it is written only by the platform owner,
+      from Platform → Website.
+
+      `allow read` rather than `get` alone: the page reads the single document,
+      but a listing of a one-document collection discloses nothing either, and
+      refusing it would only produce a confusing error in the console.
+
+      Every other collection stays behind the tenant rules below. If a second
+      public document is ever wanted, it goes in THIS collection rather than
+      loosening one of those — one public place is auditable, two is a habit.
+    */
+    match /site/{docId} {
+      allow read: if true;
+      allow write: if owner();
+    }
+
+    /* the tenant record */
 
     match /orgs/{orgId} {
       allow get: if owner() || belongs(orgId);
@@ -215,7 +237,7 @@ service cloud.firestore {
       allow create, update, delete: if owner();
     }
 
-    /* ------------------------------------------------- everything an org owns */
+    /* everything an org owns */
 
     /* Insiders read everything. Partners get only what is granted below. */
     match /orgs/{orgId}/{document=**} {
