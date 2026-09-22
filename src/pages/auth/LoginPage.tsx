@@ -38,6 +38,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, Copy, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { Seo } from '@/components/Seo';
+import { BrandBars } from '@/components/home/HomeArt';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { Alert } from '@/components/ui';
@@ -131,8 +132,11 @@ export default function LoginPage() {
         {/* ------------------------------------------- laptop: the ink panel */}
         <aside className="ink relative isolate hidden overflow-hidden lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-14">
           <div aria-hidden className="banner-glow absolute -inset-[8%] -z-20 opacity-80" />
-          {/* The glow is the scenery. The wordmark is a logo and appears once,
-              at the top, where a logo belongs — see `brand/Wordmark.tsx`. */}
+          {/* The signature, twice, hung off opposite corners. An abstract
+              shape crops well, which is exactly why the wordmark could not do
+              this job — see `home/HomeArt.tsx`. */}
+          <BrandBars className="brand-bars pointer-events-none absolute -right-28 -top-24 -z-10 h-[34rem] w-[34rem] rotate-[14deg]" />
+          <BrandBars className="brand-bars pointer-events-none absolute -bottom-32 -left-24 -z-10 h-[26rem] w-[26rem] -rotate-12" />
 
           <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="w-fit">
             <Wordmark onInk className="text-[1.6rem]" />
@@ -153,9 +157,8 @@ export default function LoginPage() {
           className="relative isolate flex min-h-[100dvh] flex-col overflow-hidden"
           style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
-          {/* Nothing behind the form. Two boxes and a button are the whole
-              subject of this side, and scenery behind them is noise. On a
-              phone this side IS the screen, so it stays clean there too. */}
+          <BrandBars className="brand-bars pointer-events-none absolute -right-24 -top-16 -z-10 h-[26rem] w-[26rem] rotate-[14deg] lg:h-[30rem] lg:w-[30rem]" />
+          <BrandBars className="brand-bars pointer-events-none absolute -bottom-24 -left-28 -z-10 h-[24rem] w-[24rem] -rotate-12 lg:hidden" />
 
           <div className="flex items-center justify-between px-5 pt-4 sm:px-8 lg:justify-end">
             <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="lg:hidden">

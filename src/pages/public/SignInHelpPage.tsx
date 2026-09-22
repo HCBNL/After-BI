@@ -18,7 +18,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell } from '@/components/marketing/kit';
 import { Headline, Questions } from '@/components/marketing/bits';
 import { btn } from '@/components/marketing/tokens';
-import { SOCIAL, SUPPORT_EMAIL } from '@/lib/site';
+import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/site';
 
 const TROUBLE = [
   {
@@ -71,7 +71,7 @@ export default function SignInHelpPage() {
                 <a href={`mailto:${SUPPORT_EMAIL}?subject=Trouble%20signing%20in`} className={btn.line}>
                   Email us
                 </a>
-                <a href={SOCIAL[2].href} target="_blank" rel="noreferrer noopener" className={btn.line}>
+                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className={btn.line}>
                   WhatsApp
                 </a>
               </div>

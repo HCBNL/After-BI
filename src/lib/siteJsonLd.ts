@@ -14,6 +14,7 @@
  */
 
 import { BRAND, SITE_URL } from './siteMeta';
+import { FOUNDER } from './site';
 
 /**
  * The front page's graph: the organisation, the site and the product.
@@ -35,7 +36,13 @@ export function homeJsonLd(): Record<string, unknown> {
         description:
           'Distribution management software for fast-moving consumer goods: orders, stock, invoices, credit and sell-out.',
         areaServed: 'NG',
+        /* By reference, not by value. The Person is a node of its own below,
+           so the founder and the company are one linked pair of entities
+           rather than a name repeated inside a company record — which is what
+           lets a search for either one reinforce the other. */
+        founder: { '@id': `${SITE_URL}/#founder` },
       },
+      founderNode(),
       {
         '@type': 'WebSite',
         '@id': `${SITE_URL}/#website`,
@@ -57,6 +64,55 @@ export function homeJsonLd(): Record<string, unknown> {
           priceCurrency: 'NGN',
           availability: 'https://schema.org/InStock',
         },
+      },
+    ],
+  };
+}
+
+/**
+ * The founder, as an entity in his own right.
+ *
+ * `@id` is what makes this work: the Organization above points at this node by
+ * that id rather than restating the name, so the two are a linked pair and a
+ * citation of either can be tied to the other. `sameAs` does the same job
+ * outwards, to profiles elsewhere.
+ *
+ * Exported as well as used in the home graph, because the About page — the
+ * page a person searching the name will actually land on — declares it too.
+ */
+export function founderNode(): Record<string, unknown> {
+  const sameAs = FOUNDER.links.filter((link) => /^https?:\/\//i.test(link));
+  return {
+    '@type': 'Person',
+    '@id': `${SITE_URL}/#founder`,
+    name: FOUNDER.name,
+    jobTitle: FOUNDER.role,
+    description: FOUNDER.bio,
+    url: `${SITE_URL}/about`,
+    worksFor: { '@id': `${SITE_URL}/#organization` },
+    ...(sameAs.length ? { sameAs } : {}),
+  };
+}
+
+/** The About page's own graph: the page is about the founder and the company. */
+export function aboutJsonLd(): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'AboutPage',
+        '@id': `${SITE_URL}/about#page`,
+        url: `${SITE_URL}/about`,
+        name: `About ${BRAND}`,
+        mainEntity: { '@id': `${SITE_URL}/#founder` },
+      },
+      founderNode(),
+      {
+        '@type': 'Organization',
+        '@id': `${SITE_URL}/#organization`,
+        name: BRAND,
+        url: SITE_URL,
+        founder: { '@id': `${SITE_URL}/#founder` },
       },
     ],
   };

@@ -25,10 +25,10 @@
  * testimonial with an invented name under it.
  */
 
-import { SUPPORT_EMAIL } from './siteMeta';
+import { SUPPORT_EMAIL, WHATSAPP_URL } from './siteMeta';
 import type { SiteBanner } from './siteDoc';
 
-export { BRAND, SALES_PHONE, SITE_URL, SUPPORT_EMAIL } from './siteMeta';
+export { BRAND, SALES_PHONE, SITE_URL, SUPPORT_EMAIL, WHATSAPP_NUMBER, WHATSAPP_URL } from './siteMeta';
 
 /**
  * The promise, in one sentence, and the line the whole site is built on.
@@ -90,7 +90,7 @@ export type SocialKey = 'linkedin' | 'x' | 'whatsapp';
 export const SOCIAL: { key: SocialKey; label: string; href: string }[] = [
   { key: 'linkedin', label: 'AfterBI on LinkedIn', href: 'https://www.linkedin.com/company/afterbi' },
   { key: 'x', label: 'AfterBI on X', href: 'https://x.com/afterbi' },
-  { key: 'whatsapp', label: 'AfterBI on WhatsApp', href: 'https://wa.me/2348150000000' },
+  { key: 'whatsapp', label: 'AfterBI on WhatsApp', href: WHATSAPP_URL },
 ];
 
 /* ---------------------------------------------------------------- the modules */
@@ -367,6 +367,47 @@ export const FAQ: { q: string; a: string }[] = [
   },
 ];
 
+/* ----------------------------------------------------------------- the founder */
+
+/**
+ * The person behind it, named.
+ *
+ * WHY THE NAME IS ON THE PAGE AND IN THE STRUCTURED DATA
+ *
+ * Two reasons, and the second one is the one that matters commercially.
+ *
+ * A distribution business hands its order book, its credit terms and its
+ * partner list to this software. The first question a managing director asks
+ * is who is behind it, and "the AfterBI team" is the answer that loses the
+ * deal. A name, a role and a way to reach him is the answer that does not.
+ *
+ * And a person is an entity a search engine can hold: the Person node in the
+ * graph is linked to the Organization by `founder` and `@id`, so searches for
+ * the name and searches for the product reinforce each other rather than
+ * competing. `sameAs` is what ties the profiles elsewhere to this one — add a
+ * real LinkedIn and X profile and the association gets considerably stronger.
+ */
+export const FOUNDER = {
+  name: 'Collins C. Nwobodo',
+  role: 'Founder',
+  /** One line, on the About page under the name. */
+  line: 'Built AfterBI after a quarter that looked up eleven per cent and was not.',
+  /** Two sentences, for the About page and the Person node's description. */
+  bio:
+    'Collins C. Nwobodo is the founder of AfterBI. He works on distribution software for fast-moving ' +
+    'consumer goods in Nigeria, and on the one figure most of it leaves out: what the distributor ' +
+    'actually sold.',
+  /**
+   * Profiles elsewhere. These become the Person's `sameAs` list, which is how a
+   * search engine ties a citation of the name to this record. Empty entries are
+   * dropped rather than shipped as links that go nowhere.
+   */
+  links: [
+    'https://www.linkedin.com/company/afterbi',
+    'https://x.com/afterbi',
+  ],
+};
+
 /* ------------------------------------------------------------------ the story */
 
 export const ABOUT = {
@@ -386,64 +427,153 @@ export const ABOUT = {
 
 /* ---------------------------------------------------------------- the booking */
 
-/** The slots the office keeps free for walkthroughs. */
-export const DEMO_SLOTS = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00'] as const;
+export type StepKind = 'text' | 'email' | 'tel' | 'choice' | 'multi-choice' | 'longtext';
 
-export const DEMO_TIMEZONE = 'Africa/Lagos';
-
-/** "14:00" as "2:00 pm". */
-export function clockLabel(value: string): string {
-  const [hours, minutes] = value.split(':').map(Number);
-  const period = hours >= 12 ? 'pm' : 'am';
-  const hour = hours % 12 === 0 ? 12 : hours % 12;
-  return `${hour}:${String(minutes).padStart(2, '0')} ${period}`;
-}
-
-/** A date as an ISO day, with no timezone drift from `toISOString`. */
-export function isoDate(date: Date): string {
-  const offset = date.getTimezoneOffset() * 60_000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
-}
-
-export function longDate(iso: string): string {
-  return new Date(`${iso}T12:00:00`).toLocaleDateString('en-NG', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
+export interface WizardStep {
+  id: string;
+  /** Two or three words, for the review list at the end. */
+  label: string;
+  /** The one question on the screen. Written as somebody would ask it aloud. */
+  question: string;
+  /** A line under it, when the question needs a reason rather than a rule. */
+  hint?: string;
+  kind: StepKind;
+  placeholder?: string;
+  options?: readonly string[];
+  optional?: boolean;
+  autoComplete?: string;
+  maxLength?: number;
 }
 
 /**
- * The next working days a walkthrough can be booked on.
+ * Nine questions, one at a time, and five of them are a single tap.
  *
- * Weekends are left out rather than offered and then declined by email, and
- * tomorrow is the earliest: a walkthrough booked for three hours' time is one
- * nobody from the office has read yet.
+ * WHY THIS IS NOT ONE FORM WITH NINE FIELDS
+ *
+ * A sales director opens this on a phone, between other things. A single card
+ * carrying nine labelled inputs reads as a chore before it is read as a
+ * question, and the abandon happens at the sight of it rather than at any
+ * particular field. One question filling the card is answerable in the time
+ * somebody actually has, and the progress rail makes the length honest
+ * instead of hiding it.
+ *
+ * WHY THE ORDER IS WHAT IT IS
+ *
+ * Name first, because it is the easiest thing anybody has ever been asked and
+ * an answered first question is most of the battle. The commercial questions —
+ * how many depots, how many distributors, what hurts — come after the contact
+ * details are already in hand, so a form abandoned two thirds of the way
+ * through still leaves somebody we can call.
+ *
+ * WHY THERE IS NO CALENDAR
+ *
+ * There was one, and it was the wrong shape for a first contact: picking a
+ * slot commits a stranger to a meeting before they have told us anything
+ * about their business, and it commits us to a time before we know whether we
+ * can prepare for it. "How soon" is the question that actually matters, and
+ * the office confirms the hour afterwards.
  */
-export function bookableDays(count = 10): string[] {
-  const days: string[] = [];
-  const cursor = new Date();
-  cursor.setDate(cursor.getDate() + 1);
-  while (days.length < count) {
-    const day = cursor.getDay();
-    if (day !== 0 && day !== 6) days.push(isoDate(cursor));
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return days;
-}
+export const WIZARD_STEPS: readonly WizardStep[] = [
+  {
+    id: 'name',
+    label: 'Your name',
+    question: 'First, what is your name?',
+    hint: 'So we know who we are speaking to when we call.',
+    kind: 'text',
+    placeholder: 'Adaeze Okonkwo',
+    autoComplete: 'name',
+    maxLength: 120,
+  },
+  {
+    id: 'company',
+    label: 'Company',
+    question: 'And the business?',
+    hint: 'As it appears on your invoices.',
+    kind: 'text',
+    placeholder: 'Sunrise Foods Ltd',
+    autoComplete: 'organization',
+    maxLength: 160,
+  },
+  {
+    id: 'role',
+    label: 'Your role',
+    question: 'What do you do there?',
+    kind: 'choice',
+    options: [
+      'Managing director or owner',
+      'Sales',
+      'Operations or supply chain',
+      'Finance',
+      'IT',
+      'I am a distributor',
+    ],
+  },
+  {
+    id: 'email',
+    label: 'Email',
+    question: 'What email should we use?',
+    hint: 'This is where your confirmation goes.',
+    kind: 'email',
+    placeholder: 'you@company.com',
+    autoComplete: 'email',
+    maxLength: 160,
+  },
+  {
+    id: 'phone',
+    label: 'Phone',
+    question: 'And a phone number?',
+    hint: 'WhatsApp is best. We will not put you on a mailing list.',
+    kind: 'tel',
+    placeholder: '0803 000 0000',
+    autoComplete: 'tel',
+    maxLength: 40,
+  },
+  {
+    id: 'depots',
+    label: 'Depots',
+    question: 'How many depots do you run?',
+    hint: 'It decides what we set up before the call.',
+    kind: 'choice',
+    options: ['Just one', '2 to 5', '6 to 20', 'More than 20', 'None — I am a distributor'],
+  },
+  {
+    id: 'partners',
+    label: 'Distributors',
+    question: 'And how many distributors do you sell through?',
+    hint: 'A rough number is fine.',
+    kind: 'choice',
+    options: ['Under 10', '10 to 50', '50 to 200', 'More than 200', 'Not sure'],
+  },
+  {
+    id: 'pain',
+    label: 'What hurts',
+    question: 'What is hardest right now?',
+    hint: 'Pick as many as apply. This is the most useful answer on the form.',
+    kind: 'multi-choice',
+    options: [
+      'Orders arrive by WhatsApp',
+      'Stock never agrees with the count',
+      'Chasing payments',
+      'No idea what distributors actually sold',
+      'Reconciling returns and claims',
+      'Reporting takes days',
+    ],
+  },
+  {
+    id: 'timing',
+    label: 'How soon',
+    question: 'How soon are you looking to move?',
+    kind: 'choice',
+    options: ['This month', 'This quarter', 'Later this year', 'Just researching for now'],
+  },
+];
 
-export interface BookingPayload {
-  name: string;
-  company: string;
-  email: string;
-  phone: string;
-  depots: string;
-  date: string;
-  time: string;
-  note: string;
-}
+export type WizardAnswers = Record<string, string>;
 
-export const DEPOT_BANDS = ['Just one', '2 to 5', '6 to 20', 'More than 20', 'I am a distributor'];
+/** A tidy summary of everything that was answered, for the office's mail. */
+export function composeNote(answers: WizardAnswers): string {
+  return WIZARD_STEPS.map((step) => `${step.label}: ${(answers[step.id] ?? '').trim() || '—'}`).join('\n');
+}
 
 /**
  * Hands the booking to the office.
@@ -455,19 +585,14 @@ export const DEPOT_BANDS = ['Just one', '2 to 5', '6 to 20', 'More than 20', 'I 
  * no way of knowing it did. When a real endpoint exists it goes in here and
  * nothing that calls this has to change.
  */
-export function bookingMailto(payload: BookingPayload): string {
-  const lines = [
-    `Name: ${payload.name}`,
-    `Company: ${payload.company}`,
-    `Email: ${payload.email}`,
-    `Phone: ${payload.phone}`,
-    `Depots: ${payload.depots}`,
-    '',
-    `Requested: ${longDate(payload.date)} at ${clockLabel(payload.time)} (${DEMO_TIMEZONE})`,
-    '',
-    payload.note ? `Note: ${payload.note}` : '',
-  ].filter(Boolean);
+export function bookingMailto(answers: WizardAnswers): string {
+  const who = (answers.company || answers.name || '').trim();
+  const subject = `Walkthrough request${who ? ` — ${who}` : ''}`;
+  return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(composeNote(answers))}`;
+}
 
-  const subject = `Walkthrough request — ${payload.company || payload.name}`;
-  return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
+/** The same answers, as a WhatsApp message. */
+export function bookingWhatsApp(answers: WizardAnswers): string {
+  const text = `Hello AfterBI, I would like a walkthrough.\n\n${composeNote(answers)}`;
+  return `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
 }

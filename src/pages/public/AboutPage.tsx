@@ -10,15 +10,17 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Headline, Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
-import { ABOUT, PROMISE } from '@/lib/site';
+import { ABOUT, FOUNDER, PROMISE, SUPPORT_EMAIL } from '@/lib/site';
+import { aboutJsonLd } from '@/lib/siteJsonLd';
 
 export default function AboutPage() {
   return (
     <>
       <Seo
         title="About"
-        description="A quarter that was up eleven per cent, a channel full of stock nobody had sold, and the figure that was in no system."
+        description={`${FOUNDER.name} founded AfterBI after a quarter that looked up eleven per cent and was not. Distribution software for Nigerian FMCG.`}
         path="/about"
+        jsonLd={aboutJsonLd()}
       />
       <PublicShell>
         <Body />
@@ -59,6 +61,36 @@ function Body() {
               </p>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      {/*
+        The founder, named, in ordinary indexable markup.
+
+        A distribution business hands this software its order book and its
+        credit terms, and the first question a managing director asks is who is
+        behind it. "The AfterBI team" is the answer that loses the deal.
+
+        The name is a real heading with real text around it rather than a
+        picture or a decorative flourish, because a name that only exists as
+        an image is a name no search engine can read. The matching Person node
+        is in this page's structured data — see `aboutJsonLd`.
+      */}
+      <section className="py-8">
+        <div className={container}>
+          <div className="rounded-md bg-night-2 p-6 ring-1 ring-inset ring-white/[0.06] sm:p-8">
+            <p className="text-[12.5px] font-bold uppercase tracking-[0.16em] text-brand-400">{FOUNDER.role}</p>
+            <h2 className="mt-3 font-display text-[1.6rem] font-extrabold tracking-[-0.03em] text-white sm:text-[2rem]">
+              {FOUNDER.name}
+            </h2>
+            <p className="mt-3 max-w-2xl text-[15.5px] leading-relaxed text-white/70">{FOUNDER.bio}</p>
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className="mt-5 inline-block text-[14.5px] font-semibold text-white underline decoration-brand-500 decoration-2 underline-offset-4 transition-colors hover:text-brand-300"
+            >
+              Write to him
+            </a>
+          </div>
         </div>
       </section>
 

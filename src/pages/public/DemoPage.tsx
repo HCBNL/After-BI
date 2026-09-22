@@ -11,7 +11,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Headline, Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
-import { SOCIAL, SUPPORT_EMAIL } from '@/lib/site';
+import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/site';
 
 const EXPECT = [
   { title: 'Forty minutes', body: 'Thirty watching your own month run through it. Ten of questions.' },
@@ -58,7 +58,7 @@ function Body() {
               <button type="button" onClick={book} className={btn.green}>
                 Pick a day and time
               </button>
-              <a href={SOCIAL[2].href} target="_blank" rel="noreferrer noopener" className={btn.glass}>
+              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className={btn.glass}>
                 WhatsApp us
               </a>
             </div>

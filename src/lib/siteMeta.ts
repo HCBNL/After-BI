@@ -26,4 +26,15 @@ export const BRAND = 'AfterBI';
 export const SITE_URL = (import.meta.env.VITE_SITE_URL ?? 'https://afterbi.com').replace(/\/$/, '');
 
 export const SUPPORT_EMAIL = 'hello@afterbi.com';
-export const SALES_PHONE = '+234 815 000 0000';
+
+/**
+ * The WhatsApp number, in the one format `wa.me` accepts.
+ *
+ * International, no plus, no spaces, no leading zero: 0704… is how it is dialled
+ * inside Nigeria, and 234704… is how it is addressed from anywhere. Held here
+ * once so the footer, the closing band, the float and the booking sheet cannot
+ * drift into four slightly different links.
+ */
+export const WHATSAPP_NUMBER = '2347040927073';
+export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
+export const SALES_PHONE = '+234 704 092 7073';
