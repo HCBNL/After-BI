@@ -94,25 +94,6 @@ export const ACCENTS: { id: Preset; label: string; swatch: string }[] = [
   { id: 'gold', label: 'Gold', swatch: '#F5C518' },
 ];
 
-/** The wider palette behind the rainbow swatch. Any other colour is one tap further. */
-export const PALETTE: { label: string; hex: string }[] = [
-  { label: 'Crimson', hex: '#c0263b' },
-  { label: 'Rose', hex: '#e11d74' },
-  { label: 'Plum', hex: '#8e2a7a' },
-  { label: 'Purple', hex: '#7c3aed' },
-  { label: 'Indigo', hex: '#4338ca' },
-  { label: 'Navy', hex: '#1e3a8a' },
-  { label: 'Teal', hex: '#0f766e' },
-  { label: 'Forest', hex: '#166534' },
-  { label: 'Olive', hex: '#4d7c0f' },
-  { label: 'Amber', hex: '#d97706' },
-  { label: 'Brown', hex: '#7c4a1e' },
-  { label: 'Slate', hex: '#475569' },
-  { label: 'Charcoal', hex: '#27272a' },
-  { label: 'Wine', hex: '#7f1d1d' },
-  { label: 'Ocean', hex: '#0369a1' },
-];
-
 const ACCENT_KEY = 'afterbi.accent';
 const HEX = /^#[0-9a-f]{6}$/i;
 
