@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "AfterBI",
+  "short_name": "AfterBI",
+  "description": "Distribution management for FMCG: orders, stock, invoices, credit and sell-out.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/login",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0a0c10",
+  "theme_color": "#064e3b",
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any" },
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "type": "image/png", "sizes": "192x192", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Sign in", "short_name": "Sign in", "url": "/login", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

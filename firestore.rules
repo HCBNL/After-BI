@@ -213,7 +213,7 @@ service cloud.firestore {
       `site/home` holds the landing page's cover images and nothing else: no
       tenant's data, no figures, no names. It is read by anybody at all,
       including a visitor who has never signed in, because that is precisely
-      what a shop window is for — and it is written only by the platform owner,
+      what a shop window is for, and it is written only by the platform owner,
       from Platform → Website.
 
       `allow read` rather than `get` alone: the page reads the single document,
@@ -222,11 +222,40 @@ service cloud.firestore {
 
       Every other collection stays behind the tenant rules below. If a second
       public document is ever wanted, it goes in THIS collection rather than
-      loosening one of those — one public place is auditable, two is a habit.
+      loosening one of those, one public place is auditable, two is a habit.
     */
     match /site/{docId} {
       allow read: if true;
       allow write: if owner();
+    }
+
+    /*
+      The blog. One document per article, the slug as its id.
+
+      Anybody may read a PUBLISHED article; a draft is refused to everybody
+      but the platform owner, so an unfinished article cannot be read by
+      guessing its address. The public site asks for published articles only
+      (a query on status), which these rules allow; a listing that might
+      include a draft is refused as a whole.
+    */
+    /* Proposals to prospects: the platform owner's sales work, nobody else's. */
+    match /proposals/{proposalId} {
+      allow read, write: if owner();
+    }
+
+    match /posts/{slug} {
+      allow read: if resource.data.status == 'published' || owner();
+      allow write: if owner();
+    }
+
+    /*
+      A person's own to do list. Theirs alone: not their organisation's, not
+      the owner's. It sits under the user rather than under the organisation
+      on purpose, because insiders may read everything under orgs/{orgId}, and
+      a private list of what somebody means to do next is not company data.
+    */
+    match /users/{uid}/tasks/{taskId} {
+      allow read, write: if activeProfile() && request.auth.uid == uid;
     }
 
     /* the tenant record */
@@ -410,7 +439,7 @@ service cloud.firestore {
         && request.resource.data.status == 'requested'
         && request.resource.data.quantity > 0;
       allow update: if hasRole(orgId, [
-          'super_admin', 'admin', 'staff', 'warehouse_manager', 'operations_manager'
+          'super_admin', 'admin', 'staff', 'warehouse_manager', 'operations_manager', 'finance_manager'
         ])
         || (
           resource.data.status == 'requested'
