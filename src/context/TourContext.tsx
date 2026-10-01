@@ -2,8 +2,9 @@
  * The tour: the main one, per role, and short ones a screen can ask for.
  *
  * `start` and `startIfNew` run the role's tour from `tour.ts`. `play` runs any
- * list of steps. A played tour never marks the main tour as seen: it explains
- * one thing, and somebody who has watched it has still never been shown the app.
+ * list of steps — today, the four-step tour after somebody switches their home
+ * screen. A played tour never marks the main tour as seen: it explains one
+ * change, and somebody who has watched it has still never been shown the app.
  */
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';

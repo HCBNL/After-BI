@@ -1,9 +1,10 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loading } from '@/components/brand/Loader';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { Input, EmptyState, Skeleton } from './primitives';
+import { Input, EmptyState } from './primitives';
 
-/* Table */
+/* ------------------------------------------------------------------ Table */
 
 export interface Column<T> {
   key: string;
@@ -95,19 +96,7 @@ export function DataTable<T>({
                       type="button"
                       onClick={() => toggleSort(col.key)}
                       className={cn(
-                        /*
-                         * `uppercase` is repeated here and it is not redundant.
-                         *
-                         * The `<th>` above already sets it, and `text-transform`
-                         * is an inherited property: but Tailwind's preflight
-                         * carries normalize.css's `button, select { text-transform:
-                         * none }`, which wins over inheritance. So every SORTABLE
-                         * column header quietly rendered in sentence case while
-                         * the static ones beside it rendered in caps, and a table
-                         * with both looked like two tables. Restating it here is
-                         * the fix; removing it brings the mismatch straight back.
- */
-                        'inline-flex items-center gap-1 uppercase transition-colors hover:text-primary',
+                        'inline-flex items-center gap-1 transition-colors hover:text-primary',
                         col.align === 'right' && 'flex-row-reverse',
                       )}
                     >
@@ -126,16 +115,13 @@ export function DataTable<T>({
             </tr>
           </thead>
           <tbody>
-            {loading &&
-              Array.from({ length: 6 }).map((_, i) => (
-                <tr key={`skeleton-${i}`} className="border-b border-hairline last:border-0">
-                  {columns.map((col) => (
-                    <td key={col.key} className={cn(pad, col.hideOnMobile && 'hidden sm:table-cell')}>
-                      <Skeleton className="h-4 w-full max-w-[140px]" />
-                    </td>
-                  ))}
-                </tr>
-              ))}
+            {loading && (
+              <tr>
+                <td colSpan={columns.length}>
+                  <Loading compact label="Loading" />
+                </td>
+              </tr>
+            )}
 
             {!loading &&
               sorted.map((row, index) => (
@@ -177,7 +163,7 @@ export function DataTable<T>({
   );
 }
 
-/* Tabs */
+/* ------------------------------------------------------------------- Tabs */
 
 export interface TabItem {
   id: string;
@@ -236,7 +222,7 @@ export function Tabs({
   );
 }
 
-/* SegmentedControl */
+/* ------------------------------------------------------ SegmentedControl */
 
 export function SegmentedControl<T extends string>({
   options,
@@ -284,7 +270,7 @@ export function SegmentedControl<T extends string>({
   );
 }
 
-/* SearchInput */
+/* ------------------------------------------------------------ SearchInput */
 
 export function SearchInput({
   value,
@@ -310,74 +296,3 @@ export function SearchInput({
   );
 }
 
-/* Pagination */
-
-export function Pagination({
-  page,
-  pageCount,
-  onChange,
-  total,
-  pageSize,
-}: {
-  page: number;
-  pageCount: number;
-  onChange: (next: number) => void;
-  total?: number;
-  pageSize?: number;
-}) {
-  if (pageCount <= 1) {
-    return total !== undefined ? (
-      <p className="text-[12px] text-muted tabular">{total} record{total === 1 ? '' : 's'}</p>
-    ) : null;
-  }
-
-  const from = pageSize ? (page - 1) * pageSize + 1 : null;
-  const to = pageSize && total ? Math.min(page * pageSize, total) : null;
-
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <p className="text-[12px] text-muted tabular">
-        {from && to && total ? `Showing ${from} to ${to} of ${total}` : `Page ${page} of ${pageCount}`}
-      </p>
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => onChange(Math.max(1, page - 1))}
-          disabled={page === 1}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-[var(--surface-card)] disabled:opacity-30"
-          aria-label="Previous page"
-        >
-          <ChevronLeft size={16} />
-        </button>
-        <span className="px-2 text-[12px] font-bold text-primary tabular">
-          {page} / {pageCount}
-        </span>
-        <button
-          onClick={() => onChange(Math.min(pageCount, page + 1))}
-          disabled={page === pageCount}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-[var(--surface-card)] disabled:opacity-30"
-          aria-label="Next page"
-        >
-          <ChevronRight size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/** Client-side pagination helper for the admin tables. */
-export function usePagination<T>(rows: T[], pageSize = 12) {
-  const [page, setPage] = useState(1);
-  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
-  const safePage = Math.min(page, pageCount);
-  const slice = rows.slice((safePage - 1) * pageSize, safePage * pageSize);
-
-  return {
-    page: safePage,
-    pageCount,
-    setPage,
-    slice,
-    total: rows.length,
-    pageSize,
-    reset: () => setPage(1),
-  };
-}

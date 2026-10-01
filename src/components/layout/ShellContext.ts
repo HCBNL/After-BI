@@ -1,8 +1,16 @@
 /**
- * What a page may ask of the shell around it: open the menu (optionally with
- * the caret in its search box) and open the home-screen chooser. The default
- * does nothing, so a page drawn outside a shell has inert buttons, not a crash.
+ * What a page may ask of the shell around it.
+ *
+ * The menu sheet and the home-screen chooser belong to the shell — they cover
+ * the whole app, not one page — but some of the buttons that open them now
+ * live on the home screen itself: menu and search on the Cards layout, and the
+ * layout button on both. Rather than lift that state into every page, the
+ * shell hands down two functions.
+ *
+ * The default does nothing, so a page drawn outside the shell simply has
+ * buttons that do nothing rather than a crash.
  */
+
 import { createContext, useContext } from 'react';
 
 export interface ShellApi {
@@ -11,6 +19,7 @@ export interface ShellApi {
 }
 
 const noop = () => {};
+
 const ShellContext = createContext<ShellApi>({ openMenu: noop, openHomeChooser: noop });
 
 export const ShellProvider = ShellContext.Provider;

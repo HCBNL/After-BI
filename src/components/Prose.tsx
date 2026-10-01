@@ -5,7 +5,7 @@
  *
  * The two obvious choices cost more than they are worth here. A parser plus a
  * sanitiser is about 60 KB on a page a visitor may read once, on a phone, on a
- * Nigerian mobile connection, and this app already refuses to ship the PDF
+ * Nigerian mobile connection — and this app already refuses to ship the PDF
  * engine on first paint for the same reason. And `dangerouslySetInnerHTML`
  * without a sanitiser is how a blog becomes a cross-site scripting hole the
  * day somebody pastes in an embed.
@@ -16,8 +16,8 @@
  * text as its child, so a `<script>` typed into an article is drawn on the page
  * as the characters `<script>` and can do nothing at all. Link and image
  * addresses are the one thing that could still carry a payload, so they are
- * checked: `http`, `https` and `/` are allowed through and everything else , 
- * `javascript:` above all, is dropped.
+ * checked: `http`, `https` and `/` are allowed through and everything else —
+ * `javascript:` above all — is dropped.
  *
  * WHAT IT UNDERSTANDS
  *
