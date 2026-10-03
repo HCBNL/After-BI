@@ -101,6 +101,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 const BlogIndex = lazy(() => import('@/pages/public/BlogIndex'));
 const BlogPost = lazy(() => import('@/pages/public/BlogPost'));
 const PublicRolesPage = lazy(() => import('@/pages/public/RolesPage'));
+const PartnersPage = lazy(() => import('@/pages/public/PartnersPage'));
 
 const PlatformHome = lazy(() => import('@/pages/platform/PlatformHome'));
 const OrganisationsPage = lazy(() => import('@/pages/platform/OrganisationsPage'));
@@ -112,7 +113,7 @@ const GuidePage = lazy(() => import('@/pages/shared/GuidePage'));
 const TasksPage = lazy(() => import('@/pages/shared/TasksPage'));
 
 /** The right shape of waiting for the address being opened. */
-const PUBLIC_PREFIXES = ['/features', '/product', '/blog', '/roles', '/pricing', '/about', '/demo', '/help'];
+const PUBLIC_PREFIXES = ['/features', '/product', '/blog', '/roles', '/pricing', '/partners', '/about', '/demo', '/help'];
 
 function RouteSkeleton({ path }: { path: string }) {
   if (path.startsWith('/portal')) return <ShellSkeleton />;
@@ -241,6 +242,7 @@ export default function App() {
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/roles" element={<PublicRolesPage />} />
           <Route path="/pricing" element={<PublicPricingPage />} />
+          <Route path="/partners" element={<PartnersPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/demo" element={<DemoPage />} />
           <Route path="/help/sign-in" element={<SignInHelpPage />} />

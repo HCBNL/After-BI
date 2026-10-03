@@ -11,13 +11,14 @@
  */
 
 import { Link } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, Wrench } from 'lucide-react';
 import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Headline, Questions, Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
 import { cn } from '@/lib/cn';
 import { FAQ, PLANS, PRICING_NOTES, naira, type Plan } from '@/lib/site';
+import { resolveCustom, type CustomBuild } from '@/lib/programme';
 
 /** The two questions a pricing page is actually asked. */
 const PRICING_FAQ = FAQ.filter((item) =>
@@ -40,7 +41,8 @@ export default function PricingPage() {
 }
 
 function Body() {
-  const { book } = useAsk();
+  const { book, home } = useAsk();
+  const custom = resolveCustom(home?.customBuild);
 
   return (
     <>
@@ -67,6 +69,12 @@ function Body() {
               </Reveal>
             ))}
           </div>
+
+          {custom.enabled && (
+            <Reveal delay={210}>
+              <CustomCard custom={custom} onBook={book} />
+            </Reveal>
+          )}
 
           <ul className="mt-8 grid gap-3 sm:grid-cols-3">
             {PRICING_NOTES.map((note) => (
@@ -146,6 +154,42 @@ function PlanCard({ plan, onBook }: { plan: Plan; onBook: () => void }) {
       <button type="button" onClick={onBook} className={cn('mt-7 w-full', plan.featured ? btn.green : btn.line)}>
         {plan.cta}
       </button>
+    </div>
+  );
+}
+
+/**
+ * The fourth way to buy: a system built for one business.
+ *
+ * Full width under the three plans, so it reads as a different kind of offer
+ * rather than a fourth tier. The words are the owner's (Platform, Website).
+ */
+function CustomCard({ custom, onBook }: { custom: CustomBuild; onBook: () => void }) {
+  return (
+    <div className="mt-4 grid gap-6 rounded-md bg-night-2 p-6 ring-1 ring-inset ring-white/[0.06] sm:p-7 lg:grid-cols-[1fr_1.4fr_auto] lg:items-center">
+      <div>
+        <span className="mb-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/[0.08] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white/75">
+          <Wrench size={12} aria-hidden /> Built for you
+        </span>
+        <h2 className="font-display text-[1.35rem] font-extrabold tracking-[-0.03em] text-white">{custom.name}</h2>
+        <p className="mt-2 text-[14px] leading-relaxed text-white/60">{custom.tagline}</p>
+      </div>
+
+      <ul className="grid gap-2.5 sm:grid-cols-2">
+        {custom.points.map((line) => (
+          <li key={line} className="flex gap-2.5 text-[14px] leading-relaxed text-white/75">
+            <Check size={16} aria-hidden className="mt-[0.2em] shrink-0 text-brand-400" />
+            {line}
+          </li>
+        ))}
+      </ul>
+
+      <div className="border-t border-white/10 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+        <p className="font-display text-[1.35rem] font-extrabold leading-tight tracking-[-0.03em] text-white">{custom.priceLine}</p>
+        <button type="button" onClick={onBook} className={cn('mt-4 w-full lg:w-auto', btn.line)}>
+          Discuss your build
+        </button>
+      </div>
     </div>
   );
 }

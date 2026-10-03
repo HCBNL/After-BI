@@ -8,7 +8,8 @@
  * to email it.
  */
 import { useMemo, useState } from 'react';
-import { ArrowLeft, FileText, Plus, Printer, Save, Trash2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { ArrowLeft, FileText, Handshake, Plus, Printer, Save, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import {
   Alert,
@@ -20,6 +21,7 @@ import {
   EmptyState,
   Field,
   Input,
+  SegmentedControl,
   Select,
   Switch,
   Textarea,
@@ -44,9 +46,13 @@ import {
   SUPPORT_LEVELS,
   type BusinessType,
   type Pain,
+  type ProposalEdition,
   type ProposalInput,
   type SupportLevel,
 } from '@/lib/proposal';
+import { getSiteHomeLive, type SiteHome } from '@/lib/siteDoc';
+import { resolveCustom, resolvePartners } from '@/lib/programme';
+import { blankPartner, partnerLetterHtml, partnerReference, type PartnerInput } from '@/lib/partnerLetter';
 
 const STATUS_TONE = { draft: 'neutral', sent: 'info', won: 'good', lost: 'critical' } as const;
 const STATUS_LABEL = { draft: 'Draft', sent: 'Sent', won: 'Won', lost: 'Lost' } as const;
@@ -54,6 +60,38 @@ const STATUS_LABEL = { draft: 'Draft', sent: 'Sent', won: 'Won', lost: 'Lost' } 
 const num = (value: string) => Math.max(0, Math.round(Number(value.replace(/[^\d.]/g, '')) || 0));
 
 export default function ProposalsPage() {
+  const [params, setParams] = useSearchParams();
+  const tab = params.get('v') === 'partner' ? 'partner' : 'business';
+  const site = useAsync(getSiteHomeLive, [], { handleError: true });
+
+  const tabs = (
+    <SegmentedControl
+      className="mb-4"
+      value={tab}
+      onChange={(next) => setParams(next === 'partner' ? { v: 'partner' } : {}, { replace: true })}
+      options={[
+        { value: 'business', label: 'Business proposals', icon: <FileText size={14} /> },
+        { value: 'partner', label: 'Partner letter', icon: <Handshake size={14} /> },
+      ]}
+    />
+  );
+
+  if (tab === 'partner') {
+    return (
+      <div>
+        <PageHeader
+          title="Partner letter"
+          description="An invitation to the Partner Programme, for a consultant, accountant or association leader."
+        />
+        {tabs}
+        <PartnerLetter home={site.data ?? undefined} />
+      </div>
+    );
+  }
+  return <Business tabs={tabs} home={site.data ?? undefined} />;
+}
+
+function Business({ tabs, home }: { tabs: React.ReactNode; home: SiteHome | undefined }) {
   const toast = useToast();
   const { data, loading, error, reload } = useAsync(listProposals, [], { handleError: true });
   const [editing, setEditing] = useState<ProposalInput | null>(null);
@@ -114,6 +152,7 @@ export default function ProposalsPage() {
             </Button>
           }
         />
+        {tabs}
         {error && (
           <Alert tone="critical" title="Could not read the proposals">
             {/permission/i.test(error.message)
@@ -171,7 +210,16 @@ export default function ProposalsPage() {
     );
   }
 
-  return <Editor value={editing} onChange={setEditing} onBack={() => setEditing(null)} onSave={() => void save()} busy={busy} />;
+  return (
+    <Editor
+      value={editing}
+      onChange={setEditing}
+      onBack={() => setEditing(null)}
+      onSave={() => void save()}
+      busy={busy}
+      home={home}
+    />
+  );
 }
 
 /* ------------------------------------------------------------------ editor */
@@ -182,15 +230,18 @@ function Editor({
   onBack,
   onSave,
   busy,
+  home,
 }: {
   value: ProposalInput;
   onChange: (next: ProposalInput) => void;
   onBack: () => void;
   onSave: () => void;
   busy: boolean;
+  home: SiteHome | undefined;
 }) {
   const set = <K extends keyof ProposalInput>(key: K, value: ProposalInput[K]) => onChange({ ...p, [key]: value });
-  const doc = useMemo(() => proposalHtml(p), [p]);
+  const custom = resolveCustom(home?.customBuild);
+  const doc = useMemo(() => proposalHtml(p, home?.customBuild), [p, home?.customBuild]);
   const f = figures(p);
   const suggested = suggestPlan(p.depots, p.staff);
 
@@ -223,6 +274,34 @@ function Editor({
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="space-y-5">
+          <Card>
+            <CardHeader title="How it reads" />
+            <SegmentedControl<ProposalEdition>
+              value={p.edition ?? 'price'}
+              onChange={(edition) => set('edition', edition)}
+              options={[
+                { value: 'price', label: 'Price first' },
+                { value: 'value', label: 'Value first' },
+              ]}
+            />
+            <p className="mt-2 text-[12.5px] text-muted">
+              {(p.edition ?? 'price') === 'price'
+                ? 'Leads with the numbers, including the first year in full. For a buyer who asked for a quote.'
+                : 'Leads with what changes for them. The price is one short table at the end, with no yearly total.'}
+            </p>
+            {custom.enabled && (
+              <div className="mt-4">
+                <Switch
+                  checked={Boolean(p.includeCustom)}
+                  onChange={(next) => set('includeCustom', next)}
+                  label={`Include Option 2: ${custom.name}`}
+                  description={custom.priceLine}
+                  hint="Adds a built for you option under the subscription, using the words in Platform, Website."
+                />
+              </div>
+            )}
+          </Card>
+
           <Card>
             <CardHeader title="The prospect" subtitle="Who the proposal is for." />
             <div className="grid gap-4 sm:grid-cols-2">
@@ -376,5 +455,53 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     >
       {children}
     </button>
+  );
+}
+
+/* ------------------------------------------------------------ partner letter */
+
+function PartnerLetter({ home }: { home: SiteHome | undefined }) {
+  const defaults = resolvePartners(home?.partners);
+  const [input, setInput] = useState<PartnerInput | null>(null);
+  const p = input ?? blankPartner(defaults.reward, defaults.payDays);
+  const set = <K extends keyof PartnerInput>(key: K, value: PartnerInput[K]) => setInput({ ...p, [key]: value });
+  const doc = useMemo(() => partnerLetterHtml(p), [p]);
+
+  return (
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="space-y-5">
+        <Card>
+          <CardHeader title="The partner" subtitle={`Reference ${partnerReference(p)}`} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Name" hint="Empty prints Dear Partner, for a letter sent widely.">
+              <Input value={p.partnerName} maxLength={80} onChange={(e) => set('partnerName', e.target.value)} placeholder="Mr Tunde Bakare" />
+            </Field>
+            <Field label="Firm or role">
+              <Input value={p.partnerDetail} maxLength={120} onChange={(e) => set('partnerDetail', e.target.value)} placeholder="Bakare Sales Consulting" />
+            </Field>
+            <Field label="Reward per business (₦)">
+              <Input inputMode="numeric" value={String(p.reward)} onChange={(e) => set('reward', num(e.target.value))} />
+            </Field>
+            <Field label="Paid within (working days)">
+              <Input inputMode="numeric" value={String(p.payDays)} onChange={(e) => set('payDays', Math.max(num(e.target.value), 1))} />
+            </Field>
+            <Field label="Date">
+              <Input type="date" value={p.date} onChange={(e) => set('date', e.target.value || p.date)} />
+            </Field>
+          </div>
+        </Card>
+        <Card>
+          <CardHeader title="A personal note" subtitle="Optional. Printed in the introduction." />
+          <Textarea rows={3} maxLength={400} value={p.note} onChange={(e) => set('note', e.target.value)} />
+        </Card>
+        <Button icon={<Printer size={15} />} onClick={() => printHtml(doc.title, doc.html)}>
+          Print or save as PDF
+        </Button>
+      </div>
+      <div className="xl:sticky xl:top-4 xl:self-start">
+        <p className="mb-2 text-[12.5px] font-semibold text-muted">Preview: this is what prints</p>
+        <iframe title="Partner letter preview" srcDoc={doc.html} className="h-[75vh] w-full rounded-2xl border border-hairline bg-white shadow-card" />
+      </div>
+    </div>
   );
 }

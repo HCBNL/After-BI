@@ -11,7 +11,8 @@
  *
  * WHY THE WORDS ARE NOT HERE
  *
- * Only the pictures are editable. The headlines, the plans, the FAQ and the
+ * Mostly pictures. The AfterBI Custom card and the Partner Programme are
+ * the exceptions, because they are offers that change. The headlines, the plans, the FAQ and the
  * module copy live in `lib/site.ts` and ship in the bundle, which buys two
  * things: the landing page paints its words on the first frame with no read at
  * all, and a copy change is a pull request somebody reviews rather than a text
@@ -53,6 +54,7 @@ import { MODULES } from '@/lib/site';
 import { SOCIAL_FIELDS } from '@/lib/social';
 import { BannerEditor } from './website/BannerEditor';
 import { VideoPicker } from './website/VideoPicker';
+import { CustomEditor, PartnerEditor } from './website/ProgrammeEditors';
 
 export default function WebsitePage() {
   const toast = useToast();
@@ -93,7 +95,7 @@ export default function WebsitePage() {
     <>
       <PageHeader
         title="Website"
-        description="The pictures, videos and founder details on the public website. The words are in the build."
+        description="Pictures, videos, founder, the Custom offer and the Partner Programme."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -251,6 +253,32 @@ export default function WebsitePage() {
                 </Field>
               ))}
             </div>
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="AfterBI Custom"
+              subtitle="The built for you card under the plans on the Pricing page."
+            />
+            <CustomEditor value={home?.customBuild} onChange={(customBuild) => seed({ customBuild })} />
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="Partner Programme"
+              subtitle="The reward, packages and testimonies on the Partners page."
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={<ExternalLink size={14} />}
+                  onClick={() => window.open('/partners', '_blank', 'noopener')}
+                >
+                  View
+                </Button>
+              }
+            />
+            <PartnerEditor value={home?.partners} onChange={(partners) => seed({ partners })} />
           </Card>
 
           <Card>
