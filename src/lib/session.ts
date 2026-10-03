@@ -29,7 +29,7 @@ export function rememberSession(signedIn: boolean): void {
 }
 
 /** The addresses that have nothing to do with an account. */
-const PUBLIC = /^\/(?:$|about|features|product|pricing|blog|videos|roles|demo|help)/;
+const PUBLIC = /^\/(?:$|about|features|product|pricing|partners|blog|videos|roles|demo|help)/;
 
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC.test(pathname);

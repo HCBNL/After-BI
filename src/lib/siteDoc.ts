@@ -27,6 +27,7 @@
  */
 
 import { restGet } from './firestoreRest';
+import type { CustomBuild, PartnerSettings } from './programme';
 
 /** The SDK, fetched only by the owner's console when it writes. */
 async function store() {
@@ -109,6 +110,12 @@ export interface SiteHome {
 
   /** Where "follow us" points. A channel with no address draws nothing. */
   social?: SiteSocial;
+
+  /** The AfterBI Custom card on the Pricing page. Missing reads as the default. */
+  customBuild?: Partial<CustomBuild>;
+
+  /** The Partner Programme page: the reward, the packages and partners' words. */
+  partners?: PartnerSettings;
 
   updatedAt?: string;
 }

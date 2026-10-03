@@ -480,11 +480,36 @@ const HOW_TO: HowTo[] = [
     keywords: ['proposal', 'quote', 'quotation', 'pricing', 'prospect', 'offer', 'pitch'],
     steps: [
       { text: 'Open Proposals and press New proposal.', to: 'proposals' },
+      { text: 'Under How it reads, choose Price first for a buyer who asked for a quote, or Value first to lead with what changes for them. Turn on the Custom option to offer a system built just for them.' },
       { text: 'Fill in the business name, contact, kind of business, and their depots, distributors and staff.' },
       { text: 'Tick what hurts today. Each one adds a paragraph on why AfterBI fits, using their numbers.' },
       { text: 'Untick any features that do not matter to them, then set the plan, discount, setup fee and support level.' },
       { text: 'Check the preview on the right, press Save, then Print or save as PDF and choose Save as PDF to email it.' },
       { text: 'When they reply, open the proposal and set the Status to Won or Lost.' },
+    ],
+  },
+  {
+    id: 'partner-letter',
+    title: 'Invite someone to the Partner Programme',
+    roles: ['owner'],
+    keywords: ['partner', 'referral', 'reward', 'commission', 'consultant', 'invite', 'letter'],
+    steps: [
+      { text: 'Open Proposals and choose Partner letter at the top.', to: 'proposals?v=partner' },
+      { text: 'Type the partner\'s name and firm, or leave the name empty for a letter you will send widely.' },
+      { text: 'The reward and payment days come from Website, Partner Programme. Change them here for this one letter if you need to.' },
+      { text: 'Press Print or save as PDF and choose Save as PDF to email it. The public page is at afterbi.com/partners.' },
+    ],
+  },
+  {
+    id: 'website-offers',
+    title: 'Change the Custom offer or the Partner Programme',
+    roles: ['owner'],
+    keywords: ['custom', 'pricing', 'partner', 'reward', 'package', 'testimony', 'website'],
+    steps: [
+      { text: 'Open Website.', to: 'website' },
+      { text: 'In AfterBI Custom, switch the card on or off and edit its name, price line and what is included.' },
+      { text: 'In Partner Programme, set the reward and payment days, edit the packages (a picture is optional) and add real testimonies.' },
+      { text: 'Press Publish at the top. Nothing changes on the public site until you do.' },
     ],
   },
   {

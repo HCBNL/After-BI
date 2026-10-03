@@ -22,6 +22,7 @@ import { db } from './firebase';
 import { MODULES, PLANS, naira } from './site';
 import { BRAND, SITE_URL, SUPPORT_EMAIL, SALES_PHONE } from './siteMeta';
 import { FOUNDER } from './site';
+import { resolveCustom, type CustomBuild } from './programme';
 
 /* ------------------------------------------------------------------ input */
 
@@ -111,8 +112,18 @@ export interface ProposalInput {
   date: string;
   validDays: number;
   status: 'draft' | 'sent' | 'won' | 'lost';
+  /**
+   * How it reads. `price` leads with the numbers (the first year in full);
+   * `value` leads with what changes for them and keeps the price to one
+   * short table at the end, with no first year total. Missing reads as price.
+   */
+  edition?: ProposalEdition;
+  /** Adds AfterBI Custom as a second option, priced per project. */
+  includeCustom?: boolean;
   updatedAt?: string;
 }
+
+export type ProposalEdition = 'price' | 'value';
 
 export function blankProposal(): ProposalInput {
   const featured = PLANS.find((plan) => plan.featured) ?? PLANS[0];
@@ -139,6 +150,8 @@ export function blankProposal(): ProposalInput {
     date: new Date().toISOString().slice(0, 10),
     validDays: 30,
     status: 'draft',
+    edition: 'price',
+    includeCustom: false,
   };
 }
 
@@ -282,7 +295,7 @@ export async function deleteProposal(id: string): Promise<void> {
 
 /* ------------------------------------------------------------- the paper */
 
-function esc(value: unknown): string {
+export function esc(value: unknown): string {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -290,7 +303,7 @@ function esc(value: unknown): string {
     .replace(/"/g, '&quot;');
 }
 
-function longDate(iso: string): string {
+export function longDate(iso: string): string {
   const when = new Date(`${iso}T00:00:00`);
   return Number.isNaN(when.getTime())
     ? iso
@@ -309,7 +322,7 @@ export function proposalNumber(input: ProposalInput): string {
   return `AB-P-${input.date.slice(0, 4)}-${tail}`;
 }
 
-const CSS = `
+export const PROPOSAL_CSS = `
   @page { size: A4; margin: 16mm 15mm; }
   * { box-sizing: border-box; }
   @media screen { body { padding: 28px 32px; } }
@@ -352,8 +365,11 @@ const CSS = `
 `;
 
 /** The finished proposal, as a complete HTML document ready for the print dialog. */
-export function proposalHtml(input: ProposalInput): { title: string; html: string } {
+export function proposalHtml(input: ProposalInput, customRaw?: Partial<CustomBuild>): { title: string; html: string } {
   const f = figures(input);
+  const value = input.edition === 'value';
+  const custom = resolveCustom(customRaw);
+  const withCustom = Boolean(input.includeCustom) && custom.enabled;
   const plan = PLANS.find((p) => p.name === input.plan);
   const chosen = MODULES.filter((m) => input.modules.includes(m.slug));
   const support = SUPPORT_LEVELS[input.support];
@@ -369,8 +385,32 @@ export function proposalHtml(input: ProposalInput): { title: string; html: strin
     `<tr><td>${esc(support.name)}</td><td class="n">${f.support ? `${naira(f.support)} / month` : 'Included'}</td></tr>`,
     `<tr class="total"><td>Monthly fee</td><td class="n">${naira(f.monthlyTotal)}</td></tr>`,
     `<tr><td>Setup, data migration and training (once)</td><td class="n">${f.setupFee ? naira(f.setupFee) : 'Included'}</td></tr>`,
-    `<tr><td>First year${input.annual ? ', paid annually (two months free)' : ''}</td><td class="n"><b>${naira(f.firstYear)}</b></td></tr>`,
+    value
+      ? ''
+      : `<tr><td>First year${input.annual ? ', paid annually (two months free)' : ''}</td><td class="n"><b>${naira(f.firstYear)}</b></td></tr>`,
   ].join('');
+
+  const fit = `
+    <section class="fit">
+      <h2>${value ? `What changes for ${esc(company)}` : `Why AfterBI fits ${esc(company)}`}</h2>
+      ${tailoredFit(input).map((s) => `<h3>${esc(s.heading)}</h3><p>${esc(s.body)}</p>`).join('')}
+    </section>`;
+
+  const investment = `
+    <section>
+      <h2>${withCustom ? 'Option 1: ' : ''}${value ? 'Your subscription' : 'Investment'}</h2>
+      <table><tr><th>Item</th><th class="n">Amount</th></tr>${priceRows}</table>
+      <p style="font-size:9pt;color:#5b6472;margin-top:6px">Prices in naira, billed monthly${input.annual ? ' or annually' : ''}. Distributor logins are never charged for. VAT applies where required.</p>
+    </section>
+    ${
+      withCustom
+        ? `<section>
+      <h2>Option 2: ${esc(custom.name)}</h2>
+      <div class="box"><p style="margin:0 0 4px">${esc(custom.tagline)}</p><ul>${custom.points.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>
+      <p style="margin:8px 0 0"><b>${esc(custom.priceLine)}.</b> We scope it with you, then quote a fixed price for the build and a monthly fee for hosting and support.</p></div>
+    </section>`
+        : ''
+    }`;
 
   const body = `
     <div class="top">
@@ -380,8 +420,8 @@ export function proposalHtml(input: ProposalInput): { title: string; html: strin
 
     <div class="cover">
       <div class="eyebrow">Prepared for ${esc(company)}</div>
-      <h1>Orders, stock, invoices, credit and sell-out for ${esc(company)}, in one place</h1>
-      <p>For ${esc(input.contactName || 'your team')}${input.contactTitle ? `, ${esc(input.contactTitle)}` : ''}. This proposal sets out what AfterBI will do for your business, what it costs, and how we will support you.</p>
+      <h1>${value ? `Every carton, invoice and naira at ${esc(company)}, accounted for` : `Orders, stock, invoices, credit and sell-out for ${esc(company)}, in one place`}</h1>
+      <p>For ${esc(input.contactName || 'your team')}${input.contactTitle ? `, ${esc(input.contactTitle)}` : ''}. ${value ? 'This proposal sets out what changes for your business with AfterBI, how we will support you, and how we get you live.' : 'This proposal sets out what AfterBI will do for your business, what it costs, and how we will support you.'}</p>
       ${input.note.trim() ? `<p class="note">${esc(input.note.trim())}</p>` : ''}
     </div>
 
@@ -389,13 +429,10 @@ export function proposalHtml(input: ProposalInput): { title: string; html: strin
       <div class="fact"><b>${input.depots}</b><small>depots</small></div>
       <div class="fact"><b>${input.distributors}</b><small>distributors</small></div>
       <div class="fact"><b>${input.staff}</b><small>staff users</small></div>
-      <div class="fact"><b>${naira(f.monthlyTotal)}</b><small>per month</small></div>
+      ${value ? `<div class="fact"><b>${chosen.length}</b><small>modules for you</small></div>` : `<div class="fact"><b>${naira(f.monthlyTotal)}</b><small>per month</small></div>`}
     </div>
 
-    <section class="fit">
-      <h2>Why AfterBI fits ${esc(company)}</h2>
-      ${tailoredFit(input).map((s) => `<h3>${esc(s.heading)}</h3><p>${esc(s.body)}</p>`).join('')}
-    </section>
+    ${fit}
 
     <section>
       <h2>What you get</h2>
@@ -407,11 +444,7 @@ export function proposalHtml(input: ProposalInput): { title: string; html: strin
       ${plan ? `<p style="margin-top:8px;color:#414856">The ${esc(plan.name)} plan includes: ${plan.includes.filter((line) => !line.trim().endsWith(':')).map(esc).join('; ')}.</p>` : ''}
     </section>
 
-    <section>
-      <h2>Investment</h2>
-      <table><tr><th>Item</th><th class="n">Amount</th></tr>${priceRows}</table>
-      <p style="font-size:9pt;color:#5b6472;margin-top:6px">Prices in naira, billed monthly${input.annual ? ' or annually as shown' : ''}. Distributor logins are never charged for. VAT applies where required.</p>
-    </section>
+    ${value ? '' : investment}
 
     <section>
       <h2>Support: how we look after you</h2>
@@ -431,6 +464,8 @@ export function proposalHtml(input: ProposalInput): { title: string; html: strin
       <table class="steps">${timeline(input).map((s) => `<tr><td>${esc(s.when)}</td><td>${esc(s.what)}</td></tr>`).join('')}</table>
     </section>
 
+    ${value ? investment : ''}
+
     <section>
       <h2>Next step</h2>
       <p>Sign below and return this proposal, or reply to ${esc(SUPPORT_EMAIL)}. We start setup within five working days of acceptance.</p>
@@ -445,6 +480,6 @@ export function proposalHtml(input: ProposalInput): { title: string; html: strin
 
   return {
     title,
-    html: `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>${esc(title)}</title><style>${CSS}</style></head><body>${body}</body></html>`,
+    html: `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>${esc(title)}</title><style>${PROPOSAL_CSS}</style></head><body>${body}</body></html>`,
   };
 }
