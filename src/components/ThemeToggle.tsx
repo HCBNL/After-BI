@@ -38,7 +38,7 @@ export function ThemeToggle({
 }) {
   // Initialise from what is on screen, not a placeholder. The old default of
   // 'system' meant the compact button's first press only *matched* the stored
-  // choice to the visible theme and changed nothing — the notorious
+  // choice to the visible theme and changed nothing: the notorious
   // "works on the second click".
   const [choice, setChoice] = useState<ThemeChoice>(() => getStoredTheme());
   const [resolved, setResolved] = useState<ResolvedTheme>(() => currentResolved());

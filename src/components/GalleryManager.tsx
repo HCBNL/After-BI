@@ -2,9 +2,9 @@
  * Build the picture carousel that sits at the foot of an article.
  *
  * `ImagePicker` sets one picture; this sets an ordered list of them. Each is
- * uploaded to Cloudinary the moment it is chosen — the same reasoning as
+ * uploaded to Cloudinary the moment it is chosen, the same reasoning as
  * `ImagePicker`, that a wait on a Nigerian connection wants a spinner on the
- * thing being waited for — and the order the pictures sit in here is the order
+ * thing being waited for, and the order the pictures sit in here is the order
  * they will scroll in. A picture removed here is taken off Cloudinary too, so
  * the account does not silently fill with orphans.
  *
@@ -16,7 +16,7 @@
 import { useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, ImagePlus, Trash2 } from 'lucide-react';
 import { Spinner, useToast } from '@/components/ui';
-import { cloudinaryConfigured, deleteImage, imageUrl, uploadImage } from '@/lib/cloudinary';
+import { cloudinaryConfigured, imageUrl, uploadImage } from '@/lib/cloudinary';
 
 export function GalleryManager({
   value,
@@ -34,7 +34,7 @@ export function GalleryManager({
     setBusy(true);
     const added: string[] = [];
     try {
-      // One at a time, on purpose — see the note at the top.
+      // One at a time, on purpose, see the note at the top.
       for (const file of Array.from(files)) {
         added.push(await uploadImage(file, 'site'));
       }
@@ -54,9 +54,7 @@ export function GalleryManager({
   };
 
   const removeAt = (index: number) => {
-    const going = value[index];
     onChange(value.filter((_, i) => i !== index));
-    void deleteImage(going);
   };
 
   const move = (index: number, delta: number) => {

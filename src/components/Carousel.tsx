@@ -1,7 +1,7 @@
 /**
  * A swipeable strip of pictures.
  *
- * This is what sits at the foot of an article — the gallery that is not the
+ * This is what sits at the foot of an article, the gallery that is not the
  * cover. It is built to be touched: it is a real horizontally-scrolling element
  * with scroll-snap, so a thumb flicks through it exactly as a phone's photo
  * roll does, and the arrows and dots are there for a mouse. Nothing here
@@ -15,7 +15,7 @@
  * a visitor may open once on a slow connection, and a carousel library is tens
  * of kilobytes to do what one scroll container and two buttons already do.
  *
- * One picture is not a carousel — it draws as a single framed image with no
+ * One picture is not a carousel, it draws as a single framed image with no
  * arrows and no dots, because a control that can only sit still is noise.
  */
 

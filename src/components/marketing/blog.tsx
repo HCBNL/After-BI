@@ -5,8 +5,8 @@
  *
  * The public pages are dark, and the blog opens dark too. It is the one place
  * a reader may switch to light: long reading is easier for some people on a
- * white page. The choice is kept on the device (`gs.blog-theme`) and changes
- * only the reading area; the bar at the top and the footer stay the same navy
+ * white page. The choice is kept on the device (`ab.blog-theme`) and changes
+ * only the reading area; the bar at the top and the footer stay the same ink
  * on every page. Light mode is the `.paper` token scope in index.css, so every
  * piece drawn with the theme tokens follows it without rules of its own.
  *
@@ -21,13 +21,15 @@ import { Link } from 'react-router-dom';
 import { Check, Link2, Moon, Send, Sun } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { imageUrl } from '@/lib/cloudinary';
-import { postDate, readingTime, type Post, type SocialLink } from '@/lib/site';
+import { postDate, readingTime, type Post } from '@/lib/blog';
+import type { SocialLink } from '@/lib/social';
 import { SocialIcon, socialIconFor, type SocialName } from './SocialIcon';
+import { SUPPORT_EMAIL } from '@/lib/siteMeta';
 
 /* ------------------------------------------------------------ the modes */
 
 export type BlogTheme = 'dark' | 'light';
-const THEME_KEY = 'gs.blog-theme';
+const THEME_KEY = 'ab.blog-theme';
 
 export function useBlogTheme(): [BlogTheme, (next: BlogTheme) => void] {
   const [theme, setTheme] = useState<BlogTheme>(() => {
@@ -69,7 +71,7 @@ export function ThemeSwitch({ theme, onChange, className }: { theme: BlogTheme; 
 
 /** The reading area, in whichever mode the reader chose. */
 export function BlogSurface({ theme, children }: { theme: BlogTheme; children: ReactNode }) {
-  return <div className={theme === 'light' ? 'paper' : 'bg-night'}>{children}</div>;
+  return <div className={theme === 'light' ? 'paper' : 'bg-[#0a0c10]'}>{children}</div>;
 }
 
 /* ------------------------------------------------------------ the banner */
@@ -84,7 +86,7 @@ export function CoverBanner({ cover, className, children }: { cover?: string; cl
   const [loaded, setLoaded] = useState('');
 
   return (
-    <section className={cn('relative isolate overflow-hidden bg-night text-white', className)}>
+    <section className={cn('relative isolate overflow-hidden bg-[#0a0c10] text-white', className)}>
       <div aria-hidden className="banner-glow banner-drift absolute -inset-[8%] -z-20" />
       {url && (
         <img
@@ -99,7 +101,7 @@ export function CoverBanner({ cover, className, children }: { cover?: string; cl
           )}
         />
       )}
-      {url && <div aria-hidden className="absolute inset-0 -z-10 bg-night/60" />}
+      {url && <div aria-hidden className="absolute inset-0 -z-10 bg-[#0a0c10]/60" />}
       <div aria-hidden className="banner-veil absolute inset-0 -z-10" />
       {children}
     </section>
@@ -118,36 +120,22 @@ export function SideCard({ title, className, children }: { title: string; classN
 }
 
 /**
- * "Get new articles by email": the address is filed for the office through
- * `/api/enquiry`, and the form says so on the spot. It used to open the
- * visitor's mail app with a message half-written, which is a strange thing to
- * do to somebody who typed their address into a box and pressed a button.
+ * "Get new articles by email".
+ *
+ * AfterBI has no mailing server, and a form that posts into nothing loses the
+ * address without the visitor knowing. So the request is handed to the
+ * visitor's own mail app, addressed to the office, with the subject written.
  */
 export function SubscribeInline({ className }: { className?: string }) {
   const [email, setEmail] = useState('');
-  const [state, setState] = useState<'idle' | 'sending' | 'done' | 'failed'>('idle');
+  const [sent, setSent] = useState(false);
   const valid = /.+@.+\..+/.test(email.trim());
 
-  const subscribe = async () => {
-    if (!valid || state === 'sending') return;
-    setState('sending');
-    try {
-      const response = await fetch('/api/enquiry', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kind: 'subscribe', email: email.trim() }),
-      });
-      setState(response.ok ? 'done' : 'failed');
-    } catch {
-      setState('failed');
-    }
-  };
-
-  if (state === 'done') {
+  if (sent) {
     return (
       <p className={cn('flex items-center gap-2 text-[14.5px] font-semibold text-primary', className)}>
         <Check size={17} aria-hidden className="text-emerald-500" />
-        You are on the list. We will write when there is something to read.
+        Send the email that just opened and you are on the list.
       </p>
     );
   }
@@ -157,7 +145,11 @@ export function SubscribeInline({ className }: { className?: string }) {
       className={cn('flex flex-col gap-2', className)}
       onSubmit={(event) => {
         event.preventDefault();
-        void subscribe();
+        if (!valid) return;
+        const subject = encodeURIComponent('Subscribe me to the AfterBI blog');
+        const body = encodeURIComponent(`Please add ${email.trim()} to the AfterBI blog list.`);
+        window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+        setSent(true);
       }}
     >
       <div className="flex gap-2">
@@ -167,20 +159,17 @@ export function SubscribeInline({ className }: { className?: string }) {
           onChange={(event) => setEmail(event.target.value)}
           placeholder="Your email"
           aria-label="Your email address"
-          className="h-10 min-w-0 flex-1 rounded-lg border border-hairline bg-[var(--surface-sunken)] px-3 text-[14px] text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-500"
+          className="h-10 min-w-0 flex-1 rounded-lg border border-hairline bg-[var(--surface-sunken)] px-3 text-[16px] text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-500 sm:text-[14px]"
         />
         <button
           type="submit"
-          disabled={!valid || state === 'sending'}
+          disabled={!valid}
           aria-label="Subscribe"
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-50"
         >
           <Send size={16} aria-hidden />
         </button>
       </div>
-      {state === 'failed' && (
-        <p className="text-[13px] font-semibold text-[#f08080]">That did not send. Try again in a moment.</p>
-      )}
     </form>
   );
 }
@@ -262,7 +251,7 @@ export function FollowList({ social }: { social: SocialLink[] }) {
 /** Round marks only: the footer's and the blog band's row. */
 export function FollowIcons({ social, className }: { social: SocialLink[]; className?: string }) {
   return (
-    <ul className={cn('flex flex-wrap gap-2.5', className)} aria-label="GetSchool on social media">
+    <ul className={cn('flex flex-wrap gap-2.5', className)} aria-label="AfterBI on social media">
       {social.map((link) => {
         const icon = socialIconFor(link.key);
         if (!icon) return null;
@@ -305,7 +294,7 @@ export function PostTile({ post, className }: { post: Post; className?: string }
         <div className="flex aspect-video flex-col rounded-md surface-card p-4 ring-1 ring-inset ring-[var(--border-hairline)] transition-colors group-hover:ring-[var(--border-strong)]">
           <span aria-hidden className="block h-[3px] w-7 rounded-full bg-brand-500" />
           <span className="mt-auto font-display text-[1.35rem] font-extrabold leading-tight tracking-[-0.03em] text-primary">
-            {post.category || 'GetSchool blog'}
+            {post.category || 'AfterBI blog'}
             <span className="text-brand-500">.</span>
           </span>
         </div>

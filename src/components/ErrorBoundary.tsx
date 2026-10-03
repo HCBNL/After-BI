@@ -3,7 +3,7 @@
  *
  * React unmounts the entire tree when a render throws and nothing catches it.
  * With no boundary anywhere, one bad value on one screen left a blank white
- * page with no header, no navigation and no back button — which reads as "the
+ * page with no header, no navigation and no back button: which reads as "the
  * app went offline", because a blank page is what being offline looks like.
  * The only way out was the browser's own back button, and on a page that has
  * already unmounted even that often lands somewhere equally blank.
@@ -112,7 +112,7 @@ const COPY: Record<Kind, { title: string; body: string }> = {
  * serving the cached shell and the cached assets it already has. Clearing the
  * caches and reloading is the only reliable way back. The sessionStorage flag
  * is what stops that becoming a reload loop on a page that is broken for some
- * other reason — after one attempt the person sees the message and a button
+ * other reason: after one attempt the person sees the message and a button
  * instead.
  */
 const RECOVERY_FLAG = 'gs:reloaded-for-stale-build';
@@ -217,9 +217,9 @@ export class ErrorBoundary extends Component<Props, State> {
             {/*
               A real link, not `history.back()`. The screen that threw is gone
               from the React tree, and on a first visit there is nothing behind
-              it in the history to go back to — the button did nothing, which
+              it in the history to go back to: the button did nothing, which
               is exactly the "I cannot even go back" complaint.
-            */}
+ */}
             <a
               href={home}
               className="tap flex items-center rounded-xl border border-hairline px-4 text-[14.5px] font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"

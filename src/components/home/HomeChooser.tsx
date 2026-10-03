@@ -1,5 +1,5 @@
 /**
- * "Choose your home screen" — the sheet behind the layout button.
+ * "Choose your home screen": the sheet behind the layout button.
  *
  * Two small drawings of the two screens, side by side, and one button. The
  * drawings are built from the same colours as the real screens (the panel is
@@ -19,7 +19,6 @@ import { cn } from '@/lib/cn';
 import {
   HOME_LAYOUTS,
   markChooserSeen,
-  requestLayoutTour,
   useHomeLayout,
   type HomeLayout,
 } from '@/hooks/useHomeLayout';
@@ -44,7 +43,7 @@ function Phone({ children }: { children: ReactNode }) {
   );
 }
 
-/* The curve, in miniature — the page rising over the panel. */
+/* The curve, in miniature: the page rising over the panel. */
 function Lip() {
   return <span className="absolute inset-x-0 bottom-0 block h-[10px] rounded-t-[10px] bg-[var(--surface-page)]" />;
 }
@@ -52,7 +51,7 @@ function Lip() {
 function TilesPreview() {
   return (
     <Phone>
-      <span className="gs-hero relative block px-[9%] pb-[16%] pt-[9%]">
+      <span className="ab-hero relative block px-[9%] pb-[16%] pt-[9%]">
         <span className="flex items-start justify-between">
           <span className="block w-1/2 space-y-1">
             <Line className="w-2/3 bg-white/50" />
@@ -78,7 +77,7 @@ function TilesPreview() {
         </span>
         <span
           className="block h-[30px] rounded-[8px]"
-          style={{ backgroundImage: 'linear-gradient(140deg, #c8141f, #4d070c)' }}
+          style={{ backgroundImage: 'linear-gradient(140deg, var(--ground-a), var(--ground-c))' }}
         />
       </span>
     </Phone>
@@ -88,7 +87,7 @@ function TilesPreview() {
 function CardsPreview() {
   return (
     <Phone>
-      <span className="gs-hero relative block px-[9%] pb-[15%] pt-[8%]">
+      <span className="ab-hero relative block px-[9%] pb-[15%] pt-[8%]">
         <span className="flex items-center justify-between">
           <span className="flex gap-[4px]">
             <span className="block h-[7px] w-[9px] rounded-[2px] bg-white/70" />
@@ -137,7 +136,7 @@ function CardsPreview() {
   );
 }
 
-/* ------------------------------------------------------ laptop drawings */
+/* laptop drawings */
 
 /** True from 1024px, where the home screen is the laptop one. */
 function useWide(): boolean {
@@ -153,7 +152,7 @@ function useWide(): boolean {
 }
 
 const MINI_GROUNDS = [
-  'linear-gradient(140deg, #c8141f, #4d070c)',
+  'linear-gradient(140deg, var(--ground-a), var(--ground-c))',
   'linear-gradient(140deg, #2b313b, #0b0d10)',
   'linear-gradient(140deg, #b45309, #5c2406)',
 ];
@@ -199,7 +198,7 @@ function LaptopFoot() {
 function LaptopTilesPreview() {
   return (
     <Laptop>
-      <span className="gs-hero relative block px-[6%] pb-[8%] pt-[5%]">
+      <span className="ab-hero relative block px-[6%] pb-[8%] pt-[5%]">
         <LaptopHead />
         <span className="mt-[5%] grid grid-cols-8 gap-[3px]">
           {Array.from({ length: 16 }, (_, i) => (
@@ -223,7 +222,7 @@ function LaptopTilesPreview() {
 function LaptopCardsPreview() {
   return (
     <Laptop>
-      <span className="gs-hero relative block px-[6%] pb-[8%] pt-[5%]">
+      <span className="ab-hero relative block px-[6%] pb-[8%] pt-[5%]">
         <LaptopHead />
         <span className="mt-[6%] grid grid-cols-3 gap-[4px]">
           {[0, 1, 2].map((i) => (
@@ -304,6 +303,9 @@ export function HomeChooser({ open, onClose, uid }: { open: boolean; onClose: ()
         <h2 id="home-chooser-title" className="px-8 text-center font-display text-[20px] font-bold text-primary">
           Choose your home screen
         </h2>
+        <p className="mx-auto mt-1.5 max-w-[19rem] text-center text-[13px] leading-snug text-muted">
+          Both have everything. They differ in what you see first.
+        </p>
 
         <div role="radiogroup" aria-label="Home screen" className="mt-5 grid grid-cols-2 gap-3.5 lg:gap-6">
           {HOME_LAYOUTS.map((option) => {
@@ -350,8 +352,6 @@ export function HomeChooser({ open, onClose, uid }: { open: boolean; onClose: ()
           size="lg"
           className="mt-6"
           onClick={() => {
-            // A different screen gets a short tour of where things went.
-            if (picked !== layout) requestLayoutTour(picked);
             setLayout(picked);
             onClose();
           }}
