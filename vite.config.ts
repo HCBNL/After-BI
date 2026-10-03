@@ -69,6 +69,7 @@ function seoFiles(mode: string): Plugin {
         { loc: '/pricing', priority: '0.8' },
         { loc: '/about', priority: '0.8' },
         { loc: '/roles', priority: '0.7' },
+        { loc: '/partners', priority: '0.7' },
         { loc: '/blog', priority: '0.7' },
         { loc: '/demo', priority: '0.6' },
         ...(await articles()).map((post) => ({ loc: `/blog/${post.slug}`, priority: '0.6', date: post.date })),
