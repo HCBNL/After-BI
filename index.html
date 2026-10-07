@@ -25,10 +25,10 @@
       never runs it. Every public page then declares its own through the `Seo`
       component, which React 19 hoists into this head and swaps on navigation.
     -->
-    <title>AfterBI: distribution management for FMCG</title>
+    <title>AfterBI: the sales and distribution platform</title>
     <meta
       name="description"
-      content="Sell-in is a number you already have. Sell-out is the one that decides next month. AfterBI runs orders, stock, invoices, credit and sell-out for Nigerian FMCG distribution."
+      content="AfterBI is the sales and distribution platform for consumer goods companies: pipeline, orders, inventory, billing, credit and channel intelligence on one secure cloud platform."
     />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -79,17 +79,14 @@
       #boot .body { flex: 1; min-width: 0; }
       #boot .pad { padding: 16px; }
 
-      /* the public site: ink, lit from the top left, exactly as SiteSkeleton */
-      #boot .site { min-height: 100dvh; background: #0a0c10; }
-      #boot .lit {
-        background-image:
-          radial-gradient(60rem 32rem at 12% -10%, rgba(16,185,129,.26), transparent 62%),
-          radial-gradient(48rem 30rem at 92% 8%, rgba(20,90,122,.24), transparent 60%);
-      }
+      /* the public site: white, with the navy promo strip, exactly as SiteSkeleton */
+      #boot .site { min-height: 100dvh; background: #ffffff; }
+      #boot .promo { height: 36px; background: #0f1f36; }
+      #boot .lit { background: linear-gradient(180deg, #f6faf8 0%, #ffffff 100%); }
       #boot .col { margin: 0 auto; width: 100%; max-width: 80rem; box-sizing: border-box; padding: 0 1.25rem; }
       @media (min-width: 640px) { #boot .col { padding: 0 2rem; } }
       #boot .nav { display: flex; height: 64px; align-items: center; justify-content: space-between; }
-      #boot .gh { background: rgba(255,255,255,.1); border-radius: 12px; }
+      #boot .gh { background: #e3ebf5; border-radius: 12px; }
 
       /* One is hidden. Which one is decided by the script below. */
       html[data-boot='site'] #boot .app { display: none; }
@@ -137,6 +134,7 @@
 
         <div class="site lit">
           <div class="strip"></div>
+          <div class="promo"></div>
           <div class="col nav">
             <div class="gh" style="height:18px;width:104px"></div>
             <div class="gh" style="height:36px;width:150px"></div>

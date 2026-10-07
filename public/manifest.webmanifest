@@ -2,7 +2,7 @@
   "id": "/",
   "name": "AfterBI",
   "short_name": "AfterBI",
-  "description": "Distribution management for FMCG: orders, stock, invoices, credit and sell-out.",
+  "description": "The sales and distribution platform for consumer goods companies.",
   "lang": "en",
   "dir": "ltr",
   "start_url": "/login",

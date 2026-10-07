@@ -10,49 +10,11 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 /*
  * sitemap.xml and robots.txt, written at build time.
  *
- * The public pages and every feature page come from the source. The blog's
- * published articles are read from Firestore over plain HTTPS with the same
- * public web config the app uses, so every deploy lists the articles that
- * exist at that moment. If that read fails the sitemap is written without
- * them; a build never fails over a sitemap.
+ * The public pages and every feature page come from the source.
  */
 function seoFiles(mode: string): Plugin {
   const env = loadEnv(mode, rootDir, '');
   const site = (env.VITE_SITE_URL || 'https://afterbi.com').replace(/\/$/, '');
-  const project = env.VITE_FIREBASE_PROJECT_ID;
-  const key = env.VITE_FIREBASE_API_KEY;
-
-  async function articles(): Promise<{ slug: string; date: string }[]> {
-    if (!project) return [];
-    try {
-      const response = await fetch(
-        `https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents:runQuery${key ? `?key=${key}` : ''}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            structuredQuery: {
-              from: [{ collectionId: 'posts' }],
-              where: { fieldFilter: { field: { fieldPath: 'status' }, op: 'EQUAL', value: { stringValue: 'published' } } },
-              limit: 100,
-            },
-          }),
-          signal: AbortSignal.timeout(8000),
-        },
-      );
-      if (!response.ok) return [];
-      const rows = (await response.json()) as { document?: { name: string; fields?: Record<string, { stringValue?: string }> } }[];
-      return rows
-        .filter((row) => row.document)
-        .map((row) => ({
-          slug: row.document!.name.split('/').pop() ?? '',
-          date: (row.document!.fields?.updatedAt?.stringValue || row.document!.fields?.publishedAt?.stringValue || '').slice(0, 10),
-        }))
-        .filter((row) => row.slug);
-    } catch {
-      return [];
-    }
-  }
 
   return {
     name: 'seo-files',
@@ -66,13 +28,10 @@ function seoFiles(mode: string): Plugin {
         { loc: '/', priority: '1.0' },
         { loc: '/features', priority: '0.9' },
         ...modules.map((slug) => ({ loc: `/features/${slug}`, priority: '0.8' })),
+        { loc: '/solutions', priority: '0.8' },
         { loc: '/pricing', priority: '0.8' },
-        { loc: '/about', priority: '0.8' },
-        { loc: '/roles', priority: '0.7' },
         { loc: '/partners', priority: '0.7' },
-        { loc: '/blog', priority: '0.7' },
         { loc: '/demo', priority: '0.6' },
-        ...(await articles()).map((post) => ({ loc: `/blog/${post.slug}`, priority: '0.6', date: post.date })),
       ];
       const xml =
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
