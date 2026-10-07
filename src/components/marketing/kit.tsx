@@ -23,13 +23,14 @@ import {
 } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
-import { cn } from '@/lib/cn';
+import { Link } from 'react-router-dom';
 import { useAsync } from '@/hooks/useAsync';
 import { getSiteHome, type SiteHome } from '@/lib/siteDoc';
 import { WHATSAPP_URL } from '@/lib/site';
 import { SiteFooter, SiteHeader } from './chrome';
 import { BookDemo } from './BookDemo';
 import { btn, container } from './tokens';
+import { SiteImage } from './site-ui';
 
 /* ---------------------------------------------------------------- the ask */
 
@@ -86,7 +87,7 @@ export function PublicShell({
 }) {
   const [booking, setBooking] = useState(false);
   const [params, setParams] = useSearchParams();
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   const [cached] = useState(readCachedHome);
   const { data } = useAsync(getSiteHome, [], { handleError: true, cache: 'site-home' });
@@ -127,8 +128,14 @@ export function PublicShell({
    * scroll the document, so they do.
    */
   useEffect(() => {
+    if (hash) {
+      /* A link to a section: wait a frame for the page to draw, then go there. */
+      const id = decodeURIComponent(hash.slice(1));
+      const timer = window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+      return () => window.clearTimeout(timer);
+    }
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
-  }, [pathname]);
+  }, [pathname, hash]);
 
   const book = useCallback(() => setBooking(true), []);
   const ask = useMemo(() => ({ book, home }), [book, home]);
@@ -144,8 +151,8 @@ export function PublicShell({
     const root = document.documentElement;
     const meta = document.querySelector('meta[name="theme-color"]');
     const before = meta?.getAttribute('content');
-    root.dataset.surface = 'night';
-    meta?.setAttribute('content', '#0a0c10');
+    root.dataset.surface = 'site';
+    meta?.setAttribute('content', '#0f1f36');
     return () => {
       delete root.dataset.surface;
       if (meta && before) meta.setAttribute('content', before);
@@ -154,7 +161,7 @@ export function PublicShell({
 
   return (
     <AskContext.Provider value={ask}>
-      <div className="ink flex min-h-[100dvh] flex-col">
+      <div className="site flex min-h-[100dvh] flex-col">
         <SiteHeader overlay={overlay} onBook={book} />
         <main className="flex-1">{children}</main>
         {closing && <ClosingBand />}
@@ -169,47 +176,69 @@ export function PublicShell({
 
 /* ------------------------------------------------------- the closing band */
 
-/**
- * The green band above every footer. The last thing a reader sees is the ask.
- *
- * Green here and nowhere else at this size: the band is the one place on the
- * site where the brand colour is the material rather than the mark, and it
- * works precisely because the twelve screens above it were ink and paper.
- */
+/** The last thing a reader sees is the ask: a green band with a picture beside it. */
 function ClosingBand() {
   const { book } = useAsk();
 
   return (
-    <section className="relative isolate overflow-hidden bg-brand-700 text-white dark:bg-brand-800">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-44 -left-28 -z-10 h-[26rem] w-[26rem] rounded-full border-[3.5rem] border-white/[0.07]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-24 -top-40 -z-10 h-[24rem] w-[24rem] rounded-full bg-white/[0.06]"
-      />
-
-      <div className={cn(container, 'py-16 text-center sm:py-20')}>
-        <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-white/60">Forty minutes, on your numbers</p>
-        <h2 className="mx-auto mt-4 max-w-3xl font-display text-[2.1rem] font-extrabold leading-[1.04] tracking-[-0.04em] sm:text-[3.2rem]">
-          Find out what your channel is actually holding.
-        </h2>
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <button type="button" onClick={book} className={cn(btn.white, 'focus-visible:outline-white')}>
-            Book a walkthrough
-          </button>
-          <a
-            href={WHATSAPP_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-            className={cn(btn.lineWhite, 'focus-visible:outline-white')}
-          >
-            Message us on WhatsApp
-          </a>
+    <section className="bg-white py-16 sm:py-20">
+      <div className={container}>
+        <div className="relative isolate grid overflow-hidden rounded-[2rem] bg-brand-700 text-white lg:grid-cols-[1.15fr_1fr]">
+          <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 -z-10 h-80 w-80 rounded-full bg-brand-500/40 blur-3xl" />
+          <div className="p-8 sm:p-12 lg:p-14">
+            <p className="text-[13px] font-bold uppercase tracking-[0.16em] text-brand-200">Book a demo</p>
+            <h2 className="mt-4 font-display text-[2rem] font-extrabold leading-[1.08] tracking-[-0.035em] sm:text-[2.8rem]">
+              Ready to see AfterBI in action?
+            </h2>
+            <p className="mt-4 max-w-md text-[17px] leading-relaxed text-white/80">
+              A guided demo, configured around your products, partners and price lists.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <button type="button" onClick={book} className={btn.white}>
+                Book a demo
+              </button>
+              <Link to="/pricing" className={btn.lineWhite}>
+                See plans and pricing
+              </Link>
+            </div>
+          </div>
+          <SiteImage
+            slot="cta-team"
+            alt="The AfterBI team"
+            className="min-h-[16rem] lg:min-h-full"
+            fallback={<ClosingArt />}
+          />
         </div>
       </div>
     </section>
+  );
+}
+
+/** What the closing band shows until a photograph is added. */
+function ClosingArt() {
+  return (
+    <div className="relative h-full w-full bg-brand-800">
+      <div aria-hidden className="site-dark-dots absolute inset-0" />
+      <div className="absolute inset-0 flex items-center justify-center p-10">
+        <div className="w-full max-w-xs rounded-2xl bg-white p-5 text-navy-900 shadow-2xl">
+          <p className="text-[12px] font-bold uppercase tracking-wide text-navy-400">This month</p>
+          <div className="mt-3 flex items-end justify-between">
+            <span>
+              <span className="block text-[12px] text-navy-500">Sell in</span>
+              <span className="font-display text-[1.4rem] font-extrabold">₦84.2m</span>
+            </span>
+            <span className="text-right">
+              <span className="block text-[12px] text-navy-500">Sell through</span>
+              <span className="font-display text-[1.4rem] font-extrabold text-brand-700">₦71.9m</span>
+            </span>
+          </div>
+          <div className="mt-4 h-2.5 rounded-full bg-navy-100">
+            <div className="h-full w-[85%] rounded-full bg-brand-500" />
+          </div>
+          <p className="mt-2 text-[12px] font-semibold text-navy-500">₦12.3m still in the channel</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -231,7 +260,7 @@ function WhatsAppButton() {
       target="_blank"
       rel="noreferrer noopener"
       aria-label="Message AfterBI on WhatsApp"
-      className="fixed bottom-5 right-5 z-40 inline-flex h-13 w-13 items-center justify-center rounded-full bg-brand-600 text-white shadow-pop transition-transform hover:scale-105 active:scale-95 sm:bottom-7 sm:right-7 dark:bg-brand-500 dark:text-brand-950"
+      className="fixed bottom-5 right-5 z-40 inline-flex h-13 w-13 items-center justify-center rounded-full bg-[#ee6a00] text-white shadow-pop transition-transform hover:scale-105 active:scale-95 sm:bottom-7 sm:right-7"
       style={{ bottom: 'calc(1.25rem + var(--safe-bottom))' }}
     >
       <MessageCircle size={22} aria-hidden />

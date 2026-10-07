@@ -2,35 +2,42 @@
  * Class strings shared by every public page.
  *
  * In a file with no imports on purpose, so the header, the footer and the
- * pages can all read it without importing one another and without the circular
- * graph that always follows from putting shared classes "somewhere sensible".
+ * pages can all read it without importing one another.
  *
- * WHY THESE AND NOT `<Button>`
- *
- * The product's own button is sized for dense interface: a row in a table of
- * order lines, beside forty others. A public page has two buttons on a screen
- * and they are the screen's furniture, so they are taller and heavier. Reusing
- * the product's button here made the front page look like a settings panel.
+ * The public site is light: white paper, navy type, green for the one thing a
+ * screen wants pressed. Buttons are pill shaped and tall, the way a visitor's
+ * thumb expects a marketing page to be.
  */
 
 const base =
-  'tap inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-6 ' +
+  'tap inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 ' +
   'text-[15px] font-bold transition-colors active:scale-[0.98]';
 
 export const btn = {
   /** The one thing a screen wants pressed. */
-  green: `${base} bg-brand-600 text-white hover:bg-brand-500`,
-  /** Second choice, over a photograph or the dark page. */
-  glass: `${base} bg-white/14 text-white ring-1 ring-inset ring-white/20 backdrop-blur hover:bg-white/24`,
-  /** White on the dark page. */
-  light: `${base} bg-white text-night hover:bg-white/88`,
-  /** White on the green band. */
-  white: `${base} bg-white text-brand-800 hover:bg-brand-50`,
-  /** Outline on the green band. */
-  lineWhite: `${base} border border-white/45 text-white hover:bg-white/10`,
-  /** Outline on the dark page. */
-  line: `${base} border border-white/20 text-white hover:bg-white/10`,
+  green: `${base} bg-brand-600 text-white hover:bg-brand-700`,
+  /** Second choice on white. */
+  outline: `${base} border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white`,
+  /** Navy, solid. */
+  navy: `${base} bg-navy-900 text-white hover:bg-navy-800`,
+  /** White on a dark or green band. */
+  white: `${base} bg-white text-navy-900 hover:bg-brand-50`,
+  /** Outline on a dark or green band. */
+  lineWhite: `${base} border-2 border-white/60 text-white hover:bg-white/10`,
+
+  /* Kept for the few shared pieces that still ask for the old names. */
+  light: `${base} bg-white text-navy-900 hover:bg-brand-50`,
+  glass: `${base} border-2 border-navy-900/15 text-navy-900 hover:border-navy-900`,
+  line: `${base} border-2 border-navy-900/15 text-navy-900 hover:border-navy-900`,
 } as const;
 
 /** The content column, the same width on every page. */
 export const container = 'mx-auto w-full max-w-7xl px-5 sm:px-8';
+
+/** Small green label above a section title. */
+export const eyebrowBase = 'text-[13px] font-bold uppercase tracking-[0.14em]';
+export const eyebrow = `${eyebrowBase} text-brand-700`;
+
+/** Text link with an arrow feel. */
+export const textLink =
+  'inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-700 underline-offset-4 hover:underline';

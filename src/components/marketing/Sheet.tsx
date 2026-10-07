@@ -89,7 +89,7 @@ export function Sheet({
 
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-stretch justify-center sm:items-center sm:p-6">
-      <div className="absolute inset-0 animate-fade-in bg-night/80 backdrop-blur-md" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 animate-fade-in bg-navy-950/60 backdrop-blur-md" onClick={onClose} aria-hidden />
 
       <div
         ref={panelRef}
@@ -98,7 +98,7 @@ export function Sheet({
         aria-label={label}
         tabIndex={-1}
         className={cn(
-          'ink relative isolate z-10 flex h-full w-full animate-scale-in flex-col overflow-hidden border-white/10 outline-none',
+          'site relative isolate z-10 flex h-full w-full animate-scale-in flex-col overflow-hidden border-navy-900/10 outline-none',
           'sm:h-auto sm:max-h-[92vh] sm:rounded-[1.75rem] sm:border sm:shadow-pop',
           wide ? 'sm:max-w-3xl' : 'sm:max-w-lg',
         )}
@@ -106,7 +106,7 @@ export function Sheet({
         {/* The green light over the top of the sheet, as on the front page. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(70%_100%_at_50%_0%,rgba(16,185,129,0.20),rgba(16,185,129,0)_70%)]"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(70%_100%_at_50%_0%,rgba(16,185,129,0.12),rgba(16,185,129,0)_70%)]"
         />
 
         {progress !== undefined && (

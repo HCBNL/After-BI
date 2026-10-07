@@ -77,25 +77,23 @@ export function PageSkeleton() {
  */
 export function SiteSkeleton() {
   return (
-    <div className="min-h-dvh surface-page" aria-busy>
-      <div className="ink relative overflow-hidden">
-        <div className="ink-glow pointer-events-none absolute inset-0" aria-hidden />
-        <div className="status-bar-fill" aria-hidden />
-
-        <div className="relative mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-5 sm:h-[4.5rem] sm:px-8">
-          <Wordmark className="text-[1.15rem]" onInk />
-          <div className="h-9 w-36 rounded-lg bg-white/12" />
-        </div>
-
-        <div className="relative mx-auto w-full max-w-7xl px-5 pb-20 pt-14 sm:px-8 sm:pb-28 sm:pt-20">
-          <div className="h-7 w-44 rounded-full bg-white/10" />
-          <div className="mt-7 h-10 w-full max-w-2xl rounded-xl bg-white/10 sm:h-12" />
-          <div className="mt-3 h-10 w-full max-w-xl rounded-xl bg-white/10 sm:h-12" />
-          <div className="mt-8 h-4 w-full max-w-lg rounded-full bg-white/8" />
-          <div className="mt-2.5 h-4 w-full max-w-md rounded-full bg-white/8" />
+    <div className="site min-h-dvh" aria-busy>
+      <div className="status-bar-fill" aria-hidden />
+      <div className="h-9 bg-navy-900" />
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-5 sm:h-[4.5rem] sm:px-8">
+        <Wordmark className="text-[1.35rem] !text-navy-900" />
+        <div className="h-10 w-40 rounded-full bg-navy-50" />
+      </div>
+      <div className="site-wash">
+        <div className="mx-auto w-full max-w-7xl px-5 pb-20 pt-14 sm:px-8 sm:pt-20">
+          <div className="h-8 w-56 rounded-full bg-navy-100/70" />
+          <div className="mt-7 h-12 w-full max-w-2xl rounded-xl bg-navy-100/70" />
+          <div className="mt-3 h-12 w-full max-w-xl rounded-xl bg-navy-100/70" />
+          <div className="mt-8 h-4 w-full max-w-lg rounded-full bg-navy-100/60" />
+          <div className="mt-2.5 h-4 w-full max-w-md rounded-full bg-navy-100/60" />
           <div className="mt-9 flex gap-3">
-            <div className="h-12 w-48 rounded-xl bg-white/12" />
-            <div className="h-12 w-40 rounded-xl bg-white/8" />
+            <div className="h-12 w-48 rounded-full bg-brand-100" />
+            <div className="h-12 w-44 rounded-full bg-navy-100/70" />
           </div>
         </div>
       </div>

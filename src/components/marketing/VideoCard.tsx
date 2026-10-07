@@ -48,7 +48,7 @@ export function VideoCard({
 
   /* The console's own poster wins; otherwise YouTube's, if there is one. */
   const still = poster ? imageUrl(poster, { width: 900 }) : youtubePoster(url);
-  const label = (title ?? '').trim() || 'Watch the walkthrough';
+  const label = (title ?? '').trim() || 'Watch the demo';
 
   /* Autoplay only ever follows a press, never a page load. */
   const src =

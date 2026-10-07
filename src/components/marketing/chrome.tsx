@@ -1,48 +1,45 @@
 /**
- * The bar at the top and the block at the bottom.
+ * The bar at the top and the block at the bottom of every public page.
  *
  * THE HEADER
  *
- * Four destinations, named the way a visitor says them: Home, Product, Pricing
- * and About. The footer and the structured data use those same four names,
- * because the label under a search result's sitelink is drawn from a site's own
- * anchor text, and one page with three names is a page with none.
- *
- * Sign in is on the bar at every width, never folded into the menu. Most people
- * who arrive here are a rep about to key an order or a distributor chasing a
- * statement, not a buyer, and making the people who use the product every day
- * hunt for the door is how a front page annoys its best audience.
- *
- * It starts transparent over the front page's ink hero and turns into the
- * page's own bar as soon as anything is scrolled. Every other page gets the
- * solid bar from the first frame.
+ * A thin promo strip, then the bar: the name, five destinations, and on the
+ * right the door ("Sign in", or "Your portal" when signed in) and the one ask.
+ * Products, Solutions and Support open a full-width menu panel on a laptop;
+ * on a phone everything folds into one sheet with sections that open.
  *
  * THE PHONE MENU IS PORTALLED
  *
- * The bar blurs what is behind it once the page has scrolled, and a blurred
- * element becomes the containing block for anything fixed inside it. A menu
- * drawn inside the bar would then be clipped to the bar's own sixty pixels.
- * Rendering it into `document.body` keeps it the full screen it is meant to be.
+ * The bar blurs what is behind it, and a blurred element becomes the containing
+ * block for anything fixed inside it. Rendering the sheet into `document.body`
+ * keeps it the full screen it is meant to be.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
+import { ArrowRight, ChevronDown, LifeBuoy, Mail, MessageCircle, Menu, PlayCircle, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { useAuth, HOME_FOR_ROLE } from '@/context/AuthContext';
-import { MODULES, NAV, SOCIAL, SUPPORT_EMAIL, type SocialKey } from '@/lib/site';
-import { btn } from './tokens';
+import {
+  COMPANY,
+  INDUSTRIES,
+  MODULES,
+  NAV,
+  PRODUCT_GROUPS,
+  PROMO,
+  SOCIAL,
+  SOLUTIONS,
+  SUPPORT_EMAIL,
+  WHATSAPP_URL,
+  type SocialKey,
+} from '@/lib/site';
+import { btn, container } from './tokens';
+import { ModuleIcon } from './site-ui';
 
-/**
- * Where the door on the bar leads, and what it is called.
- *
- * A signed-in person reading the product page, which happens more than it
- * sounds like it does, because reps and distributors follow links from emails
- * and from their own colleagues, should not be offered "Sign in". They are
- * signed in. They get the way into their own portal instead, and it is one
- * tap rather than a sign-in screen that redirects them a moment later.
- */
+type MenuKey = 'products' | 'solutions' | 'support';
+
 function useDoor(): { label: string; to: string } {
   const { user, loading } = useAuth();
   if (loading || !user) return { label: 'Sign in', to: '/login' };
@@ -56,136 +53,319 @@ function isActive(href: string, pathname: string): boolean {
 
 /* ------------------------------------------------------------- the header */
 
-export function SiteHeader({ onBook, overlay = false }: { onBook: () => void; overlay?: boolean }) {
-  const [open, setOpen] = useState(false);
+export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }) {
+  const [sheet, setSheet] = useState(false);
+  const [menu, setMenu] = useState<MenuKey | null>(null);
   const [lifted, setLifted] = useState(false);
   const { pathname } = useLocation();
   const door = useDoor();
+  const closeTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    const onScroll = () => setLifted(window.scrollY > 24);
+    const onScroll = () => setLifted(window.scrollY > 8);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  /* Over the hero and not yet scrolled: the bar is the hero. */
-  const clear = overlay && !lifted;
+  /* A new page closes any open panel. */
+  useEffect(() => setMenu(null), [pathname]);
+
+  useEffect(() => {
+    if (!menu) return;
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setMenu(null);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [menu]);
+
+  const openSoon = (key: MenuKey) => {
+    window.clearTimeout(closeTimer.current);
+    setMenu(key);
+  };
+  const closeSoon = () => {
+    window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setMenu(null), 160);
+  };
 
   return (
-    <header
-      className={cn(
-        'inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-300',
-        overlay ? 'fixed' : 'sticky',
-        clear
-          ? 'border-transparent bg-gradient-to-b from-[#0a0c10]/80 to-transparent'
-          : 'border-hairline bg-[var(--surface-page)]/92 backdrop-blur-xl',
-      )}
-    >
-      {/* The strip behind an installed phone's status bar. See AppShell. */}
+    <header className="sticky top-0 z-50" onMouseLeave={closeSoon}>
       <div className="status-bar-fill" aria-hidden />
 
-      {/* Three columns on a laptop, so the menu sits in the true middle whatever
-          the widths of the name on the left and the buttons on the right. */}
-      <div className="mx-auto grid h-16 w-full max-w-7xl grid-cols-[1fr_auto] items-center gap-3 px-4 sm:h-[4.5rem] sm:px-8 lg:grid-cols-[1fr_auto_1fr] lg:gap-8">
-        <Link to="/" aria-label="AfterBI home" className="justify-self-start">
-          <Wordmark onInk={clear} className="text-[1.3rem] sm:text-[1.45rem]" />
-        </Link>
-
-        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
-          {NAV.map((item) => {
-            const active = isActive(item.href, pathname);
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'relative rounded-md px-3.5 py-2 text-[14.5px] font-semibold transition-colors',
-                  clear
-                    ? active
-                      ? 'text-white'
-                      : 'text-white/70 hover:text-white'
-                    : active
-                      ? 'text-primary'
-                      : 'text-secondary hover:text-primary',
-                )}
-              >
-                {item.label}
-                {active && (
-                  <span aria-hidden className="absolute inset-x-3.5 -bottom-1 h-[3px] rounded-full bg-brand-500" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-1 justify-self-end sm:gap-2.5">
-          <Link
-            to={door.to}
-            className={cn(
-              'tap inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-2.5 text-[14px] font-bold transition-colors sm:px-3.5',
-              clear ? 'text-white hover:bg-white/10' : 'text-primary hover:bg-[var(--surface-sunken)]',
-            )}
-          >
-            {door.label}
-          </Link>
-
-          {/*
-            Two labels, one button.
-
-            "Book a walkthrough" is the right words and it does not fit: at
-            390px the bar carried the name, "Sign in", this button and the
-            menu, and the first thing to give way was the wordmark, which
-            wrapped. Shortening the label on the phone keeps all four on one
-            line and keeps the ask on the bar, which is better than dropping
-            the ask, the hero's own button is a screen away by the time
-            somebody has started reading.
-          */}
-          <button
-            type="button"
-            onClick={onBook}
-            className="tap inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-brand-600 px-3.5 text-[13.5px] font-bold text-white transition-colors hover:bg-brand-700 sm:px-5 sm:text-[14.5px] dark:bg-brand-500 dark:text-brand-950 dark:hover:bg-brand-400"
-          >
-            <span className="sm:hidden">Book a demo</span>
-            <span className="hidden sm:inline">Book a walkthrough</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            aria-label="Open the menu"
-            aria-expanded={open}
-            aria-haspopup="dialog"
-            className={cn(
-              'tap inline-flex flex-col items-center justify-center gap-[5px] rounded-lg transition-colors lg:hidden',
-              clear ? 'text-white hover:bg-white/10' : 'text-primary hover:bg-[var(--surface-sunken)]',
-            )}
-          >
-            <span className="block h-[2px] w-5 rounded-full bg-current" />
-            <span className="block h-[2px] w-5 rounded-full bg-current" />
-            <span className="block h-[2px] w-5 rounded-full bg-current" />
-          </button>
+      {/* The promo strip. */}
+      <div className="bg-navy-900 text-white">
+        <div className={cn(container, 'flex h-9 items-center justify-center gap-3 text-[13px] sm:justify-between')}>
+          <p className="truncate">
+            <span className="font-semibold">{PROMO.text}</span>{' '}
+            <Link to={PROMO.link.href} className="hidden font-bold text-brand-300 underline-offset-4 hover:underline sm:inline">
+              {PROMO.link.label}
+            </Link>
+          </p>
+          <div className="hidden items-center gap-5 text-white/75 sm:flex">
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-white">
+              {SUPPORT_EMAIL}
+            </a>
+            <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="hover:text-white">
+              WhatsApp us
+            </a>
+          </div>
         </div>
       </div>
 
-      {open && <MenuSheet pathname={pathname} onClose={() => setOpen(false)} onBook={onBook} />}
+      {/* The bar. */}
+      <div
+        className={cn(
+          'border-b bg-white/95 backdrop-blur-xl transition-shadow',
+          lifted || menu ? 'border-navy-900/10 shadow-[0_6px_24px_-16px_rgba(15,31,54,0.4)]' : 'border-transparent',
+        )}
+      >
+        <div className={cn(container, 'flex h-16 items-center gap-6 sm:h-[4.5rem]')}>
+          <Link to="/" aria-label="AfterBI home" className="shrink-0">
+            <Wordmark className="text-[1.35rem] !text-navy-900 sm:text-[1.5rem]" />
+          </Link>
+
+          <nav aria-label="Main" className="hidden flex-1 items-center gap-1 lg:flex">
+            {NAV.map((item) => {
+              const active = isActive(item.href, pathname);
+              if (item.menu) {
+                const key = item.menu;
+                const open = menu === key;
+                return (
+                  <button
+                    key={item.label}
+                    type="button"
+                    aria-expanded={open}
+                    onMouseEnter={() => openSoon(key)}
+                    onFocus={() => openSoon(key)}
+                    onClick={() => setMenu(open ? null : key)}
+                    className={cn(
+                      'inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors',
+                      open || active ? 'bg-navy-50 text-navy-900' : 'text-navy-700 hover:bg-navy-50 hover:text-navy-900',
+                    )}
+                  >
+                    {item.label}
+                    <ChevronDown size={15} aria-hidden className={cn('transition-transform', open && 'rotate-180')} />
+                  </button>
+                );
+              }
+              return (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onMouseEnter={() => setMenu(null)}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors',
+                    active ? 'bg-navy-50 text-navy-900' : 'text-navy-700 hover:bg-navy-50 hover:text-navy-900',
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5">
+            <Link
+              to={door.to}
+              className="tap inline-flex items-center rounded-full px-3 text-[14.5px] font-bold text-navy-900 hover:bg-navy-50 sm:px-4"
+            >
+              {door.label}
+            </Link>
+            <button
+              type="button"
+              onClick={onBook}
+              className="tap hidden items-center rounded-full bg-brand-600 px-5 text-[14.5px] font-bold text-white transition-colors hover:bg-brand-700 sm:inline-flex"
+            >
+              Book a demo
+            </button>
+            <button
+              type="button"
+              onClick={() => setSheet(true)}
+              aria-label="Open the menu"
+              aria-expanded={sheet}
+              aria-haspopup="dialog"
+              className="tap inline-flex items-center justify-center rounded-full px-2.5 text-navy-900 hover:bg-navy-50 lg:hidden"
+            >
+              <Menu size={24} aria-hidden />
+            </button>
+          </div>
+        </div>
+
+        {/* The menu panel, laptops only. */}
+        {menu && (
+          <div
+            className="absolute inset-x-0 top-full hidden border-b border-navy-900/10 bg-white shadow-[0_24px_48px_-24px_rgba(15,31,54,0.35)] lg:block"
+            onMouseEnter={() => openSoon(menu)}
+          >
+            <div className={cn(container, 'py-8')}>
+              {menu === 'products' && <ProductsPanel onBook={onBook} />}
+              {menu === 'solutions' && <SolutionsPanel />}
+              {menu === 'support' && <SupportPanel onBook={onBook} />}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {sheet && <MenuSheet onClose={() => setSheet(false)} onBook={onBook} />}
     </header>
+  );
+}
+
+/* -------------------------------------------------------------- the panels */
+
+function PanelLink({ to, title, body, icon }: { to: string; title: string; body?: string; icon?: ReactNode }) {
+  return (
+    <Link to={to} className="group flex gap-3 rounded-xl p-3 transition-colors hover:bg-navy-50">
+      {icon && (
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-600 group-hover:text-white">
+          {icon}
+        </span>
+      )}
+      <span>
+        <span className="block text-[15px] font-bold text-navy-900">{title}</span>
+        {body && <span className="mt-0.5 block text-[13.5px] leading-snug text-navy-600">{body}</span>}
+      </span>
+    </Link>
+  );
+}
+
+function PanelTitle({ children }: { children: ReactNode }) {
+  return <p className="px-3 pb-2 text-[12px] font-bold uppercase tracking-[0.14em] text-navy-400">{children}</p>;
+}
+
+function ProductsPanel({ onBook }: { onBook: () => void }) {
+  return (
+    <div className="grid grid-cols-[1fr_1fr_1fr_17rem] gap-6">
+      {PRODUCT_GROUPS.map((group) => (
+        <div key={group.title}>
+          <PanelTitle>{group.title}</PanelTitle>
+          {group.slugs.map((slug) => {
+            const item = MODULES.find((m) => m.slug === slug);
+            if (!item) return null;
+            return (
+              <PanelLink
+                key={slug}
+                to={`/features/${slug}`}
+                title={item.name}
+                body={item.blurb}
+                icon={<ModuleIcon slug={slug} size={19} />}
+              />
+            );
+          })}
+        </div>
+      ))}
+      <PromoCard
+        title="Explore the platform"
+        body="Twelve capabilities, six role based workspaces, one secure cloud. See it with your own data in a guided demo."
+        link={{ to: '/features', label: 'Platform overview' }}
+        onBook={onBook}
+      />
+    </div>
+  );
+}
+
+function SolutionsPanel() {
+  return (
+    <div className="grid grid-cols-[1.4fr_1fr] gap-8">
+      <div>
+        <PanelTitle>By business</PanelTitle>
+        <div className="grid grid-cols-2">
+          {SOLUTIONS.map((item) => (
+            <PanelLink key={item.slug} to={`/solutions#${item.slug}`} title={item.name} body={item.blurb} />
+          ))}
+        </div>
+      </div>
+      <div>
+        <PanelTitle>By category</PanelTitle>
+        <ul className="grid grid-cols-2 gap-x-4 px-3">
+          {INDUSTRIES.map((item) => (
+            <li key={item.name}>
+              <Link to="/solutions#industries" className="block py-2 text-[14.5px] font-semibold text-navy-700 hover:text-brand-700">
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <Link to="/solutions" className="mt-4 inline-flex items-center gap-1.5 px-3 text-[14.5px] font-bold text-brand-700 hover:underline">
+          All solutions <ArrowRight size={16} aria-hidden />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function SupportPanel({ onBook }: { onBook: () => void }) {
+  return (
+    <div className="grid grid-cols-[1fr_1fr_20rem] gap-8">
+      <div>
+        <PanelTitle>Get help</PanelTitle>
+        <PanelLink to="/help/sign-in" title="Sign in help" body="Reset a password or find your workspace." icon={<LifeBuoy size={19} />} />
+        <PanelLink to="/demo" title="Book a demo" body="A guided tour, configured around your business." icon={<PlayCircle size={19} />} />
+      </div>
+      <div>
+        <PanelTitle>Talk to us</PanelTitle>
+        <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="group flex gap-3 rounded-xl p-3 hover:bg-navy-50">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white">
+            <MessageCircle size={19} aria-hidden />
+          </span>
+          <span>
+            <span className="block text-[15px] font-bold text-navy-900">WhatsApp</span>
+            <span className="mt-0.5 block text-[13.5px] text-navy-600">Chat with our team directly.</span>
+          </span>
+        </a>
+        <a href={`mailto:${SUPPORT_EMAIL}`} className="group flex gap-3 rounded-xl p-3 hover:bg-navy-50">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white">
+            <Mail size={19} aria-hidden />
+          </span>
+          <span>
+            <span className="block text-[15px] font-bold text-navy-900">Email</span>
+            <span className="mt-0.5 block text-[13.5px] text-navy-600">{SUPPORT_EMAIL}</span>
+          </span>
+        </a>
+      </div>
+      <PromoCard
+        title="Already a customer?"
+        body="Sign in to your workspace. Every team and partner lands on their own dashboard."
+        link={{ to: '/login', label: 'Sign in' }}
+        onBook={onBook}
+      />
+    </div>
+  );
+}
+
+function PromoCard({
+  title,
+  body,
+  link,
+  onBook,
+}: {
+  title: string;
+  body: string;
+  link: { to: string; label: string };
+  onBook: () => void;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-navy-900 p-6 text-white">
+      <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-brand-500/25 blur-2xl" />
+      <p className="relative font-display text-[1.25rem] font-extrabold tracking-[-0.03em]">{title}</p>
+      <p className="relative mt-2 text-[14px] leading-relaxed text-white/70">{body}</p>
+      <div className="relative mt-5 flex flex-col gap-2">
+        <button type="button" onClick={onBook} className={cn(btn.green, 'h-11')}>
+          Book a demo
+        </button>
+        <Link to={link.to} className="inline-flex items-center justify-center gap-1.5 py-2 text-[14px] font-bold text-brand-300 hover:text-white">
+          {link.label} <ArrowRight size={15} aria-hidden />
+        </Link>
+      </div>
+    </div>
   );
 }
 
 /* --------------------------------------------------------- the phone menu */
 
-function MenuSheet({
-  pathname,
-  onClose,
-  onBook,
-}: {
-  pathname: string;
-  onClose: () => void;
-  onBook: () => void;
-}) {
+function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => void }) {
   const door = useDoor();
+  const [open, setOpen] = useState<MenuKey | null>(null);
   const closeRef = useRef(onClose);
   useEffect(() => {
     closeRef.current = onClose;
@@ -195,9 +375,7 @@ function MenuSheet({
     const opener = document.activeElement;
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeRef.current();
-    };
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && closeRef.current();
     document.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = previous;
@@ -206,49 +384,85 @@ function MenuSheet({
     };
   }, []);
 
-  return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Menu"
-      className="ink fixed inset-0 z-[60] flex animate-fade-in flex-col overflow-y-auto lg:hidden"
-    >
-      <div className="status-bar-fill" aria-hidden />
+  const sub = (key: MenuKey): { label: string; to: string; external?: boolean }[] => {
+    if (key === 'products')
+      return [...MODULES.map((m) => ({ label: m.name, to: `/features/${m.slug}` })), { label: 'Platform overview', to: '/features' }];
+    if (key === 'solutions')
+      return [...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions#${s.slug}` })), { label: 'All solutions', to: '/solutions' }];
+    return [
+      { label: 'Sign in help', to: '/help/sign-in' },
+      { label: 'Book a demo', to: '/demo' },
+      { label: 'WhatsApp us', to: WHATSAPP_URL, external: true },
+      { label: SUPPORT_EMAIL, to: `mailto:${SUPPORT_EMAIL}`, external: true },
+    ];
+  };
 
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:h-[4.5rem] sm:px-8">
-        <Wordmark onInk className="text-[1.3rem] sm:text-[1.45rem]" />
+  return createPortal(
+    <div role="dialog" aria-modal="true" aria-label="Menu" className="site fixed inset-0 z-[60] flex animate-fade-in flex-col overflow-y-auto lg:hidden">
+      <div className="status-bar-fill" aria-hidden />
+      <div className={cn(container, 'flex h-16 items-center justify-between border-b border-navy-900/10')}>
+        <Wordmark className="text-[1.35rem] !text-navy-900" />
         <button
           type="button"
           onClick={onClose}
           autoFocus
-          className="tap inline-flex items-center justify-center rounded-lg px-3 text-[14px] font-bold text-white transition-colors hover:bg-white/10"
+          aria-label="Close the menu"
+          className="tap inline-flex items-center justify-center rounded-full px-2.5 text-navy-900 hover:bg-navy-50"
         >
-          Close
+          <X size={24} aria-hidden />
         </button>
       </div>
 
-      <nav aria-label="Main" className="mx-auto mt-4 w-full max-w-7xl px-4 sm:px-8">
+      <nav aria-label="Main" className={cn(container, 'mt-2')}>
         {NAV.map((item) => {
-          const active = isActive(item.href, pathname);
+          if (!item.menu) {
+            return (
+              <Link
+                key={item.label}
+                to={item.href}
+                onClick={onClose}
+                className="flex items-center justify-between border-b border-navy-900/8 py-4 text-[1.2rem] font-bold text-navy-900"
+              >
+                {item.label}
+              </Link>
+            );
+          }
+          const key = item.menu;
+          const isOpen = open === key;
           return (
-            <Link
-              key={item.href}
-              to={item.href}
-              onClick={onClose}
-              aria-current={active ? 'page' : undefined}
-              className={cn(
-                'flex items-center justify-between border-b border-white/8 py-4 font-display text-[1.85rem] font-extrabold tracking-[-0.04em] transition-colors',
-                active ? 'text-white' : 'text-white/55 hover:text-white',
+            <div key={item.label} className="border-b border-navy-900/8">
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                onClick={() => setOpen(isOpen ? null : key)}
+                className="flex w-full items-center justify-between py-4 text-left text-[1.2rem] font-bold text-navy-900"
+              >
+                {item.label}
+                <ChevronDown size={20} aria-hidden className={cn('text-navy-400 transition-transform', isOpen && 'rotate-180')} />
+              </button>
+              {isOpen && (
+                <ul className="pb-3">
+                  {sub(key).map((link) => (
+                    <li key={link.label}>
+                      {link.external ? (
+                        <a href={link.to} target="_blank" rel="noreferrer noopener" className="block py-2 pl-3 text-[15.5px] font-semibold text-navy-600">
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link to={link.to} onClick={onClose} className="block py-2 pl-3 text-[15.5px] font-semibold text-navy-600">
+                          {link.label}
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               )}
-            >
-              {item.label}
-              {active && <span aria-hidden className="h-[3px] w-6 rounded-full bg-brand-500" />}
-            </Link>
+            </div>
           );
         })}
       </nav>
 
-      <div className="pb-safe-6 mx-auto mt-auto grid w-full max-w-7xl gap-3 px-4 pt-10 sm:px-8">
+      <div className={cn(container, 'pb-safe-6 mt-auto grid gap-3 pt-8')}>
         <button
           type="button"
           onClick={() => {
@@ -257,9 +471,9 @@ function MenuSheet({
           }}
           className={btn.green}
         >
-          Book a walkthrough
+          Book a demo
         </button>
-        <Link to={door.to} onClick={onClose} className={btn.glass}>
+        <Link to={door.to} onClick={onClose} className={btn.outline}>
           {door.label}
         </Link>
       </div>
@@ -270,38 +484,27 @@ function MenuSheet({
 
 /* ------------------------------------------------------------- the footer */
 
-/** The five modules a visitor is most likely to have come looking for. */
-const FOOTER_MODULES = ['orders', 'sell-out', 'stock', 'invoices', 'credit'];
-
 export function SiteFooter() {
   const year = new Date().getFullYear();
-  const text = 'text-[15px] leading-[1.6]';
 
-  const modules = FOOTER_MODULES.flatMap((slug) => {
-    const found = MODULES.find((item) => item.slug === slug);
-    return found ? [{ label: found.name, to: `/features/${found.slug}` }] : [];
-  });
+  const products = MODULES.map((m) => ({ label: m.name, to: `/features/${m.slug}` }));
+  const solutions = [
+    ...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions#${s.slug}` })),
+    { label: 'All solutions', to: '/solutions' },
+  ];
 
   return (
-    <footer className="ink border-t border-white/8">
-      <div className="mx-auto w-full max-w-7xl px-5 pb-safe-6 pt-14 sm:px-8 sm:pb-12 sm:pt-16">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[2fr_1fr_1fr]">
-          <div className="col-span-2 lg:col-span-1">
+    <footer className="bg-navy-950 text-white">
+      <div className={cn(container, 'pb-safe-6 pt-16 sm:pb-10')}>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]">
+          <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <Link to="/" aria-label="AfterBI home">
-              <Wordmark onInk className="text-[1.3rem] sm:text-[1.45rem]" />
+              <Wordmark onInk className="text-[1.5rem]" />
             </Link>
-            <p className={cn(text, 'mt-5 max-w-[27rem] text-white/60')}>
-              Distribution management for fast-moving consumer goods.
-              <br />
-              Orders, stock, invoices, credit, and the sell-out figure behind them.
+            <p className="mt-5 max-w-[22rem] text-[15px] leading-[1.65] text-white/60">
+              The sales and distribution platform for consumer goods companies. Pipeline, orders, inventory, billing and
+              channel intelligence on one secure cloud platform.
             </p>
-            <a
-              href={`mailto:${SUPPORT_EMAIL}`}
-              className={cn(text, 'mt-4 inline-block font-semibold text-white transition-colors hover:text-brand-300')}
-            >
-              {SUPPORT_EMAIL}
-            </a>
-
             <ul className="mt-6 flex flex-wrap gap-2.5" aria-label="AfterBI elsewhere">
               {SOCIAL.map((channel) => (
                 <li key={channel.key}>
@@ -311,7 +514,7 @@ export function SiteFooter() {
                     rel="noreferrer noopener"
                     aria-label={channel.label}
                     title={channel.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-white/80 ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/[0.14] hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.07] text-white/80 transition-colors hover:bg-brand-600 hover:text-white"
                   >
                     <SocialIcon name={channel.key} />
                   </a>
@@ -320,43 +523,60 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          <FooterColumn title="Product" items={modules} />
-
+          <FooterColumn title="Platform" items={products} />
+          <FooterColumn title="Solutions" items={solutions} />
           <FooterColumn
             title="Company"
             items={[
-              { label: 'Features', to: '/features' },
-              { label: 'Blog', to: '/blog' },
-              { label: 'Roles', to: '/roles' },
+              { label: 'Platform overview', to: '/features' },
               { label: 'Pricing', to: '/pricing' },
               { label: 'Partner Programme', to: '/partners' },
-              { label: 'About', to: '/about' },
-              { label: 'Book a walkthrough', to: '/demo' },
+              { label: 'Book a demo', to: '/demo' },
               { label: 'Sign in', to: '/login' },
+            ]}
+          />
+          <FooterColumn
+            title="Support"
+            items={[
+              { label: 'Sign in help', to: '/help/sign-in' },
+              { label: 'WhatsApp us', to: WHATSAPP_URL, external: true },
+              { label: SUPPORT_EMAIL, to: `mailto:${SUPPORT_EMAIL}`, external: true },
             ]}
           />
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-6">
-          <p className={cn(text, 'text-white/45')}>© {year} AfterBI Technologies Ltd. Lagos, Nigeria.</p>
+        <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-[14px] text-white/50 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {year} {COMPANY}. All rights reserved.
+          </p>
+          <p>AfterBI is a {COMPANY} product.</p>
         </div>
       </div>
     </footer>
   );
 }
 
-/** One size of type for every line in the footer, titles included. */
-function FooterColumn({ title, items }: { title: string; items: { label: string; to: string }[] }) {
-  if (items.length === 0) return null;
+function FooterColumn({ title, items }: { title: string; items: { label: string; to: string; external?: boolean }[] }) {
   return (
     <div>
-      <p className="text-[15px] font-bold leading-[1.6] text-white">{title}</p>
-      <ul className="mt-3 space-y-2">
+      <p className="text-[14px] font-bold uppercase tracking-[0.12em] text-white">{title}</p>
+      <ul className="mt-4 space-y-2.5">
         {items.map((item) => (
           <li key={item.label}>
-            <Link to={item.to} className="text-[15px] leading-[1.6] text-white/65 transition-colors hover:text-white">
-              {item.label}
-            </Link>
+            {item.external ? (
+              <a
+                href={item.to}
+                target={item.to.startsWith('http') ? '_blank' : undefined}
+                rel="noreferrer noopener"
+                className="break-words text-[14.5px] text-white/60 transition-colors hover:text-white"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link to={item.to} className="text-[14.5px] text-white/60 transition-colors hover:text-white">
+                {item.label}
+              </Link>
+            )}
           </li>
         ))}
       </ul>
@@ -364,13 +584,7 @@ function FooterColumn({ title, items }: { title: string; items: { label: string;
   );
 }
 
-/**
- * Three marks, drawn rather than imported.
- *
- * `lucide-react` carries no brand glyphs, correctly, they are trademarks with
- * their own usage rules, and pulling a whole icon package in for three shapes
- * on one footer is a download every visitor pays for.
- */
+/** Three marks, drawn rather than imported. */
 function SocialIcon({ name }: { name: SocialKey }) {
   const common = { width: 17, height: 17, viewBox: '0 0 24 24', 'aria-hidden': true } as const;
 

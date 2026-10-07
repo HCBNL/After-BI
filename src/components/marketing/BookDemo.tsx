@@ -1,5 +1,5 @@
 /**
- * Booking a walkthrough, one question at a time.
+ * Booking a demo, one question at a time.
  *
  * WHAT THIS REPLACED, AND WHY
  *
@@ -116,7 +116,7 @@ function ChoiceList({
             className={cn(
               'tap flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left text-[15px] font-semibold transition-all',
               active
-                ? 'border-brand-500 bg-brand-600/15 text-white'
+                ? 'border-brand-500 bg-brand-50 text-navy-900'
                 : 'border-hairline bg-[var(--surface-card)] text-secondary hover:border-[var(--border-strong)] hover:text-primary',
             )}
           >
@@ -210,18 +210,18 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
   };
 
   return (
-    <Sheet open={open} onClose={onClose} label="Book a walkthrough of AfterBI" progress={progress}>
+    <Sheet open={open} onClose={onClose} label="Book a demo of AfterBI" progress={progress}>
       {/* ------------------------------------------------------------ head */}
       {/* The wordmark in the middle, as on the front page, and where you are under it. */}
       <header
         className="flex shrink-0 flex-col items-center px-12 pb-2 pt-5 text-center sm:px-14"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
       >
-        <span className="font-display text-[1.45rem] font-extrabold leading-none tracking-[-0.05em] text-white">
+        <span className="font-display text-[1.45rem] font-extrabold leading-none tracking-[-0.05em] text-navy-900">
           AfterBI<span className="text-brand-500">.</span>
         </span>
-        <p className="mt-3 text-[13px] font-semibold text-white/55">
-          Book a walkthrough ·{' '}
+        <p className="mt-3 text-[13px] font-semibold text-navy-500">
+          Book a demo ·{' '}
           {sent ? 'All done' : reviewing ? 'One last look' : `Question ${index + 1} of ${WIZARD_STEPS.length}`}
         </p>
       </header>
@@ -277,7 +277,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
             </ul>
 
             <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
-              We use this to prepare the walkthrough and to call you back. We do not sell it, and we do not add you
+              We use this to prepare the demo and to call you back. We do not sell it, and we do not add you
               to a mailing list.
             </p>
           </div>
@@ -350,7 +350,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
       {error && (
         <p
           role="alert"
-          className="mx-5 mb-1 shrink-0 rounded-xl bg-status-critical/10 px-4 py-3 text-[13.5px] font-semibold text-[#f08080] sm:mx-7"
+          className="mx-5 mb-1 shrink-0 rounded-xl bg-status-critical/10 px-4 py-3 text-[13.5px] font-semibold text-[#a12b2b] sm:mx-7"
         >
           {error}
         </p>
