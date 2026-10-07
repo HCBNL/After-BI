@@ -30,7 +30,7 @@ import {
 import { Loading } from '@/components/brand/Loader';
 import { useAsync } from '@/hooks/useAsync';
 import { printHtml } from '@/lib/print';
-import { MODULES, PLANS, naira } from '@/lib/site';
+import { MODULES, PLANS, naira, planByName } from '@/lib/site';
 import { cn } from '@/lib/cn';
 import {
   blankProposal,
@@ -246,7 +246,7 @@ function Editor({
   const suggested = suggestPlan(p.depots, p.staff);
 
   const choosePlan = (name: string) => {
-    const plan = PLANS.find((x) => x.name === name);
+    const plan = planByName(name);
     onChange({ ...p, plan: name, monthly: plan?.price ?? p.monthly });
   };
   const toggle = <T extends string>(list: T[], item: T): T[] =>

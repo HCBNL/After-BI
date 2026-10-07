@@ -93,27 +93,23 @@ const HomePage = lazy(() => import('@/pages/public/HomePage'));
 const ProductPage = lazy(() => import('@/pages/public/ProductPage'));
 const ModulePage = lazy(() => import('@/pages/public/ModulePage'));
 const PublicPricingPage = lazy(() => import('@/pages/public/PricingPage'));
-const AboutPage = lazy(() => import('@/pages/public/AboutPage'));
 const DemoPage = lazy(() => import('@/pages/public/DemoPage'));
 const SignInHelpPage = lazy(() => import('@/pages/public/SignInHelpPage'));
 const PublicNotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
-const BlogIndex = lazy(() => import('@/pages/public/BlogIndex'));
-const BlogPost = lazy(() => import('@/pages/public/BlogPost'));
-const PublicRolesPage = lazy(() => import('@/pages/public/RolesPage'));
 const PartnersPage = lazy(() => import('@/pages/public/PartnersPage'));
+const SolutionsPage = lazy(() => import('@/pages/public/SolutionsPage'));
 
 const PlatformHome = lazy(() => import('@/pages/platform/PlatformHome'));
 const OrganisationsPage = lazy(() => import('@/pages/platform/OrganisationsPage'));
 const PricingPage = lazy(() => import('@/pages/platform/PricingPage'));
 const WebsitePage = lazy(() => import('@/pages/platform/WebsitePage'));
-const BlogEditorPage = lazy(() => import('@/pages/platform/BlogEditorPage'));
 const ProposalsPage = lazy(() => import('@/pages/platform/ProposalsPage'));
 const GuidePage = lazy(() => import('@/pages/shared/GuidePage'));
 const TasksPage = lazy(() => import('@/pages/shared/TasksPage'));
 
 /** The right shape of waiting for the address being opened. */
-const PUBLIC_PREFIXES = ['/features', '/product', '/blog', '/roles', '/pricing', '/partners', '/about', '/demo', '/help'];
+const PUBLIC_PREFIXES = ['/features', '/product', '/solutions', '/pricing', '/partners', '/demo', '/help'];
 
 function RouteSkeleton({ path }: { path: string }) {
   if (path.startsWith('/portal')) return <ShellSkeleton />;
@@ -238,12 +234,14 @@ export default function App() {
           {/* The old addresses, kept working for links already shared. */}
           <Route path="/product" element={<Navigate to="/features" replace />} />
           <Route path="/product/:slug" element={<ProductRedirect />} />
-          <Route path="/blog" element={<BlogIndex />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/roles" element={<PublicRolesPage />} />
+          <Route path="/solutions" element={<SolutionsPage />} />
           <Route path="/pricing" element={<PublicPricingPage />} />
           <Route path="/partners" element={<PartnersPage />} />
-          <Route path="/about" element={<AboutPage />} />
+          {/* Retired with the 2026 rebrand: old links land on the front page. */}
+          <Route path="/blog" element={<Navigate to="/" replace />} />
+          <Route path="/blog/:slug" element={<Navigate to="/" replace />} />
+          <Route path="/roles" element={<Navigate to="/" replace />} />
+          <Route path="/about" element={<Navigate to="/" replace />} />
           <Route path="/demo" element={<DemoPage />} />
           <Route path="/help/sign-in" element={<SignInHelpPage />} />
 
@@ -289,7 +287,6 @@ export default function App() {
             <Route path="organisations" element={<OrganisationsPage />} />
             <Route path="pricing" element={<PricingPage />} />
             <Route path="website" element={<WebsitePage />} />
-            <Route path="blog" element={<BlogEditorPage />} />
             <Route path="proposals" element={<ProposalsPage />} />
             <Route path="guide" element={<GuidePage />} />
             <Route path="profile" element={<ProfilePage />} />

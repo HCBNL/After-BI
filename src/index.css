@@ -130,6 +130,19 @@
    * app's surface tokens, which flip. `night` is the page, `night-2` is a
    * card on it, `night-3` is a card that is being hovered or pressed.
    */
+  /* The public site's second colour: a deep corporate navy beside the green. */
+  --color-navy-50: #f2f6fb;
+  --color-navy-100: #e3ebf5;
+  --color-navy-200: #c6d5e8;
+  --color-navy-300: #9bb4d4;
+  --color-navy-400: #6588b5;
+  --color-navy-500: #3f6596;
+  --color-navy-600: #2c4d7a;
+  --color-navy-700: #213d63;
+  --color-navy-800: #172d4b;
+  --color-navy-900: #0f1f36;
+  --color-navy-950: #0a1526;
+
   --color-night: #0a0c10;
   --color-night-2: #11151b;
   --color-night-3: #1c2027;
@@ -1293,9 +1306,112 @@
  * surface comes back.
  */
 @layer utilities {
+  html[data-surface='site'],
+  html[data-surface='site'] body {
+    background-color: #ffffff;
+  }
   html[data-surface='night'],
   html[data-surface='night'] body {
     background-color: #0a0c10;
     overscroll-behavior-y: none;
+  }
+}
+
+
+/* ==================================================== the public site, light */
+/*
+ * Every public page is drawn inside `.site`: white paper, navy type, green for
+ * the one thing to press. Light in BOTH themes on purpose, the same way the
+ * old pages were dark in both, so shared components that read the surface
+ * tokens (the booking sheet, the loaders) follow without rules of their own.
+ */
+@layer components {
+  .site {
+    /* The public site's brand colour is orange. Overriding the brand scale
+       here turns every brand utility inside the site orange, while the app
+       itself keeps its own colour. */
+    --color-brand-50: #fff6ed;
+    --color-brand-100: #ffead5;
+    --color-brand-200: #ffd0a8;
+    --color-brand-300: #ffb072;
+    --color-brand-400: #ff913d;
+    --color-brand-500: #ff7a00;
+    --color-brand-600: #ee6a00;
+    --color-brand-700: #c95600;
+    --color-brand-800: #9f4407;
+    --color-brand-900: #7f390b;
+    --color-brand-950: #451a03;
+
+    background-color: #ffffff;
+    color: #0f1f36;
+    color-scheme: light;
+
+    --surface-page: #ffffff;
+    --surface-card: #ffffff;
+    --surface-sunken: #f2f6fb;
+    --surface-raised: #ffffff;
+    --surface-inverse: #0f1f36;
+
+    --text-primary: #0f1f36;
+    --text-secondary: #3d4d63;
+    --text-muted: #6a7889;
+    --text-inverse: #ffffff;
+
+    --border-hairline: rgba(15, 31, 54, 0.1);
+    --border-strong: rgba(15, 31, 54, 0.22);
+
+    --shadow-card: 0 1px 2px rgba(15, 31, 54, 0.06), 0 12px 32px -16px rgba(15, 31, 54, 0.18);
+    --shadow-pop: 0 18px 50px -18px rgba(15, 31, 54, 0.35);
+    --accent-text: var(--color-brand-700);
+  }
+
+  /* The hero's light: two soft washes, green top left, navy top right. */
+  .site-wash {
+    background-image:
+      radial-gradient(50rem 28rem at 8% -8%, rgba(255, 122, 0, 0.12), transparent 60%),
+      radial-gradient(44rem 26rem at 96% 0%, rgba(44, 77, 122, 0.12), transparent 60%),
+      linear-gradient(180deg, #fbf8f5 0%, #ffffff 100%);
+  }
+
+  /* A fine dotted grid, for panels that want texture without a picture. */
+  .site-dots {
+    background-image: radial-gradient(rgba(15, 31, 54, 0.12) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
+  /* The front page hero: deep navy, lit from the right. */
+  .site-hero {
+    background-image:
+      radial-gradient(60rem 40rem at 85% 30%, rgba(63, 101, 150, 0.55), transparent 60%),
+      radial-gradient(40rem 30rem at 10% 110%, rgba(255, 122, 0, 0.18), transparent 60%),
+      linear-gradient(160deg, #0a1526 0%, #12264a 55%, #1b3a6e 100%);
+  }
+
+  /* The soft panel behind tab pictures. */
+  .site-panel {
+    background-image: linear-gradient(135deg, #f3f5ff 0%, #fff4ea 100%);
+  }
+
+  @keyframes site-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .site-float { animation: site-float 6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .site-float { animation: none; }
+  }
+
+  .site-dark-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
+  @keyframes site-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .site-marquee { animation: site-marquee 38s linear infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .site-marquee { animation: none; }
   }
 }

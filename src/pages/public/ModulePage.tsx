@@ -1,23 +1,22 @@
 /**
  * `/features/:slug`, one module, on its own address.
  *
- * The visitor this is for did not come through the front door. They typed
- * something specific into a search engine and want one of the eight things
- * this product does. So it opens on that one thing, says it in four lines, and
- * then offers the rest.
- *
- * An unknown slug renders the 404 rather than an empty shell, because a module
- * that was renamed leaves its old address in somebody's bookmarks.
+ * The visitor came from a search for one specific thing, so it opens on that
+ * one thing: the promise and the screen, what it does, which businesses use it
+ * most, and the modules next to it. An unknown slug renders the 404.
  */
 
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
-import { Headline, Reveal } from '@/components/marketing/bits';
-import { ModuleCover } from '@/components/marketing/art';
-import { btn, container } from '@/components/marketing/tokens';
-import { MODULES, moduleBySlug } from '@/lib/site';
+import { Reveal } from '@/components/marketing/bits';
+import { btn, container, eyebrow } from '@/components/marketing/tokens';
+import { CheckList, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { ModuleMock } from '@/components/marketing/mocks';
+import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
+import { cn } from '@/lib/cn';
+import { MODULES, SOLUTIONS, moduleBySlug, type SiteImageKey } from '@/lib/site';
 import NotFoundPage from './NotFoundPage';
 
 export default function ModulePage() {
@@ -28,7 +27,12 @@ export default function ModulePage() {
 
   return (
     <>
-      <Seo title={item.name} description={item.blurb} path={`/features/${item.slug}`} />
+      <Seo
+        title={item.name}
+        description={item.blurb}
+        path={`/features/${item.slug}`}
+        jsonLd={{ '@context': 'https://schema.org', '@graph': [breadcrumbJsonLd(`/features/${item.slug}`, item.name)] }}
+      />
       <PublicShell>
         <Body slug={item.slug} />
       </PublicShell>
@@ -36,97 +40,110 @@ export default function ModulePage() {
   );
 }
 
-/**
- * Split out because `useAsk` reads the context the shell provides, and a
- * component that renders `<PublicShell>` is by definition outside it. Called
- * up there it would silently return the default and every button on the page
- * would look fine and do nothing.
- */
 function Body({ slug }: { slug: string }) {
-  const { book, home } = useAsk();
-  const index = MODULES.findIndex((entry) => entry.slug === slug);
-  const item = MODULES[index];
-  const others = MODULES.filter((entry) => entry.slug !== slug).slice(0, 4);
-  const pictures = home?.moduleImages ?? {};
+  const { book } = useAsk();
+  const item = MODULES.find((entry) => entry.slug === slug)!;
+  const others = MODULES.filter((entry) => entry.slug !== slug).slice(0, 3);
+  const usedBy = SOLUTIONS.filter((s) => s.modules.includes(slug));
 
   return (
     <>
-      <section className="relative isolate overflow-hidden pb-12 pt-28 sm:pb-16 sm:pt-32">
-        <div aria-hidden className="ink-glow pointer-events-none absolute inset-0 -z-10" />
-        <div aria-hidden className="ink-rule pointer-events-none absolute inset-0 -z-10" />
+      <section className="site-wash">
+        <div className={cn(container, 'pb-16 pt-10 sm:pb-24 sm:pt-14')}>
+          <Link to="/features" className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-navy-500 hover:text-navy-900">
+            <ArrowLeft size={15} aria-hidden /> Platform overview
+          </Link>
 
-        <div className={container}>
-          <Reveal>
-            <Link
-              to="/features"
-              className="inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-white/55 transition-colors hover:text-white"
-            >
-              <ArrowLeft size={15} aria-hidden />
-              All modules
-            </Link>
-          </Reveal>
-
-          <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
-            <Reveal delay={60}>
-              <Headline as="h1" size="lg">
-                {item.name}
-              </Headline>
-              <p className="mt-5 text-[17px] leading-[1.7] text-white/70">{item.blurb}</p>
-
-              <ul className="mt-8 space-y-4">
-                {item.points.map((point) => (
-                  <li key={point} className="flex gap-3.5">
-                    <span aria-hidden className="mt-[0.62em] block h-[3px] w-5 shrink-0 rounded-full bg-brand-500" />
-                    <span className="text-[15.5px] leading-relaxed text-white/75">{point}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button type="button" onClick={book} className={`${btn.green} mt-9`}>
-                Book a walkthrough
-              </button>
+          <div className="mt-8 grid items-center gap-12 lg:grid-cols-[1fr_1.15fr]">
+            <Reveal>
+              <span className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-bold text-brand-700 ring-1 ring-navy-900/8">
+                <ModuleIcon slug={slug} size={15} /> {item.name}
+              </span>
+              <h1 className="mt-5 font-display text-[2.5rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.5rem]">
+                {item.headline}
+              </h1>
+              <p className="mt-5 max-w-xl text-[18px] leading-relaxed text-navy-700/85">{item.blurb}</p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <button type="button" onClick={book} className={btn.green}>
+                  Book a demo
+                </button>
+                <Link to="/pricing" className={btn.outline}>
+                  See plans and pricing
+                </Link>
+              </div>
             </Reveal>
-
-            <Reveal delay={120}>
-              <ModuleCover
-                art={item.art}
-                image={pictures[item.slug]}
-                width={720}
-                priority
-                className="aspect-[16/10] rounded-lg ring-1 ring-white/[0.07]"
-                glyphClassName="h-40 w-48"
+            <Reveal delay={100}>
+              <SiteImage
+                slot={`module-${slug}` as SiteImageKey}
+                alt={`${item.name} in AfterBI`}
+                eager
+                className="aspect-[16/10] rounded-[1.6rem] shadow-[0_30px_70px_-30px_rgba(15,31,54,0.4)]"
+                fallback={<ModuleMock slug={slug} />}
               />
             </Reveal>
           </div>
         </div>
       </section>
 
-      <section className="py-10 sm:py-14">
-        <div className={container}>
-          <h2 className="font-display text-[1.3rem] font-bold tracking-[-0.025em] text-white sm:text-[1.6rem]">
-            The rest of it
-          </h2>
-          <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {others.map((other) => (
-              <li key={other.slug}>
-                <Link to={`/features/${other.slug}`} className="group flex h-full flex-col">
-                  <ModuleCover
-                    art={other.art}
-                    image={pictures[other.slug]}
-                    width={420}
-                    className="aspect-video rounded-md ring-1 ring-white/[0.06] transition duration-300 group-hover:ring-white/30"
-                    glyphClassName="h-20 w-24"
-                  />
-                  <h3 className="mt-3 font-display text-[1.05rem] font-bold tracking-[-0.02em] text-white">
-                    {other.name}
-                  </h3>
-                  <p className="mt-1 text-[13.5px] leading-relaxed text-white/60">{other.blurb}</p>
-                </Link>
-              </li>
+      <Section>
+        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+          <SectionHead kicker="What it does" title="Key capabilities" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            {item.points.map((point, index) => (
+              <Reveal key={point} delay={index * 60}>
+                <div className="h-full rounded-2xl bg-navy-50 p-6">
+                  <span className="font-display text-[1.4rem] font-extrabold text-brand-600">0{index + 1}</span>
+                  <p className="mt-3 text-[16.5px] font-semibold leading-snug text-navy-900">{point}</p>
+                </div>
+              </Reveal>
             ))}
-          </ul>
+          </div>
         </div>
-      </section>
+      </Section>
+
+      {usedBy.length > 0 && (
+        <Section tone="mist">
+          <SectionHead kicker="Solutions" title="Who it is built for" />
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {usedBy.map((s) => (
+              <Link
+                key={s.slug}
+                to={`/solutions#${s.slug}`}
+                className="group rounded-2xl bg-white p-7 ring-1 ring-navy-900/8 transition-shadow hover:shadow-[0_20px_44px_-24px_rgba(15,31,54,0.35)]"
+              >
+                <p className={eyebrow}>{s.name}</p>
+                <p className="mt-2 text-[18px] font-bold text-navy-900">{s.blurb}</p>
+                <CheckList items={s.points} className="mt-5" />
+                <span className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-700">
+                  See the solution <ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-1" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      <Section>
+        <SectionHead kicker="Works with" title="Related capabilities" />
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {others.map((m) => (
+            <Link
+              key={m.slug}
+              to={`/features/${m.slug}`}
+              className="group flex flex-col rounded-2xl p-7 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-50"
+            >
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white">
+                <ModuleIcon slug={m.slug} size={20} />
+              </span>
+              <h3 className="mt-5 text-[19px] font-bold text-navy-900">{m.name}</h3>
+              <p className="mt-2 flex-1 text-[15.5px] leading-relaxed text-navy-700/80">{m.blurb}</p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-[14.5px] font-bold text-brand-700">
+                Learn more <ArrowRight size={15} aria-hidden />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </Section>
     </>
   );
 }

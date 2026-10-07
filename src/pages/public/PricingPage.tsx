@@ -1,37 +1,29 @@
 /**
- * `/pricing`, three plans, priced per organisation.
- *
- * WHY THE PRICE IS ON THE PAGE
- *
- * Everything else in this category hides it behind "contact sales", and every
- * operations director reading this has spent an afternoon on a discovery call
- * to find out a number that turned out to be four times their budget. Printing
- * it costs a few leads that were never going to close and saves the ones that
- * were from a fortnight of qualifying.
+ * /pricing: three plans, a monthly or yearly switch, and nothing else to read.
+ * Yearly is ten months' price (two months free); see `yearly` in lib/site.ts.
  */
 
-import { Link } from 'react-router-dom';
-import { Check, Wrench } from 'lucide-react';
+import { useState } from 'react';
+import { Check } from 'lucide-react';
 import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
-import { Headline, Questions, Reveal } from '@/components/marketing/bits';
+import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
+import { SectionHead } from '@/components/marketing/site-ui';
+import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
-import { FAQ, PLANS, PRICING_NOTES, naira, type Plan } from '@/lib/site';
-import { resolveCustom, type CustomBuild } from '@/lib/programme';
+import { PLANS, PRICING_NOTES, naira, yearly, type Plan } from '@/lib/site';
 
-/** The two questions a pricing page is actually asked. */
-const PRICING_FAQ = FAQ.filter((item) =>
-  ['How long does it take to start?', 'Can we get our data out?'].includes(item.q),
-);
+type Cycle = 'monthly' | 'yearly';
 
 export default function PricingPage() {
   return (
     <>
       <Seo
         title="Pricing"
-        description="Priced per organisation, in naira, with unlimited distributor logins on every plan. From ₦180,000 a month."
+        description="Simple pricing per organisation, with free partner users on every plan. From ₦75,000 a month."
         path="/pricing"
+        jsonLd={{ '@context': 'https://schema.org', '@graph': [breadcrumbJsonLd('/pricing', 'Pricing')] }}
       />
       <PublicShell>
         <Body />
@@ -41,155 +33,102 @@ export default function PricingPage() {
 }
 
 function Body() {
-  const { book, home } = useAsk();
-  const custom = resolveCustom(home?.customBuild);
+  const { book } = useAsk();
+  const [cycle, setCycle] = useState<Cycle>('monthly');
 
   return (
-    <>
-      <section className="relative isolate overflow-hidden pb-12 pt-28 text-center sm:pb-16 sm:pt-32">
-        <div aria-hidden className="ink-glow pointer-events-none absolute inset-0 -z-10" />
-        <div className={container}>
-          <Reveal>
-            <Headline as="h1" size="lg" align="center" className="mx-auto max-w-3xl">
-              Priced per business, not per person
-            </Headline>
-            <p className="mx-auto mt-5 max-w-xl text-[16px] leading-[1.7] text-white/65">
-              Distributor logins are free on every plan, and always will be.
-            </p>
-          </Reveal>
-        </div>
-      </section>
+    <section className="site-wash pb-20">
+      <div className={cn(container, 'pt-14 text-center sm:pt-20')}>
+        <SectionHead as="h1" align="center" title="Simple, transparent pricing" body="Every plan includes free partner users." />
 
-      <section className="pb-10">
-        <div className={container}>
-          <div className="grid gap-4 lg:grid-cols-3">
-            {PLANS.map((plan, index) => (
-              <Reveal key={plan.name} delay={index * 70}>
-                <PlanCard plan={plan} onBook={book} />
-              </Reveal>
-            ))}
-          </div>
-
-          {custom.enabled && (
-            <Reveal delay={210}>
-              <CustomCard custom={custom} onBook={book} />
-            </Reveal>
-          )}
-
-          <ul className="mt-8 grid gap-3 sm:grid-cols-3">
-            {PRICING_NOTES.map((note) => (
-              <li key={note} className="flex gap-2.5 text-[13.5px] leading-relaxed text-white/55">
-                <span aria-hidden className="mt-[0.62em] block h-[3px] w-4 shrink-0 rounded-full bg-brand-500" />
-                {note}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="py-14 sm:py-20">
-        <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
-          <Headline as="h2" align="center">
-            Before you ask us
-          </Headline>
-          <Questions items={PRICING_FAQ} className="mt-8" />
-          <p className="mt-8 text-center text-[15px] text-white/65">
-            The rest are{' '}
-            <Link to="/#faq" className="font-bold text-white underline decoration-brand-500 decoration-2 underline-offset-4">
-              on the front page
-            </Link>
-            .
-          </p>
-        </div>
-      </section>
-    </>
-  );
-}
-
-function PlanCard({ plan, onBook }: { plan: Plan; onBook: () => void }) {
-  return (
-    <div
-      className={cn(
-        'flex h-full flex-col rounded-md p-6 ring-1 ring-inset sm:p-7',
-        plan.featured ? 'bg-night-3 ring-brand-500' : 'bg-night-2 ring-white/[0.06]',
-      )}
-    >
-      {plan.featured && (
-        <span className="mb-4 inline-flex w-fit rounded-full bg-brand-500 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-950">
-          Most businesses
-        </span>
-      )}
-
-      <h2 className="font-display text-[1.35rem] font-extrabold tracking-[-0.03em] text-white">{plan.name}</h2>
-      <p className="mt-2 min-h-[2.6rem] text-[14px] leading-relaxed text-white/60">{plan.forWho}</p>
-
-      <div className="mt-6 border-t border-white/10 pt-4">
-        <p className="tabular font-display text-[2.1rem] font-extrabold leading-none tracking-[-0.04em] text-white">
-          {plan.price === null ? 'Let’s talk' : naira(plan.price)}
-        </p>
-        <p className="mt-2 text-[13px] font-semibold text-white/50">{plan.cadence}</p>
-      </div>
-
-      <ul className="mt-6 flex-1 space-y-2.5">
-        {plan.includes.map((line) => {
-          /* A line ending in a colon is a heading inside the list ("Everything
-             in Depot, plus:"), so it takes no tick: ticking it would claim it
-             is a feature, which it is not. */
-          const heading = line.endsWith(':');
-          return (
-            <li
-              key={line}
+        <div role="radiogroup" aria-label="Billing" className="mx-auto mt-8 inline-flex rounded-full bg-white p-1.5 shadow-sm ring-1 ring-navy-900/10">
+          {(['monthly', 'yearly'] as Cycle[]).map((value) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={cycle === value}
+              onClick={() => setCycle(value)}
               className={cn(
-                'flex gap-2.5 text-[14px] leading-relaxed',
-                heading ? 'pt-2 font-bold text-white' : 'text-white/75',
+                'rounded-full px-5 py-2.5 text-[15px] font-bold transition-colors',
+                cycle === value ? 'bg-navy-900 text-white' : 'text-navy-600 hover:text-navy-900',
               )}
             >
-              {!heading && <Check size={16} aria-hidden className="mt-[0.2em] shrink-0 text-brand-400" />}
-              {line}
-            </li>
-          );
-        })}
-      </ul>
-
-      <button type="button" onClick={onBook} className={cn('mt-7 w-full', plan.featured ? btn.green : btn.line)}>
-        {plan.cta}
-      </button>
-    </div>
-  );
-}
-
-/**
- * The fourth way to buy: a system built for one business.
- *
- * Full width under the three plans, so it reads as a different kind of offer
- * rather than a fourth tier. The words are the owner's (Platform, Website).
- */
-function CustomCard({ custom, onBook }: { custom: CustomBuild; onBook: () => void }) {
-  return (
-    <div className="mt-4 grid gap-6 rounded-md bg-night-2 p-6 ring-1 ring-inset ring-white/[0.06] sm:p-7 lg:grid-cols-[1fr_1.4fr_auto] lg:items-center">
-      <div>
-        <span className="mb-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/[0.08] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white/75">
-          <Wrench size={12} aria-hidden /> Built for you
-        </span>
-        <h2 className="font-display text-[1.35rem] font-extrabold tracking-[-0.03em] text-white">{custom.name}</h2>
-        <p className="mt-2 text-[14px] leading-relaxed text-white/60">{custom.tagline}</p>
+              {value === 'monthly' ? 'Monthly' : 'Yearly'}
+              {value === 'yearly' && (
+                <span className={cn('ml-2 rounded-full px-2 py-0.5 text-[11.5px]', cycle === value ? 'bg-brand-500 text-white' : 'bg-brand-100 text-brand-800')}>
+                  2 months free
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <ul className="grid gap-2.5 sm:grid-cols-2">
-        {custom.points.map((line) => (
-          <li key={line} className="flex gap-2.5 text-[14px] leading-relaxed text-white/75">
-            <Check size={16} aria-hidden className="mt-[0.2em] shrink-0 text-brand-400" />
-            {line}
+      <div className={cn(container, 'mt-12 grid gap-5 lg:grid-cols-3')}>
+        {PLANS.map((plan, index) => (
+          <Reveal key={plan.name} delay={index * 70}>
+            <PlanCard plan={plan} cycle={cycle} onBook={book} />
+          </Reveal>
+        ))}
+      </div>
+
+      <ul className={cn(container, 'mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3')}>
+        {PRICING_NOTES.map((note) => (
+          <li key={note} className="flex items-center gap-2 text-[15px] font-semibold text-navy-600">
+            <Check size={17} strokeWidth={3} aria-hidden className="text-brand-500" />
+            {note}
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
 
-      <div className="border-t border-white/10 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
-        <p className="font-display text-[1.35rem] font-extrabold leading-tight tracking-[-0.03em] text-white">{custom.priceLine}</p>
-        <button type="button" onClick={onBook} className={cn('mt-4 w-full lg:w-auto', btn.line)}>
-          Discuss your build
-        </button>
-      </div>
+function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: () => void }) {
+  const monthly = plan.price ?? 0;
+  const amount = cycle === 'yearly' ? yearly(monthly) : monthly;
+  return (
+    <div
+      className={cn(
+        'relative flex h-full flex-col rounded-[1.6rem] bg-white p-8 text-left',
+        plan.featured ? 'ring-2 ring-brand-500 shadow-[0_30px_60px_-30px_rgba(238,106,0,0.45)]' : 'ring-1 ring-navy-900/10',
+      )}
+    >
+      {plan.featured && (
+        <span className="absolute -top-3.5 left-8 rounded-full bg-brand-500 px-3.5 py-1 text-[12px] font-bold uppercase tracking-[0.1em] text-white">
+          Most popular
+        </span>
+      )}
+      <h2 className="font-display text-[1.5rem] font-extrabold tracking-[-0.03em] text-navy-900">{plan.name}</h2>
+      <p className="mt-1.5 text-[15px] text-navy-600">{plan.forWho}</p>
+
+      <p className="mt-7 flex items-baseline gap-1.5">
+        <span className="tabular font-display text-[2.7rem] font-extrabold leading-none tracking-[-0.04em] text-navy-900">{naira(amount)}</span>
+        <span className="text-[15px] font-semibold text-navy-500">/{cycle === 'yearly' ? 'year' : 'month'}</span>
+      </p>
+      <p className="mt-2 h-5 text-[13.5px] font-semibold text-brand-700">
+        {cycle === 'yearly' ? `You save ${naira(monthly * 2)}` : ''}
+      </p>
+
+      <button type="button" onClick={onBook} className={cn('mt-6 w-full', plan.featured ? btn.green : btn.outline)}>
+        {plan.cta}
+      </button>
+
+      <ul className="mt-7 flex-1 space-y-3 border-t border-navy-900/8 pt-7">
+        {plan.includes.map((line) =>
+          line.endsWith(':') ? (
+            <li key={line} className="text-[14.5px] font-bold text-navy-900">
+              {line}
+            </li>
+          ) : (
+            <li key={line} className="flex gap-2.5 text-[15px] text-navy-700">
+              <Check size={17} aria-hidden className="mt-[0.15em] shrink-0 text-brand-500" />
+              {line}
+            </li>
+          ),
+        )}
+      </ul>
     </div>
   );
 }

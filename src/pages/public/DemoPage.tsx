@@ -9,23 +9,24 @@
 
 import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
-import { Headline, Reveal } from '@/components/marketing/bits';
+import { Reveal } from '@/components/marketing/bits';
+import { cn } from '@/lib/cn';
 import { btn, container } from '@/components/marketing/tokens';
 import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/site';
 
 const EXPECT = [
-  { title: 'Forty minutes', body: 'Thirty watching your own month run through it. Ten of questions.' },
-  { title: 'No slides', body: 'We load your price list and terms first, so it is your business on screen.' },
-  { title: 'Bring the sceptic', body: 'Operations or finance get more out of it than whoever signs.' },
-  { title: 'Then nothing', body: 'No sequence of seven follow-up emails.' },
+  { title: 'Tailored', body: 'Configured with your products and price lists before we meet.' },
+  { title: '30 minutes', body: 'A focused tour of the capabilities that matter to you.' },
+  { title: 'Your team', body: 'Bring sales, operations and finance. Everyone sees their workspace.' },
+  { title: 'No pressure', body: 'A clear proposal afterwards, and nothing more.' },
 ];
 
 export default function DemoPage() {
   return (
     <>
       <Seo
-        title="Book a walkthrough"
-        description="Forty minutes on your own price list, your own distributors and your own credit terms."
+        title="Book a demo"
+        description="A guided AfterBI demo, configured around your products, partners and price lists."
         path="/demo"
       />
       <PublicShell closing={false}>
@@ -39,58 +40,43 @@ function Body() {
   const { book } = useAsk();
 
   return (
-    <section className="relative isolate overflow-hidden pb-16 pt-28 sm:pb-20 sm:pt-32">
-      <div aria-hidden className="ink-glow pointer-events-none absolute inset-0 -z-10" />
-      <div aria-hidden className="ink-rule pointer-events-none absolute inset-0 -z-10" />
+    <section className="site-wash">
+      <div className={cn(container, 'grid gap-12 pb-20 pt-14 sm:pt-20 lg:grid-cols-2 lg:items-center lg:gap-16')}>
+        <Reveal>
+          <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-brand-700">Book a demo</p>
+          <h1 className="mt-3 font-display text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.6rem]">
+            See AfterBI in action<span className="text-brand-500">.</span>
+          </h1>
+          <p className="mt-5 max-w-xl text-[18px] leading-[1.65] text-navy-700/85">
+            A guided demo, configured around your products, partners and price lists.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <button type="button" onClick={book} className={btn.green}>
+              Book a demo
+            </button>
+            <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className={btn.outline}>
+              WhatsApp us
+            </a>
+          </div>
+          <p className="mt-7 text-[15px] text-navy-500">
+            Prefer email?{' '}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-bold text-brand-700 hover:underline">
+              {SUPPORT_EMAIL}
+            </a>
+          </p>
+        </Reveal>
 
-      <div className={container}>
-        <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
-          <Reveal>
-            <Headline as="h1" size="lg">
-              Bring your hardest month
-            </Headline>
-            <p className="mt-5 max-w-xl text-[16px] leading-[1.7] text-white/65">
-              Your price list, your distributors, your credit terms. If it does not do what this site says, you will
-              know inside ten minutes.
-            </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button type="button" onClick={book} className={btn.green}>
-                Pick a day and time
-              </button>
-              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className={btn.glass}>
-                WhatsApp us
-              </a>
-            </div>
-
-            <p className="mt-7 text-[13.5px] text-white/45">
-              Prefer email?{' '}
-              <a
-                href={`mailto:${SUPPORT_EMAIL}`}
-                className="font-semibold text-white underline decoration-brand-500 decoration-2 underline-offset-4"
-              >
-                {SUPPORT_EMAIL}
-              </a>
-            </p>
-          </Reveal>
-
-          <Reveal delay={120}>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {EXPECT.map((item) => (
-                <li
-                  key={item.title}
-                  className="flex min-h-[9rem] flex-col rounded-md bg-night-2 p-5 ring-1 ring-inset ring-white/[0.06]"
-                >
-                  <span aria-hidden className="block h-[3px] w-7 rounded-full bg-brand-500" />
-                  <h2 className="mt-auto pt-6 font-display text-[1.05rem] font-bold tracking-[-0.02em] text-white">
-                    {item.title}
-                  </h2>
-                  <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/60">{item.body}</p>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
+        <Reveal delay={120}>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {EXPECT.map((item, index) => (
+              <li key={item.title} className="flex min-h-[10rem] flex-col rounded-2xl bg-white p-6 ring-1 ring-navy-900/10">
+                <span className="font-display text-[1.4rem] font-extrabold text-brand-600">0{index + 1}</span>
+                <h2 className="mt-auto pt-5 text-[18px] font-bold text-navy-900">{item.title}</h2>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-navy-600">{item.body}</p>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
       </div>
     </section>
   );

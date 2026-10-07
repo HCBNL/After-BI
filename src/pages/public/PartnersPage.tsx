@@ -18,15 +18,16 @@ import { useMemo, useRef, useState } from 'react';
 import { Check, Handshake, Mail, MessageCircle, Search, Users, Wallet } from 'lucide-react';
 import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
-import { Headline, Questions, Reveal } from '@/components/marketing/bits';
-import { btn, container } from '@/components/marketing/tokens';
+import { Reveal } from '@/components/marketing/bits';
+import { Accordion, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { SceneMock } from '@/components/marketing/mocks';
+import { btn, container, eyebrow } from '@/components/marketing/tokens';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
-import { imageUrl } from '@/lib/cloudinary';
+import type { SiteImageKey } from '@/lib/site';
 import { cn } from '@/lib/cn';
 import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/siteMeta';
 import { fillPerk, resolvePartners, type PartnerPackage, type ResolvedPartners } from '@/lib/programme';
 
-const kicker = 'text-[12px] font-bold uppercase tracking-[0.12em] text-brand-400';
 
 export default function PartnersPage() {
   return (
@@ -56,31 +57,35 @@ function Body() {
         jsonLd={{ '@context': 'https://schema.org', '@graph': [breadcrumbJsonLd('/partners', 'Partner Programme')] }}
       />
 
-      {/* The header, drawn in code. */}
-      <section className="relative isolate overflow-hidden pb-14 pt-28 sm:pb-20 sm:pt-32">
-        <div aria-hidden className="ink-glow pointer-events-none absolute inset-0 -z-10" />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 top-10 -z-10 h-[22rem] w-[22rem] rounded-full border-[3rem] border-brand-500/10"
-        />
-        <div className={container}>
+      <section className="site-wash">
+        <div className={cn(container, 'grid items-center gap-12 pb-16 pt-14 sm:pb-20 sm:pt-20 lg:grid-cols-2')}>
           <Reveal>
-            <p className={kicker}>Partner Programme</p>
-            <Headline as="h1" size="lg" className="mt-3 max-w-3xl">
+            <p className={eyebrow}>Partner Programme</p>
+            <h1 className="mt-3 font-display text-[2.5rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.5rem]">
               Introduce a business. Earn {p.rewardText}
-            </Headline>
-            <p className="mt-5 max-w-xl text-[16px] leading-[1.7] text-white/65">
-              For people the trade already trusts. You make the introduction, we do the walkthrough, setup and training,
+              <span className="text-brand-500">.</span>
+            </h1>
+            <p className="mt-5 max-w-xl text-[18px] leading-[1.65] text-navy-700/85">
+              For people the trade already trusts. You make the introduction, we do the demo, setup and training,
               and you are paid when the business subscribes.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <button type="button" onClick={() => choose('')} className={btn.green}>
                 Become a partner
               </button>
-              <a href="#how" className={btn.line}>
+              <a href="#how" className={btn.outline}>
                 How it works
               </a>
             </div>
+          </Reveal>
+          <Reveal delay={100}>
+            <SiteImage
+              slot="partners-hero"
+              alt="AfterBI partners"
+              eager
+              className="aspect-[4/3] rounded-[2rem]"
+              fallback={<SceneMock slug="distributor-portal" />}
+            />
           </Reveal>
         </div>
       </section>
@@ -89,10 +94,10 @@ function Body() {
       <Steps />
 
       {p.packages.length > 0 && (
-        <section className="py-14 sm:py-20">
+        <section className="bg-navy-50 py-16 sm:py-24">
           <div className={container}>
-            <Headline>Who it is for</Headline>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <SectionHead kicker="Packages" title="Who it is for" />
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {p.packages.map((item, index) => (
                 <Reveal key={item.id} delay={index * 60}>
                   <PackageCard item={item} p={p} onChoose={() => choose(item.name)} />
@@ -104,29 +109,20 @@ function Body() {
       )}
 
       {p.testimonies.length > 0 && (
-        <section className="py-14 sm:py-20">
+        <section className="py-16 sm:py-24">
           <div className={container}>
-            <Headline>What partners say</Headline>
+            <SectionHead kicker="In their words" title="What partners say" />
             <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {p.testimonies.map((t) => (
-                <figure key={t.name + t.quote.slice(0, 12)} className="flex h-full flex-col rounded-md bg-night-2 p-6 ring-1 ring-inset ring-white/[0.06]">
-                  <blockquote className="flex-1 text-[15px] leading-[1.7] text-white/80">“{t.quote}”</blockquote>
+                <figure key={t.name + t.quote.slice(0, 12)} className="flex h-full flex-col rounded-2xl bg-navy-50 p-7">
+                  <blockquote className="flex-1 text-[16px] leading-[1.7] text-navy-800">“{t.quote}”</blockquote>
                   <figcaption className="mt-5 flex items-center gap-3">
-                    {t.photo ? (
-                      <img
-                        src={imageUrl(t.photo, { width: 96, height: 96 })}
-                        alt=""
-                        loading="lazy"
-                        className="h-11 w-11 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.08] font-bold text-white/70">
-                        {t.name.trim().charAt(0)}
-                      </span>
-                    )}
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-100 font-bold text-brand-800">
+                      {t.name.trim().charAt(0)}
+                    </span>
                     <span>
-                      <span className="block text-[14px] font-bold text-white">{t.name}</span>
-                      {t.role && <span className="block text-[13px] text-white/50">{t.role}</span>}
+                      <span className="block text-[14.5px] font-bold text-navy-900">{t.name}</span>
+                      {t.role && <span className="block text-[13.5px] text-navy-500">{t.role}</span>}
                     </span>
                   </figcaption>
                 </figure>
@@ -136,14 +132,14 @@ function Body() {
         </section>
       )}
 
-      <section className="py-14 sm:py-20">
-        <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
-          <Headline align="center">The terms</Headline>
-          <Questions items={terms(p)} className="mt-8" />
+      <section className="bg-white py-16 sm:py-24">
+        <div className={cn(container, 'grid gap-10 lg:grid-cols-[0.8fr_1.2fr]')}>
+          <SectionHead kicker="The terms" title="The rules, plainly" />
+          <Accordion items={terms(p)} />
         </div>
       </section>
 
-      <section ref={joinRef} id="join" className="scroll-mt-24 py-14 sm:py-20">
+      <section ref={joinRef} id="join" className="scroll-mt-28 bg-navy-50 py-16 sm:py-24">
         <div className="mx-auto w-full max-w-2xl px-5 sm:px-8">
           <Join packages={p.packages} chosen={chosen} onChosen={setChosen} />
         </div>
@@ -162,12 +158,12 @@ function Numbers({ p }: { p: ResolvedPartners }) {
     { value: '₦0', label: 'to join, nothing to sell or support' },
   ];
   return (
-    <section className="pb-6">
-      <div className={cn(container, 'grid grid-cols-2 gap-3 lg:grid-cols-4')}>
+    <section className="bg-white py-12">
+      <div className={cn(container, 'grid grid-cols-2 gap-4 lg:grid-cols-4')}>
         {items.map((item) => (
-          <div key={item.label} className="rounded-md bg-night-2 p-5 ring-1 ring-inset ring-white/[0.06]">
-            <p className="tabular font-display text-[1.7rem] font-extrabold leading-none tracking-[-0.04em] text-white">{item.value}</p>
-            <p className="mt-2 text-[13px] leading-snug text-white/55">{item.label}</p>
+          <div key={item.label} className="rounded-2xl bg-brand-50 p-6 ring-1 ring-brand-100">
+            <p className="tabular font-display text-[2rem] font-extrabold leading-none tracking-[-0.04em] text-brand-700">{item.value}</p>
+            <p className="mt-2 text-[14px] font-semibold leading-snug text-navy-700">{item.label}</p>
           </div>
         ))}
       </div>
@@ -179,27 +175,27 @@ function Numbers({ p }: { p: ResolvedPartners }) {
 
 const STEPS = [
   { icon: Handshake, title: 'Apply', text: 'Send the short form below. We reply within two working days with your partner reference.' },
-  { icon: Search, title: 'Introduce', text: 'Tell us about a distributor or manufacturer, or bring them to a walkthrough with us.' },
-  { icon: Users, title: 'We take it from there', text: 'Walkthrough, proposal, setup, data loading and training are all ours.' },
+  { icon: Search, title: 'Introduce', text: 'Tell us about a distributor or manufacturer, or bring them to a demo with us.' },
+  { icon: Users, title: 'We take it from there', text: 'Demo, proposal, setup, data loading and training are all ours.' },
   { icon: Wallet, title: 'Get paid', text: 'Once the business subscribes and pays, your reward goes to your bank account.' },
 ];
 
 function Steps() {
   return (
-    <section id="how" className="scroll-mt-24 py-14 sm:py-20">
+    <section id="how" className="scroll-mt-28 bg-navy-900 py-16 text-white sm:py-24">
       <div className={container}>
-        <Headline>How it works</Headline>
-        <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <SectionHead onDark kicker="How it works" title="Four steps, and three of them are ours" />
+        <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map(({ icon: Icon, title, text }, index) => (
-            <li key={title} className="rounded-md bg-night-2 p-6 ring-1 ring-inset ring-white/[0.06]">
+            <li key={title} className="rounded-2xl bg-white/[0.06] p-7 ring-1 ring-inset ring-white/10">
               <span className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
-                  <Icon size={19} aria-hidden />
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-500/20 text-brand-300">
+                  <Icon size={20} aria-hidden />
                 </span>
-                <span className="text-[12px] font-bold text-white/40">Step {index + 1}</span>
+                <span className="text-[12.5px] font-bold uppercase tracking-wide text-white/50">Step {index + 1}</span>
               </span>
-              <h3 className="mt-4 font-display text-[1.15rem] font-extrabold tracking-[-0.03em] text-white">{title}</h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-white/60">{text}</p>
+              <h3 className="mt-5 text-[19px] font-bold">{title}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-white/70">{text}</p>
             </li>
           ))}
         </ol>
@@ -214,33 +210,36 @@ function PackageCard({ item, p, onChoose }: { item: PartnerPackage; p: ResolvedP
   return (
     <div
       className={cn(
-        'flex h-full flex-col overflow-hidden rounded-md ring-1 ring-inset',
-        item.featured ? 'bg-night-3 ring-brand-500' : 'bg-night-2 ring-white/[0.06]',
+        'flex h-full flex-col overflow-hidden rounded-2xl bg-white',
+        item.featured ? 'ring-2 ring-brand-600' : 'ring-1 ring-navy-900/10',
       )}
     >
-      {item.image ? (
-        <img src={imageUrl(item.image, { width: 640 })} alt="" loading="lazy" className="aspect-video w-full object-cover" />
-      ) : (
-        <div aria-hidden className="relative aspect-video w-full overflow-hidden bg-night-3">
-          <span className="absolute -bottom-10 -right-6 h-32 w-32 rounded-full border-[1.4rem] border-brand-500/20" />
-          <span className="absolute left-5 top-5 font-display text-[2.4rem] font-extrabold leading-none text-white/10">
-            {item.name.trim().charAt(0)}
-          </span>
-        </div>
-      )}
+      <SiteImage
+        slot={`partner-${item.id}` as SiteImageKey}
+        alt={item.name}
+        className="aspect-video w-full"
+        fallback={
+          <div aria-hidden className="relative h-full w-full overflow-hidden bg-gradient-to-br from-navy-800 to-navy-950">
+            <span className="absolute -bottom-10 -right-6 h-32 w-32 rounded-full border-[1.4rem] border-brand-500/30" />
+            <span className="absolute left-5 top-5 font-display text-[2.4rem] font-extrabold leading-none text-white/20">
+              {item.name.trim().charAt(0)}
+            </span>
+          </div>
+        }
+      />
       <div className="flex flex-1 flex-col p-5">
-        <h3 className="font-display text-[1.1rem] font-extrabold tracking-[-0.03em] text-white">{item.name}</h3>
-        {item.audience && <p className="mt-1 text-[13px] text-white/50">{item.audience}</p>}
-        {item.blurb && <p className="mt-3 text-[14px] leading-relaxed text-white/65">{item.blurb}</p>}
+        <h3 className="text-[18px] font-bold text-navy-900">{item.name}</h3>
+        {item.audience && <p className="mt-1 text-[13.5px] text-navy-500">{item.audience}</p>}
+        {item.blurb && <p className="mt-3 text-[14.5px] leading-relaxed text-navy-700">{item.blurb}</p>}
         <ul className="mt-4 flex-1 space-y-2">
           {item.perks.filter((x) => x.trim()).map((perk) => (
-            <li key={perk} className="flex gap-2 text-[13.5px] leading-relaxed text-white/75">
-              <Check size={15} aria-hidden className="mt-[0.2em] shrink-0 text-brand-400" />
+            <li key={perk} className="flex gap-2 text-[14px] leading-relaxed text-navy-700">
+              <Check size={15} aria-hidden className="mt-[0.2em] shrink-0 text-brand-600" />
               {fillPerk(perk, p)}
             </li>
           ))}
         </ul>
-        <button type="button" onClick={onChoose} className={cn('mt-5 w-full', item.featured ? btn.green : btn.line)}>
+        <button type="button" onClick={onChoose} className={cn('mt-5 w-full', item.featured ? btn.green : btn.outline)}>
           Join as this
         </button>
       </div>
@@ -270,7 +269,7 @@ function terms(p: ResolvedPartners): { q: string; a: string }[] {
     },
     {
       q: 'Do I have to sell or support anything?',
-      a: 'No. You make the introduction. Walkthroughs, proposals, setup, training and support are all done by us.',
+      a: 'No. You make the introduction. Demos, proposals, setup, training and support are all done by us.',
     },
   ];
 }
@@ -302,12 +301,12 @@ function Join({
 
   const ready = name.trim().length > 1 && phone.trim().length > 6;
   const field =
-    'w-full rounded-lg bg-night-2 px-4 py-3 text-[15px] text-white ring-1 ring-inset ring-white/10 placeholder:text-white/30 focus:outline-none focus:ring-brand-500';
+    'w-full rounded-xl bg-white px-4 py-3 text-[16px] text-navy-900 ring-1 ring-inset ring-navy-900/15 placeholder:text-navy-400 focus:outline-none focus:ring-2 focus:ring-brand-500';
 
   return (
-    <div className="rounded-md bg-night-2/60 p-6 ring-1 ring-inset ring-white/[0.06] sm:p-8">
-      <Headline align="center">Become a partner</Headline>
-      <p className="mt-3 text-center text-[14px] text-white/55">It goes to us as a WhatsApp message or an email.</p>
+    <div className="rounded-[1.6rem] bg-white p-6 shadow-[0_30px_60px_-30px_rgba(15,31,54,0.3)] ring-1 ring-navy-900/8 sm:p-10">
+      <SectionHead align="center" title="Become a partner" />
+      <p className="mt-3 text-center text-[15px] text-navy-500">It goes to us as a WhatsApp message or an email.</p>
 
       <div className="mt-7 space-y-3">
         <input className={field} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
@@ -356,12 +355,12 @@ function Join({
               : undefined
           }
           aria-disabled={!ready}
-          className={cn(btn.line, !ready && 'pointer-events-none opacity-40')}
+          className={cn(btn.outline, !ready && 'pointer-events-none opacity-40')}
         >
           <Mail size={17} aria-hidden /> Send by email
         </a>
       </div>
-      {!ready && <p className="mt-3 text-center text-[12.5px] text-white/40">Add your name and phone number first.</p>}
+      {!ready && <p className="mt-3 text-center text-[13px] text-navy-400">Add your name and phone number first.</p>}
     </div>
   );
 }

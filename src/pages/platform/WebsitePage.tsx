@@ -35,24 +35,20 @@
  */
 
 import { useState } from 'react';
-import { Crown, ExternalLink, Plus, Send, Trash2 } from 'lucide-react';
+import { ExternalLink, Plus, Send, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { ImagePicker } from '@/components/ImagePicker';
-import { Alert, Button, Card, CardHeader, Field, HintFooter, Input, Textarea, useToast } from '@/components/ui';
+import { Alert, Button, Card, CardHeader, Field, Input, useToast } from '@/components/ui';
 import { Loading } from '@/components/brand/Loader';
 import { useAsync } from '@/hooks/useAsync';
 import {
   EMPTY_HOME,
-  founderLinkList,
   getSiteHomeLive,
   MAX_HOME_VIDEOS,
   saveSiteHome,
   type SiteHome,
   type SiteVideo,
 } from '@/lib/siteDoc';
-import { MODULES } from '@/lib/site';
 import { SOCIAL_FIELDS } from '@/lib/social';
-import { BannerEditor } from './website/BannerEditor';
 import { VideoPicker } from './website/VideoPicker';
 import { CustomEditor, PartnerEditor } from './website/ProgrammeEditors';
 
@@ -95,7 +91,7 @@ export default function WebsitePage() {
     <>
       <PageHeader
         title="Website"
-        description="Pictures, videos, founder, the Custom offer and the Partner Programme."
+        description="Videos, follow links, the Custom offer and the Partner Programme. Pictures live in the website files (public/site)."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -131,101 +127,7 @@ export default function WebsitePage() {
 
           <Card>
             <CardHeader
-              title="The cover"
-              subtitle="Up to six slides at the top of the landing page. Empty shows the built-in one."
-            />
-            <BannerEditor slides={home?.banners ?? []} onChange={(banners) => seed({ banners })} />
-            <HintFooter>
-              A cover slide is the first thing a distributor's managing director sees, and it is judged in about a
-              second. The photographs that work are the trade's own (a loading bay, a depot aisle, a truck on a bad
-              road, a rep with a phone in a shop), because they say "these people have been here" before a word is
-              read. Stock photography of a boardroom says the opposite.
-            </HintFooter>
-          </Card>
-
-          <Card>
-            <CardHeader
-              title="Module covers"
-              subtitle="One picture per module, on the product pages and the shelf on the front page."
-            />
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {MODULES.map((item) => (
-                <ImagePicker
-                  key={item.slug}
-                  label={item.name}
-                  value={home?.moduleImages?.[item.slug] ?? ''}
-                  onChange={(url) =>
-                    seed({ moduleImages: { ...(home?.moduleImages ?? {}), [item.slug]: url } })
-                  }
-                  kind="cover"
-                  size={208}
-                  height={117}
-                  hint="16:9. 1600 × 900."
-                />
-              ))}
-            </div>
-            <HintFooter>
-              A module with no picture draws its own glyph on an ink panel, which is a designed state rather than a
-              gap, so these are genuinely optional, and a half-filled set looks deliberate rather than unfinished.
-              Fill them in the order a carton moves, not all at once.
-            </HintFooter>
-          </Card>
-
-          {/*
-            THE FOUNDER.
-
-            The photograph is optional. With or without it, the About page
-            names Collins C. Nwobodo as the founder in its title, a heading and
-            the structured data search engines read. The links are what tie
-            his profiles elsewhere to that record.
-          */}
-          <Card>
-            <CardHeader
-              title="The founder"
-              subtitle="The photograph and profile links on the About page. Search engines read both."
-            />
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-              <ImagePicker
-                label="Founder photograph"
-                value={home?.aboutFounder ?? ''}
-                onChange={(aboutFounder) => seed({ aboutFounder })}
-                kind="site"
-                size={140}
-                height={175}
-                hint="4:5. A clear head and shoulders shot, at least 800 × 1000."
-              />
-              <Field
-                className="min-w-0 flex-1"
-                label="Profile links"
-                hint="One address per line: LinkedIn, X, an article about him. Each must start with https://"
-              >
-                <Textarea
-                  rows={5}
-                  value={home?.founderLinks ?? ''}
-                  onChange={(event) => seed({ founderLinks: event.target.value })}
-                  placeholder={'https://www.linkedin.com/in/your-name\nhttps://x.com/your-name'}
-                  className="font-mono text-[13px]"
-                />
-                <p className="mt-1.5 text-[12px] text-muted">
-                  {founderLinkList(home?.founderLinks).length} valid link
-                  {founderLinkList(home?.founderLinks).length === 1 ? '' : 's'}.
-                </p>
-              </Field>
-            </div>
-            <HintFooter>
-              <span className="inline-flex items-center gap-1.5 font-semibold text-primary">
-                <Crown size={14} aria-hidden /> What search engines see
-              </span>
-              <br />
-              The About page is titled "About us: founded by Collins C. Nwobodo", and its structured data declares
-              him the founder and CEO of AfterBI. The photograph becomes the image on that record, and each link
-              becomes a "same as" reference, which is how a search for the name finds this page.
-            </HintFooter>
-          </Card>
-
-          <Card>
-            <CardHeader
-              title="Walkthrough videos"
+              title="Demo videos"
               subtitle={`Up to ${MAX_HOME_VIDEOS}, in a row on the front page. Empty shows no row.`}
             />
             <VideoList
@@ -237,7 +139,7 @@ export default function WebsitePage() {
           <Card>
             <CardHeader
               title="Follow links"
-              subtitle="Where the footer and the blog say follow us. Leave a box empty to hide that channel."
+              subtitle="Leave a box empty to hide that channel."
             />
             <div className="grid gap-4 sm:grid-cols-2">
               {SOCIAL_FIELDS.map((field) => (
@@ -258,7 +160,7 @@ export default function WebsitePage() {
           <Card>
             <CardHeader
               title="AfterBI Custom"
-              subtitle="The built for you card under the plans on the Pricing page."
+              subtitle="The optional built for you offer you can add to a proposal."
             />
             <CustomEditor value={home?.customBuild} onChange={(customBuild) => seed({ customBuild })} />
           </Card>
@@ -281,29 +183,6 @@ export default function WebsitePage() {
             <PartnerEditor value={home?.partners} onChange={(partners) => seed({ partners })} />
           </Card>
 
-          <Card>
-            <CardHeader title="The other two" subtitle="The About page, and what a shared link shows." />
-            <div className="flex flex-wrap items-start gap-8">
-              <ImagePicker
-                label="About page"
-                value={home?.aboutImage ?? ''}
-                onChange={(aboutImage) => seed({ aboutImage })}
-                kind="site"
-                size={160}
-                height={200}
-                hint="4:5. 1000 × 1250. Beside the story."
-              />
-              <ImagePicker
-                label="Shared link"
-                value={home?.shareImage ?? ''}
-                onChange={(shareImage) => seed({ shareImage })}
-                kind="site"
-                size={240}
-                height={126}
-                hint="1200 × 630. What WhatsApp, LinkedIn and Slack draw when somebody pastes the address. Falls back to /og.png."
-              />
-            </div>
-          </Card>
         </div>
       )}
     </>

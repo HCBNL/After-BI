@@ -8,7 +8,6 @@
  */
 
 import { Plus, Star, Trash2 } from 'lucide-react';
-import { ImagePicker } from '@/components/ImagePicker';
 import { Button, Field, Input, Switch, Textarea } from '@/components/ui';
 import {
   DEFAULT_CUSTOM,
@@ -113,15 +112,6 @@ export function PartnerEditor({
         <p className="text-sm font-semibold text-primary">Packages</p>
         {packages.map((item, index) => (
           <div key={item.id} className="flex flex-col gap-4 rounded-xl border border-hairline p-4 sm:flex-row sm:items-start">
-            <ImagePicker
-              label="Picture (optional)"
-              value={item.image ?? ''}
-              onChange={(image) => setPackage(index, { image })}
-              kind="cover"
-              size={176}
-              height={99}
-              hint="16:9. 1600 × 900."
-            />
             <div className="min-w-0 flex-1 space-y-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Name">
@@ -184,14 +174,6 @@ export function PartnerEditor({
         )}
         {testimonies.map((item, index) => (
           <div key={index} className="flex flex-col gap-4 rounded-xl border border-hairline p-4 sm:flex-row sm:items-start">
-            <ImagePicker
-              label="Photo (optional)"
-              value={item.photo ?? ''}
-              onChange={(photo) => setTestimony(index, { photo })}
-              kind="site"
-              shape="circle"
-              size={88}
-            />
             <div className="min-w-0 flex-1 space-y-3">
               <Field label="Their words">
                 <Textarea rows={3} value={item.quote} onChange={(e) => setTestimony(index, { quote: e.target.value })} />

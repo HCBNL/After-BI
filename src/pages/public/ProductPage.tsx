@@ -1,112 +1,122 @@
 /**
- * `/features`, the eight modules.
- *
- * A grid, not eight essays. Every card is the module's picture, its name and
- * one line, and the detail is one tap away on its own page, which is where
- * somebody who wants it will go, and where a search engine will land them.
+ * /features: every module, grouped the way the product menu groups them.
  */
 
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
-import { Headline, Reveal } from '@/components/marketing/bits';
-import { ModuleCover } from '@/components/marketing/art';
+import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
-import { MODULES, MONTH_STEPS } from '@/lib/site';
+import { ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { ModuleMock } from '@/components/marketing/mocks';
+import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
+import { cn } from '@/lib/cn';
+import { MODULES, MONTH_STEPS, PRODUCT_GROUPS, type SiteImageKey } from '@/lib/site';
 
 export default function ProductPage() {
   return (
-    <>
+    <PublicShell>
       <Seo
-        title="Features"
-        description="Orders, sell-out, stock and depots, invoices, credit control, deliveries, targets and the distributor portal."
+        title="Platform"
+        description="Pipeline, order management, inventory, fulfilment, billing, credit, channel intelligence, analytics and workflow automation on one platform."
         path="/features"
+        jsonLd={{ '@context': 'https://schema.org', '@graph': [breadcrumbJsonLd('/features', 'Platform')] }}
       />
-
-      <PublicShell>
-        <Body />
-      </PublicShell>
-    </>
+      <Body />
+    </PublicShell>
   );
 }
 
 function Body() {
-  const { book, home } = useAsk();
-  const pictures = home?.moduleImages ?? {};
+  const { book } = useAsk();
 
   return (
     <>
-      <section className="relative isolate overflow-hidden pb-12 pt-28 sm:pb-16 sm:pt-32">
-        <div aria-hidden className="ink-glow pointer-events-none absolute inset-0 -z-10" />
-        <div aria-hidden className="ink-rule pointer-events-none absolute inset-0 -z-10" />
-        <div className={container}>
-          <Reveal>
-            <Headline as="h1" size="lg" className="max-w-3xl">
-              One carton, from the order to the money back
-            </Headline>
-            <p className="mt-5 max-w-xl text-[16px] leading-[1.7] text-white/65">
-              Eight modules on one database, one price list and one set of permissions.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button type="button" onClick={book} className={btn.green}>
-                Book a walkthrough
-              </button>
-              <Link to="/pricing" className={btn.glass}>
-                See pricing
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <section className="site-wash">
+        <div className={cn(container, 'pb-16 pt-14 text-center sm:pb-20 sm:pt-20')}>
+          <SectionHead
+            as="h1"
+            align="center"
+            kicker="Platform"
+            title="One platform. Twelve capabilities"
+            body="Sales, operations, finance and intelligence on a single data model."
+          />
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <button type="button" onClick={book} className={btn.green}>
+              Book a demo
+            </button>
+            <Link to="/pricing" className={btn.outline}>
+              See plans and pricing
+            </Link>
+          </div>
 
-      <section className="pb-8">
-        <div className={container}>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {MODULES.map((item, index) => (
-              <Reveal as="li" key={item.slug} delay={Math.min(index, 4) * 60}>
-                <Link to={`/features/${item.slug}`} className="group flex h-full flex-col">
-                  <ModuleCover
-                    art={item.art}
-                    image={pictures[item.slug]}
-                    width={420}
-                    className="aspect-video rounded-md ring-1 ring-white/[0.06] transition duration-300 group-hover:ring-white/30"
-                    glyphClassName="h-20 w-24"
-                  />
-                  <h2 className="mt-3 font-display text-[1.05rem] font-bold tracking-[-0.02em] text-white">
-                    {item.name}
-                  </h2>
-                  <p className="mt-1 text-[13.5px] leading-relaxed text-white/60">{item.blurb}</p>
-                </Link>
-              </Reveal>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="py-10 sm:py-14">
-        <div className={container}>
-          <h2 className="font-display text-[1.3rem] font-bold tracking-[-0.025em] text-white sm:text-[1.6rem]">
-            Your month, in four steps
-          </h2>
-          <ol className="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-            {MONTH_STEPS.map((step, i) => (
-              <li
-                key={step.title}
-                className="relative isolate flex min-h-[9.5rem] flex-col justify-end overflow-hidden rounded-md bg-night-2 p-5 ring-1 ring-inset ring-white/[0.06] sm:min-h-[13rem] sm:p-6"
+          <nav aria-label="Modules" className="mt-12 flex flex-wrap justify-center gap-2">
+            {MODULES.map((m) => (
+              <a
+                key={m.slug}
+                href={`#${m.slug}`}
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-navy-700 ring-1 ring-navy-900/10 hover:text-brand-700"
               >
-                <span
-                  aria-hidden
-                  className="outline-num absolute -right-1 -top-5 -z-10 font-display text-[8.5rem] font-extrabold leading-none tracking-[-0.06em] sm:text-[10rem]"
-                >
-                  {i + 1}
-                </span>
-                <h3 className="font-display text-[1.12rem] font-bold tracking-[-0.02em] text-white">{step.title}</h3>
-                <p className="mt-1.5 max-w-[17rem] text-[14px] leading-relaxed text-white/65">{step.body}</p>
-              </li>
+                <ModuleIcon slug={m.slug} size={15} /> {m.name}
+              </a>
             ))}
-          </ol>
+          </nav>
         </div>
       </section>
+
+      {PRODUCT_GROUPS.map((group, groupIndex) => (
+        <Section key={group.title} tone={groupIndex % 2 ? 'mist' : 'white'}>
+          <SectionHead kicker={`0${groupIndex + 1}`} title={group.title} />
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            {group.slugs.map((slug, index) => {
+              const m = MODULES.find((x) => x.slug === slug);
+              if (!m) return null;
+              return (
+                <Reveal key={slug} delay={(index % 2) * 80}>
+                  <Link
+                    id={slug}
+                    to={`/features/${slug}`}
+                    className="group flex h-full scroll-mt-32 flex-col overflow-hidden rounded-[1.6rem] bg-white ring-1 ring-navy-900/10 transition-shadow hover:shadow-[0_24px_50px_-24px_rgba(15,31,54,0.35)]"
+                  >
+                    <SiteImage
+                      slot={`module-${slug}` as SiteImageKey}
+                      alt={`${m.name} in AfterBI`}
+                      className="aspect-[16/10]"
+                      fallback={<ModuleMock slug={slug} />}
+                    />
+                    <div className="flex flex-1 flex-col p-7">
+                      <span className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                          <ModuleIcon slug={slug} size={19} />
+                        </span>
+                        <h3 className="font-display text-[1.4rem] font-extrabold tracking-[-0.03em] text-navy-900">{m.name}</h3>
+                      </span>
+                      <p className="mt-3 flex-1 text-[16px] leading-relaxed text-navy-700/85">{m.blurb}</p>
+                      <span className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-700">
+                        Learn more <ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </div>
+                  </Link>
+                </Reveal>
+              );
+            })}
+          </div>
+        </Section>
+      ))}
+
+      <Section tone="navy">
+        <SectionHead onDark align="center" kicker="How it works" title="Live in four steps" />
+        <ol className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {MONTH_STEPS.map((step, index) => (
+            <li key={step.title} className="rounded-2xl bg-white/[0.06] p-7 ring-1 ring-inset ring-white/10">
+              <span className="font-display text-[2.4rem] font-extrabold leading-none text-brand-400">{index + 1}</span>
+              <h3 className="mt-4 text-[18px] font-bold">{step.title}</h3>
+              <p className="mt-2 text-[15.5px] leading-relaxed text-white/70">{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </Section>
     </>
   );
 }

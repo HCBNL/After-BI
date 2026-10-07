@@ -16,7 +16,7 @@
 import { Link } from 'react-router-dom';
 import { Seo } from '@/components/Seo';
 import { PublicShell } from '@/components/marketing/kit';
-import { Headline, Questions } from '@/components/marketing/bits';
+import { Accordion } from '@/components/marketing/site-ui';
 import { btn } from '@/components/marketing/tokens';
 import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/site';
 
@@ -45,33 +45,31 @@ export default function SignInHelpPage() {
       <Seo title="Trouble signing in" description="What to do when AfterBI will not let you in." path="/help/sign-in" noindex />
 
       <PublicShell closing={false}>
-        <section className="relative isolate overflow-hidden pb-14 pt-28 sm:pb-16 sm:pt-32">
-          <div aria-hidden className="ink-glow pointer-events-none absolute inset-0 -z-10" />
+        <section className="site-wash pb-20 pt-14 sm:pt-20">
           <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
-            <Headline as="h1" size="lg" className="max-w-2xl">
-              Can’t get in
-            </Headline>
-            <p className="mt-5 max-w-xl text-[16px] leading-[1.7] text-white/65">
-              Four things go wrong, in the order they are likely.
-            </p>
+            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-brand-700">Support</p>
+            <h1 className="mt-3 font-display text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.4rem]">
+              Can’t get in?
+            </h1>
+            <p className="mt-5 max-w-xl text-[18px] leading-[1.65] text-navy-700/85">Four things go wrong, in the order they are likely.</p>
 
-            <Questions items={TROUBLE} className="mt-10" />
+            <div className="mt-10 rounded-2xl bg-white px-6 ring-1 ring-navy-900/10 sm:px-8">
+              <Accordion items={TROUBLE} className="border-y-0" />
+            </div>
 
-            <div className="mt-12 border-t border-white/10 pt-10">
-              <h2 className="font-display text-[1.2rem] font-bold tracking-[-0.025em] text-white">None of those?</h2>
-              <p className="mt-2 text-[15px] leading-relaxed text-white/65">
-                Tell us the address you are trying and what the screen says. Nobody from AfterBI will ever ask for
-                your password.
+            <div className="mt-12 rounded-2xl bg-navy-900 p-7 text-white sm:p-10">
+              <h2 className="font-display text-[1.5rem] font-extrabold tracking-[-0.03em]">None of those?</h2>
+              <p className="mt-2 text-[16px] leading-relaxed text-white/70">
+                Tell us the address you are trying and what the screen says. Nobody from AfterBI will ever ask for your password.
               </p>
-
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Link to="/login" className={btn.green}>
                   Back to sign in
                 </Link>
-                <a href={`mailto:${SUPPORT_EMAIL}?subject=Trouble%20signing%20in`} className={btn.line}>
+                <a href={`mailto:${SUPPORT_EMAIL}?subject=Trouble%20signing%20in`} className={btn.lineWhite}>
                   Email us
                 </a>
-                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className={btn.line}>
+                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className={btn.lineWhite}>
                   WhatsApp
                 </a>
               </div>
