@@ -14,7 +14,7 @@
  */
 
 import { BRAND, SITE_URL } from './siteMeta';
-import { FOUNDER } from './site';
+import { FOUNDER, PROMISE } from './site';
 
 /**
  * The founder's address in the graph: a real anchor on the About page.
@@ -23,7 +23,7 @@ import { FOUNDER } from './site';
  * and it is the same id on every page, so the Organization on the front page
  * and the Person on the About page are one connected pair of entities.
  */
-export const FOUNDER_ID = `${SITE_URL}/about#founder`;
+export const FOUNDER_ID = `${SITE_URL}/#founder`;
 
 /**
  * The front page's graph: the organisation, the site and the product.
@@ -42,14 +42,13 @@ export function homeJsonLd(): Record<string, unknown> {
         '@id': `${SITE_URL}/#organization`,
         name: BRAND,
         url: SITE_URL,
-        description:
-          'Distribution management software for fast-moving consumer goods: orders, stock, invoices, credit and sell-out.',
-        areaServed: 'NG',
+        description: PROMISE,
         /* By reference, not by value. The Person is a node of its own below,
            so the founder and the company are one linked pair of entities
            rather than a name repeated inside a company record, which is what
            lets a search for either one reinforce the other. */
         founder: { '@id': FOUNDER_ID },
+        parentOrganization: { '@type': 'Organization', name: 'Contoric' },
       },
       founderNode(),
       {
@@ -69,7 +68,7 @@ export function homeJsonLd(): Record<string, unknown> {
         publisher: { '@id': `${SITE_URL}/#organization` },
         offers: {
           '@type': 'Offer',
-          price: '180000',
+          price: '75000',
           priceCurrency: 'NGN',
           availability: 'https://schema.org/InStock',
         },
@@ -99,7 +98,6 @@ function founderNode(extra?: { image?: string; sameAs?: string[] }): Record<stri
     jobTitle: FOUNDER.role,
     description: FOUNDER.bio,
     url: FOUNDER_ID,
-    nationality: { '@type': 'Country', name: 'Nigeria' },
     worksFor: { '@id': `${SITE_URL}/#organization` },
     knowsAbout: [...FOUNDER.knowsAbout],
     ...(extra?.image ? { image: extra.image } : {}),
@@ -118,40 +116,6 @@ export function breadcrumbJsonLd(path: string, name: string): Record<string, unk
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: BRAND, item: SITE_URL },
       { '@type': 'ListItem', position: 2, name, item: `${SITE_URL}${path}` },
-    ],
-  };
-}
-
-/**
- * The About page's own graph: the page is about the founder.
- *
- * The photograph and the profile links are the owner's, set in Platform,
- * Website, so they are passed in. Without them the page still says, in
- * markup a crawler reads, that this person founded this company.
- */
-export function aboutJsonLd(extra?: { image?: string; sameAs?: string[] }): Record<string, unknown> {
-  return {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'AboutPage',
-        '@id': `${SITE_URL}/about#page`,
-        url: `${SITE_URL}/about`,
-        name: `About ${BRAND}: founded by ${FOUNDER.name}`,
-        isPartOf: { '@id': `${SITE_URL}/#website` },
-        about: { '@id': `${SITE_URL}/#organization` },
-        mainEntity: { '@id': FOUNDER_ID },
-      },
-      founderNode(extra),
-      {
-        '@type': 'Organization',
-        '@id': `${SITE_URL}/#organization`,
-        name: BRAND,
-        url: SITE_URL,
-        founder: { '@id': FOUNDER_ID },
-        foundingLocation: { '@type': 'Place', name: 'Lagos, Nigeria' },
-      },
-      breadcrumbJsonLd('/about', 'About'),
     ],
   };
 }

@@ -99,7 +99,7 @@ export const DEFAULT_PACKAGES: PartnerPackage[] = [
     audience: 'Consultants and trainers who advise FMCG companies',
     blurb:
       'You already help manufacturers fix their route to market. Introduce AfterBI to the businesses you advise and the improvement shows up in their numbers.',
-    perks: ['{reward} for every business that subscribes', 'We run every walkthrough ourselves', 'No cap on the number of businesses'],
+    perks: ['{reward} for every business that subscribes', 'We run every demo ourselves', 'No cap on the number of businesses'],
     featured: true,
   },
   {
@@ -107,8 +107,8 @@ export const DEFAULT_PACKAGES: PartnerPackage[] = [
     name: 'Trade Association Leader',
     audience: 'Leaders of distributor and trade associations',
     blurb:
-      'Bring a Nigerian-built distribution system to your members, one introduction at a time or a whole chapter at once.',
-    perks: ['{reward} for every business that subscribes', 'Walkthroughs arranged for your members', 'Paid within {payDays} working days'],
+      'Bring a modern sales and distribution platform to your members, one introduction at a time or a whole chapter at once.',
+    perks: ['{reward} for every business that subscribes', 'Demos arranged for your members', 'Paid within {payDays} working days'],
   },
   {
     id: 'finance',

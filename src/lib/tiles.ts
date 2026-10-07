@@ -38,7 +38,6 @@ import {
   Globe,
   LifeBuoy,
   ListTodo,
-  Newspaper,
   Image,
   LineChart,
   Megaphone,
@@ -212,15 +211,6 @@ const ACTIONS: AppAction[] = [
     to: 'proposals',
     roles: ['owner'],
     group: 'Platform',
-  },
-  {
-    id: 'platform-blog',
-    label: 'Blog',
-    description: 'Write and publish articles on the public blog. Drafts are seen by nobody but you.',
-    icon: Newspaper,
-    to: 'blog',
-    roles: ['owner'],
-    group: 'Content',
   },
 
   /* daily */

@@ -159,7 +159,7 @@ const OWNER: TourStep[] = [
     id: 'shortcuts',
     anchor: 'shortcuts',
     title: 'Two jobs, two sections',
-    body: 'Platform is the business: organisations, pricing. Content is what the public sees: the website, the founder page, the videos and the blog.',
+    body: 'Platform is the business: organisations, pricing. Content is what the public sees: the website and the videos.',
   },
   NAV,
   PROFILE,

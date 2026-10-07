@@ -463,13 +463,12 @@ const HOW_TO: HowTo[] = [
   },
   {
     id: 'website',
-    title: 'Change the website: founder photo, videos, banners',
+    title: 'Change the website: videos and follow links',
     roles: ['owner'],
-    keywords: ['website', 'founder', 'photo', 'video', 'banner', 'cover', 'seo', 'about', 'social'],
+    keywords: ['website', 'video', 'social', 'links'],
     steps: [
       { text: 'Open Website.', to: 'website' },
-      { text: 'Under The founder, upload the photograph and paste profile links, one per line.' },
-      { text: 'Under Walkthrough videos, press Add a video, then upload a file or paste a YouTube link, and give it a title.' },
+      { text: 'Under Demo videos, press Add a video, then upload a file or paste a YouTube link, and give it a title.' },
       { text: 'Press Publish. Nothing changes on the public site until you do.' },
     ],
   },
@@ -508,20 +507,8 @@ const HOW_TO: HowTo[] = [
     steps: [
       { text: 'Open Website.', to: 'website' },
       { text: 'In AfterBI Custom, switch the card on or off and edit its name, price line and what is included.' },
-      { text: 'In Partner Programme, set the reward and payment days, edit the packages (a picture is optional) and add real testimonies.' },
+      { text: 'In Partner Programme, set the reward and payment days, edit the packages and add real testimonies.' },
       { text: 'Press Publish at the top. Nothing changes on the public site until you do.' },
-    ],
-  },
-  {
-    id: 'blog',
-    title: 'Write and publish a blog article',
-    roles: ['owner'],
-    keywords: ['blog', 'article', 'post', 'news', 'write', 'publish'],
-    steps: [
-      { text: 'Open Blog and press New article.', to: 'blog' },
-      { text: 'Type the Title, the line under it, the Category, and upload a Cover picture.' },
-      { text: 'Write the article in Write, and check it in Preview.' },
-      { text: 'Press Publish. Save as a draft keeps it hidden from everybody but you.' },
     ],
   },
 ];

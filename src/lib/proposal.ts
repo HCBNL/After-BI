@@ -19,7 +19,7 @@
 
 import { collection, deleteDoc, doc, getDocs, limit, query, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { MODULES, PLANS, naira } from './site';
+import { MODULES, PLANS, naira, planByName } from './site';
 import { BRAND, SITE_URL, SUPPORT_EMAIL, SALES_PHONE } from './siteMeta';
 import { FOUNDER } from './site';
 import { resolveCustom, type CustomBuild } from './programme';
@@ -370,7 +370,7 @@ export function proposalHtml(input: ProposalInput, customRaw?: Partial<CustomBui
   const value = input.edition === 'value';
   const custom = resolveCustom(customRaw);
   const withCustom = Boolean(input.includeCustom) && custom.enabled;
-  const plan = PLANS.find((p) => p.name === input.plan);
+  const plan = planByName(input.plan);
   const chosen = MODULES.filter((m) => input.modules.includes(m.slug));
   const support = SUPPORT_LEVELS[input.support];
   const number = proposalNumber(input);
