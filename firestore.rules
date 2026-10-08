@@ -168,12 +168,14 @@ service cloud.firestore {
        */
       allow create: if signedIn()
         && request.resource.data.role != 'owner'
-        && request.resource.data.orgId is string
         && request.resource.data.active == true
         && (
-          owner()
+          /* AfterBI's own staff: made by the owner, belonging to no organisation. */
+          (owner() && request.resource.data.role == 'agent' && !('orgId' in request.resource.data))
+          || (owner() && request.resource.data.role != 'agent' && request.resource.data.orgId is string)
           || (
-            admin(request.resource.data.orgId)
+            request.resource.data.orgId is string
+            && admin(request.resource.data.orgId)
             && request.resource.data.role in [
               'super_admin', 'admin', 'staff', 'sales_rep', 'distributor',
               'warehouse_manager', 'finance_manager', 'operations_manager'
@@ -185,7 +187,7 @@ service cloud.firestore {
       /* Your own name, phone, title and photograph: never your role, organisation, accounts or active flag. */
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['firstName', 'lastName', 'title', 'phone', 'photoURL', 'updatedAt', 'lastSeenAt']);
+             .hasOnly(['firstName', 'lastName', 'title', 'phone', 'photoURL', 'position', 'location', 'updatedAt', 'lastSeenAt']);
 
       /* An administrator, on anybody in their own organisation except themselves.
          Only a super admin may change a super admin, or make one. */
@@ -238,9 +240,28 @@ service cloud.firestore {
       (a query on status), which these rules allow; a listing that might
       include a draft is refused as a whole.
     */
-    /* Proposals to prospects: the platform owner's sales work, nobody else's. */
+    /* Proposals to prospects: the owner sees all; an AfterBI staff member only their own. */
     match /proposals/{proposalId} {
       allow read, write: if owner();
+      allow read: if activeProfile() && role() == 'agent' && resource.data.get('createdBy', '') == request.auth.uid;
+      allow create: if activeProfile() && role() == 'agent' && request.resource.data.get('createdBy', '') == request.auth.uid;
+      allow update: if activeProfile() && role() == 'agent'
+        && resource.data.get('createdBy', '') == request.auth.uid
+        && request.resource.data.get('createdBy', '') == request.auth.uid;
+      allow delete: if activeProfile() && role() == 'agent' && resource.data.get('createdBy', '') == request.auth.uid;
+    }
+
+    /*
+      The public check behind an AfterBI staff ID card's QR code: name,
+      position, location and whether they are current. Nothing else. Written by
+      the owner; a staff member may refresh only their own position and location.
+    */
+    match /staffCards/{staffNo} {
+      allow read: if true;
+      allow write: if owner();
+      allow update: if activeProfile() && role() == 'agent'
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['position', 'location', 'updatedAt']);
     }
 
     match /posts/{slug} {

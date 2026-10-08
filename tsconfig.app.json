@@ -26,5 +26,18 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/pages/public/AboutPage.tsx",
+    "src/pages/public/BlogIndex.tsx",
+    "src/pages/public/BlogPost.tsx",
+    "src/pages/public/RolesPage.tsx",
+    "src/pages/platform/BlogEditorPage.tsx",
+    "src/pages/platform/website/BannerEditor.tsx",
+    "src/components/marketing/art.tsx",
+    "src/components/marketing/blog.tsx",
+    "src/components/marketing/Banner.tsx",
+    "src/components/marketing/SocialIcon.tsx",
+    "src/lib/blog.ts"
+  ]
 }
