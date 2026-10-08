@@ -39,6 +39,8 @@
     "src/components/marketing/blog.tsx",
     "src/components/marketing/Banner.tsx",
     "src/components/marketing/SocialIcon.tsx",
-    "src/lib/blog.ts"
+    "src/lib/blog.ts",
+    "src/pages/public/PartnersPage.tsx",
+    "src/lib/partnerLetter.ts"
   ]
 }
