@@ -34,6 +34,7 @@ import { ArrowLeft, ArrowRight, MailCheck, Mail } from 'lucide-react';
 import { Seo } from '@/components/Seo';
 import { BrandBars } from '@/components/home/HomeArt';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Alert } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthContext';
@@ -125,7 +126,10 @@ export default function ForgotPasswordPage() {
             <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="lg:hidden">
               <Wordmark className="text-[1.45rem] text-primary" />
             </Link>
-            <ThemeToggle compact />
+            <div className="flex items-center gap-1">
+              <LanguageSwitch />
+              <ThemeToggle compact />
+            </div>
           </div>
 
           <div className="flex flex-1 items-center justify-center px-5 py-8 sm:px-8">

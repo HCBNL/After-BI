@@ -50,7 +50,7 @@ import {
 } from '@/lib/siteDoc';
 import { SOCIAL_FIELDS } from '@/lib/social';
 import { VideoPicker } from './website/VideoPicker';
-import { CustomEditor, PartnerEditor } from './website/ProgrammeEditors';
+import { CustomEditor } from './website/ProgrammeEditors';
 
 export default function WebsitePage() {
   const toast = useToast();
@@ -91,7 +91,7 @@ export default function WebsitePage() {
     <>
       <PageHeader
         title="Website"
-        description="Videos, follow links, the Custom offer and the Partner Programme. Pictures live in the website files (public/site)."
+        description="Videos, follow links and the Custom offer. Pictures live in the website files (public/site)."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -165,23 +165,6 @@ export default function WebsitePage() {
             <CustomEditor value={home?.customBuild} onChange={(customBuild) => seed({ customBuild })} />
           </Card>
 
-          <Card>
-            <CardHeader
-              title="Partner Programme"
-              subtitle="The reward, packages and testimonies on the Partners page."
-              action={
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon={<ExternalLink size={14} />}
-                  onClick={() => window.open('/partners', '_blank', 'noopener')}
-                >
-                  View
-                </Button>
-              }
-            />
-            <PartnerEditor value={home?.partners} onChange={(partners) => seed({ partners })} />
-          </Card>
 
         </div>
       )}

@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { useShell } from '@/components/layout/ShellContext';
 import { Avatar, Badge, Button, Divider, Field, Hint, Input, useToast } from '@/components/ui';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { AccentPicker } from '@/components/AccentPicker';
 import { useAuth } from '@/context/AuthContext';
 import { useOptionalOrg } from '@/context/OrgContext';
@@ -147,6 +148,13 @@ export default function ProfilePage() {
             </p>
           </div>
           <ThemeToggle />
+        </div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
+          <div>
+            <h2 className="text-[15px] font-bold text-primary">Language</h2>
+            <p className="mt-0.5 text-[12.5px] text-muted">The whole app changes, including menus and messages.</p>
+          </div>
+          <LanguageSwitch full />
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
           <div>

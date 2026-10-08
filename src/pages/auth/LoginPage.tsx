@@ -40,6 +40,7 @@ import { ArrowRight, Check, Copy, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { Seo } from '@/components/Seo';
 import { BrandBars } from '@/components/home/HomeArt';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { Alert } from '@/components/ui';
 import { cn } from '@/lib/cn';
@@ -173,7 +174,10 @@ export default function LoginPage() {
             <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="lg:hidden">
               <Wordmark className="text-[1.45rem] text-primary" />
             </Link>
-            <ThemeToggle compact />
+            <div className="flex items-center gap-1">
+              <LanguageSwitch />
+              <ThemeToggle compact />
+            </div>
           </div>
 
           <div className="flex flex-1 items-center justify-center px-5 py-8 sm:px-8">

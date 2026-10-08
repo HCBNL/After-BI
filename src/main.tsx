@@ -7,6 +7,7 @@ import { ToastProvider } from '@/components/ui';
 import { initTheme } from '@/lib/theme';
 import { lockZoom } from '@/lib/lockZoom';
 import { initPwa } from '@/lib/pwa';
+import { startI18n } from '@/lib/i18n';
 import './index.css';
 
 /*
@@ -44,14 +45,17 @@ initPwa();
  * that runs before the bundle, and it is also the only thing that survives the
  * bundle failing to load at all. See the comment there.
  */
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <App />
-        </ToastProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>,
-);
+/* The chosen language's dictionary, before the first frame (English loads nothing). */
+void startI18n().finally(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <BrowserRouter>
+        <AuthProvider>
+          <ToastProvider>
+            <App />
+          </ToastProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </StrictMode>,
+  );
+});

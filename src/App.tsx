@@ -100,9 +100,9 @@ const DemoPage = lazy(() => import('@/pages/public/DemoPage'));
 const SignInHelpPage = lazy(() => import('@/pages/public/SignInHelpPage'));
 const PublicNotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
-const PartnersPage = lazy(() => import('@/pages/public/PartnersPage'));
 const SolutionsPage = lazy(() => import('@/pages/public/SolutionsPage'));
 const CardPage = lazy(() => import('@/pages/public/CardPage'));
+const LegalPage = lazy(() => import('@/pages/public/LegalPage'));
 const VerifyStaffPage = lazy(() => import('@/pages/public/VerifyStaffPage'));
 const StaffPage = lazy(() => import('@/pages/platform/StaffPage'));
 const StaffHome = lazy(() => import('@/pages/staff/StaffHome'));
@@ -118,7 +118,7 @@ const GuidePage = lazy(() => import('@/pages/shared/GuidePage'));
 const TasksPage = lazy(() => import('@/pages/shared/TasksPage'));
 
 /** The right shape of waiting for the address being opened. */
-const PUBLIC_PREFIXES = ['/features', '/product', '/solutions', '/pricing', '/partners', '/demo', '/help', '/card', '/verify'];
+const PUBLIC_PREFIXES = ['/features', '/product', '/solutions', '/pricing', '/demo', '/help', '/card', '/verify', '/terms', '/privacy'];
 
 function RouteSkeleton({ path }: { path: string }) {
   if (path.startsWith('/portal')) return <ShellSkeleton />;
@@ -245,9 +245,11 @@ export default function App() {
           <Route path="/product/:slug" element={<ProductRedirect />} />
           <Route path="/solutions" element={<SolutionsPage />} />
           <Route path="/card" element={<CardPage />} />
+          <Route path="/terms" element={<LegalPage kind="terms" />} />
+          <Route path="/privacy" element={<LegalPage kind="privacy" />} />
           <Route path="/verify/staff/:staffNo" element={<VerifyStaffPage />} />
           <Route path="/pricing" element={<PublicPricingPage />} />
-          <Route path="/partners" element={<PartnersPage />} />
+          <Route path="/partners" element={<Navigate to="/" replace />} />
           {/* Retired with the 2026 rebrand: old links land on the front page. */}
           <Route path="/blog" element={<Navigate to="/" replace />} />
           <Route path="/blog/:slug" element={<Navigate to="/" replace />} />

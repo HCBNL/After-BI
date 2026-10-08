@@ -12,7 +12,7 @@ import { btn, container } from '@/components/marketing/tokens';
 import { SectionHead } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
-import { PLANS, PRICING_NOTES, naira, yearly, type Plan } from '@/lib/site';
+import { PLANS, PRICING_NOTES, yearly, type Plan } from '@/lib/site';
 
 type Cycle = 'monthly' | 'yearly';
 
@@ -21,7 +21,7 @@ export default function PricingPage() {
     <>
       <Seo
         title="Pricing"
-        description="Simple pricing per organisation, with free partner users on every plan. From ₦75,000 a month."
+        description="From ₦7,500 per user a month, with free partner users on every plan."
         path="/pricing"
         jsonLd={{ '@context': 'https://schema.org', '@graph': [breadcrumbJsonLd('/pricing', 'Pricing')] }}
       />
@@ -85,9 +85,26 @@ function Body() {
   );
 }
 
+/** "62500" as ₦62,500 and ".00": the kobo printed small, the way big platforms show prices. */
+function Price({ amount, size = 'lg' }: { amount: number; size?: 'lg' | 'sm' }) {
+  const fixed = amount.toFixed(2);
+  const [whole, kobo] = fixed.split('.');
+  const big = Number(whole).toLocaleString('en-NG');
+  return size === 'lg' ? (
+    <span className="tabular font-display font-extrabold leading-none tracking-[-0.04em] text-navy-900">
+      <span className="text-[2.7rem]">₦{big}</span>
+      <span className="text-[1.1rem]">.{kobo}</span>
+    </span>
+  ) : (
+    <span className="tabular">
+      ₦{big}.{kobo}
+    </span>
+  );
+}
+
 function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: () => void }) {
-  const monthly = plan.price ?? 0;
-  const amount = cycle === 'yearly' ? yearly(monthly) : monthly;
+  const monthly = plan.price ?? plan.perUser * plan.users;
+  const perMonth = cycle === 'yearly' ? yearly(monthly) / 12 : monthly;
   return (
     <div
       className={cn(
@@ -101,14 +118,23 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
         </span>
       )}
       <h2 className="font-display text-[1.5rem] font-extrabold tracking-[-0.03em] text-navy-900">{plan.name}</h2>
-      <p className="mt-1.5 text-[15px] text-navy-600">{plan.forWho}</p>
+      <p className="mt-1.5 min-h-[3rem] text-[15px] text-navy-600">{plan.forWho}</p>
 
-      <p className="mt-7 flex items-baseline gap-1.5">
-        <span className="tabular font-display text-[2.7rem] font-extrabold leading-none tracking-[-0.04em] text-navy-900">{naira(amount)}</span>
-        <span className="text-[15px] font-semibold text-navy-500">/{cycle === 'yearly' ? 'year' : 'month'}</span>
+      <p className="mt-6 h-6 text-[16px] text-navy-400 line-through">{cycle === 'yearly' ? <Price amount={monthly} size="sm" /> : null}</p>
+      <p className="flex items-baseline gap-1.5">
+        <Price amount={perMonth} />
+        <span className="whitespace-nowrap text-[15px] font-semibold text-navy-500">/month</span>
       </p>
-      <p className="mt-2 h-5 text-[13.5px] font-semibold text-brand-700">
-        {cycle === 'yearly' ? `You save ${naira(monthly * 2)}` : ''}
+      <p className="mt-2 min-h-[2.6rem] text-[14.5px] leading-snug text-navy-600">
+        {cycle === 'yearly' ? (
+          <>
+            Billed <Price amount={yearly(monthly)} size="sm" /> yearly. Save <Price amount={monthly * 2} size="sm" />.
+          </>
+        ) : (
+          <>
+            <Price amount={plan.perUser} size="sm" /> per user, {plan.users} users
+          </>
+        )}
       </p>
 
       <button type="button" onClick={onBook} className={cn('mt-6 w-full', plan.featured ? btn.green : btn.outline)}>
