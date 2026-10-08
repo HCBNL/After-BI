@@ -30,8 +30,9 @@ function seoFiles(mode: string): Plugin {
         ...modules.map((slug) => ({ loc: `/features/${slug}`, priority: '0.8' })),
         { loc: '/solutions', priority: '0.8' },
         { loc: '/pricing', priority: '0.8' },
-        { loc: '/partners', priority: '0.7' },
         { loc: '/demo', priority: '0.6' },
+        { loc: '/terms', priority: '0.3' },
+        { loc: '/privacy', priority: '0.3' },
       ];
       const xml =
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
