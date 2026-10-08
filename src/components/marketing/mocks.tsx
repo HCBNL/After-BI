@@ -50,9 +50,9 @@ export function Phone({ children, className }: { children: ReactNode; className?
 function Kpi({ label, value, delta, up = true }: { label: string; value: string; delta: string; up?: boolean }) {
   return (
     <div className="rounded-lg bg-white p-2.5 ring-1 ring-navy-900/8">
-      <p className="text-[8.5px] font-semibold uppercase tracking-wide text-navy-400">{label}</p>
+      <p className="truncate text-[8.5px] font-semibold uppercase tracking-wide text-navy-400">{label}</p>
       <p className="mt-1 font-display text-[15px] font-extrabold leading-none text-navy-900">{value}</p>
-      <p className={cn('mt-1 text-[8.5px] font-bold', up ? 'text-brand-600' : 'text-[#d9534f]')}>{delta}</p>
+      <p className={cn('mt-1 truncate text-[8.5px] font-bold', up ? 'text-brand-600' : 'text-[#d9534f]')}>{delta}</p>
     </div>
   );
 }
@@ -65,7 +65,7 @@ const STATUS = {
 } as const;
 
 function Pill({ s }: { s: keyof typeof STATUS }) {
-  return <span className={cn('rounded-full px-1.5 py-0.5 text-[8px] font-bold', STATUS[s])}>{s}</span>;
+  return <span className={cn('whitespace-nowrap rounded-full px-1.5 py-0.5 text-[8px] font-bold', STATUS[s])}>{s}</span>;
 }
 
 function Bars({ a, b, className }: { a: number[]; b: number[]; className?: string }) {
@@ -112,7 +112,7 @@ function OrdersTable({ rows = 5 }: { rows?: number }) {
       {ORDERS.slice(0, rows).map(([id, who, amount, status]) => (
         <div key={id} className="grid grid-cols-[3.4rem_1fr_auto_auto] items-center gap-2 border-b border-navy-900/5 px-3 py-1.5 last:border-0">
           <span className="text-[8.5px] font-semibold text-navy-400">{id}</span>
-          <span className="truncate text-[9px] font-semibold text-navy-800">{who}</span>
+          <span translate="no" className="truncate text-[9px] font-semibold text-navy-800">{who}</span>
           <span className="text-[9px] font-bold text-navy-900">{amount}</span>
           <Pill s={status} />
         </div>
@@ -205,7 +205,7 @@ export function PortalScreen() {
       </div>
       {['Place an order', 'My statement', 'Report sell-out'].map((label, index) => (
         <div key={label} className="flex items-center justify-between rounded-md bg-navy-50 px-2 py-1.5">
-          <span className="text-[8px] font-bold text-navy-800">{label}</span>
+          <span className="truncate text-[8px] font-bold text-navy-800">{label}</span>
           <span className={cn('h-1.5 w-1.5 rounded-full', index === 0 ? 'bg-brand-500' : 'bg-navy-300')} />
         </div>
       ))}

@@ -4,7 +4,7 @@
  * THE HEADER
  *
  * A thin promo strip, then the bar: the name, five destinations, and on the
- * right the door ("Sign in", or "Your portal" when signed in) and the one ask.
+ * right the door ("Sign in", or "Dashboard" when signed in) and the one ask.
  * Products, Solutions and Support open a full-width menu panel on a laptop;
  * on a phone everything folds into one sheet with sections that open.
  *
@@ -21,9 +21,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, ChevronDown, LifeBuoy, Mail, MessageCircle, Menu, PlayCircle, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Wordmark } from '@/components/brand/Wordmark';
+import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { useAuth, HOME_FOR_ROLE } from '@/context/AuthContext';
 import {
   COMPANY,
+  COMPANY_URL,
   INDUSTRIES,
   MODULES,
   NAV,
@@ -43,7 +45,7 @@ type MenuKey = 'products' | 'solutions' | 'support';
 function useDoor(): { label: string; to: string } {
   const { user, loading } = useAuth();
   if (loading || !user) return { label: 'Sign in', to: '/login' };
-  return { label: 'Your portal', to: HOME_FOR_ROLE[user.role] };
+  return { label: 'Dashboard', to: HOME_FOR_ROLE[user.role] };
 }
 
 function isActive(href: string, pathname: string): boolean {
@@ -91,22 +93,23 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
     <header className="sticky top-0 z-50" onMouseLeave={closeSoon}>
       <div className="status-bar-fill" aria-hidden />
 
-      {/* The promo strip. */}
+      {/* The promo strip, with the language flags at the very top. */}
       <div className="bg-navy-900 text-white">
-        <div className={cn(container, 'flex h-9 items-center justify-center gap-3 text-[13px] sm:justify-between')}>
-          <p className="truncate">
+        <div className={cn(container, 'flex h-11 items-center justify-between gap-3 text-[13px]')}>
+          <p className="hidden min-w-0 truncate sm:block">
             <span className="font-semibold">{PROMO.text}</span>{' '}
-            <Link to={PROMO.link.href} className="hidden font-bold text-brand-300 underline-offset-4 hover:underline sm:inline">
+            <Link to={PROMO.link.href} className="hidden font-bold text-brand-300 underline-offset-4 hover:underline md:inline">
               {PROMO.link.label}
             </Link>
           </p>
-          <div className="hidden items-center gap-5 text-white/75 sm:flex">
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-white">
+          <div className="flex shrink-0 items-center gap-5 max-sm:w-full max-sm:justify-center">
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="hidden text-white/75 hover:text-white xl:inline">
               {SUPPORT_EMAIL}
             </a>
-            <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="hover:text-white">
+            <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="hidden whitespace-nowrap text-white/75 hover:text-white lg:inline">
               WhatsApp us
             </a>
+            <LanguageSwitch flags />
           </div>
         </div>
       </div>
@@ -118,12 +121,12 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
           lifted || menu ? 'border-navy-900/10 shadow-[0_6px_24px_-16px_rgba(15,31,54,0.4)]' : 'border-transparent',
         )}
       >
-        <div className={cn(container, 'flex h-16 items-center gap-6 sm:h-[4.5rem]')}>
-          <Link to="/" aria-label="AfterBI home" className="shrink-0">
+        <div className={cn(container, 'flex h-16 items-center gap-6 sm:h-[4.5rem] lg:grid lg:grid-cols-[1fr_auto_1fr]')}>
+          <Link to="/" aria-label="AfterBI home" className="shrink-0 lg:justify-self-start">
             <Wordmark className="text-[1.35rem] !text-navy-900 sm:text-[1.5rem]" />
           </Link>
 
-          <nav aria-label="Main" className="hidden flex-1 items-center gap-1 lg:flex">
+          <nav aria-label="Main" className="hidden items-center justify-center gap-1 lg:flex">
             {NAV.map((item) => {
               const active = isActive(item.href, pathname);
               if (item.menu) {
@@ -164,17 +167,17 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
             })}
           </nav>
 
-          <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5">
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5 lg:ml-0 lg:justify-self-end">
             <Link
               to={door.to}
-              className="tap inline-flex items-center rounded-full px-3 text-[14.5px] font-bold text-navy-900 hover:bg-navy-50 sm:px-4"
+              className="tap inline-flex items-center whitespace-nowrap rounded-full px-3 text-[14.5px] font-bold text-navy-900 hover:bg-navy-50 sm:px-4"
             >
               {door.label}
             </Link>
             <button
               type="button"
               onClick={onBook}
-              className="tap hidden items-center rounded-full bg-brand-600 px-5 text-[14.5px] font-bold text-white transition-colors hover:bg-brand-700 sm:inline-flex"
+              className="tap hidden items-center whitespace-nowrap rounded-full bg-brand-600 px-5 text-[14.5px] font-bold text-white transition-colors hover:bg-brand-700 sm:inline-flex"
             >
               Book a demo
             </button>
@@ -496,14 +499,13 @@ export function SiteFooter() {
   return (
     <footer className="bg-navy-950 text-white">
       <div className={cn(container, 'pb-safe-6 pt-16 sm:pb-10')}>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 lg:grid-cols-[1.5fr_2fr_1fr_1fr]">
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <Link to="/" aria-label="AfterBI home">
               <Wordmark onInk className="text-[1.5rem]" />
             </Link>
             <p className="mt-5 max-w-[22rem] text-[15px] leading-[1.65] text-white/60">
-              The sales and distribution platform for consumer goods companies. Pipeline, orders, inventory, billing and
-              channel intelligence on one secure cloud platform.
+              The sales and distribution platform for consumer goods companies.
             </p>
             <ul className="mt-6 flex flex-wrap gap-2.5" aria-label="AfterBI elsewhere">
               {SOCIAL.map((channel) => (
@@ -523,33 +525,69 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          <FooterColumn title="Platform" items={products} />
+          {/* Platform runs in two columns so every column is about the same height. */}
+          <div className="col-span-2 lg:col-span-1">
+            <p className="text-[14px] font-bold uppercase tracking-[0.12em] text-white">Platform</p>
+            <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5">
+              {products.map((item) => (
+                <li key={item.label}>
+                  <Link to={item.to} className="text-[14.5px] text-white/60 transition-colors hover:text-white">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
           <FooterColumn title="Solutions" items={solutions} />
           <FooterColumn
             title="Company"
             items={[
               { label: 'Platform overview', to: '/features' },
               { label: 'Pricing', to: '/pricing' },
-              { label: 'Partner Programme', to: '/partners' },
               { label: 'Book a demo', to: '/demo' },
               { label: 'Sign in', to: '/login' },
             ]}
           />
-          <FooterColumn
-            title="Support"
-            items={[
-              { label: 'Sign in help', to: '/help/sign-in' },
-              { label: 'WhatsApp us', to: WHATSAPP_URL, external: true },
-              { label: SUPPORT_EMAIL, to: `mailto:${SUPPORT_EMAIL}`, external: true },
-            ]}
-          />
         </div>
 
-        <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-[14px] text-white/50 sm:flex-row sm:items-center sm:justify-between">
+        {/* Legal, policy and support, small, under the columns. */}
+        <ul className="mt-12 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/10 pt-6 text-[13px] text-white/50">
+          {[
+            { label: 'Terms of Service', to: '/terms' },
+            { label: 'Privacy Policy', to: '/privacy' },
+            { label: 'Sign in help', to: '/help/sign-in' },
+            { label: 'WhatsApp support', to: WHATSAPP_URL, external: true },
+            { label: SUPPORT_EMAIL, to: `mailto:${SUPPORT_EMAIL}`, external: true },
+          ].map((item) => (
+            <li key={item.label}>
+              {item.external ? (
+                <a href={item.to} target={item.to.startsWith('http') ? '_blank' : undefined} rel="noreferrer noopener" className="hover:text-white">
+                  {item.label}
+                </a>
+              ) : (
+                <Link to={item.to} className="hover:text-white">
+                  {item.label}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-4 flex flex-col gap-2 text-[13px] text-white/45 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {year} {COMPANY}. All rights reserved.
+            © {year}{' '}
+            <a href={COMPANY_URL} target="_blank" rel="noreferrer noopener" className="font-semibold text-white/70 hover:text-white">
+              {COMPANY}
+            </a>
+            . All rights reserved.
           </p>
-          <p>AfterBI is a {COMPANY} product.</p>
+          <p>
+            AfterBI is a{' '}
+            <a href={COMPANY_URL} target="_blank" rel="noreferrer noopener" className="font-semibold text-white/70 hover:text-white">
+              {COMPANY}
+            </a>{' '}
+            product.
+          </p>
         </div>
       </div>
     </footer>

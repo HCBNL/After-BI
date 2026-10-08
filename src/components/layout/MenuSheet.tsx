@@ -12,6 +12,7 @@ import {
   GROUP_ORDER,
 } from '@/lib/tiles';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { AccentPicker } from '@/components/AccentPicker';
 import { Avatar } from '@/components/ui';
 import { BrandBars } from '@/components/home/HomeArt';
@@ -296,6 +297,7 @@ export function MenuSheet({
             <AccentPicker size={30} />
           </div>
           <ThemeToggle full />
+          <LanguageSwitch full className="w-full justify-center" />
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Avatar } from '@/components/ui';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HomeChooser } from '@/components/home/HomeChooser';
@@ -129,6 +130,7 @@ export function Chrome({
                 <p className="truncate text-[11.5px] text-muted">{orgName}</p>
               </div>
               <div className="flex shrink-0 items-center gap-0.5">
+                <LanguageSwitch />
                 <div className="hidden lg:block">
                   <ThemeToggle compact />
                 </div>

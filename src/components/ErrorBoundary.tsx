@@ -84,10 +84,10 @@ function classify(error: Error): Kind {
 const COPY: Record<Kind, { title: string; body: string }> = {
   'stale-build': {
     title: 'The app was updated',
-    body: 'A new version of GetSchool went out while this page was open. Load it again. Nothing you typed is lost.',
+    body: 'A new version of AfterBI went out while this page was open. Load it again. Nothing you typed is lost.',
   },
   connection: {
-    title: 'Could not reach the school records',
+    title: 'Could not reach your records',
     body: 'The app is running, but it could not get through to the database. This is almost always the network. Check your data or Wi-Fi and try again.',
   },
   'signed-out': {
@@ -96,7 +96,7 @@ const COPY: Record<Kind, { title: string; body: string }> = {
   },
   refused: {
     title: 'You do not have access to this',
-    body: 'Your account is not permitted to open this screen. If that seems wrong, ask your school administrator to check your role.',
+    body: 'Your account is not permitted to open this screen. If that seems wrong, ask your administrator to check your role.',
   },
   bug: {
     title: 'This screen did not load',

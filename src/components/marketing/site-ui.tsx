@@ -25,6 +25,10 @@ import {
   CupSoda,
   FileText,
   Hammer,
+  NotebookPen,
+  Shirt,
+  Smartphone,
+  Wine,
   HeartPulse,
   Home,
   ShoppingCart,
@@ -271,6 +275,10 @@ const INDUSTRY_ICONS: Record<IndustryKey, LucideIcon> = {
   agro: Wheat,
   pharma: HeartPulse,
   build: Hammer,
+  electronics: Smartphone,
+  spirits: Wine,
+  stationery: NotebookPen,
+  fashion: Shirt,
 };
 
 export function IndustryIcon({ icon, size = 26, className }: { icon: IndustryKey; size?: number; className?: string }) {
