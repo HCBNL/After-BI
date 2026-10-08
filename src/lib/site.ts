@@ -22,6 +22,7 @@ export { SUPPORT_EMAIL, WHATSAPP_URL } from './siteMeta';
 
 /** The company behind AfterBI, written the way it signs: one word. */
 export const COMPANY = 'Contoric';
+export const COMPANY_URL = 'https://www.contoric.com';
 
 /** The one-line positioning used in meta tags and share previews. */
 export const PROMISE = 'The sales and distribution platform for consumer goods companies.';
@@ -56,7 +57,6 @@ export const NAV: { label: string; href: string; menu?: 'products' | 'solutions'
   { label: 'Platform', href: '/features', menu: 'products' },
   { label: 'Solutions', href: '/solutions', menu: 'solutions' },
   { label: 'Pricing', href: '/pricing' },
-  { label: 'Partners', href: '/partners' },
   { label: 'Support', href: '/help/sign-in', menu: 'support' },
 ];
 
@@ -276,8 +276,12 @@ export const PROOF: { value: string; icon: ProofIcon }[] = [
 
 export interface Plan {
   name: string;
-  /** Monthly, in naira, per organisation. `null` means "talk to us". */
+  /** Monthly, in naira, per organisation: `perUser` × `users`. */
   price: number | null;
+  /** Price per user per month, in naira. */
+  perUser: number;
+  /** Users included. */
+  users: number;
   cadence: string;
   forWho: string;
   includes: string[];
@@ -285,25 +289,29 @@ export interface Plan {
   cta: string;
 }
 
-/** Priced per organisation, never per partner user. */
+/** Priced per user, sold in packs; partner users are always free. */
 export const PLANS: Plan[] = [
   {
     name: 'Starter',
+    perUser: 7_500,
+    users: 10,
     price: 75_000,
     cadence: 'per month',
     forWho: 'For growing teams getting started.',
-    includes: ['One location', 'Up to 10 team members', 'Unlimited partner users', 'Orders, inventory and billing', 'Pipeline management'],
+    includes: ['10 users', 'Unlimited partner users', 'One location', 'Orders, inventory and billing', 'Pipeline management'],
     cta: 'Get started',
   },
   {
     name: 'Growth',
-    price: 99_000,
+    perUser: 6_900,
+    users: 25,
+    price: 172_500,
     cadence: 'per month',
     forWho: 'For brands with several locations and partners.',
     includes: [
+      '25 users',
       'Everything in Starter, plus:',
       'Unlimited locations',
-      'Up to 50 team members',
       'Credit management',
       'Channel intelligence and analytics',
       'Workflow automation',
@@ -313,12 +321,14 @@ export const PLANS: Plan[] = [
   },
   {
     name: 'Premium',
-    price: 129_900,
+    perUser: 5_000,
+    users: 50,
+    price: 250_000,
     cadence: 'per month',
     forWho: 'For groups that need full control and support.',
     includes: [
+      '50 users',
       'Everything in Growth, plus:',
-      'Unlimited team members',
       'Multiple entities under one group',
       'Custom roles and approval workflows',
       'Priority onboarding and support',
@@ -638,7 +648,7 @@ export const STATS: { value: string; label: string }[] = [
   { value: '1', label: 'single source of truth' },
 ];
 
-export type IndustryIcon = 'food' | 'drinks' | 'care' | 'home' | 'baby' | 'agro' | 'pharma' | 'build';
+export type IndustryIcon = 'food' | 'drinks' | 'care' | 'home' | 'baby' | 'agro' | 'pharma' | 'build' | 'electronics' | 'spirits' | 'stationery' | 'fashion';
 
 export const INDUSTRIES: { name: string; icon: IndustryIcon }[] = [
   { name: 'Food and Snacks', icon: 'food' },
@@ -649,6 +659,10 @@ export const INDUSTRIES: { name: string; icon: IndustryIcon }[] = [
   { name: 'Agribusiness', icon: 'agro' },
   { name: 'Health and Wellness', icon: 'pharma' },
   { name: 'Building Materials', icon: 'build' },
+  { name: 'Consumer Electronics', icon: 'electronics' },
+  { name: 'Wines and Spirits', icon: 'spirits' },
+  { name: 'Stationery and Office', icon: 'stationery' },
+  { name: 'Fashion and Textiles', icon: 'fashion' },
 ];
 
 export interface Solution {
@@ -755,11 +769,6 @@ export const SITE_IMAGES = {
   'solution-importers': { size: '1200 × 800', what: 'A modern warehouse with racking and pallets.' },
   'solution-distributors': { size: '1200 × 800', what: 'A distribution centre with a delivery van loading.' },
   'solution-modern-trade': { size: '1200 × 800', what: 'A supermarket aisle with stocked shelves.' },
-  'partner-consultant': { size: '1200 × 675', what: 'Partners page card: a consultant presenting to a client.' },
-  'partner-association': { size: '1200 × 675', what: 'Partners page card: a trade association meeting or group of business owners.' },
-  'partner-finance': { size: '1200 × 675', what: 'Partners page card: an accountant or auditor reviewing figures.' },
-  'partner-supplier': { size: '1200 × 675', what: 'Partners page card: a logistics truck or supplier at a warehouse.' },
-  'partners-hero': { size: '1200 × 900', what: 'Two business people in a meeting or shaking hands.' },
   'cta-team': { size: '1200 × 900', what: 'A professional on a video call or a team at work, smiling.' },
 } as const;
 

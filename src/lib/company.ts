@@ -23,6 +23,7 @@ export const COMPANY = {
   ceo: 'Collins C. Nwobodo',
   ceoTitle: 'CEO & Founder',
   tagline: 'Sales and distribution platform',
+  url: 'www.contoric.com',
   /** One line for document footers. */
   footer: 'AfterBI is a product of CONTORIC LTD',
 };

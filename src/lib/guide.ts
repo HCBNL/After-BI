@@ -488,30 +488,6 @@ const HOW_TO: HowTo[] = [
     ],
   },
   {
-    id: 'partner-letter',
-    title: 'Invite someone to the Partner Programme',
-    roles: ['owner'],
-    keywords: ['partner', 'referral', 'reward', 'commission', 'consultant', 'invite', 'letter'],
-    steps: [
-      { text: 'Open Proposals and choose Partner letter at the top.', to: 'proposals?v=partner' },
-      { text: 'Type the partner\'s name and firm, or leave the name empty for a letter you will send widely.' },
-      { text: 'The reward and payment days come from Website, Partner Programme. Change them here for this one letter if you need to.' },
-      { text: 'Press Print or save as PDF and choose Save as PDF to email it. The public page is at afterbi.com/partners.' },
-    ],
-  },
-  {
-    id: 'website-offers',
-    title: 'Change the Custom offer or the Partner Programme',
-    roles: ['owner'],
-    keywords: ['custom', 'pricing', 'partner', 'reward', 'package', 'testimony', 'website'],
-    steps: [
-      { text: 'Open Website.', to: 'website' },
-      { text: 'In AfterBI Custom, switch the card on or off and edit its name, price line and what is included.' },
-      { text: 'In Partner Programme, set the reward and payment days, edit the packages and add real testimonies.' },
-      { text: 'Press Publish at the top. Nothing changes on the public site until you do.' },
-    ],
-  },
-  {
     id: 'afterbi-staff',
     title: 'Create an AfterBI staff account',
     roles: ['owner'],

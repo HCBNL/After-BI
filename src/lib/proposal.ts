@@ -159,9 +159,9 @@ export function blankProposal(): ProposalInput {
 
 /** The plan that fits the size, as a starting point the owner can change. */
 export function suggestPlan(depots: number, staff: number): string {
-  if (depots <= 1 && staff <= 10) return 'Depot';
-  if (staff <= 50) return 'Distribution';
-  return 'Group';
+  if (depots <= 1 && staff <= 10) return 'Starter';
+  if (staff <= 25) return 'Growth';
+  return 'Premium';
 }
 
 /* ---------------------------------------------------------------- figures */
@@ -481,7 +481,7 @@ export function proposalHtml(input: ProposalInput, customRaw?: Partial<CustomBui
       </div>
     </section>
 
-    <div class="foot"><span>${esc(COMPANY.footer)}${COMPANY.rc ? ` · ${esc(COMPANY.rc)}` : ''}</span><span>${esc(SUPPORT_EMAIL)} · ${esc(SALES_PHONE)} · ${esc(SITE_URL.replace(/^https?:\/\//, ''))}</span></div>
+    <div class="foot"><span>${esc(COMPANY.footer)}${COMPANY.rc ? ` · ${esc(COMPANY.rc)}` : ''} · ${esc(COMPANY.url)}</span><span>${esc(SUPPORT_EMAIL)} · ${esc(SALES_PHONE)} · ${esc(SITE_URL.replace(/^https?:\/\//, ''))}</span></div>
   `;
 
   return {
