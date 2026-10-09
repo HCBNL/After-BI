@@ -21,6 +21,50 @@ export const CARD_H = 85.6;
 export type IdCardLayout = 'card' | 'a4';
 
 
+/**
+ * Who issues the card. AfterBI's own staff cards are issued by CONTORIC LTD
+ * (the default); an organisation's staff cards by that organisation.
+ */
+export interface CardIssuer {
+  /** Legal name, top of the back. */
+  name: string;
+  rc: string;
+  /** One line under the name on the back. */
+  tagline: string;
+  /** The name in the foot of the front. */
+  short: string;
+  address: string;
+  phone: string;
+  email: string;
+  website: string;
+  signatory: string;
+  signatoryTitle: string;
+  footer: string;
+  /** "The holder of this card is a member of staff of …". */
+  notice: string;
+}
+
+export const AFTERBI_ISSUER: CardIssuer = {
+  name: COMPANY.name,
+  rc: COMPANY.rc,
+  tagline: COMPANY.tagline,
+  short: COMPANY.product,
+  address: COMPANY.address,
+  phone: COMPANY.phone,
+  email: COMPANY.email,
+  website: COMPANY.website,
+  signatory: COMPANY.ceo,
+  signatoryTitle: COMPANY.ceoTitle,
+  footer: COMPANY.footer,
+  notice: `The holder of this card is a member of staff of ${COMPANY.name}, the company behind ${COMPANY.product}. This card is the property of the company and is not transferable. If found, please return it to:`,
+};
+
+/** The format jsPDF needs, from a data URL. */
+function imageFormat(dataUrl: string): string {
+  const m = /^data:image\/(png|jpe?g|webp)/i.exec(dataUrl);
+  return !m ? 'PNG' : m[1].toLowerCase() === 'png' ? 'PNG' : m[1].toLowerCase() === 'webp' ? 'WEBP' : 'JPEG';
+}
+
 export interface StaffCardData {
   fullName: string;
   position: string;
@@ -35,6 +79,10 @@ export interface StaffCardData {
   signature: string;
   /** QR code PNG data URL (to the digital card), or empty. */
   qr: string;
+  /** Who issues it. Default: CONTORIC LTD for AfterBI. */
+  issuer?: CardIssuer;
+  /** Under the QR code. Default "Scan to verify". */
+  qrLabel?: string;
 }
 
 type Rgb = [number, number, number];
@@ -50,6 +98,7 @@ function fit(doc: JsPdf, text: string, width: number, max: number, min: number):
 }
 
 function front(doc: JsPdf, d: StaffCardData, x: number, y: number): void {
+  const I = d.issuer ?? AFTERBI_ISSUER;
   doc.setFillColor(255, 255, 255);
   doc.rect(x, y, CARD_W, CARD_H, 'F');
 
@@ -63,10 +112,17 @@ function front(doc: JsPdf, d: StaffCardData, x: number, y: number): void {
   doc.rect(x, y + 33, CARD_W, 0.6, 'F');
 
   const markSize = 11;
-  try {
-    doc.addImage(d.mark, 'PNG', x + (CARD_W - markSize) / 2, y + 3.6, markSize, markSize, undefined, 'FAST');
-  } catch {
-    /* no mark drawn */
+  if (d.mark) {
+    try {
+      /* On a white tile, so any logo (dark, coloured or transparent) reads on the navy band. */
+      if (d.issuer) {
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(x + (CARD_W - markSize) / 2 - 1.2, y + 2.4, markSize + 2.4, markSize + 2.4, 1.8, 1.8, 'F');
+      }
+      doc.addImage(d.mark, imageFormat(d.mark), x + (CARD_W - markSize) / 2, y + 3.6, markSize, markSize, undefined, 'FAST');
+    } catch {
+      /* no mark drawn */
+    }
   }
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(5.4);
@@ -142,10 +198,12 @@ function front(doc: JsPdf, d: StaffCardData, x: number, y: number): void {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(255, 255, 255);
-  doc.text(COMPANY.product, x + CARD_W / 2, footY + 4.9, { align: 'center' });
+  doc.setFontSize(fit(doc, I.short, CARD_W - 6, 9, 5.5));
+  doc.text(I.short, x + CARD_W / 2, footY + 4.9, { align: 'center' });
 }
 
 function back(doc: JsPdf, d: StaffCardData, x: number, y: number): void {
+  const I = d.issuer ?? AFTERBI_ISSUER;
   doc.setFillColor(255, 255, 255);
   doc.rect(x, y, CARD_W, CARD_H, 'F');
   doc.setFillColor(...NAVY);
@@ -153,28 +211,29 @@ function back(doc: JsPdf, d: StaffCardData, x: number, y: number): void {
   doc.setFillColor(...RED);
   doc.rect(x, y + 11, CARD_W, 0.6, 'F');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6.6);
+  doc.setFontSize(fit(doc, I.name, CARD_W - 6, 6.6, 4.6));
   doc.setTextColor(255, 255, 255);
-  doc.text(COMPANY.name, x + CARD_W / 2, COMPANY.rc ? y + 5.4 : y + 6.6, { align: 'center' });
-  if (COMPANY.rc) {
+  doc.text(I.name, x + CARD_W / 2, I.rc ? y + 5.4 : y + 6.6, { align: 'center' });
+  if (I.rc) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(5);
     doc.setTextColor(200, 205, 218);
-    doc.text(COMPANY.rc, x + CARD_W / 2, y + 8.7, { align: 'center' });
+    doc.text(I.rc, x + CARD_W / 2, y + 8.7, { align: 'center' });
   }
 
-  /* What AfterBI is, in one line. */
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(5.6);
-  doc.setTextColor(...RED);
-  doc.text(COMPANY.tagline, x + CARD_W / 2, y + 15.6, { align: 'center' });
+  /* What the company is, in one line. */
+  if (I.tagline) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(fit(doc, I.tagline, CARD_W - 8, 5.6, 4.2));
+    doc.setTextColor(...RED);
+    doc.text(I.tagline, x + CARD_W / 2, y + 15.6, { align: 'center' });
+  }
 
   /* The notice. */
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(5.6);
   doc.setTextColor(...INK);
-  const notice =
-    `The holder of this card is a member of staff of ${COMPANY.name}, the company behind ${COMPANY.product}. This card is the property of the company and is not transferable. If found, please return it to:`;
+  const notice = I.notice;
   const lines = doc.splitTextToSize(notice, CARD_W - 9) as string[];
   let ty = y + 20.2;
   for (const line of lines) {
@@ -185,10 +244,10 @@ function back(doc: JsPdf, d: StaffCardData, x: number, y: number): void {
   /* Contact rows, spread evenly down to the signature block. */
   const qrY = y + CARD_H - 27.5;
   const rows: [string, string[]][] = [
-    ...(COMPANY.address ? ([['Office', [COMPANY.address]]] as [string, string[]][]) : []),
-    ['Phone', [COMPANY.phone]],
-    ['Email', [COMPANY.email]],
-    ['Web', [COMPANY.website]],
+    ...(I.address ? ([['Office', [I.address]]] as [string, string[]][]) : []),
+    ...(I.phone ? ([['Phone', [I.phone]]] as [string, string[]][]) : []),
+    ...(I.email ? ([['Email', [I.email]]] as [string, string[]][]) : []),
+    ...(I.website ? ([['Web', [I.website]]] as [string, string[]][]) : []),
   ];
   const LINE = 2.6;
   doc.setFont('helvetica', 'bold');
@@ -197,7 +256,7 @@ function back(doc: JsPdf, d: StaffCardData, x: number, y: number): void {
   const contentH = wrapped.reduce((h, [, v]) => h + v.length * LINE, 0);
   const top = ty + 2.6;
   const room = qrY - 4 - top;
-  const gap = Math.min(5.6, Math.max(1.4, (room - contentH) / rows.length));
+  const gap = Math.min(5.6, Math.max(1.4, (room - contentH) / Math.max(1, rows.length)));
   ty = top + gap / 2;
   doc.setDrawColor(226, 229, 236);
   doc.setLineWidth(0.15);
@@ -221,17 +280,19 @@ function back(doc: JsPdf, d: StaffCardData, x: number, y: number): void {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(3.9);
       doc.setTextColor(...GREY);
-      doc.text('Scan to verify', x + 4.5 + qrSize / 2, qrY + qrSize + 2, { align: 'center' });
+      doc.text(d.qrLabel ?? 'Scan to verify', x + 4.5 + qrSize / 2, qrY + qrSize + 2, { align: 'center' });
     } catch {
       /* no QR */
     }
   }
   const sx = x + (d.qr ? 23 : 12);
   const sw = CARD_W - (sx - x) - 4.5;
-  try {
-    doc.addImage(d.signature, 'PNG', sx + sw / 2 - 12, qrY - 0.6, 24, 11.6, undefined, 'FAST');
-  } catch {
-    /* no signature */
+  if (d.signature) {
+    try {
+      doc.addImage(d.signature, imageFormat(d.signature), sx + sw / 2 - 12, qrY - 0.6, 24, 11.6, undefined, 'FAST');
+    } catch {
+      /* no signature */
+    }
   }
   doc.setDrawColor(...INK);
   doc.setLineWidth(0.2);
@@ -239,20 +300,20 @@ function back(doc: JsPdf, d: StaffCardData, x: number, y: number): void {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(5.4);
   doc.setTextColor(...INK);
-  doc.text(COMPANY.ceo, sx + sw / 2, qrY + 13.8, { align: 'center' });
+  if (I.signatory) doc.text(I.signatory, sx + sw / 2, qrY + 13.8, { align: 'center' });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(4.6);
   doc.setTextColor(...GREY);
-  doc.text(COMPANY.ceoTitle, sx + sw / 2, qrY + 16.1, { align: 'center' });
+  doc.text(I.signatoryTitle || 'Authorised signatory', sx + sw / 2, qrY + 16.1, { align: 'center' });
 
   doc.setFillColor(...NAVY);
   doc.rect(x, y + CARD_H - 6.5, CARD_W, 6.5, 'F');
   doc.setFillColor(...RED);
   doc.rect(x, y + CARD_H - 6.5, CARD_W, 0.6, 'F');
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(4.6);
+  doc.setFontSize(fit(doc, I.footer, CARD_W - 4, 4.6, 3.4));
   doc.setTextColor(200, 205, 218);
-  doc.text(COMPANY.footer, x + CARD_W / 2, y + CARD_H - 2.4, { align: 'center' });
+  doc.text(I.footer, x + CARD_W / 2, y + CARD_H - 2.4, { align: 'center' });
 }
 
 function cutMarks(doc: JsPdf, x: number, y: number): void {
@@ -273,12 +334,13 @@ function cutMarks(doc: JsPdf, x: number, y: number): void {
 
 export async function buildStaffCard(data: StaffCardData, layout: IdCardLayout): Promise<JsPdf> {
   const { jsPDF } = await import('jspdf');
+  const brand = data.issuer?.short ?? 'AfterBI';
   if (layout === 'card') {
     const doc = new jsPDF({ unit: 'mm', format: [CARD_W, CARD_H], orientation: 'portrait', compress: true });
     front(doc, data, 0, 0);
     doc.addPage([CARD_W, CARD_H], 'portrait');
     back(doc, data, 0, 0);
-    doc.setProperties({ title: `AfterBI staff ID: ${data.fullName}`, creator: 'AfterBI' });
+    doc.setProperties({ title: `${brand} staff ID: ${data.fullName}`, creator: 'AfterBI' });
     return doc;
   }
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
@@ -288,7 +350,7 @@ export async function buildStaffCard(data: StaffCardData, layout: IdCardLayout):
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(...INK);
-  doc.text(`AfterBI staff ID: ${data.fullName}`, 105, 16, { align: 'center' });
+  doc.text(`${brand} staff ID: ${data.fullName}`, 105, 16, { align: 'center' });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(...GREY);
@@ -304,7 +366,7 @@ export async function buildStaffCard(data: StaffCardData, layout: IdCardLayout):
   doc.setFontSize(7);
   doc.text('FRONT', x + CARD_W / 2, y + CARD_H + 6, { align: 'center' });
   doc.text('BACK', x + CARD_W + gap + CARD_W / 2, y + CARD_H + 6, { align: 'center' });
-  doc.setProperties({ title: `AfterBI staff ID: ${data.fullName}`, creator: 'AfterBI' });
+  doc.setProperties({ title: `${brand} staff ID: ${data.fullName}`, creator: 'AfterBI' });
   return doc;
 }
 

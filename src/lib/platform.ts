@@ -29,6 +29,8 @@ export async function createTenant(input: {
   status: SubscriptionStatus;
   subscriptionFee?: number;
   demo?: boolean;
+  planId?: string;
+  locked?: string[];
 }): Promise<void> {
   const id = input.id.trim();
   const name = input.name.trim();
@@ -48,6 +50,8 @@ export async function createTenant(input: {
     createdAt: new Date().toISOString(),
     subscriptionFee: input.subscriptionFee ?? 0,
     seats: 0,
+    ...(input.planId ? { planId: input.planId } : {}),
+    locked: input.locked ?? [],
   });
   batch.set(doc(db, TENANTS, id, 'settings', 'org'), {
     name,

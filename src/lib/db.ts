@@ -1039,6 +1039,12 @@ export async function getHomeSummary(input: {
 
 /* the platform */
 
+/** The signed-in organisation's own tenant record: plan and locked features. Readable by its members. */
+export async function getTenant(): Promise<import('./tenant').OrgTenant | null> {
+  const snap = await getDoc(doc(db, TENANTS, requireOrg()));
+  return snap.exists() ? shape<import('./tenant').OrgTenant>(snap.id, snap.data()) : null;
+}
+
 /**
  * The owner's view: every tenant on the platform.
  *

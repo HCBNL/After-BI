@@ -58,8 +58,13 @@ import {
   type LucideIcon,
   IdCard,
   Contact,
+  Banknote,
+  BriefcaseBusiness,
+  Landmark,
+  UsersRound,
 } from 'lucide-react';
 import type { Role } from '@/types';
+import { isActionLocked } from './plans';
 
 /**
  * Groups exist for the rail, the menu sheet and the "All actions" page, which
@@ -71,6 +76,7 @@ export type ActionGroup =
   | 'Stock'
   | 'Money'
   | 'Partners'
+  | 'Team'
   | 'Company'
   /*
    * The platform owner's two. Nobody inside a customer's organisation ever
@@ -97,6 +103,7 @@ export const GROUP_ORDER: ActionGroup[] = [
   'Stock',
   'Money',
   'Partners',
+  'Team',
   'Company',
   'Platform',
   'Content',
@@ -108,6 +115,7 @@ export const GROUP_ICON: Record<ActionGroup, LucideIcon> = {
   Stock: Boxes,
   Money: Wallet,
   Partners: Building2,
+  Team: UsersRound,
   Company: Settings,
   Platform: Globe,
   Content: Megaphone,
@@ -155,6 +163,11 @@ const EVERYONE: Role[] = [
   'finance_manager',
   'operations_manager',
 ];
+
+/** On the payroll: everyone inside the business except distributors, who are customers. */
+const PAYROLL: Role[] = ['super_admin', 'admin', 'staff', 'sales_rep', 'warehouse_manager', 'finance_manager', 'operations_manager'];
+/** Runs HR. Same list as `HR_MANAGERS` in lib/hr.ts and `hrManager()` in firestore.rules. */
+const HR_MANAGERS: Role[] = ['super_admin', 'admin', 'finance_manager'];
 
 /* catalogue */
 
@@ -470,6 +483,53 @@ const ACTIONS: AppAction[] = [
     group: 'Partners',
   },
 
+  /* team */
+  {
+    id: 'hr-manage',
+    label: 'HR',
+    description: 'Salaries, attendance, bonuses, deductions and running costs, with the payroll for any month.',
+    icon: BriefcaseBusiness,
+    to: 'hr',
+    roles: HR_MANAGERS,
+    group: 'Team',
+  },
+  {
+    id: 'hr',
+    label: 'My pay',
+    description: 'Clock in and out, the countdown to salary day, and what this month has earned so far.',
+    icon: Banknote,
+    to: 'my-pay',
+    roles: PAYROLL,
+    group: 'Team',
+  },
+  {
+    id: 'company-info',
+    label: 'Company info',
+    description: 'The company\'s bank account and contact details. Tap anything to copy it.',
+    icon: Landmark,
+    to: 'company',
+    roles: EVERYONE,
+    group: 'Team',
+  },
+  {
+    id: 'org-id-card',
+    label: 'My ID card',
+    description: 'Your staff ID card with the company logo, front and back. Download and print.',
+    icon: IdCard,
+    to: 'id-card',
+    roles: PAYROLL,
+    group: 'Team',
+  },
+  {
+    id: 'org-card',
+    label: 'Business card',
+    description: 'Your digital business card. Share the link or let people scan it.',
+    icon: Contact,
+    to: 'card',
+    roles: PAYROLL,
+    group: 'Team',
+  },
+
   /* company */
   {
     id: 'setup',
@@ -551,8 +611,20 @@ export function resolveTo(action: AppAction, role: Role): string {
   return action.to.startsWith('/') ? action.to : `${PORTAL_ROOT[role]}/${action.to}`;
 }
 
+/** What this role can open, minus anything the organisation's plan has locked. */
 export function actionsForRole(role: Role): AppAction[] {
-  return ACTIONS.filter((a) => a.roles.includes(role));
+  return ACTIONS.filter((a) => a.roles.includes(role) && !isActionLocked(a.id));
+}
+
+/**
+ * The locked action an address belongs to, if any: so typing the URL of a
+ * locked screen shows "not on your plan" instead of the screen.
+ */
+export function lockedActionAt(pathname: string, role: Role): AppAction | undefined {
+  return ACTIONS.filter((a) => a.roles.includes(role) && isActionLocked(a.id))
+    .map((a) => ({ a, to: resolveTo(a, role).split('?')[0] }))
+    .filter(({ to }) => pathname === to || pathname.startsWith(`${to}/`))
+    .sort((x, y) => y.to.length - x.to.length)[0]?.a;
 }
 
 /** The groups this role has anything in, in `GROUP_ORDER` order. */

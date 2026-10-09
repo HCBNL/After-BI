@@ -1,5 +1,7 @@
 /**
- * An AfterBI staff member's digital business card, carried entirely in its link.
+ * A digital business card, carried entirely in its link: for AfterBI's own
+ * staff, and for the staff of every organisation on AfterBI (then `company`,
+ * `website` and `logo` carry that organisation's name, site and logo).
  *
  * `/card#<data>`: the details are base64url JSON after the hash, so nothing is
  * stored anywhere and the hash never reaches a server log. The staff member
@@ -14,9 +16,16 @@ export interface BusinessCard {
   phone: string;
   email: string;
   staffNo: string;
+  /** The organisation's name. Empty: an AfterBI staff card. */
+  company?: string;
+  website?: string;
+  /** The organisation's logo URL. */
+  logo?: string;
 }
 
-const KEYS: (keyof BusinessCard)[] = ['name', 'position', 'location', 'phone', 'email', 'staffNo'];
+/* New keys go on the END, so links already shared keep reading correctly. */
+const KEYS: (keyof BusinessCard)[] = ['name', 'position', 'location', 'phone', 'email', 'staffNo', 'company', 'website', 'logo'];
+const MAX: Partial<Record<keyof BusinessCard, number>> = { logo: 400 };
 
 function toBase64Url(text: string): string {
   const bytes = new TextEncoder().encode(text);
@@ -33,14 +42,18 @@ function fromBase64Url(text: string): string {
 
 export function cardLink(card: BusinessCard, origin = window.location.origin): string {
   /* A short array rather than an object, so the link stays short. */
-  return `${origin}/card#${toBase64Url(JSON.stringify(KEYS.map((k) => card[k].trim().slice(0, 80))))}`;
+  const values = KEYS.map((k) => (card[k] ?? '').trim().slice(0, MAX[k] ?? 80));
+  while (values.length > 6 && !values[values.length - 1]) values.pop();
+  return `${origin}/card#${toBase64Url(JSON.stringify(values))}`;
 }
 
 export function readCardHash(hash: string): BusinessCard | null {
   try {
     const values = JSON.parse(fromBase64Url(hash.replace(/^#/, ''))) as unknown;
     if (!Array.isArray(values)) return null;
-    const card = Object.fromEntries(KEYS.map((k, i) => [k, String(values[i] ?? '').slice(0, 80)])) as unknown as BusinessCard;
+    const card = Object.fromEntries(KEYS.map((k, i) => [k, String(values[i] ?? '').slice(0, MAX[k] ?? 80)])) as unknown as BusinessCard;
+    /* Only an https logo is drawn: anything else in a link is ignored. */
+    if (card.logo && !/^https:\/\//.test(card.logo)) card.logo = '';
     return card.name ? card : null;
   } catch {
     return null;
@@ -55,12 +68,12 @@ export function vcard(card: BusinessCard): string {
     'VERSION:3.0',
     `N:${rest.join(' ')};${first};;;`,
     `FN:${card.name}`,
-    'ORG:AfterBI (CONTORIC LTD)',
+    `ORG:${card.company || 'AfterBI (CONTORIC LTD)'}`,
     card.position && `TITLE:${card.position}`,
     card.phone && `TEL;TYPE=CELL:${card.phone}`,
     card.email && `EMAIL:${card.email}`,
     card.location && `ADR;TYPE=WORK:;;${card.location};;;;`,
-    'URL:https://afterbi.com',
+    card.company ? card.website && `URL:https://${card.website.replace(/^https?:\/\//, '')}` : 'URL:https://afterbi.com',
     'END:VCARD',
   ]
     .filter(Boolean)

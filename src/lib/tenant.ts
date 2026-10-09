@@ -130,8 +130,11 @@ export interface OrgTenant {
 
   /** Seats in use at last count: what the subscription is priced on. */
   seats?: number;
-  /** Which plan, from `platform/pricing`. `feeFor()` resolves plan vs. fee. */
+  /** Which plan: starter, growth, premium or enterprise (`lib/plans.ts`). Decides the seal members see. */
   planId?: string;
+
+  /** Features this organisation cannot open (`FeatureKey`s from `lib/plans.ts`). Set by the platform owner. */
+  locked?: string[];
 
   /** Free text the platform keeps about this customer. Never shown inside it. */
   note?: string;
