@@ -219,6 +219,15 @@ const ACTIONS: AppAction[] = [
     group: 'Content',
   },
   {
+    id: 'platform-banks',
+    label: 'Bank profiles',
+    description: 'Bank names and logos organisations pick from when they add their accounts.',
+    icon: Landmark,
+    to: 'banks',
+    roles: ['owner'],
+    group: 'Platform',
+  },
+  {
     id: 'platform-proposals',
     label: 'Proposals',
     description: 'A tailored proposal for a prospect: features, pricing, support, and why AfterBI fits their business.',
