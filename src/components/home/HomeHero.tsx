@@ -25,8 +25,8 @@ import { KpiGlass } from './HomeSlides';
 import { BrandBars } from './HomeArt';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
 
-/** Three rows of four before "Show all". */
-const COLLAPSED = 12;
+/** Two rows of four before "Show all". */
+const COLLAPSED = 8;
 
 /** In Lagos time, whatever the device says. */
 export function greeting(): string {
@@ -152,7 +152,7 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
             onClick={() => setExpanded((v) => !v)}
             className="mx-auto mt-3 flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
           >
-            {expanded ? 'Show less' : 'Show all'}
+            {expanded ? 'Show less' : `Show all (${actions.length})`}
             {expanded ? <ChevronUp size={15} aria-hidden /> : <ChevronDown size={15} aria-hidden />}
           </button>
         )}

@@ -5,7 +5,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Moon, Search, Sun } from 'lucide-react';
+import { ChevronDown, ChevronUp, Moon, Search, Sun } from 'lucide-react';
 import { useShell } from '@/components/layout/ShellContext';
 import { setStoredTheme } from '@/lib/theme';
 import { actionsForRole, resolveTo } from '@/lib/tiles';
@@ -57,18 +57,66 @@ export function HeroThemeButton() {
   );
 }
 
+/**
+ * Two rows of tiles, then "Show all". The grid has a different number of
+ * columns below and above the xl breakpoint, so the cut is made in CSS: tiles
+ * past two rows are hidden at each width until the list is opened.
+ */
+function rowCut(index: number, expanded: boolean, small: number, large: number): string {
+  if (expanded) return 'flex';
+  if (index >= large) return 'hidden';
+  if (index >= small) return 'hidden xl:flex';
+  return 'flex';
+}
+
+function ShowAll({
+  count,
+  small,
+  large,
+  expanded,
+  onToggle,
+  dark,
+}: {
+  count: number;
+  small: number;
+  large: number;
+  expanded: boolean;
+  onToggle: () => void;
+  dark?: boolean;
+}) {
+  if (count <= small) return null;
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={expanded}
+      className={cn(
+        'mx-auto mt-3 flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold transition-colors',
+        dark ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-secondary hover:bg-[var(--surface-sunken)] hover:text-primary',
+        /* Above xl two rows already hold every tile: nothing hidden, no button. */
+        !expanded && count <= large && 'xl:hidden',
+      )}
+    >
+      {expanded ? 'Show less' : `Show all (${count})`}
+      {expanded ? <ChevronUp size={15} aria-hidden /> : <ChevronDown size={15} aria-hidden />}
+    </button>
+  );
+}
+
 function DeskTiles({ role }: { role: Role }) {
+  const [expanded, setExpanded] = useState(false);
   const actions = useMemo(() => actionsForRole(role).filter((a) => !a.soon), [role]);
   return (
+    <>
     <div className="grid grid-cols-6 gap-3 xl:grid-cols-8" data-tour="shortcuts">
-      {actions.map((action) => {
+      {actions.map((action, i) => {
         const Icon = action.icon;
         return (
           <Link
             key={action.id}
             to={resolveTo(action, role)}
             title={action.description}
-            className="group flex min-h-[112px] flex-col items-center justify-center gap-2.5 rounded-[20px] bg-white/[0.08] px-2 py-4 text-center ring-1 ring-inset ring-white/[0.08] transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white/[0.15]"
+            className={cn(rowCut(i, expanded, 12, 16), "group min-h-[112px] flex-col items-center justify-center gap-2.5 rounded-[20px] bg-white/[0.08] px-2 py-4 text-center ring-1 ring-inset ring-white/[0.08] transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white/[0.15]")}
           >
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.12] text-white transition-colors group-hover:bg-white group-hover:text-[color:var(--hero)]">
               <Icon size={21} strokeWidth={1.8} aria-hidden />
@@ -78,6 +126,8 @@ function DeskTiles({ role }: { role: Role }) {
         );
       })}
     </div>
+    <ShowAll count={actions.length} small={12} large={16} expanded={expanded} onToggle={() => setExpanded((v) => !v)} dark />
+    </>
   );
 }
 
@@ -147,6 +197,7 @@ export function DeskHero({
 /** The Cards layout's shortcuts on a laptop, under the curve. */
 export function DeskShortcuts({ role }: { role: Role }) {
   const { openMenu } = useShell();
+  const [expanded, setExpanded] = useState(false);
   const actions = useMemo(() => actionsForRole(role).filter((a) => !a.soon), [role]);
 
   return (
@@ -169,14 +220,14 @@ export function DeskShortcuts({ role }: { role: Role }) {
       </div>
 
       <div className="mt-3 grid grid-cols-4 gap-2 xl:grid-cols-8" data-tour="shortcuts">
-        {actions.map((action) => {
+        {actions.map((action, i) => {
           const Icon = action.icon;
           return (
             <Link
               key={action.id}
               to={resolveTo(action, role)}
               title={action.description}
-              className="group flex flex-col items-center gap-2 rounded-2xl px-1 py-3 text-center transition-colors hover:bg-[var(--surface-sunken)]"
+              className={cn(rowCut(i, expanded, 8, 16), "group flex-col items-center gap-2 rounded-2xl px-1 py-3 text-center transition-colors hover:bg-[var(--surface-sunken)]")}
             >
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-800 transition-colors group-hover:bg-brand-600 group-hover:text-white dark:bg-brand-500/15 dark:text-brand-200 dark:group-hover:bg-brand-500 dark:group-hover:text-white">
                 <Icon size={20} strokeWidth={1.9} aria-hidden />
@@ -188,6 +239,7 @@ export function DeskShortcuts({ role }: { role: Role }) {
           );
         })}
       </div>
+      <ShowAll count={actions.length} small={8} large={16} expanded={expanded} onToggle={() => setExpanded((v) => !v)} />
     </section>
   );
 }
