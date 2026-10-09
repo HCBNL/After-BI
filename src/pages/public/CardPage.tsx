@@ -1,5 +1,7 @@
 /**
- * `/card#…`: an AfterBI staff member's digital business card.
+ * `/card#…`: a digital business card. An AfterBI staff member's, or (when the
+ * link carries a company) a member of staff of an organisation on AfterBI,
+ * shown under that organisation's name and logo.
  *
  * Public, light and self-contained: no Firebase, no shell. The details come
  * from the link itself (see `src/lib/businessCard.ts`).
@@ -33,7 +35,7 @@ export default function CardPage() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-[#0f1f36] px-4 py-10">
-      <Seo title={card ? card.name : 'Contact card'} description="AfterBI staff contact card." path="/card" noindex />
+      <Seo title={card ? card.name : 'Contact card'} description="Contact card." path="/card" noindex />
       {!card ? (
         <div className="max-w-sm text-center text-white">
           <Mark className="mx-auto h-12 w-12" />
@@ -45,11 +47,24 @@ export default function CardPage() {
       ) : (
         <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-[0_40px_100px_-40px_rgba(238,106,0,0.5)]">
           <div className="relative bg-[#0f1f36] px-6 pb-14 pt-6 text-white">
-            <div className="flex items-center gap-2">
-              <Mark className="h-8 w-8" />
-              <span className="font-display text-[1.2rem] font-extrabold tracking-[-0.04em]">AfterBI</span>
-            </div>
-            <p className="mt-1 text-[12px] text-white/55">The sales and distribution platform</p>
+            {card.company ? (
+              <div className="flex items-center gap-2.5">
+                {card.logo ? (
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1">
+                    <img src={card.logo} alt="" className="max-h-full max-w-full object-contain" />
+                  </span>
+                ) : null}
+                <span className="font-display text-[1.15rem] font-extrabold leading-tight tracking-[-0.02em]">{card.company}</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <Mark className="h-8 w-8" />
+                  <span className="font-display text-[1.2rem] font-extrabold tracking-[-0.04em]">AfterBI</span>
+                </div>
+                <p className="mt-1 text-[12px] text-white/55">The sales and distribution platform</p>
+              </>
+            )}
             <div className="absolute inset-x-0 bottom-0 h-1 bg-[#ee6a00]" />
           </div>
           <div className="-mt-10 px-6 pb-6">
@@ -63,7 +78,11 @@ export default function CardPage() {
                 <MapPin size={14} aria-hidden /> {card.location}
               </p>
             )}
-            {card.staffNo && <p className="mt-1 text-[12px] text-[#686e7e]">Staff no. {card.staffNo} · {COMPANY.name}</p>}
+            {card.staffNo && (
+              <p className="mt-1 text-[12px] text-[#686e7e]">
+                Staff no. {card.staffNo}, {card.company || COMPANY.name}
+              </p>
+            )}
 
             <div className="mt-5 grid gap-2">
               {card.phone && (
@@ -82,9 +101,17 @@ export default function CardPage() {
                   <Mail size={18} className="text-[#ee6a00]" aria-hidden /> <span className="truncate">{card.email}</span>
                 </a>
               )}
-              <a href="https://afterbi.com" className={row}>
-                <Globe size={18} className="text-[#ee6a00]" aria-hidden /> afterbi.com
-              </a>
+              {card.company ? (
+                card.website && (
+                  <a href={`https://${card.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className={row}>
+                    <Globe size={18} className="text-[#ee6a00]" aria-hidden /> {card.website.replace(/^https?:\/\//, '')}
+                  </a>
+                )
+              ) : (
+                <a href="https://afterbi.com" className={row}>
+                  <Globe size={18} className="text-[#ee6a00]" aria-hidden /> afterbi.com
+                </a>
+              )}
             </div>
 
             <button

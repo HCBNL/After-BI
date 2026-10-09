@@ -36,6 +36,9 @@ import { TENANTS, type OrgTenant, type SubscriptionStatus } from '@/lib/tenant';
 import { formatDate, naira } from '@/lib/format';
 import { fullName } from '@/lib/roles';
 import { ROLE_LABEL } from '@/types';
+import { PlanBadge } from '@/components/brand/PlanBadge';
+import { cleanLocked, FEATURES, PLAN_IDS, PLANS, planOf, type FeatureKey, type PlanId } from '@/lib/plans';
+import { cn } from '@/lib/cn';
 
 const STATUS_LABEL: Record<SubscriptionStatus, string> = {
   trial: 'Trial',
@@ -84,8 +87,15 @@ export default function OrganisationsPage() {
       sortValue: (row) => row.name,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-semibold text-primary">{row.name}</p>
-          <p className="truncate text-[12px] text-muted">{row.id}</p>
+          <p className="flex items-center gap-1.5 text-[13.5px] font-semibold text-primary">
+            <span className="truncate">{row.name}</span>
+            {planOf(row.planId) && <PlanBadge plan={planOf(row.planId)!} size={16} />}
+          </p>
+          <p className="truncate text-[12px] text-muted">
+            {row.id}
+            {planOf(row.planId) ? `, ${PLANS[planOf(row.planId)!].label}` : ', no plan'}
+            {(row.locked?.length ?? 0) > 0 ? `, ${row.locked!.length} locked` : ''}
+          </p>
         </div>
       ),
     },
@@ -168,6 +178,7 @@ function NewOrgModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
   const [status, setStatus] = useState<SubscriptionStatus>('trial');
   const [fee, setFee] = useState('');
   const [demo, setDemo] = useState(false);
+  const [plan, setPlan] = useState<PlanId>('starter');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -192,7 +203,7 @@ function NewOrgModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
     setBusy(true);
     try {
       if (!orgMade) {
-        await createTenant({ id: slug, name, status, subscriptionFee: Number(fee) || 0, demo });
+        await createTenant({ id: slug, name, status, subscriptionFee: Number(fee) || 0, demo, planId: plan, locked: [...PLANS[plan].defaultLocked] });
         setOrgMade(true);
         onCreated();
       }
@@ -278,6 +289,10 @@ function NewOrgModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           </Field>
         </div>
 
+        <Field label="Plan" hint="Decides the badge everyone in the organisation sees, and which features start locked. You can change both later.">
+          <PlanPicker value={plan} onChange={setPlan} disabled={orgMade} />
+        </Field>
+
         <label className="flex items-start gap-2.5 rounded-xl border border-hairline px-3 py-2.5 text-[13px] text-primary">
           <input
             type="checkbox"
@@ -341,6 +356,8 @@ function TenantModal({
   const [fee, setFee] = useState(tenant.subscriptionFee ? String(tenant.subscriptionFee) : '');
   const [renewsAt, setRenewsAt] = useState(tenant.renewsAt?.slice(0, 10) ?? '');
   const [note, setNote] = useState(tenant.note ?? '');
+  const [plan, setPlan] = useState<PlanId | ''>(planOf(tenant.planId) ?? '');
+  const [locked, setLocked] = useState<FeatureKey[]>(() => cleanLocked(tenant.locked));
   const [busy, setBusy] = useState(false);
   const [adding, setAdding] = useState(false);
   const { data: people, loading: peopleLoading, reload: reloadPeople } = useAsync(
@@ -357,6 +374,8 @@ function TenantModal({
         subscriptionFee: Number(fee) || 0,
         renewsAt: renewsAt || null,
         note: note.trim(),
+        planId: plan || null,
+        locked,
         ...(people ? { seats: people.length } : {}),
       });
       onSaved();
@@ -402,6 +421,19 @@ function TenantModal({
         <Field label="Renews on">
           <Input type="date" value={renewsAt} onChange={(e) => setRenewsAt(e.target.value)} />
         </Field>
+
+        <Field label="Plan" hint="The verification badge everyone in this organisation sees beside their name. Choosing a plan resets the locked features to that plan's defaults.">
+          <PlanPicker
+            value={plan}
+            allowNone
+            onChange={(next) => {
+              setPlan(next);
+              if (next) setLocked([...PLANS[next].defaultLocked]);
+            }}
+          />
+        </Field>
+
+        <FeatureLocks locked={locked} onChange={setLocked} />
         <Field label="Note" hint="Only you see this.">
           <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
@@ -526,6 +558,75 @@ function AddAdmin({ orgId, onDone }: { orgId: string; onDone: () => void }) {
       <Button size="sm" loading={busy} icon={<UserPlus size={15} />} onClick={() => void create()}>
         Create sign-in
       </Button>
+    </div>
+  );
+}
+
+/* plan and feature locks */
+
+function PlanPicker({
+  value,
+  onChange,
+  disabled,
+  allowNone,
+}: {
+  value: PlanId | '';
+  onChange: (plan: PlanId) => void;
+  disabled?: boolean;
+  allowNone?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {PLAN_IDS.map((id) => (
+        <button
+          key={id}
+          type="button"
+          disabled={disabled}
+          onClick={() => onChange(id)}
+          aria-pressed={value === id}
+          className={cn(
+            'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-[13px] font-semibold transition-colors disabled:opacity-60',
+            value === id ? 'border-brand-600 bg-brand-50 text-brand-900 dark:bg-brand-500/15 dark:text-brand-100' : 'border-hairline text-primary hover:bg-[var(--surface-sunken)]',
+          )}
+        >
+          <PlanBadge plan={id} size={18} />
+          {PLANS[id].label}
+        </button>
+      ))}
+      {allowNone && !value && <p className="col-span-full text-[12px] text-muted">No plan set: no badge is shown.</p>}
+    </div>
+  );
+}
+
+function FeatureLocks({ locked, onChange }: { locked: FeatureKey[]; onChange: (next: FeatureKey[]) => void }) {
+  const set = new Set(locked);
+  const toggle = (key: FeatureKey) => onChange(set.has(key) ? locked.filter((k) => k !== key) : [...locked, key]);
+  return (
+    <div className="rounded-2xl border border-hairline p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[14px] font-bold text-primary">Features</p>
+        <span className="text-[12px] text-muted">{locked.length ? `${locked.length} locked` : 'Everything open'}</span>
+      </div>
+      <p className="mt-0.5 text-[12.5px] text-muted">Untick a feature to lock it. Locked features disappear from every menu in this organisation.</p>
+      <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
+        {FEATURES.map((f) => {
+          const open = !set.has(f.key);
+          return (
+            <li key={f.key}>
+              <label className={cn('flex cursor-pointer items-start gap-2.5 rounded-xl px-2.5 py-2 hover:bg-[var(--surface-sunken)]', !open && 'opacity-70')}>
+                <input type="checkbox" checked={open} onChange={() => toggle(f.key)} className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-600)]" />
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-semibold text-primary">
+                    {f.label}
+                    {!open && <span className="ml-1.5 text-[11px] font-bold uppercase text-status-critical">Locked</span>}
+                  </span>
+                  <span className="block text-[11.5px] leading-snug text-muted">{f.description}</span>
+                </span>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

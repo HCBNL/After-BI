@@ -24,6 +24,7 @@ import { useOrg } from '@/context/OrgContext';
 import { useAuth } from '@/context/AuthContext';
 import { DEMO_PASSWORD, seedDemo, topUpDemo, type DemoProgress } from '@/lib/demo';
 import { saveOrgSettings } from '@/lib/db';
+import { ImagePicker } from '@/components/ImagePicker';
 import { naira } from '@/lib/format';
 import type { BankAccount, OrgSettings } from '@/types';
 import { ROLE_LABEL, type Role } from '@/types';
@@ -187,8 +188,43 @@ export default function SettingsPage() {
               <Field label="Tax ID" hint="Required on Nigerian invoices">
                 <Input value={draft.taxId ?? ''} onChange={(e) => set('taxId', e.target.value)} />
               </Field>
-              <Field label="Logo URL" hint="Appears on printed documents">
-                <Input value={draft.logoUrl ?? ''} onChange={(e) => set('logoUrl', e.target.value)} />
+              <Field label="RC number" hint="Company registration number. Shown on Company info and staff ID cards.">
+                <Input value={draft.rcNumber ?? ''} onChange={(e) => set('rcNumber', e.target.value)} placeholder="RC 1234567" />
+              </Field>
+            </div>
+
+            <Field label="Website" hint="Shown on Company info, business cards and ID cards.">
+              <Input value={draft.website ?? ''} onChange={(e) => set('website', e.target.value)} placeholder="www.yourcompany.com" />
+            </Field>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <ImagePicker
+                kind="logo"
+                label="Logo"
+                hint="On printed documents, Company info, staff ID cards and business cards."
+                value={draft.logoUrl ?? ''}
+                onChange={(url) => set('logoUrl', url)}
+              />
+              <ImagePicker
+                kind="logo"
+                label="Signature for ID cards"
+                hint="A clear signature on a white background, printed on the back of every staff ID card."
+                value={draft.signatureUrl ?? ''}
+                onChange={(url) => set('signatureUrl', url)}
+                height={64}
+                size={160}
+              />
+            </div>
+            <Field label="Logo URL" hint="Or paste the address of a logo already online.">
+              <Input value={draft.logoUrl ?? ''} onChange={(e) => set('logoUrl', e.target.value)} />
+            </Field>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="ID cards are signed by" hint="Name printed under the signature on staff ID cards.">
+                <Input value={draft.signatoryName ?? ''} onChange={(e) => set('signatoryName', e.target.value)} placeholder="Full name" />
+              </Field>
+              <Field label="Their title">
+                <Input value={draft.signatoryTitle ?? ''} onChange={(e) => set('signatoryTitle', e.target.value)} placeholder="Managing Director" />
               </Field>
             </div>
 

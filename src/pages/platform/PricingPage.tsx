@@ -18,6 +18,8 @@ import { useAsync } from '@/hooks/useAsync';
 import { listTenants } from '@/lib/db';
 import { naira, nairaShort } from '@/lib/format';
 import type { OrgTenant } from '@/lib/tenant';
+import { PlanBadge } from '@/components/brand/PlanBadge';
+import { PLANS, planOf } from '@/lib/plans';
 
 export default function PricingPage() {
   const { data, loading } = useAsync(() => listTenants(), [], { handleError: true });
@@ -41,6 +43,22 @@ export default function PricingPage() {
       header: 'Organisation',
       sortValue: (row) => row.name,
       cell: (row) => <span className="text-[13.5px] font-semibold text-primary">{row.name}</span>,
+    },
+    {
+      key: 'plan',
+      header: 'Plan',
+      sortValue: (row) => row.planId ?? '',
+      cell: (row) => {
+        const plan = planOf(row.planId);
+        return plan ? (
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary">
+            <PlanBadge plan={plan} size={16} />
+            {PLANS[plan].label}
+          </span>
+        ) : (
+          <span className="text-[11.5px] text-muted">Not set</span>
+        );
+      },
     },
     {
       key: 'seats',

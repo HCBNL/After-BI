@@ -116,6 +116,11 @@ const WebsitePage = lazy(() => import('@/pages/platform/WebsitePage'));
 const ProposalsPage = lazy(() => import('@/pages/platform/ProposalsPage'));
 const GuidePage = lazy(() => import('@/pages/shared/GuidePage'));
 const TasksPage = lazy(() => import('@/pages/shared/TasksPage'));
+const HrPage = lazy(() => import('@/pages/hr/HrPage'));
+const HrManage = lazy(() => import('@/pages/hr/HrManage'));
+const CompanyInfo = lazy(() => import('@/pages/team/CompanyInfo'));
+const OrgIdCard = lazy(() => import('@/pages/team/OrgIdCard'));
+const OrgCard = lazy(() => import('@/pages/team/OrgCard'));
 
 /** The right shape of waiting for the address being opened. */
 const PUBLIC_PREFIXES = ['/features', '/product', '/solutions', '/pricing', '/demo', '/help', '/card', '/verify', '/terms', '/privacy'];
@@ -173,6 +178,27 @@ function AdminOnly({ children }: { children: React.ReactNode }) {
 
 const OFFICE: Role[] = ['super_admin', 'admin', 'staff'];
 const OPS: Role[] = ['warehouse_manager', 'operations_manager'];
+/** Same as `HR_MANAGERS` in lib/hr.ts and lib/tiles.ts. */
+const HR_MANAGERS: Role[] = ['super_admin', 'admin', 'finance_manager'];
+
+/**
+ * The Team screens every portal inside an organisation shares: My pay, the
+ * staff ID card, the business card and Company info. A distributor gets only
+ * Company info (they are customers, not staff).
+ */
+function teamRoutes(withHr: boolean) {
+  return [
+    ...(withHr
+      ? [
+          <Route key="hr" path="hr" element={<RequireRole roles={HR_MANAGERS}><HrManage /></RequireRole>} />,
+        ]
+      : []),
+    <Route key="my-pay" path="my-pay" element={<HrPage />} />,
+    <Route key="id-card" path="id-card" element={<OrgIdCard />} />,
+    <Route key="card" path="card" element={<OrgCard />} />,
+    <Route key="company" path="company" element={<CompanyInfo />} />,
+  ];
+}
 
 /**
  * AfterBI: the whole app, in one file, sectioned.
@@ -369,6 +395,7 @@ export default function App() {
             <Route path="users" element={<AdminOnly><UsersPage /></AdminOnly>} />
             <Route path="invite" element={<AdminOnly><InvitePage /></AdminOnly>} />
             <Route path="settings" element={<AdminOnly><SettingsPage /></AdminOnly>} />
+            {teamRoutes(true)}
 
             <Route path="profile" element={<ProfilePage />} />
             <Route path="reminders" element={<RemindersPage />} />
@@ -395,6 +422,7 @@ export default function App() {
             <Route path="targets" element={<TargetsPage />} />
             <Route path="invoices" element={<InvoicesPage />} />
             <Route path="statement" element={<StatementPage />} />
+            {teamRoutes(false)}
             <Route path="profile" element={<ProfilePage />} />
             <Route path="reminders" element={<RemindersPage />} />
             <Route path="tasks" element={<TasksPage />} />
@@ -474,6 +502,7 @@ export default function App() {
                 </RequireRole>
               }
             />
+            {teamRoutes(false)}
             <Route path="profile" element={<ProfilePage />} />
             <Route path="reminders" element={<RemindersPage />} />
             <Route path="tasks" element={<TasksPage />} />
@@ -502,6 +531,7 @@ export default function App() {
             <Route path="targets" element={<TargetsPage />} />
             <Route path="catalogue" element={<CataloguePage />} />
             <Route path="distributors" element={<DistributorsPage />} />
+            {teamRoutes(true)}
             <Route path="profile" element={<ProfilePage />} />
             <Route path="reminders" element={<RemindersPage />} />
             <Route path="tasks" element={<TasksPage />} />
@@ -528,6 +558,7 @@ export default function App() {
             <Route path="invoices" element={<InvoicesPage />} />
             <Route path="statement" element={<StatementPage />} />
             <Route path="targets" element={<TargetsPage />} />
+            <Route path="company" element={<CompanyInfo />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="reminders" element={<RemindersPage />} />
             <Route path="tasks" element={<TasksPage />} />

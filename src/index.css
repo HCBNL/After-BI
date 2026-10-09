@@ -1430,3 +1430,59 @@ html[data-lang='zh'] body {
   line-break: strict;
   word-break: normal;
 }
+
+/* ================================================================== */
+/*  HR: the salary countdown and the clock. See src/pages/hr/.         */
+/* ================================================================== */
+@keyframes hr-aurora {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(8%, -6%, 0) scale(1.12); }
+  66% { transform: translate3d(-6%, 5%, 0) scale(0.94); }
+}
+@keyframes hr-digit {
+  from { transform: translateY(-55%); opacity: 0; filter: blur(2px); }
+  to { transform: translateY(0); opacity: 1; filter: blur(0); }
+}
+@keyframes hr-sheen {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes hr-ring-in {
+  from { stroke-dashoffset: var(--hr-ring-full); }
+}
+@keyframes hr-confetti {
+  0% { transform: translate3d(0, -20px, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translate3d(var(--hr-drift, 20px), 420px, 0) rotate(720deg); opacity: 0; }
+}
+@keyframes hr-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(12, 163, 12, 0.45); }
+  50% { box-shadow: 0 0 0 14px rgba(12, 163, 12, 0); }
+}
+@keyframes hr-breathe-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(238, 106, 0, 0.45); }
+  50% { box-shadow: 0 0 0 14px rgba(238, 106, 0, 0); }
+}
+@keyframes hr-rise {
+  from { transform: translateY(14px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes hr-blink { 50% { opacity: 0.25; } }
+.hr-aurora { animation: hr-aurora 16s ease-in-out infinite; }
+.hr-aurora-slow { animation: hr-aurora 24s ease-in-out infinite reverse; }
+.hr-digit { animation: hr-digit 420ms cubic-bezier(0.2, 0.9, 0.25, 1.2) both; }
+.hr-sheen {
+  background-image: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: hr-sheen 2.8s linear infinite;
+}
+.hr-ring { animation: hr-ring-in 1.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.hr-confetti { animation: hr-confetti linear infinite; }
+.hr-breathe { animation: hr-breathe 2.2s ease-out infinite; }
+.hr-breathe-red { animation: hr-breathe-red 2.2s ease-out infinite; }
+.hr-rise { animation: hr-rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.hr-blink { animation: hr-blink 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .hr-aurora, .hr-aurora-slow, .hr-digit, .hr-sheen, .hr-ring, .hr-confetti,
+  .hr-breathe, .hr-breathe-red, .hr-rise, .hr-blink { animation: none !important; }
+}

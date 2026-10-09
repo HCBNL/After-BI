@@ -578,6 +578,14 @@ export interface OrgSettings {
   address?: string;
   /** Printed on every invoice. Nigerian tax law requires it. */
   taxId?: string;
+  /** Company registration number, e.g. "RC 1234567". Shown on Company info and the back of staff ID cards. */
+  rcNumber?: string;
+  /** e.g. "www.bellafoods.com". Company info, business cards, ID cards. */
+  website?: string;
+  /** Who signs staff ID cards: name, title, and a signature image. */
+  signatoryName?: string;
+  signatoryTitle?: string;
+  signatureUrl?: string;
   currency: 'NGN';
   /** Where an order's stock is deducted from unless another is named. */
   defaultWarehouseId?: string;

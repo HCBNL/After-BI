@@ -23,6 +23,8 @@ import { useBrand } from '@/lib/brand';
 import { fullName, partnerScope } from '@/lib/roles';
 import { formatDate } from '@/lib/format';
 import { ROLE_LABEL, TIER_LABEL } from '@/types';
+import { OrgPlanBadge, PlanPill } from '@/components/brand/PlanBadge';
+import { useEntitlements } from '@/lib/plans';
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
@@ -33,6 +35,7 @@ export default function ProfilePage() {
   const toast = useToast();
   const navigate = useNavigate();
   const { openHomeChooser } = useShell();
+  const { plan } = useEntitlements();
 
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
   const [lastName, setLastName] = useState(user?.lastName ?? '');
@@ -79,7 +82,10 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4">
           <Avatar name={`${user.firstName} ${user.lastName}`} src={user.photoURL} size="lg" />
           <div className="min-w-0">
-            <p className="truncate text-[17px] font-bold text-primary">{fullName(user)}</p>
+            <p className="flex items-center gap-1.5 text-[17px] font-bold text-primary">
+              <span className="truncate">{fullName(user)}</span>
+              <OrgPlanBadge size={19} />
+            </p>
             <p className="truncate text-[13px] text-muted">{user.email}</p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               <Badge tone="brand">{ROLE_LABEL[user.role]}</Badge>
@@ -128,6 +134,14 @@ export default function ProfilePage() {
 
         <dl className="mt-4 space-y-2.5">
           <Row label="Organisation" value={brand.name} />
+          {plan && (
+            <div className="flex items-center justify-between gap-4 border-b border-hairline pb-2.5">
+              <dt className="text-[12.5px] text-muted">Plan</dt>
+              <dd>
+                <PlanPill plan={plan} />
+              </dd>
+            </div>
+          )}
           <Row label="Role" value={ROLE_LABEL[user.role]} />
           {distributor && (
             <>
