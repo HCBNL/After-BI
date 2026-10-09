@@ -478,6 +478,148 @@ service cloud.firestore {
       allow write: if admin(orgId);
     }
 
+    /* HR */
+    /*
+     * Salaries, clock in and out, holidays, reissues, bonuses and deductions,
+     * and running costs, per organisation (see src/lib/hr.ts).
+     *
+     * In its own subtree, hr/{orgId}, NOT under orgs/{orgId}: every insider
+     * reads everything under orgs/{orgId}, and a colleague's salary is not for
+     * everyone. HR managers (super admin, admin, finance manager) see it all;
+     * everyone else on the payroll sees only their own record, days and
+     * bonuses. Refused entirely when the platform owner has locked HR for the
+     * organisation.
+     *
+     * A clock in is only for TODAY in Lagos (UTC+1), stamped with the server's
+     * time, and a clock out only once, also server stamped.
+     */
+    function featureOn(orgId, feature) {
+      return !(feature in get(/databases/$(database)/documents/orgs/$(orgId)).data.get('locked', []));
+    }
+
+    function hrManager(orgId) {
+      return hasRole(orgId, ['super_admin', 'admin', 'finance_manager']) && featureOn(orgId, 'hr');
+    }
+
+    /* On the payroll: everyone inside the organisation except distributors. */
+    function hrMember(orgId) {
+      return hasRole(orgId, [
+        'super_admin', 'admin', 'staff', 'sales_rep', 'warehouse_manager', 'finance_manager', 'operations_manager'
+      ]) && featureOn(orgId, 'hr');
+    }
+
+    function lagosDay() {
+      let t = request.time + duration.value(1, 'h');
+      return t.year() * 10000 + t.month() * 100 + t.day();
+    }
+
+    function isoDateOrEmpty(value) {
+      return value is string && (value == '' || value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'));
+    }
+
+    match /hr/{orgId}/hrSettings/{id} {
+      allow read: if hrMember(orgId);
+      allow write: if hrManager(orgId)
+        && request.resource.data.keys().hasOnly(['payDay', 'cycleStart', 'overrides', 'autoUntil', 'saturday'])
+        && request.resource.data.payDay is int
+        && request.resource.data.payDay >= 1 && request.resource.data.payDay <= 31
+        && request.resource.data.cycleStart is int
+        && request.resource.data.cycleStart >= 1 && request.resource.data.cycleStart <= 28
+        && request.resource.data.overrides is map
+        && isoDateOrEmpty(request.resource.data.autoUntil)
+        && request.resource.data.saturday is bool;
+    }
+
+    match /hr/{orgId}/hrHolidays/{date} {
+      allow read: if hrMember(orgId);
+      allow write: if hrManager(orgId);
+    }
+
+    match /hr/{orgId}/hrStaff/{uid} {
+      allow read: if hrManager(orgId) || (hrMember(orgId) && uid == request.auth.uid);
+      allow write: if hrManager(orgId)
+        && request.resource.data.salary is int && request.resource.data.salary >= 0;
+      allow delete: if hrManager(orgId);
+    }
+
+    match /hr/{orgId}/hrReissues/{id} {
+      allow read: if hrManager(orgId) || (
+        hrMember(orgId) && (id.matches(request.auth.uid + '_[0-9]{8}') || resource.data.uid == request.auth.uid)
+      );
+
+      allow create, update: if hrMember(orgId)
+        && request.resource.data.uid == request.auth.uid
+        && id == request.auth.uid + '_' + string(request.resource.data.day)
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'day', 'reason', 'status', 'createdAt'])
+        && request.resource.data.day is int
+        && request.resource.data.day < lagosDay()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.reason is string && request.resource.data.reason.size() <= 300
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100
+        && (resource == null || resource.data.status == 'declined');
+
+      allow update: if hrManager(orgId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt'])
+        && request.resource.data.status in ['approved', 'declined'];
+
+      allow delete: if hrManager(orgId);
+    }
+
+    match /hr/{orgId}/hrAttendance/{id} {
+      /* The id check lets someone read their own day before it exists ("not clocked in yet"). */
+      allow read: if hrManager(orgId) || (
+        hrMember(orgId) && (id.matches(request.auth.uid + '_[0-9]{8}') || resource.data.uid == request.auth.uid)
+      );
+
+      allow create: if (
+          hrManager(orgId)
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'day', 'manual', 'inAt', 'outAt', 'edited', 'reissue', 'absent'])
+          && request.resource.data.day is int
+          && id == request.resource.data.uid + '_' + string(request.resource.data.day)
+        )
+        || (
+          hrMember(orgId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'day', 'inAt', 'manual'])
+          && request.resource.data.day == lagosDay()
+          && id == request.auth.uid + '_' + string(request.resource.data.day)
+          && request.resource.data.inAt == request.time
+          && request.resource.data.manual == false
+          && request.resource.data.name is string && request.resource.data.name.size() <= 100
+        );
+
+      allow update: if (
+          hrManager(orgId)
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'day', 'manual', 'inAt', 'outAt', 'edited', 'reissue', 'absent'])
+        )
+        || (
+          hrMember(orgId)
+          && resource.data.uid == request.auth.uid
+          && !('outAt' in resource.data)
+          && !resource.data.get('absent', false)
+          && resource.data.day == lagosDay()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['outAt'])
+          && request.resource.data.outAt == request.time
+        );
+
+      allow delete: if hrManager(orgId);
+    }
+
+    /* Bonuses and deductions: HR writes them; each person reads their own. */
+    match /hr/{orgId}/hrAdjustments/{id} {
+      allow read: if hrManager(orgId) || (hrMember(orgId) && resource.data.uid == request.auth.uid);
+      allow create: if hrManager(orgId)
+        && request.resource.data.kind in ['bonus', 'deduction']
+        && request.resource.data.amount is int && request.resource.data.amount >= 0
+        && request.resource.data.month is string && request.resource.data.month.matches('^[0-9]{4}-[0-9]{2}$');
+      allow update, delete: if hrManager(orgId);
+    }
+
+    /* Running costs: HR only. */
+    match /hr/{orgId}/hrCosts/{id} {
+      allow read, write: if hrManager(orgId);
+    }
+
     /* Deny everything else, on purpose. */
     match /{document=**} {
       allow read, write: if false;
