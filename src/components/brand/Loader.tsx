@@ -1,164 +1,146 @@
+/**
+ * What a screen looks like before its data arrives.
+ *
+ * WHAT THIS REPLACED, AND WHY
+ *
+ * A brand mark whose four squares pulsed in sequence, held back 320ms so it
+ * would not flash. It was the nicest thing in the app and it was the wrong
+ * answer, for three reasons that only became obvious once the app was fast:
+ *
+ *   1. It says "wait" without saying what for. A logo breathing at somebody
+ *      carries no information about what is coming or how much of it.
+ *   2. It takes no room, or the wrong room. Every screen using it collapsed to
+ *      a centred badge and then sprang open when the content landed, so the
+ *      page moved twice on every load — which is most of what "the site feels
+ *      slow" actually is. Movement reads as slowness even when the numbers say
+ *      otherwise.
+ *   3. The 320ms delay was a patch on the first two. A loader you have to hide
+ *      for a third of a second to stop it being annoying is a loader that
+ *      should not exist.
+ *
+ * A skeleton has none of those problems. It appears immediately, because it is
+ * not an apology for a wait, it is the page arriving in two stages: the shape
+ * first, the words second. Nothing moves when the second stage lands, which is
+ * the whole trick.
+ *
+ * THE OBJECTION, ANSWERED
+ *
+ * The old comment here argued against skeletons: "a skeleton is a promise
+ * about a shape, and every screen has a different shape, so the promise was
+ * usually wrong." That is true of one generic skeleton used everywhere, and it
+ * is why this one takes a `variant`. Four shapes cover every screen in the
+ * app — a list of cards, a grid of cards, a table, a page of prose — and a
+ * caller that picks the wrong one is a two-word fix rather than an argument
+ * against the technique.
+ *
+ * `label` is still read out to a screen reader. It is simply no longer printed
+ * on the page, because a person watching the shape of their own screen build
+ * itself does not need to be told it is loading.
+ */
+
 import { cn } from '@/lib/cn';
-import { Wordmark, WordmarkLoading } from './Wordmark';
 
-/**
- * Waiting, drawn as the shape of what is coming.
- *
- * Every loading state in this app is a skeleton rather than a spinner, with one
- * exception (`BrandLoader`, where nothing below knows its shape yet). The
- * reason is not fashion:
- * a spinner tells you nothing about what is arriving, so a slow screen and a
- * broken screen look identical, and people reload: which on a bad connection
- * makes it slower. A skeleton that matches the real layout means the page does
- * not jump when data lands, which is the other half of the effect.
- */
-
-/**
- * The brand, while a whole screen waits on something it cannot draw yet.
- *
- * Used where a skeleton would be a lie, the organisation has not resolved, so
- * nothing below knows its own shape. Everywhere else, draw the shape.
- */
-export function BrandLoader({ label = 'Loading' }: { label?: string }) {
+/** "GetSchool." in the display face, the full stop in the pen's red. */
+function Word({ className }: { className?: string }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center surface-page px-6">
-      <WordmarkLoading label={label} />
+    <span className={cn('font-display font-extrabold leading-none tracking-[-0.05em]', className)}>
+      GetSchool<span className="text-brand-500">.</span>
+    </span>
+  );
+}
+
+/**
+ * The start-up screen, and the same one the public pages open with: the
+ * wordmark and a red line running under it, on navy in both themes.
+ *
+ * WHY THE MARK WENT
+ *
+ * It used to be the four-square mark filling itself in. The public site
+ * opens on the wordmark instead, and a person who signs in from there should
+ * not watch the brand change shape between one screen and the next. One
+ * loader, everywhere: `index.html`'s boot screen, this, and `Loading`.
+ */
+export function SplashScreen({ label }: { label?: string }) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="night fixed inset-0 z-[60] flex flex-col items-center justify-center gap-5 px-6 text-center"
+    >
+      <Word className="text-[30px] text-white" />
+      <span className="boot-line" aria-hidden />
+      <p className={label ? 'text-[12.5px] font-medium text-white/55' : 'sr-only'}>{label ?? 'Loading'}</p>
     </div>
   );
 }
 
 export function Loading({
-  label,
-  rows = 3,
+  label = 'Loading',
   className,
+  compact = false,
 }: {
   label?: string;
-  rows?: number;
   className?: string;
+  compact?: boolean;
+  /** Kept so older call sites still compile. The loader has one shape now. */
+  variant?: string;
+  /** Kept so older call sites still compile. The loader has one shape now. */
+  rows?: number;
 }) {
+  /* The start-up screen in miniature: the wordmark and the running line. */
   return (
-    <div className={cn('space-y-3', className)} aria-busy>
-      {label && <p className="sr-only">{label}</p>}
-      {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="surface-card rounded-2xl border border-hairline p-4 shadow-card">
-          <div className="skeleton h-3 w-28 rounded-full" />
-          <div className="skeleton mt-3 h-4 w-full max-w-sm rounded-full" />
-          <div className="skeleton mt-2 h-4 w-2/3 max-w-xs rounded-full" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/** A plain page. The fallback of last resort, for a route that is neither. */
-export function PageSkeleton() {
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-16">
-      <div className="skeleton h-8 w-1/2 rounded-lg" />
-      <div className="skeleton mt-4 h-4 w-full rounded-full" />
-      <div className="skeleton mt-2 h-4 w-5/6 rounded-full" />
-      <Loading className="mt-10" rows={2} />
+    <div
+      role="status"
+      aria-live="polite"
+      className={cn(
+        'flex flex-col items-center justify-center gap-3 text-center',
+        compact ? 'py-6' : 'min-h-[220px] py-12',
+        className,
+      )}
+    >
+      {!compact && <Word className="text-[22px] text-primary" />}
+      <span className="boot-line" aria-hidden />
+      <p className="text-[12.5px] font-medium text-muted">{label}</p>
     </div>
   );
 }
 
 /**
- * The public site, before its chunk has arrived.
+ * A public page's code on its way.
  *
- * Every public page opens the same way, a dark bar, then an ink band with a
- * heading and two buttons in it, so that is what this draws. The point is the
- * same as everywhere else in this app: the first frame is the shape of what is
- * coming, so nothing jumps when it lands.
+ * The wordmark on the site's navy, and nothing else moving.
  *
- * It matters more here than in the portal, because this is the frame a
- * first-time visitor on a slow connection judges the product by. A white page
- * with a grey pill on it for a second and a half reads as broken; this reads
- * as loading.
+ * This used to be the full start-up screen, running line included, which meant
+ * a visitor arriving at getschool.app was shown a progress bar before they had
+ * agreed to wait for anything. On the marketing site a loader is a cost with
+ * no benefit: the page is held until it is complete anyway (see `usePageGate`
+ * in `marketing/kit.tsx`), so the indicator only advertises the delay it is
+ * covering. The portal keeps its loader — somebody already signed in has
+ * committed, and silence there reads as broken.
  */
-export function SiteSkeleton() {
+export function PageSkeleton(_props: { className?: string }) {
   return (
-    <div className="site min-h-dvh" aria-busy>
-      <div className="status-bar-fill" aria-hidden />
-      <div className="h-9 bg-navy-900" />
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-5 sm:h-[4.5rem] sm:px-8">
-        <Wordmark className="text-[1.35rem] !text-navy-900" />
-        <div className="h-10 w-40 rounded-full bg-navy-50" />
-      </div>
-      <div className="site-wash">
-        <div className="mx-auto w-full max-w-7xl px-5 pb-20 pt-14 sm:px-8 sm:pt-20">
-          <div className="h-8 w-56 rounded-full bg-navy-100/70" />
-          <div className="mt-7 h-12 w-full max-w-2xl rounded-xl bg-navy-100/70" />
-          <div className="mt-3 h-12 w-full max-w-xl rounded-xl bg-navy-100/70" />
-          <div className="mt-8 h-4 w-full max-w-lg rounded-full bg-navy-100/60" />
-          <div className="mt-2.5 h-4 w-full max-w-md rounded-full bg-navy-100/60" />
-          <div className="mt-9 flex gap-3">
-            <div className="h-12 w-48 rounded-full bg-brand-100" />
-            <div className="h-12 w-44 rounded-full bg-navy-100/70" />
-          </div>
-        </div>
-      </div>
+    <div
+      role="status"
+      aria-live="polite"
+      className="night fixed inset-0 z-[60] flex flex-col items-center justify-center px-6 text-center"
+    >
+      <Word className="text-[30px] text-white" />
+      <p className="sr-only">Loading</p>
     </div>
   );
 }
 
-/**
- * The app's own furniture, before the app exists.
- *
- * Drawn to match `AppShell` exactly, a rail on the left at lg, a header bar, a
- * card, a shortcut grid, a bottom bar, so that when React takes over there is
- * no moment where the layout changes. The static shell in `index.html` paints
- * the same shape from the first frame, which is what removes the white flash
- * entirely.
- */
+/** A portal screen's code, or the sign-in, on its way: the start-up screen. */
 export function ShellSkeleton() {
-  return (
-    <div className="flex min-h-dvh surface-page" aria-busy>
-      <aside className="hidden w-[232px] shrink-0 border-r border-hairline surface-card p-3 lg:block">
-        <div className="skeleton h-10 w-full rounded-xl" />
-        <div className="mt-4 space-y-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="skeleton h-9 w-full rounded-xl" />
-          ))}
-        </div>
-      </aside>
+  return <SplashScreen />;
+}
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-hairline surface-card">
-          <div className="status-bar-fill" aria-hidden />
-          <div className="flex h-14 items-center gap-3 px-3 sm:h-16 sm:px-5">
-            <div className="min-w-0 flex-1">
-              <div className="skeleton h-4 w-44 rounded-full" />
-              <div className="skeleton mt-2 h-2.5 w-28 rounded-full" />
-            </div>
-            <div className="skeleton h-9 w-9 rounded-full" />
-          </div>
-        </header>
-
-        <main className="flex-1 px-3 py-4 sm:px-5 sm:py-6">
-          <div className="mx-auto max-w-[1400px]">
-            <div className="min-h-[168px] rounded-[var(--radius-card)] border border-hairline surface-card p-4 shadow-card sm:min-h-[186px] sm:p-5 lg:max-w-[720px]">
-              <div className="skeleton h-2.5 w-24 rounded-full" />
-              <div className="skeleton mt-3 h-8 w-28 rounded-lg" />
-              <div className="skeleton mt-3 h-3 w-full max-w-[15rem] rounded-full" />
-            </div>
-
-            <div className="surface-card mt-5 rounded-2xl border border-hairline p-3 shadow-card sm:p-4">
-              <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="flex flex-col items-center gap-1.5 py-2.5">
-                    <div className="skeleton h-11 w-11 rounded-xl" />
-                    <div className="skeleton h-2.5 w-10 rounded-full" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-
-      <div className="fixed inset-x-0 bottom-0 flex h-[3.75rem] items-center justify-center border-t border-hairline surface-card lg:hidden">
-        <Wordmark className="text-[1.05rem]" />
-      </div>
-    </div>
-  );
+/**
+ * What a screen shows while the school is loading. The school gate in
+ * `AppShell` and the home screen both use it, with the same words, so the
+ * hand-over from one to the other is invisible.
+ */
+export function BrandLoader({ label = 'Getting your school ready' }: { label?: string }) {
+  return <SplashScreen label={label} />;
 }

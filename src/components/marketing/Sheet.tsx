@@ -1,20 +1,19 @@
 /**
- * The panel the booking wizard lives in.
+ * The panel the wizard and the booking calendar live in.
  *
  * WHY NOT THE APP'S `Modal`
  *
  * The app's dialog is built for a form an administrator opens inside a screen
- * they are already looking at: a title bar, a scrolling body, a row of
- * buttons. This is different. It takes over: on a phone it is the whole
- * screen, on a laptop it is a card with a progress rail across the top and no
- * visible chrome competing with the one question being asked. Bending the
- * app's dialog into that shape would have changed it for every screen in the
- * portal that uses it, which is exactly the kind of edit a redesign should not
- * make.
+ * they are already looking at: a title bar, a scrolling body, a row of buttons.
+ * These two are different. They take over: on a phone they are the whole
+ * screen, on a laptop they are a card with a progress rail across the top and
+ * no visible chrome competing with the one question being asked. Bending the
+ * app's dialog into that shape would have changed it for every screen that
+ * uses it, which is exactly the kind of edit a redesign should not make.
  *
  * It does the unglamorous parts properly: escape closes it, the page behind
  * cannot scroll while it is open, focus starts inside it and is returned to
- * whatever opened it, and a tap on the backdrop closes it.
+ * whatever opened it, and a tap on the backdrop closes it on the way out.
  */
 
 import { useEffect, useRef, type ReactNode } from 'react';
@@ -50,7 +49,8 @@ export function Sheet({
    * keystroke. Depending on it meant this effect ran again after each
    * character typed and its last act was to move focus to the panel: one
    * letter went in, the caret disappeared, and the rest of the word went
-   * nowhere. The same fault is documented at length in `ui/overlay.tsx`.
+   * nowhere. The same fault was in `ui/overlay.tsx`, where it affected every
+   * dialog in the portal; the long version of this note is there.
    */
   const closeRef = useRef(onClose);
   useEffect(() => {
@@ -89,7 +89,11 @@ export function Sheet({
 
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-stretch justify-center sm:items-center sm:p-6">
-      <div className="absolute inset-0 animate-fade-in bg-navy-950/60 backdrop-blur-md" onClick={onClose} aria-hidden />
+      <div
+        className="absolute inset-0 bg-night/80 backdrop-blur-md animate-fade-in"
+        onClick={onClose}
+        aria-hidden
+      />
 
       <div
         ref={panelRef}
@@ -98,21 +102,20 @@ export function Sheet({
         aria-label={label}
         tabIndex={-1}
         className={cn(
-          'site relative isolate z-10 flex h-full w-full animate-scale-in flex-col overflow-hidden border-navy-900/10 outline-none',
+          'night relative isolate z-10 flex h-full w-full flex-col overflow-hidden border-white/10 outline-none animate-scale-in',
           'sm:h-auto sm:max-h-[92vh] sm:rounded-[1.75rem] sm:border sm:shadow-pop',
           wide ? 'sm:max-w-3xl' : 'sm:max-w-lg',
         )}
       >
-        {/* The green light over the top of the sheet, as on the front page. */}
+        {/* The red light over the top of the sheet, as on the front page. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(70%_100%_at_50%_0%,rgba(16,185,129,0.12),rgba(16,185,129,0)_70%)]"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(70%_100%_at_50%_0%,rgba(216,30,43,0.22),rgba(216,30,43,0)_70%)]"
         />
-
         {progress !== undefined && (
           <div className="h-1 w-full shrink-0 bg-[var(--surface-sunken)]" aria-hidden>
             <div
-              className="h-full rounded-r-full bg-gradient-to-r from-brand-400 to-brand-600 transition-[width] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              className="h-full rounded-r-full bg-gradient-to-r from-[#f2353c] to-[#b90f1b] transition-[width] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
               style={{ width: `${Math.max(4, Math.min(100, progress * 100))}%` }}
             />
           </div>

@@ -9,7 +9,7 @@
  * Worse, the paragraphs are different lengths, so two cards side by side never
  * line up and the page looks unfinished.
  *
- * The explanations are good and worth keeping: they answer real questions
+ * The explanations are good and worth keeping — they answer real questions
  * ("does changing this affect my other child?"). They just should not be shouted
  * at somebody who already knows. So: a small (i) beside the thing it describes,
  * and the text appears when asked for.
@@ -18,7 +18,7 @@
  *
  * Tooltips need hover, and half of this app's users are on a phone where hover
  * does not exist. A tooltip is also invisible to a screen reader unless it is
- * built with some care, and it vanishes the moment the pointer drifts: which is
+ * built with some care, and it vanishes the moment the pointer drifts — which is
  * unusable for anything longer than three words.
  *
  * This is a button that opens a panel. It works on a touchscreen, it can be read
@@ -28,19 +28,27 @@
  * WHY THE TEXT IS NOT RENDERED WHEN CLOSED
  *
  * Keeping it mounted and hidden with CSS would preserve the card's height, which
- * is exactly what we do not want: the whole point is that a closed card is the
+ * is exactly what we do not want — the whole point is that a closed card is the
  * same compact size as every other closed card. It unmounts.
  */
 
-import { useId, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Info, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
+/**
+ * The note floats above the page (portalled to <body>, fixed to the button),
+ * so a card, a table cell or the coloured page panel with `overflow: hidden`
+ * can never clip it. It closes on a tap outside, on Escape, and when the page
+ * scrolls, since a fixed note would otherwise drift away from its (i).
+ */
 export function Hint({
   children,
   label = 'Why this matters',
   className,
   align = 'left',
+  onDark = false,
 }: {
   children: ReactNode;
   /** What the button announces to a screen reader. Name the subject. */
@@ -48,44 +56,89 @@ export function Hint({
   className?: string;
   /** `right` when the (i) sits at the end of a row rather than after a label. */
   align?: 'left' | 'right';
+  /** On a coloured panel: a white (i) instead of a grey one. */
+  onDark?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [spot, setSpot] = useState<{ top: number; left: number } | null>(null);
   const id = useId();
+  const button = useRef<HTMLButtonElement>(null);
+  const note = useRef<HTMLSpanElement>(null);
+
+  const place = () => {
+    const rect = button.current?.getBoundingClientRect();
+    if (!rect) return;
+    /* The note is at most 19rem (304px) wide and never wider than the screen
+       less an 8px margin each side. Start it under the (i) (or end it there,
+       for align="right"), then slide it back inside the screen. */
+    const width = Math.min(304, window.innerWidth - 16);
+    const wanted = align === 'right' ? rect.right + 4 - width : rect.left - 4;
+    const left = Math.min(Math.max(8, wanted), window.innerWidth - 8 - width);
+    setSpot({ top: rect.bottom + 6, left });
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    place();
+    const close = () => setOpen(false);
+    const outside = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (note.current?.contains(target) || button.current?.contains(target)) return;
+      setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    document.addEventListener('pointerdown', outside);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+      document.removeEventListener('pointerdown', outside);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
 
   return (
     <span className={cn('inline-flex', className)}>
       <button
+        ref={button}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen((v) => !v);
+        }}
         aria-expanded={open}
         aria-controls={id}
         aria-label={label}
         title={label}
         className={cn(
           'inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full',
-          'text-muted transition-colors hover:bg-[var(--surface-sunken)] hover:text-brand-700',
+          onDark
+            ? 'text-white/70 transition-colors hover:bg-white/15 hover:text-white'
+            : 'text-muted transition-colors hover:bg-[var(--surface-sunken)] hover:text-brand-700',
           'focus:outline-none focus:ring-2 focus:ring-brand-500/40',
-          open && 'bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300',
+          open && !onDark && 'bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300',
+          open && onDark && 'bg-white/20 text-white',
         )}
       >
         <Info size={13} />
       </button>
 
-      {open && (
-        /*
-         * Absolutely positioned, so opening it does not push the rest of the
-         * card down and shunt the button out from under the finger that just
-         * pressed it. `max-w` rather than a fixed width: on a phone it fills the
-         * column, on a desktop it stays a readable measure.
-         */
-        <span className="relative">
+      {open &&
+        spot &&
+        createPortal(
           <span
+            ref={note}
             id={id}
             role="note"
+            style={{ top: spot.top, left: spot.left, width: Math.min(304, window.innerWidth - 16) }}
             className={cn(
-              'absolute top-6 z-20 block w-max max-w-[min(19rem,72vw)] rounded-xl border border-hairline',
-              'surface-card p-3 pr-7 text-[12px] leading-relaxed text-secondary shadow-card',
-              align === 'right' ? 'right-0' : 'left-0',
+              'fixed z-[80] block rounded-xl border border-hairline',
+              'surface-card p-3 pr-7 text-left text-[12px] font-normal normal-case leading-relaxed tracking-normal text-secondary shadow-pop animate-scale-in',
             )}
           >
             {children}
@@ -97,9 +150,9 @@ export function Hint({
             >
               <X size={12} />
             </button>
-          </span>
-        </span>
-      )}
+          </span>,
+          document.body,
+        )}
     </span>
   );
 }
@@ -108,7 +161,7 @@ export function Hint({
  * The same thing, sized for the foot of a card rather than beside a label.
  *
  * Where a card previously ended in a boxed paragraph, this puts a single quiet
- * line there instead: so every card ends at the same height whether or not it
+ * line there instead — so every card ends at the same height whether or not it
  * has something to explain.
  */
 export function HintFooter({ children, label = 'More about this' }: { children: ReactNode; label?: string }) {

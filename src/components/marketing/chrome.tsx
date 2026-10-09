@@ -1,51 +1,77 @@
 /**
- * The bar at the top and the block at the bottom of every public page.
+ * The bar at the top and the block at the bottom, rebranded.
  *
  * THE HEADER
  *
- * A thin promo strip, then the bar: the name, five destinations, and on the
- * right the door ("Sign in", or "Dashboard" when signed in) and the one ask.
- * Products, Solutions and Support open a full-width menu panel on a laptop;
- * on a phone everything folds into one sheet with sections that open.
+ * Four destinations, named the way a visitor says them: Home, About, Features
+ * and Pricing. The footer, the sitemap and the JSON-LD graph use the same four
+ * names, because the label under a sitelink is drawn from a site's own anchor
+ * text and one page with three names is a page with none.
+ *
+ * Log in is on the bar at every width. Most people who arrive here are a
+ * parent after a result or a teacher after the register, not a buyer, and
+ * making them hunt for the door is how a front page annoys the people who use
+ * it most.
+ *
+ * Every public page is dark, and the bar is the same navy on all of them. Only
+ * over the front page's banner does it start transparent, and the banner's
+ * veil keeps that top edge the same navy, so it reads as one bar everywhere.
  *
  * THE PHONE MENU IS PORTALLED
  *
- * The bar blurs what is behind it, and a blurred element becomes the containing
- * block for anything fixed inside it. Rendering the sheet into `document.body`
- * keeps it the full screen it is meant to be.
+ * The bar blurs what is behind it once the page has scrolled, and a blurred
+ * element becomes the containing block for anything fixed inside it. A menu
+ * drawn inside the bar would then be clipped to the bar's own sixty pixels.
+ * Rendering it into `document.body` keeps it the full screen it is meant to be.
+ *
+ * THE FOOTER
+ *
+ * What GetSchool is in two lines, the email address, the networks as their
+ * marks, and a short list of pages. One size of type throughout.
  */
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, ChevronDown, LifeBuoy, Mail, MessageCircle, Menu, PlayCircle, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { Wordmark } from '@/components/brand/Wordmark';
-import { LanguageSwitch } from '@/components/LanguageSwitch';
-import { useAuth, HOME_FOR_ROLE } from '@/context/AuthContext';
-import {
-  COMPANY,
-  COMPANY_URL,
-  INDUSTRIES,
-  MODULES,
-  NAV,
-  PRODUCT_GROUPS,
-  PROMO,
-  SOCIAL,
-  SOLUTIONS,
-  SUPPORT_EMAIL,
-  WHATSAPP_URL,
-  type SocialKey,
-} from '@/lib/site';
-import { btn, container } from './tokens';
-import { ModuleIcon } from './site-ui';
+import { Mark } from '@/components/brand/Mark';
+import { SUPPORT_EMAIL } from '@/lib/constants';
+import { NAV, SOCIAL_DEFAULTS, type SocialKey } from '@/lib/marketing';
+import type { SocialLink } from '@/lib/site';
+import { featureBySlug, featurePath } from '@/lib/features';
+import { SocialIcon, socialIconFor } from './SocialIcon';
+import { btn } from './tokens';
 
-type MenuKey = 'products' | 'solutions' | 'support';
+/* ------------------------------------------------------------ the wordmark */
 
-function useDoor(): { label: string; to: string } {
-  const { user, loading } = useAuth();
-  if (loading || !user) return { label: 'Sign in', to: '/login' };
-  return { label: 'Dashboard', to: HOME_FOR_ROLE[user.role] };
+/**
+ * The mark and the name. On a phone the bar shows the mark alone: it is the
+ * logo, it reads at that size, and it leaves room for Log in and Get started.
+ */
+export function SiteWordmark({
+  onNight,
+  className,
+  iconOnly,
+}: {
+  onNight?: boolean;
+  className?: string;
+  /** Hide the name below 640px, where the bar is tight. */
+  iconOnly?: boolean;
+}) {
+  return (
+    <span className={cn('inline-flex items-center gap-2.5', className)}>
+      <Mark size={30} className={onNight ? 'text-white' : 'text-primary'} />
+      <span
+        className={cn(
+          'font-display text-[1.3rem] font-extrabold leading-none tracking-[-0.05em] sm:text-[1.45rem]',
+          onNight ? 'text-white' : 'text-primary',
+          iconOnly && 'hidden sm:inline',
+        )}
+      >
+        GetSchool<span className="text-brand-500">.</span>
+      </span>
+    </span>
+  );
 }
 
 function isActive(href: string, pathname: string): boolean {
@@ -53,322 +79,129 @@ function isActive(href: string, pathname: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/* ------------------------------------------------------------- the header */
+/* --------------------------------------------------------------- the header */
 
-export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }) {
-  const [sheet, setSheet] = useState(false);
-  const [menu, setMenu] = useState<MenuKey | null>(null);
+export function SiteHeader({
+  onCreate,
+  onBook,
+  overlay = false,
+}: {
+  onCreate: () => void;
+  onBook: () => void;
+  /** Transparent at the top, over the front page's banner. Every other page gets the solid bar. */
+  overlay?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
   const [lifted, setLifted] = useState(false);
   const { pathname } = useLocation();
-  const door = useDoor();
-  const closeTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    const onScroll = () => setLifted(window.scrollY > 8);
+    const onScroll = () => setLifted(window.scrollY > 24);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  /* A new page closes any open panel. */
-  useEffect(() => setMenu(null), [pathname]);
-
-  useEffect(() => {
-    if (!menu) return;
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setMenu(null);
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [menu]);
-
-  const openSoon = (key: MenuKey) => {
-    window.clearTimeout(closeTimer.current);
-    setMenu(key);
-  };
-  const closeSoon = () => {
-    window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => setMenu(null), 160);
-  };
+  const clear = overlay && !lifted;
 
   return (
-    <header className="sticky top-0 z-50" onMouseLeave={closeSoon}>
+    <header
+      className={cn(
+        'inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-300',
+        overlay ? 'fixed' : 'sticky',
+        clear
+          ? 'border-transparent bg-gradient-to-b from-night/85 to-transparent'
+          : 'border-white/8 bg-night/95 backdrop-blur-xl',
+      )}
+    >
+      {/* The strip behind an installed iPhone's status bar. See AppShell. */}
       <div className="status-bar-fill" aria-hidden />
 
-      {/* The promo strip, with the language flags at the very top. */}
-      <div className="bg-navy-900 text-white">
-        <div className={cn(container, 'flex h-11 items-center justify-between gap-3 text-[13px]')}>
-          <p className="hidden min-w-0 truncate sm:block">
-            <span className="font-semibold">{PROMO.text}</span>{' '}
-            <Link to={PROMO.link.href} className="hidden font-bold text-brand-300 underline-offset-4 hover:underline md:inline">
-              {PROMO.link.label}
-            </Link>
-          </p>
-          <div className="flex shrink-0 items-center gap-5 max-sm:w-full max-sm:justify-center">
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="hidden text-white/75 hover:text-white xl:inline">
-              {SUPPORT_EMAIL}
-            </a>
-            <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="hidden whitespace-nowrap text-white/75 hover:text-white lg:inline">
-              WhatsApp us
-            </a>
-            <LanguageSwitch flags />
-          </div>
-        </div>
-      </div>
+      {/* Three columns on a laptop so the menu sits in the true middle, whatever
+          the widths of the name on the left and the buttons on the right. */}
+      <div className="mx-auto grid h-16 w-full max-w-7xl grid-cols-[1fr_auto] items-center gap-3 px-4 sm:h-[4.5rem] sm:px-8 lg:grid-cols-[1fr_auto_1fr] lg:gap-8">
+        <Link to="/" aria-label="GetSchool home" className="justify-self-start">
+          <SiteWordmark onNight iconOnly />
+        </Link>
 
-      {/* The bar. */}
-      <div
-        className={cn(
-          'border-b bg-white/95 backdrop-blur-xl transition-shadow',
-          lifted || menu ? 'border-navy-900/10 shadow-[0_6px_24px_-16px_rgba(15,31,54,0.4)]' : 'border-transparent',
-        )}
-      >
-        <div className={cn(container, 'flex h-16 items-center gap-6 sm:h-[4.5rem] lg:grid lg:grid-cols-[1fr_auto_1fr]')}>
-          <Link to="/" aria-label="AfterBI home" className="shrink-0 lg:justify-self-start">
-            <Wordmark className="text-[1.35rem] !text-navy-900 sm:text-[1.5rem]" />
+        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
+          {NAV.map((item) => {
+            const active = isActive(item.href, pathname);
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'relative rounded-md px-3.5 py-2 text-[14.5px] font-semibold transition-colors',
+                  active ? 'text-white' : 'text-white/70 hover:text-white',
+                )}
+              >
+                {item.label}
+                {active && (
+                  <span aria-hidden className="absolute inset-x-3.5 -bottom-1 h-[3px] rounded-full bg-brand-600" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex items-center gap-1 justify-self-end sm:gap-2.5">
+          <Link
+            to="/login"
+            className="tap inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-2.5 text-[14px] font-bold text-white transition-colors hover:bg-white/10 sm:px-3.5"
+          >
+            Log in
           </Link>
 
-          <nav aria-label="Main" className="hidden items-center justify-center gap-1 lg:flex">
-            {NAV.map((item) => {
-              const active = isActive(item.href, pathname);
-              if (item.menu) {
-                const key = item.menu;
-                const open = menu === key;
-                return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    aria-expanded={open}
-                    onMouseEnter={() => openSoon(key)}
-                    onFocus={() => openSoon(key)}
-                    onClick={() => setMenu(open ? null : key)}
-                    className={cn(
-                      'inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors',
-                      open || active ? 'bg-navy-50 text-navy-900' : 'text-navy-700 hover:bg-navy-50 hover:text-navy-900',
-                    )}
-                  >
-                    {item.label}
-                    <ChevronDown size={15} aria-hidden className={cn('transition-transform', open && 'rotate-180')} />
-                  </button>
-                );
-              }
-              return (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  onMouseEnter={() => setMenu(null)}
-                  aria-current={active ? 'page' : undefined}
-                  className={cn(
-                    'rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors',
-                    active ? 'bg-navy-50 text-navy-900' : 'text-navy-700 hover:bg-navy-50 hover:text-navy-900',
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5 lg:ml-0 lg:justify-self-end">
-            <Link
-              to={door.to}
-              className="tap inline-flex items-center whitespace-nowrap rounded-full px-3 text-[14.5px] font-bold text-navy-900 hover:bg-navy-50 sm:px-4"
-            >
-              {door.label}
-            </Link>
-            <button
-              type="button"
-              onClick={onBook}
-              className="tap hidden items-center whitespace-nowrap rounded-full bg-brand-600 px-5 text-[14.5px] font-bold text-white transition-colors hover:bg-brand-700 sm:inline-flex"
-            >
-              Book a demo
-            </button>
-            <button
-              type="button"
-              onClick={() => setSheet(true)}
-              aria-label="Open the menu"
-              aria-expanded={sheet}
-              aria-haspopup="dialog"
-              className="tap inline-flex items-center justify-center rounded-full px-2.5 text-navy-900 hover:bg-navy-50 lg:hidden"
-            >
-              <Menu size={24} aria-hidden />
-            </button>
-          </div>
-        </div>
-
-        {/* The menu panel, laptops only. */}
-        {menu && (
-          <div
-            className="absolute inset-x-0 top-full hidden border-b border-navy-900/10 bg-white shadow-[0_24px_48px_-24px_rgba(15,31,54,0.35)] lg:block"
-            onMouseEnter={() => openSoon(menu)}
+          <button
+            type="button"
+            onClick={onCreate}
+            className="tap inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-brand-600 px-3.5 text-[13.5px] font-bold text-white transition-colors hover:bg-brand-700 sm:px-5 sm:text-[14.5px]"
           >
-            <div className={cn(container, 'py-8')}>
-              {menu === 'products' && <ProductsPanel onBook={onBook} />}
-              {menu === 'solutions' && <SolutionsPanel />}
-              {menu === 'support' && <SupportPanel onBook={onBook} />}
-            </div>
-          </div>
-        )}
+            Get started
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Open the menu"
+            aria-expanded={open}
+            aria-haspopup="dialog"
+            className="tap inline-flex flex-col items-center justify-center gap-[5px] rounded-lg text-white hover:bg-white/10 lg:hidden"
+          >
+            <span className="block h-[2px] w-5 rounded-full bg-current" />
+            <span className="block h-[2px] w-5 rounded-full bg-current" />
+            <span className="block h-[2px] w-5 rounded-full bg-current" />
+          </button>
+        </div>
       </div>
 
-      {sheet && <MenuSheet onClose={() => setSheet(false)} onBook={onBook} />}
+      {open && (
+        <MenuSheet
+          pathname={pathname}
+          onClose={() => setOpen(false)}
+          onCreate={onCreate}
+          onBook={onBook}
+        />
+      )}
     </header>
   );
 }
 
-/* -------------------------------------------------------------- the panels */
+/* ---------------------------------------------------------- the phone menu */
 
-function PanelLink({ to, title, body, icon }: { to: string; title: string; body?: string; icon?: ReactNode }) {
-  return (
-    <Link to={to} className="group flex gap-3 rounded-xl p-3 transition-colors hover:bg-navy-50">
-      {icon && (
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-          {icon}
-        </span>
-      )}
-      <span>
-        <span className="block text-[15px] font-bold text-navy-900">{title}</span>
-        {body && <span className="mt-0.5 block text-[13.5px] leading-snug text-navy-600">{body}</span>}
-      </span>
-    </Link>
-  );
-}
-
-function PanelTitle({ children }: { children: ReactNode }) {
-  return <p className="px-3 pb-2 text-[12px] font-bold uppercase tracking-[0.14em] text-navy-400">{children}</p>;
-}
-
-function ProductsPanel({ onBook }: { onBook: () => void }) {
-  return (
-    <div className="grid grid-cols-[1fr_1fr_1fr_17rem] gap-6">
-      {PRODUCT_GROUPS.map((group) => (
-        <div key={group.title}>
-          <PanelTitle>{group.title}</PanelTitle>
-          {group.slugs.map((slug) => {
-            const item = MODULES.find((m) => m.slug === slug);
-            if (!item) return null;
-            return (
-              <PanelLink
-                key={slug}
-                to={`/features/${slug}`}
-                title={item.name}
-                body={item.blurb}
-                icon={<ModuleIcon slug={slug} size={19} />}
-              />
-            );
-          })}
-        </div>
-      ))}
-      <PromoCard
-        title="Explore the platform"
-        body="Twelve capabilities, six role based workspaces, one secure cloud. See it with your own data in a guided demo."
-        link={{ to: '/features', label: 'Platform overview' }}
-        onBook={onBook}
-      />
-    </div>
-  );
-}
-
-function SolutionsPanel() {
-  return (
-    <div className="grid grid-cols-[1.4fr_1fr] gap-8">
-      <div>
-        <PanelTitle>By business</PanelTitle>
-        <div className="grid grid-cols-2">
-          {SOLUTIONS.map((item) => (
-            <PanelLink key={item.slug} to={`/solutions#${item.slug}`} title={item.name} body={item.blurb} />
-          ))}
-        </div>
-      </div>
-      <div>
-        <PanelTitle>By category</PanelTitle>
-        <ul className="grid grid-cols-2 gap-x-4 px-3">
-          {INDUSTRIES.map((item) => (
-            <li key={item.name}>
-              <Link to="/solutions#industries" className="block py-2 text-[14.5px] font-semibold text-navy-700 hover:text-brand-700">
-                {item.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <Link to="/solutions" className="mt-4 inline-flex items-center gap-1.5 px-3 text-[14.5px] font-bold text-brand-700 hover:underline">
-          All solutions <ArrowRight size={16} aria-hidden />
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function SupportPanel({ onBook }: { onBook: () => void }) {
-  return (
-    <div className="grid grid-cols-[1fr_1fr_20rem] gap-8">
-      <div>
-        <PanelTitle>Get help</PanelTitle>
-        <PanelLink to="/help/sign-in" title="Sign in help" body="Reset a password or find your workspace." icon={<LifeBuoy size={19} />} />
-        <PanelLink to="/demo" title="Book a demo" body="A guided tour, configured around your business." icon={<PlayCircle size={19} />} />
-      </div>
-      <div>
-        <PanelTitle>Talk to us</PanelTitle>
-        <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="group flex gap-3 rounded-xl p-3 hover:bg-navy-50">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white">
-            <MessageCircle size={19} aria-hidden />
-          </span>
-          <span>
-            <span className="block text-[15px] font-bold text-navy-900">WhatsApp</span>
-            <span className="mt-0.5 block text-[13.5px] text-navy-600">Chat with our team directly.</span>
-          </span>
-        </a>
-        <a href={`mailto:${SUPPORT_EMAIL}`} className="group flex gap-3 rounded-xl p-3 hover:bg-navy-50">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white">
-            <Mail size={19} aria-hidden />
-          </span>
-          <span>
-            <span className="block text-[15px] font-bold text-navy-900">Email</span>
-            <span className="mt-0.5 block text-[13.5px] text-navy-600">{SUPPORT_EMAIL}</span>
-          </span>
-        </a>
-      </div>
-      <PromoCard
-        title="Already a customer?"
-        body="Sign in to your workspace. Every team and partner lands on their own dashboard."
-        link={{ to: '/login', label: 'Sign in' }}
-        onBook={onBook}
-      />
-    </div>
-  );
-}
-
-function PromoCard({
-  title,
-  body,
-  link,
+function MenuSheet({
+  pathname,
+  onClose,
+  onCreate,
   onBook,
 }: {
-  title: string;
-  body: string;
-  link: { to: string; label: string };
+  pathname: string;
+  onClose: () => void;
+  onCreate: () => void;
   onBook: () => void;
 }) {
-  return (
-    <div className="relative overflow-hidden rounded-2xl bg-navy-900 p-6 text-white">
-      <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-brand-500/25 blur-2xl" />
-      <p className="relative font-display text-[1.25rem] font-extrabold tracking-[-0.03em]">{title}</p>
-      <p className="relative mt-2 text-[14px] leading-relaxed text-white/70">{body}</p>
-      <div className="relative mt-5 flex flex-col gap-2">
-        <button type="button" onClick={onBook} className={cn(btn.green, 'h-11')}>
-          Book a demo
-        </button>
-        <Link to={link.to} className="inline-flex items-center justify-center gap-1.5 py-2 text-[14px] font-bold text-brand-300 hover:text-white">
-          {link.label} <ArrowRight size={15} aria-hidden />
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-/* --------------------------------------------------------- the phone menu */
-
-function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => void }) {
-  const door = useDoor();
-  const [open, setOpen] = useState<MenuKey | null>(null);
   const closeRef = useRef(onClose);
   useEffect(() => {
     closeRef.current = onClose;
@@ -378,7 +211,9 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
     const opener = document.activeElement;
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && closeRef.current();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeRef.current();
+    };
     document.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = previous;
@@ -387,97 +222,79 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
     };
   }, []);
 
-  const sub = (key: MenuKey): { label: string; to: string; external?: boolean }[] => {
-    if (key === 'products')
-      return [...MODULES.map((m) => ({ label: m.name, to: `/features/${m.slug}` })), { label: 'Platform overview', to: '/features' }];
-    if (key === 'solutions')
-      return [...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions#${s.slug}` })), { label: 'All solutions', to: '/solutions' }];
-    return [
-      { label: 'Sign in help', to: '/help/sign-in' },
-      { label: 'Book a demo', to: '/demo' },
-      { label: 'WhatsApp us', to: WHATSAPP_URL, external: true },
-      { label: SUPPORT_EMAIL, to: `mailto:${SUPPORT_EMAIL}`, external: true },
-    ];
-  };
+  const links = [...NAV, { label: 'Blog', href: '/blog' }];
 
   return createPortal(
-    <div role="dialog" aria-modal="true" aria-label="Menu" className="site fixed inset-0 z-[60] flex animate-fade-in flex-col overflow-y-auto lg:hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Menu"
+      className="night fixed inset-0 z-[60] flex h-[100dvh] animate-fade-in flex-col overflow-hidden overscroll-none lg:hidden"
+    >
       <div className="status-bar-fill" aria-hidden />
-      <div className={cn(container, 'flex h-16 items-center justify-between border-b border-navy-900/10')}>
-        <Wordmark className="text-[1.35rem] !text-navy-900" />
+
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:h-[4.5rem] sm:px-8">
+        <SiteWordmark onNight />
         <button
           type="button"
           onClick={onClose}
           autoFocus
-          aria-label="Close the menu"
-          className="tap inline-flex items-center justify-center rounded-full px-2.5 text-navy-900 hover:bg-navy-50"
+          className="tap inline-flex items-center justify-center rounded-lg px-3 text-[14px] font-bold text-white transition-colors hover:bg-white/10"
         >
-          <X size={24} aria-hidden />
+          Close
         </button>
       </div>
 
-      <nav aria-label="Main" className={cn(container, 'mt-2')}>
-        {NAV.map((item) => {
-          if (!item.menu) {
-            return (
-              <Link
-                key={item.label}
-                to={item.href}
-                onClick={onClose}
-                className="flex items-center justify-between border-b border-navy-900/8 py-4 text-[1.2rem] font-bold text-navy-900"
-              >
-                {item.label}
-              </Link>
-            );
-          }
-          const key = item.menu;
-          const isOpen = open === key;
+      {/* Everything fits one screen: smaller type, and the list shares out
+          whatever height is left, so the menu never scrolls. */}
+      <nav aria-label="Main" className="mx-auto mt-2 flex min-h-0 w-full max-w-7xl flex-1 flex-col px-4 sm:px-8">
+        {links.map((item) => {
+          const active = isActive(item.href, pathname);
           return (
-            <div key={item.label} className="border-b border-navy-900/8">
-              <button
-                type="button"
-                aria-expanded={isOpen}
-                onClick={() => setOpen(isOpen ? null : key)}
-                className="flex w-full items-center justify-between py-4 text-left text-[1.2rem] font-bold text-navy-900"
-              >
-                {item.label}
-                <ChevronDown size={20} aria-hidden className={cn('text-navy-400 transition-transform', isOpen && 'rotate-180')} />
-              </button>
-              {isOpen && (
-                <ul className="pb-3">
-                  {sub(key).map((link) => (
-                    <li key={link.label}>
-                      {link.external ? (
-                        <a href={link.to} target="_blank" rel="noreferrer noopener" className="block py-2 pl-3 text-[15.5px] font-semibold text-navy-600">
-                          {link.label}
-                        </a>
-                      ) : (
-                        <Link to={link.to} onClick={onClose} className="block py-2 pl-3 text-[15.5px] font-semibold text-navy-600">
-                          {link.label}
-                        </Link>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+            <Link
+              key={item.href}
+              to={item.href}
+              onClick={onClose}
+              aria-current={active ? 'page' : undefined}
+              className={cn(
+                'flex max-h-16 min-h-0 flex-1 items-center justify-between border-b border-white/8 font-display text-[1.3rem] font-extrabold tracking-[-0.03em] transition-colors',
+                active ? 'text-white' : 'text-white/55 hover:text-white',
               )}
-            </div>
+            >
+              {item.label}
+              {active && <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-brand-500" />}
+            </Link>
           );
         })}
       </nav>
 
-      <div className={cn(container, 'pb-safe-6 mt-auto grid gap-3 pt-8')}>
+      <div className="pb-safe-6 mx-auto grid w-full max-w-7xl shrink-0 gap-2.5 px-4 pt-5 sm:px-8">
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            onCreate();
+          }}
+          className={btn.red}
+        >
+          Get started
+        </button>
         <button
           type="button"
           onClick={() => {
             onClose();
             onBook();
           }}
-          className={btn.green}
+          className={btn.glass}
         >
-          Book a demo
+          Book a walkthrough
         </button>
-        <Link to={door.to} onClick={onClose} className={btn.outline}>
-          {door.label}
+        <Link
+          to="/login"
+          onClick={onClose}
+          className="tap inline-flex h-11 items-center justify-center text-[15px] font-bold text-white/75 transition-colors hover:text-white"
+        >
+          Log in
         </Link>
       </div>
     </div>,
@@ -485,166 +302,139 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
   );
 }
 
-/* ------------------------------------------------------------- the footer */
+/* -------------------------------------------------------------- the footer */
 
-export function SiteFooter() {
+const FOOTER_FEATURES = [
+  { slug: 'getschool-ai', label: 'GetSchool AI' },
+  { slug: 'report-cards', label: 'Report cards' },
+  { slug: 'attendance', label: 'Attendance' },
+  { slug: 'lesson-notes', label: 'Lesson notes' },
+  { slug: 'cbt-exams', label: 'CBT exams' },
+  { slug: 'id-cards', label: 'ID cards' },
+  /* School fees and Communication still have their feature pages; they are
+     left out here so the Features column is the same height as Company. */
+];
+
+export function SiteFooter({ social }: { social: SocialLink[] }) {
   const year = new Date().getFullYear();
 
-  const products = MODULES.map((m) => ({ label: m.name, to: `/features/${m.slug}` }));
-  const solutions = [
-    ...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions#${s.slug}` })),
-    { label: 'All solutions', to: '/solutions' },
+  /*
+   * The console's addresses win; a channel with no real address is left out
+   * rather than drawn as a link that goes nowhere.
+   *
+   * WALKED FROM BOTH LISTS, NOT JUST THE DEFAULTS.
+   *
+   * This used to be `SOCIAL_DEFAULTS.map(...)`, which made that array the
+   * gatekeeper: a channel the console had an address for but which nobody had
+   * remembered to add to `SOCIAL_DEFAULTS` was never even looked at. WhatsApp
+   * was exactly that — a field in Owner → Website that saved a real link, a
+   * `socialLinks()` that returned it, an icon sitting ready in `SocialIcon`,
+   * and a footer that walked past it every time.
+   *
+   * Starting from the union means the next channel added to one list and not
+   * the other still shows up, rather than disappearing silently.
+   */
+  const configured = new Map(social.map((link) => [link.key as SocialKey, link.href]));
+  const known = new Map(SOCIAL_DEFAULTS.map((item) => [item.key, item]));
+  const order: SocialKey[] = [
+    ...SOCIAL_DEFAULTS.map((item) => item.key),
+    ...[...configured.keys()].filter((key) => !known.has(key)),
   ];
+  const channels = order.flatMap((key) => {
+    const href = (configured.get(key) ?? known.get(key)?.href ?? '').trim();
+    if (!/^https?:\/\//i.test(href)) return [];
+    return [{ key, label: known.get(key)?.label ?? key, href }];
+  });
+
+  /* Linked from the same list as the pages, the sitemap and the JSON-LD,
+     under the footer's shorter names. `npm run check:seo` holds it to that. */
+  const features = FOOTER_FEATURES.flatMap(({ slug, label }) => {
+    const page = featureBySlug(slug);
+    return page ? [{ label, to: featurePath(page) }] : [];
+  });
+  const text = 'text-[15px] leading-[1.6]';
 
   return (
-    <footer className="bg-navy-950 text-white">
-      <div className={cn(container, 'pb-safe-6 pt-16 sm:pb-10')}>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 lg:grid-cols-[1.5fr_2fr_1fr_1fr]">
-          <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <Link to="/" aria-label="AfterBI home">
-              <Wordmark onInk className="text-[1.5rem]" />
+    <footer className="night border-t border-white/8">
+      <div className="mx-auto w-full max-w-7xl px-5 pb-safe-6 pt-14 sm:px-8 sm:pb-12 sm:pt-16">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[2fr_1fr_1fr]">
+          <div className="col-span-2 lg:col-span-1">
+            <Link to="/" aria-label="GetSchool home">
+              <SiteWordmark onNight />
             </Link>
-            <p className="mt-5 max-w-[22rem] text-[15px] leading-[1.65] text-white/60">
-              The sales and distribution platform for consumer goods companies.
+            <p className={cn(text, 'mt-4 max-w-[27rem] text-white/60')}>
+              The operating system for modern schools.
+              <br />
+              One platform for academics, administration, communication and growth.
             </p>
-            <ul className="mt-6 flex flex-wrap gap-2.5" aria-label="AfterBI elsewhere">
-              {SOCIAL.map((channel) => (
-                <li key={channel.key}>
-                  <a
-                    href={channel.href}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    aria-label={channel.label}
-                    title={channel.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.07] text-white/80 transition-colors hover:bg-brand-600 hover:text-white"
-                  >
-                    <SocialIcon name={channel.key} />
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className={cn(text, 'mt-4 inline-block font-semibold text-white transition-colors hover:text-brand-300')}
+            >
+              {SUPPORT_EMAIL}
+            </a>
+
+            {channels.length > 0 && (
+              <ul className="mt-6 flex flex-wrap gap-2.5" aria-label="GetSchool on social media">
+                {channels.map((channel) => {
+                  const icon = socialIconFor(channel.key);
+                  return (
+                    <li key={channel.key}>
+                      <a
+                        href={channel.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        aria-label={channel.label}
+                        title={channel.label}
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] text-white/80 ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/[0.14] hover:text-white"
+                      >
+                        {icon ? <SocialIcon name={icon} size={17} /> : channel.label.slice(0, 2)}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
 
-          {/* Platform runs in two columns so every column is about the same height. */}
-          <div className="col-span-2 lg:col-span-1">
-            <p className="text-[14px] font-bold uppercase tracking-[0.12em] text-white">Platform</p>
-            <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5">
-              {products.map((item) => (
-                <li key={item.label}>
-                  <Link to={item.to} className="text-[14.5px] text-white/60 transition-colors hover:text-white">
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <FooterColumn title="Solutions" items={solutions} />
+          <FooterColumn title="Features" items={features} />
+
           <FooterColumn
             title="Company"
             items={[
-              { label: 'Platform overview', to: '/features' },
+              { label: 'About', to: '/about' },
               { label: 'Pricing', to: '/pricing' },
+              { label: 'Partner programme', to: '/partners' },
+              { label: 'Blog', to: '/blog' },
               { label: 'Book a demo', to: '/demo' },
-              { label: 'Sign in', to: '/login' },
+              { label: 'Log in', to: '/login' },
             ]}
           />
         </div>
 
-        {/* Legal, policy and support, small, under the columns. */}
-        <ul className="mt-12 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/10 pt-6 text-[13px] text-white/50">
-          {[
-            { label: 'Terms of Service', to: '/terms' },
-            { label: 'Privacy Policy', to: '/privacy' },
-            { label: 'Sign in help', to: '/help/sign-in' },
-            { label: 'WhatsApp support', to: WHATSAPP_URL, external: true },
-            { label: SUPPORT_EMAIL, to: `mailto:${SUPPORT_EMAIL}`, external: true },
-          ].map((item) => (
-            <li key={item.label}>
-              {item.external ? (
-                <a href={item.to} target={item.to.startsWith('http') ? '_blank' : undefined} rel="noreferrer noopener" className="hover:text-white">
-                  {item.label}
-                </a>
-              ) : (
-                <Link to={item.to} className="hover:text-white">
-                  {item.label}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        <div className="mt-4 flex flex-col gap-2 text-[13px] text-white/45 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {year}{' '}
-            <a href={COMPANY_URL} target="_blank" rel="noreferrer noopener" className="font-semibold text-white/70 hover:text-white">
-              {COMPANY}
-            </a>
-            . All rights reserved.
-          </p>
-          <p>
-            AfterBI is a{' '}
-            <a href={COMPANY_URL} target="_blank" rel="noreferrer noopener" className="font-semibold text-white/70 hover:text-white">
-              {COMPANY}
-            </a>{' '}
-            product.
-          </p>
+        <div className="mt-12 border-t border-white/10 pt-6">
+          <p className={cn(text, 'text-white/45')}>© {year} GetSchool Technology Ltd.</p>
         </div>
       </div>
     </footer>
   );
 }
 
-function FooterColumn({ title, items }: { title: string; items: { label: string; to: string; external?: boolean }[] }) {
+/** One size of type for every line in the footer, titles included. */
+function FooterColumn({ title, items }: { title: string; items: { label: string; to: string }[] }) {
+  if (items.length === 0) return null;
   return (
     <div>
-      <p className="text-[14px] font-bold uppercase tracking-[0.12em] text-white">{title}</p>
-      <ul className="mt-4 space-y-2.5">
+      <p className="text-[15px] font-bold leading-[1.6] text-white">{title}</p>
+      <ul className="mt-3 space-y-2">
         {items.map((item) => (
           <li key={item.label}>
-            {item.external ? (
-              <a
-                href={item.to}
-                target={item.to.startsWith('http') ? '_blank' : undefined}
-                rel="noreferrer noopener"
-                className="break-words text-[14.5px] text-white/60 transition-colors hover:text-white"
-              >
-                {item.label}
-              </a>
-            ) : (
-              <Link to={item.to} className="text-[14.5px] text-white/60 transition-colors hover:text-white">
-                {item.label}
-              </Link>
-            )}
+            <Link to={item.to} className="text-[15px] leading-[1.6] text-white/65 transition-colors hover:text-white">
+              {item.label}
+            </Link>
           </li>
         ))}
       </ul>
     </div>
-  );
-}
-
-/** Three marks, drawn rather than imported. */
-function SocialIcon({ name }: { name: SocialKey }) {
-  const common = { width: 17, height: 17, viewBox: '0 0 24 24', 'aria-hidden': true } as const;
-
-  if (name === 'linkedin') {
-    return (
-      <svg {...common} fill="currentColor">
-        <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.77-1.95 4.03 0 4.78 2.5 4.78 5.76V21h-4v-5.5c0-1.31-.02-3-1.9-3-1.9 0-2.2 1.42-2.2 2.9V21H9z" />
-      </svg>
-    );
-  }
-
-  if (name === 'x') {
-    return (
-      <svg {...common} fill="currentColor">
-        <path d="M17.53 3h3.04l-6.64 7.59L21.75 21h-5.95l-4.66-6.09L5.8 21H2.76l7.1-8.12L2.25 3H8.3l4.21 5.57L17.53 3zm-1.07 16.2h1.69L7.62 4.72H5.8l10.66 14.48z" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg {...common} fill="currentColor">
-      <path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.48 1.34 5L2 22l5.19-1.36a9.93 9.93 0 0 0 4.85 1.24h.01c5.5 0 9.96-4.46 9.96-9.96 0-2.66-1.04-5.16-2.92-7.04A9.9 9.9 0 0 0 12.04 2zm5.83 14.06c-.25.7-1.44 1.33-2 1.42-.51.08-1.16.11-1.87-.12-.43-.14-.98-.32-1.69-.63-2.97-1.28-4.9-4.27-5.05-4.47-.15-.2-1.21-1.6-1.21-3.06s.77-2.17 1.04-2.47c.27-.3.59-.37.79-.37h.57c.18 0 .43-.07.67.51.25.6.84 2.07.91 2.22.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.31.39-.45.52-.15.15-.3.31-.13.61.17.3.76 1.25 1.63 2.03 1.12 1 2.06 1.3 2.36 1.45.3.15.47.13.64-.08.17-.2.74-.86.94-1.16.2-.3.4-.25.67-.15.27.1 1.73.82 2.03.97.3.15.5.22.57.35.07.13.07.73-.18 1.43z" />
-    </svg>
   );
 }

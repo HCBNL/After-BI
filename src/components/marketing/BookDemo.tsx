@@ -1,412 +1,448 @@
 /**
- * Booking a demo, one question at a time.
+ * Booking the walkthrough.
  *
- * WHAT THIS REPLACED, AND WHY
+ * Two screens, and the first one is a calendar because that is the question a
+ * person actually has: not "may I have a demo" but "when". Pick a weekday,
+ * pick an hour, then four boxes for who you are, and the hour is held.
  *
- * A single card holding six labelled inputs, a strip of date chips and a row
- * of times. It collected the right things and it asked for all of them at
- * once, and a sales director opening that on a phone between two other jobs
- * reads the length before they read the first question. The abandon happens at
- * the sight of the form.
+ * WHAT THIS DOES NOT PRETEND TO BE
  *
- * This asks one thing per screen, in the order somebody would ask them aloud:
- * name, company, role, how to reach you, and only then the commercial
- * questions. Five of the nine are a single tap. The progress rail is honest
- * about the length rather than hiding it, and because the contact details come
- * first, a form abandoned two thirds of the way through still leaves somebody
- * we can call.
+ * A diary. It offers the hours we keep for walkthroughs, in West Africa Time,
+ * and the confirmation says in plain words that we will write back to confirm
+ * and send the link. A calendar that claims to know who is free will double
+ * book somebody in its first week, and the recovery from that costs more trust
+ * than the booking was worth.
  *
- * WHERE THE ANSWERS GO
- *
- * Into a mail, or into WhatsApp, whichever the person prefers, offered side
- * by side on the last screen. See `bookingMailto` for why it is not posted to
- * an endpoint in this build.
+ * The office and the visitor both get an email. See `/api/enquiry`.
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, MessageCircle } from 'lucide-react';
-import { Sheet } from './Sheet';
-import { Wordmark } from '@/components/brand/Wordmark';
-import { cn } from '@/lib/cn';
+import { useMemo, useState } from 'react';
 import {
-  SUPPORT_EMAIL,
-  WIZARD_STEPS,
-  bookingMailto,
-  bookingWhatsApp,
-  type WizardAnswers,
-  type WizardStep,
-} from '@/lib/site';
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Globe,
+  Video,
+} from 'lucide-react';
+import { Sheet } from './Sheet';
+import { cn } from '@/lib/cn';
+import { SUPPORT_EMAIL } from '@/lib/constants';
+import {
+  DEMO_SLOTS,
+  DEMO_TIMEZONE,
+  clockLabel,
+  isoDate,
+  longDate,
+  submitToOffice,
+} from '@/lib/marketing';
 
-/* --------------------------------------------------------- the validation */
+/* ------------------------------------------------------------ the calendar */
+
+const WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /**
- * One sentence back, or nothing.
+ * The cells of one month, starting on a Monday.
  *
- * Written as a person would say it. "Enter a valid email" is a machine telling
- * somebody they failed; "that address is missing an @" tells them what to fix.
+ * Nulls for the days before the first, so the grid keeps its shape without a
+ * previous month's numbers sitting in it greyed out. A visitor picking a date
+ * on a phone does not need last month on the screen.
  */
-function complain(step: WizardStep, value: string): string | null {
-  const trimmed = value.trim();
+function monthCells(month: Date): (Date | null)[] {
+  const first = new Date(month.getFullYear(), month.getMonth(), 1);
+  const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  /* getDay() is Sunday first; the grid is Monday first. */
+  const lead = (first.getDay() + 6) % 7;
 
-  if (!trimmed) {
-    if (step.optional) return null;
-    if (step.kind === 'multi-choice') return 'Choose at least one to carry on.';
-    return step.kind === 'choice' ? 'Pick one to carry on.' : 'This one is needed.';
-  }
-
-  if (step.kind === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) {
-    return 'That address does not look complete. Check it and try again.';
-  }
-
-  if (step.kind === 'tel' && trimmed.replace(/\D/g, '').length < 7) {
-    return 'That number looks too short. A mobile number is fine.';
-  }
-
-  if (step.kind === 'text' && trimmed.length < 2) return 'A little more than that.';
-
-  return null;
+  return [
+    ...Array.from({ length: lead }, () => null),
+    ...Array.from({ length: days }, (_, index) => new Date(month.getFullYear(), month.getMonth(), index + 1)),
+  ];
 }
 
-const PRIMARY =
-  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 text-[15px] font-bold text-white transition-all hover:bg-brand-500 active:scale-[0.98] disabled:opacity-60';
-const SECONDARY =
-  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--surface-card)] px-6 text-[15px] font-bold text-primary ring-1 ring-inset ring-[var(--border-hairline)] transition-colors hover:ring-[var(--border-strong)]';
+const startOfToday = (): Date => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+};
 
-/* ------------------------------------------------------------- the choices */
-
-function ChoiceList({
-  step,
-  value,
-  onPick,
-}: {
-  step: WizardStep;
-  value: string;
-  onPick: (next: string) => void;
-}) {
-  /*
-   * A multi-choice answer is stored as one comma-separated string, not an
-   * array.
-   *
-   * Everything downstream, the review list and the composed mail, already
-   * handles a string per question. Introducing an array for one step would
-   * mean a branch in both for the one field that is different. A joined string
-   * is read by each of them unchanged.
-   */
-  const multi = step.kind === 'multi-choice';
-  const picked = multi ? value.split(',').map((v) => v.trim()).filter(Boolean) : [];
-
-  const toggle = (option: string) => {
-    const next = picked.includes(option)
-      ? picked.filter((p) => p !== option)
-      : /* Kept in the order the question lists them, not the order they were
-           tapped, so two businesses that chose the same things read alike. */
-        (step.options ?? []).filter((o) => picked.includes(o) || o === option);
-    onPick(next.join(', '));
-  };
-
-  return (
-    <div className="grid gap-2">
-      {(step.options ?? []).map((option) => {
-        const active = multi ? picked.includes(option) : value === option;
-        return (
-          <button
-            key={option}
-            type="button"
-            onClick={() => (multi ? toggle(option) : onPick(option))}
-            aria-pressed={active}
-            className={cn(
-              'tap flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left text-[15px] font-semibold transition-all',
-              active
-                ? 'border-brand-500 bg-brand-50 text-navy-900'
-                : 'border-hairline bg-[var(--surface-card)] text-secondary hover:border-[var(--border-strong)] hover:text-primary',
-            )}
-          >
-            <span className="min-w-0">{option}</span>
-            <span
-              className={cn(
-                'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors',
-                active ? 'border-brand-500 bg-brand-600 text-white' : 'border-[var(--border-strong)]',
-              )}
-            >
-              {active && <Check size={12} strokeWidth={3} />}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
+/** Weekdays only, today onward, and no more than three months ahead. */
+function bookable(day: Date): boolean {
+  const today = startOfToday();
+  const horizon = new Date(today.getFullYear(), today.getMonth() + 3, today.getDate());
+  const weekday = day.getDay() !== 0 && day.getDay() !== 6;
+  return weekday && day >= today && day <= horizon;
 }
 
 /* ======================================================================== */
 
+type Stage = 'when' | 'who' | 'done';
+
 export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<WizardAnswers>({});
+  const [stage, setStage] = useState<Stage>('when');
+  /* Whether a confirmation and a calendar invite are actually on their way.
+   * The booking is filed either way; the email is the part that can fail. */
+  const [emailed, setEmailed] = useState(true);
+  const [month, setMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+
+  const [contactName, setContactName] = useState('');
+  const [schoolName, setSchoolName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [note, setNote] = useState('');
+
   const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const [sending, setSending] = useState(false);
 
-  const reviewing = index >= WIZARD_STEPS.length;
-  const step = reviewing ? null : WIZARD_STEPS[index];
-  const value = step ? (answers[step.id] ?? '') : '';
+  const cells = useMemo(() => monthCells(month), [month]);
+  const today = startOfToday();
+  const atStart = month.getFullYear() === today.getFullYear() && month.getMonth() === today.getMonth();
 
-  /* The rail counts the review as the last stop, so it fills as the sheet is
-     finished rather than reaching 100% with a screen still to go. */
-  const progress = (index + (sent ? 1 : 0)) / (WIZARD_STEPS.length + 1);
-
-  /* Every screen starts with the caret in the box. On a choice screen there is
-     no box, and moving focus to the first option would read that option aloud
-     as though it had already been chosen. */
-  useEffect(() => {
-    if (!open || !step) return;
-    if (step.kind === 'choice') return;
-    const id = window.setTimeout(() => inputRef.current?.focus(), 60);
-    return () => window.clearTimeout(id);
-  }, [open, step, index]);
-
-  /* A closed sheet forgets nothing until it has been sent. Somebody who taps
-     the backdrop by accident six questions in comes back to question six. */
-  useEffect(() => {
-    if (!open || !sent) return;
-    const id = window.setTimeout(() => {
-      setIndex(0);
-      setAnswers({});
-      setSent(false);
-    }, 400);
-    return () => window.clearTimeout(id);
-  }, [open, sent]);
-
-  const set = (next: string) => {
-    if (!step) return;
-    setAnswers((previous) => ({ ...previous, [step.id]: next }));
+  const reset = () => {
+    setStage('when');
+    setDate('');
+    setTime('');
+    setContactName('');
+    setSchoolName('');
+    setEmail('');
+    setPhone('');
+    setNote('');
     setError(null);
   };
 
-  const forward = () => {
-    if (!step) return;
-    const problem = complain(step, value);
-    if (problem) {
-      setError(problem);
-      return;
+  const close = () => {
+    onClose();
+    /* Cleared after the sheet has gone, so the last frame is not the form
+       emptying itself in front of somebody. */
+    window.setTimeout(reset, 400);
+  };
+
+  const send = async () => {
+    if (contactName.trim().length < 2) return setError('Tell us your name.');
+    if (schoolName.trim().length < 2) return setError('Which school are you booking for?');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+      return setError('That email address does not look complete.');
     }
+    if (phone.replace(/\D/g, '').length < 7) return setError('That phone number looks too short.');
+
+    setSending(true);
     setError(null);
-    setIndex((current) => current + 1);
+    try {
+      const outcome = await submitToOffice({
+        kind: 'demo',
+        contactName: contactName.trim(),
+        schoolName: schoolName.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        date,
+        time,
+        timezone: DEMO_TIMEZONE,
+        note: note.trim(),
+      });
+      setEmailed(outcome.emailed);
+      setStage('done');
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'That did not send. Please try once more.');
+    } finally {
+      setSending(false);
+    }
   };
 
-  const back = () => {
-    setError(null);
-    setIndex((current) => Math.max(0, current - 1));
-  };
-
-  /* A tapped option answers the question, so it moves on by itself. The pause
-     is long enough to see the tick land, short enough not to feel like a wait. */
-  const pick = (option: string) => {
-    set(option);
-    window.setTimeout(() => setIndex((current) => current + 1), 170);
-  };
-
-  const send = (how: 'mail' | 'whatsapp') => {
-    window.location.href = how === 'mail' ? bookingMailto(answers) : bookingWhatsApp(answers);
-    setSent(true);
-  };
+  const field =
+    'h-12 w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 text-[16px] text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
 
   return (
-    <Sheet open={open} onClose={onClose} label="Book a demo of AfterBI" progress={progress}>
-      {/* ------------------------------------------------------------ head */}
-      {/* The wordmark in the middle, as on the front page, and where you are under it. */}
-      <header
-        className="flex shrink-0 flex-col items-center px-12 pb-2 pt-5 text-center sm:px-14"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
-      >
-        <Wordmark className="text-[1.45rem] !text-navy-900" />
-        <p className="mt-3 text-[13px] font-semibold text-navy-500">
-          Book a demo ·{' '}
-          {sent ? 'All done' : reviewing ? 'One last look' : `Question ${index + 1} of ${WIZARD_STEPS.length}`}
-        </p>
-      </header>
-
-      {/* ------------------------------------------------------------ body */}
-      <div className="scrollbar-thin flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-2 sm:px-7">
-        {sent ? (
-          <div className="my-auto flex flex-col items-center justify-center py-10 text-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-400/15">
-              <CheckCircle2 size={32} className="text-brand-400" aria-hidden />
-            </span>
-            <h2 className="mt-5 font-display text-[1.5rem] font-extrabold tracking-tight text-primary">
-              That is on its way
-            </h2>
-            <p className="mx-auto mt-3 max-w-sm text-[14.5px] leading-relaxed text-secondary">
-              Send the message that just opened and somebody will come back to you within one working day, with a
-              time and with your own price list already loaded.
-            </p>
-            <p className="mt-4 text-[13px] text-muted">
-              Nothing opened? Write to{' '}
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-brand-400 underline">
-                {SUPPORT_EMAIL}
-              </a>
-              .
-            </p>
-          </div>
-        ) : reviewing ? (
-          <div className="py-2">
-            <h2 className="text-center font-display text-[1.7rem] font-extrabold leading-tight tracking-[-0.035em] text-primary">
-              Is this right?
-            </h2>
-            <p className="mt-2 text-center text-[14px] leading-relaxed text-secondary">
-              Tap anything to change it. Nothing has been sent yet.
-            </p>
-
-            <ul className="mt-5 divide-y divide-[var(--border-hairline)] rounded-2xl border border-hairline">
-              {WIZARD_STEPS.map((entry, entryIndex) => (
-                <li key={entry.id}>
-                  <button
-                    type="button"
-                    onClick={() => setIndex(entryIndex)}
-                    className="grid w-full grid-cols-[6.5rem_1fr] items-baseline gap-4 px-4 py-3 text-left transition-colors hover:bg-[var(--surface-sunken)]"
-                  >
-                    <span className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-muted">
-                      {entry.label}
-                    </span>
-                    <span className="min-w-0 text-right text-[14px] font-semibold text-primary">
-                      {(answers[entry.id] ?? '').trim() || <span className="font-normal text-muted">Not answered</span>}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-
-            <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
-              We use this to prepare the demo and to call you back. We do not sell it, and we do not add you
-              to a mailing list.
-            </p>
-          </div>
-        ) : step ? (
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              forward();
-            }}
-            className="my-auto w-full py-4"
-          >
-            <h2 className="text-center font-display text-[1.7rem] font-extrabold leading-[1.15] tracking-[-0.035em] text-primary sm:text-[1.95rem]">
-              {step.question}
-            </h2>
-            {step.hint && (
-              <p className="mt-2 text-center text-[14.5px] leading-relaxed text-secondary">{step.hint}</p>
-            )}
-
-            <div className="mt-6">
-              {step.kind === 'choice' ? (
-                <ChoiceList step={step} value={value} onPick={pick} />
-              ) : step.kind === 'multi-choice' ? (
-                /*
-                  `set`, not `pick`. A single choice answers the question and
-                  moves on by itself; a multi-choice must stay put, or the first
-                  tap would carry the person past the options they had not
-                  chosen yet. Continue is how they leave this step.
-                */
-                <ChoiceList step={step} value={value} onPick={set} />
-              ) : step.kind === 'longtext' ? (
-                <textarea
-                  ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-                  rows={4}
-                  value={value}
-                  maxLength={step.maxLength}
-                  placeholder={step.placeholder}
-                  onChange={(event) => set(event.target.value)}
-                  className="w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 py-3 text-[16px] leading-relaxed text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-                />
-              ) : (
-                <input
-                  ref={inputRef as React.RefObject<HTMLInputElement>}
-                  type={step.kind === 'email' ? 'email' : step.kind === 'tel' ? 'tel' : 'text'}
-                  value={value}
-                  maxLength={step.maxLength}
-                  placeholder={step.placeholder}
-                  autoComplete={step.autoComplete}
-                  inputMode={step.kind === 'tel' ? 'tel' : undefined}
-                  onChange={(event) => set(event.target.value)}
-                  className="h-14 w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 text-[17px] font-semibold text-primary outline-none transition-colors placeholder:font-normal placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-                />
-              )}
-            </div>
-
-            {/* Submitting on Enter, without a visible second button. */}
-            <button type="submit" className="sr-only">
-              Continue
-            </button>
-          </form>
-        ) : null}
-      </div>
-
-      {/*
-        The complaint sits OUTSIDE the scrolling area, and that is the whole
-        point of it being here rather than under the content. On the review
-        screen the list of nine answers is taller than the sheet, so an error
-        rendered after it was a screen below the button that caused it: you
-        pressed Send, and as far as you could tell nothing happened.
-      */}
-      {error && (
-        <p
-          role="alert"
-          className="mx-5 mb-1 shrink-0 rounded-xl bg-status-critical/10 px-4 py-3 text-[13.5px] font-semibold text-[#a12b2b] sm:mx-7"
+    <Sheet open={open} onClose={close} label="Book a walkthrough of GetSchool" wide>
+      <div className="flex min-h-0 flex-1 flex-col">
+        {/* The wordmark in the middle, what is being booked under it, and the slot once one is picked. */}
+        <header
+          className="shrink-0 px-12 pb-3 pt-5 text-center sm:px-14"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
         >
-          {error}
-        </p>
-      )}
+          <span className="font-display text-[1.45rem] font-extrabold leading-none tracking-[-0.05em] text-white">
+            GetSchool<span className="text-brand-500">.</span>
+          </span>
+          <h2 className="mt-4 font-display text-[1.7rem] font-extrabold leading-tight tracking-[-0.035em] text-white sm:text-[2rem]">
+            Book a walkthrough
+          </h2>
+          <p className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[13px] font-semibold text-white/60">
+            <span className="inline-flex items-center gap-1.5">
+              <Clock size={14} className="text-brand-400" aria-hidden />
+              60 minutes
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Video size={14} className="text-brand-400" aria-hidden />
+              Online
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Globe size={14} className="text-brand-400" aria-hidden />
+              West Africa Time
+            </span>
+          </p>
+          {date && time && stage !== 'done' && (
+            <p className="mt-4 inline-flex rounded-full bg-brand-600/15 px-3.5 py-1.5 text-[13px] font-bold text-white ring-1 ring-inset ring-brand-500/40">
+              {longDate(date)} · {clockLabel(time)}
+            </p>
+          )}
+        </header>
 
-      {/* ------------------------------------------------------------ foot */}
-      <footer
-        className={cn(
-          'grid shrink-0 gap-3 border-t border-hairline px-5 py-4 pb-safe-4 sm:px-7',
-          !sent && index > 0 ? 'grid-cols-2' : 'grid-cols-1',
-        )}
-      >
-        {sent ? (
-          <button type="button" onClick={onClose} className={PRIMARY}>
-            Done
-          </button>
-        ) : (
-          <>
-            {index > 0 && (
-              <button type="button" onClick={back} className={SECONDARY}>
-                <ArrowLeft size={16} aria-hidden />
-                Back
+        {/* -------------------------------------------------------- the pick */}
+        <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-5 pb-7 pt-3 sm:px-8">
+          {stage === 'done' ? (
+            <div className="flex h-full flex-col items-center justify-center py-10 text-center">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#34d399]/15">
+                <CheckCircle2 size={32} className="text-[#34d399]" aria-hidden />
+              </span>
+              <h3 className="mt-5 font-display text-[1.5rem] font-extrabold tracking-tight text-primary">
+                That hour is yours
+              </h3>
+              <p className="mx-auto mt-3 max-w-sm text-[14.5px] leading-relaxed text-secondary">
+                {longDate(date)} at {clockLabel(time)}, West Africa Time.{' '}
+                {emailed
+                  ? 'The confirmation is in your inbox, and the meeting link follows before we start.'
+                  : 'The hour is held. Our mail is playing up just now, so the confirmation and the meeting link will follow as soon as it is back.'}
+              </p>
+              <p className="mt-4 text-[13px] text-muted">
+                Need to move it? Write to{' '}
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-brand-400 underline">
+                  {SUPPORT_EMAIL}
+                </a>
+                .
+              </p>
+              <button
+                type="button"
+                onClick={close}
+                className="tap mt-7 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 text-[15px] font-bold text-white transition-colors hover:bg-brand-700"
+              >
+                Done
               </button>
-            )}
-            {reviewing ? (
-              /*
-                Two ways out, side by side, because in this market the second
-                one is the one most people take. Forcing a WhatsApp buyer
-                through an email client is how a finished form goes nowhere.
-              */
-              <button type="button" onClick={() => send('whatsapp')} className={PRIMARY}>
-                <MessageCircle size={16} aria-hidden />
-                Send on WhatsApp
+            </div>
+          ) : stage === 'who' ? (
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void send();
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setStage('when')}
+                className="tap -ml-2 inline-flex items-center gap-1.5 rounded-xl px-2 text-[13.5px] font-bold text-secondary transition-colors hover:text-primary"
+              >
+                <ArrowLeft size={15} aria-hidden />
+                Change the time
               </button>
-            ) : (
-              <button type="button" onClick={forward} className={PRIMARY}>
-                Continue
-                <ArrowRight size={16} aria-hidden />
-              </button>
-            )}
-          </>
-        )}
-      </footer>
 
-      {/* The quieter of the two, under the rail rather than beside it: offered
-          without competing with the one most people will press. */}
-      {reviewing && !sent && (
-        <div className="shrink-0 px-5 pb-4 text-center sm:px-7">
-          <button
-            type="button"
-            onClick={() => send('mail')}
-            className="text-[13.5px] font-semibold text-muted underline underline-offset-4 transition-colors hover:text-primary"
-          >
-            Send by email instead
-          </button>
+              <h3 className="mt-3 text-center font-display text-[1.4rem] font-extrabold leading-tight tracking-tight text-primary">
+                Who should we expect?
+              </h3>
+              <p className="mt-2 text-center text-[14px] text-secondary">
+                Four things, and the hour is held for you.
+              </p>
+
+              <div className="mt-5 grid gap-3.5">
+                <input
+                  className={field}
+                  value={contactName}
+                  onChange={(event) => setContactName(event.target.value)}
+                  placeholder="Your name"
+                  aria-label="Your name"
+                  autoComplete="name"
+                  maxLength={120}
+                  autoFocus
+                />
+                <input
+                  className={field}
+                  value={schoolName}
+                  onChange={(event) => setSchoolName(event.target.value)}
+                  placeholder="School name"
+                  aria-label="School name"
+                  autoComplete="organization"
+                  maxLength={160}
+                />
+                <div className="grid gap-3.5 sm:grid-cols-2">
+                  <input
+                    className={field}
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="Email address"
+                    aria-label="Email address"
+                    autoComplete="email"
+                    maxLength={160}
+                  />
+                  <input
+                    className={field}
+                    type="tel"
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
+                    placeholder="Phone or WhatsApp"
+                    aria-label="Phone number"
+                    autoComplete="tel"
+                    maxLength={40}
+                  />
+                </div>
+                <textarea
+                  rows={3}
+                  className="w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 py-3 text-[16px] leading-relaxed text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                  placeholder="Anything you want us to cover? Optional."
+                  aria-label="Anything you want us to cover"
+                  maxLength={1000}
+                />
+              </div>
+
+              {error && (
+                <p role="alert" className="mt-4 rounded-xl bg-[#d03b3b]/8 px-4 py-3 text-[13.5px] font-semibold text-[#f08080]">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={sending}
+                className="tap mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 text-[15px] font-bold text-white transition-all hover:bg-brand-700 active:scale-[0.99] disabled:opacity-60 sm:w-auto"
+              >
+                {sending ? 'Booking' : 'Confirm the booking'}
+                {!sending && <ArrowRight size={16} aria-hidden />}
+              </button>
+
+              <p className="mt-3 text-[12.5px] text-muted">
+                We will email you to confirm and send the link. Nothing is charged and nothing is
+                installed.
+              </p>
+            </form>
+          ) : (
+            <>
+              <h3 className="text-center font-display text-[1.25rem] font-extrabold leading-tight tracking-tight text-primary">
+                Pick a date and a time
+              </h3>
+
+              <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_11rem]">
+                {/* ------------------------------------------- the month */}
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      disabled={atStart}
+                      onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
+                      aria-label="Previous month"
+                      className="tap inline-flex items-center justify-center rounded-xl text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <p className="text-[15px] font-bold text-primary">
+                      {month.toLocaleDateString('en-NG', { month: 'long', year: 'numeric' })}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+                      aria-label="Next month"
+                      className="tap inline-flex items-center justify-center rounded-xl text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-7 gap-1">
+                    {WEEK.map((day) => (
+                      <span
+                        key={day}
+                        className="pb-1 text-center text-[10.5px] font-bold uppercase tracking-[0.08em] text-muted"
+                      >
+                        {day}
+                      </span>
+                    ))}
+
+                    {cells.map((day, index) => {
+                      if (!day) return <span key={`pad-${index}`} />;
+                      const iso = isoDate(day);
+                      const open = bookable(day);
+                      const chosen = iso === date;
+                      return (
+                        <button
+                          key={iso}
+                          type="button"
+                          disabled={!open}
+                          onClick={() => {
+                            setDate(iso);
+                            setTime('');
+                          }}
+                          aria-label={longDate(iso)}
+                          aria-pressed={chosen}
+                          className={cn(
+                            'flex aspect-square items-center justify-center rounded-xl text-[13.5px] font-bold tabular transition-all',
+                            !open && 'cursor-not-allowed text-white/25',
+                            open && !chosen && 'bg-brand-600/15 text-brand-300 hover:bg-brand-600/25',
+                            chosen && 'bg-brand-600 text-white shadow-card',
+                          )}
+                        >
+                          {day.getDate()}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <p className="mt-4 flex items-center gap-2 text-[12.5px] font-semibold text-muted">
+                    <Globe size={14} aria-hidden />
+                    {DEMO_TIMEZONE}, weekdays only
+                  </p>
+                </div>
+
+                {/* -------------------------------------------- the hours */}
+                <div className="min-w-0">
+                  {date ? (
+                    <>
+                      <p className="text-[12.5px] font-bold uppercase tracking-[0.1em] text-muted">
+                        {new Date(`${date}T00:00:00`).toLocaleDateString('en-NG', {
+                          weekday: 'long',
+                          day: 'numeric',
+                          month: 'short',
+                        })}
+                      </p>
+                      <div className="scrollbar-thin mt-3 grid max-h-[16rem] grid-cols-2 gap-2 overflow-y-auto pr-1 lg:grid-cols-1">
+                        {DEMO_SLOTS.map((slot) => (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => {
+                              setTime(slot);
+                              setStage('who');
+                            }}
+                            className={cn(
+                              'tap rounded-xl border px-3 text-[14px] font-bold tabular transition-all',
+                              time === slot
+                                ? 'border-brand-500 bg-brand-600/15 text-white'
+                                : 'border-hairline text-secondary hover:border-brand-400 hover:text-primary',
+                            )}
+                          >
+                            {clockLabel(slot)}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex h-full min-h-[10rem] flex-col items-center justify-center rounded-2xl border border-dashed border-hairline px-4 text-center">
+                      <CalendarDays size={22} className="text-muted" aria-hidden />
+                      <p className="mt-2 text-[13px] font-semibold text-muted">
+                        Pick a day to see the hours we have open.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </Sheet>
   );
 }

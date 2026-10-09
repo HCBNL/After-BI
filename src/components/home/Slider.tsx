@@ -15,7 +15,7 @@
  * `autoplay` is for the banners at the foot of the screen, and it is polite.
  * It moves only while most of the row is on screen and the tab is visible; it
  * holds still while a pointer is over it or focus is inside it; and the first
- * swipe or dot tap hands control to the person for the rest of the visit:
+ * swipe or dot tap hands control to the person for the rest of the visit —
  * once somebody has touched it, it never moves under their thumb again.
  * Anybody who has asked their phone for less motion gets none. The summary
  * cards at the top of the Cards screen never autoplay: those are numbers
@@ -45,7 +45,7 @@ export function Slider({
   /** Padding and bleed for the track, so the peek reaches the screen edge. */
   trackClassName?: string;
   dataTour?: string;
-  /** Extra classes for each card's slot: three to a view on a laptop, say. */
+  /** Extra classes for each card's slot — three to a view on a laptop, say. */
   slideClassName?: string;
 }) {
   const slides = Children.toArray(children);

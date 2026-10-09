@@ -6,8 +6,8 @@
  * Four dark rectangles, not one dark layer with a hole in it. An SVG mask or a
  * giant `box-shadow` would be fewer elements, and both have the same problem:
  * the darkened area then swallows every tap, including the one on the thing
- * being pointed at. Four panels leave a genuine gap, the element underneath
- * is still there, still visible, still tappable, and the ring drawn over it
+ * being pointed at. Four panels leave a genuine gap — the element underneath
+ * is still there, still visible, still tappable — and the ring drawn over it
  * is `pointer-events: none`, so it decorates without intercepting.
  *
  * It also degrades honestly. A step whose element is not on this screen draws
@@ -22,8 +22,8 @@
  * script, and that is what the browser does on the way up the tree.
  *
  * The home hero is `overflow-hidden`, and its decorative cubes hang below its
- * bottom edge, so it has real scrollable height. Pointing at the shortcuts , 
- * which live inside it, scrolled the hero's own contents up by about 35px.
+ * bottom edge, so it has real scrollable height. Pointing at the shortcuts —
+ * which live inside it — scrolled the hero's own contents up by about 35px.
  * The curve at the foot of the panel is positioned against the scrolled
  * content rather than the visible box, so it travelled up with it and was
  * drawn across the middle of the panel, with the panel's red carrying on
@@ -32,7 +32,7 @@
  * So the tour no longer calls `scrollIntoView` at all. `reveal` in
  * `src/lib/reveal.ts` scrolls the one container that is genuinely scrollable,
  * the window in almost every case, and `healClipped` beside it resets anything
- * that merely clips, which also repairs a screen an earlier build broke.
+ * that merely clips — which also repairs a screen an earlier build broke.
  *
  * WHERE THE CARD SITS
  *
@@ -48,7 +48,7 @@
  * WHAT IT COSTS
  *
  * One measurement per step, and one more on resize or scroll. No timers, no
- * animation loop, and nothing at all when the tour is closed, the whole
+ * animation loop, and nothing at all when the tour is closed — the whole
  * component returns null.
  */
 
@@ -79,8 +79,8 @@ const RAIL_MIN_WIDTH = 760;
 /**
  * The first copy of an anchor that is actually drawn.
  *
- * Several anchors exist twice, the laptop's shortcut grid and the phone's, the
- * header photograph and the panel's, with one of each pair hidden at any
+ * Several anchors exist twice — the laptop's shortcut grid and the phone's, the
+ * header photograph and the panel's — with one of each pair hidden at any
  * width. `querySelector` returns the first in the document whether it is on
  * screen or not, which pointed the tour at a hidden element and skipped the
  * step on a phone.
@@ -100,7 +100,7 @@ function measure(anchor: string | undefined): Box | null {
   if (!el) return null;
   const rect = el.getBoundingClientRect();
   // A zero-size box is an element that is present but not drawn at this width
-  //, the desktop rail on a phone, say. Treat it as absent.
+  // — the desktop rail on a phone, say. Treat it as absent.
   if (rect.width < 4 || rect.height < 4) return null;
   return {
     top: rect.top - PAD,
@@ -123,14 +123,14 @@ export interface Spot {
  * An edge, chosen so the card never covers the spotlight.
  *
  * On a wide screen the card lives in a rail down the right. It moves to the
- * left rail only when the highlighted element reaches into the right one , 
+ * left rail only when the highlighted element reaches into the right one —
  * the shortcuts grid on a laptop spans the full width, so that case is real.
  * When an element reaches into both, no rail fits and the card docks at the
  * foot of the screen.
  *
  * A docked card normally sits `EDGE` off the bottom, in the same place for
- * every step. When the spotlight itself comes down into the dock, the step
- * pointing at the bottom bar on a phone, the dock rises just far enough to
+ * every step. When the spotlight itself comes down into the dock — the step
+ * pointing at the bottom bar on a phone — the dock rises just far enough to
  * clear it rather than jumping to the opposite end of the screen. Only when
  * even that leaves no room does the card go to the top, which is the one
  * position it is never asked to take otherwise.
@@ -138,7 +138,7 @@ export interface Spot {
  * `cardH` is measured, not assumed. Guessing it is what let the card's foot
  * settle a few pixels over the thing it was describing.
  */
-function place(
+export function place(
   box: Box | null,
   viewportW: number,
   viewportH: number,
@@ -187,7 +187,7 @@ export function Tour({
    * The card's real height, measured after it draws.
    *
    * The bodies differ by a hundred pixels between the shortest step and the
-   * longest, so a constant here is a guess that is wrong on most steps, and
+   * longest, so a constant here is a guess that is wrong on most steps — and
    * being wrong low is what let the card's foot rest over the spotlight. The
    * opening value is only what the first frame uses before the measurement
    * lands.
@@ -279,7 +279,7 @@ export function Tour({
    * Deliberately without a dependency list: the height changes with the step's
    * text, with the width of the screen, and with whatever font has finished
    * loading, and every one of those arrives as an ordinary render. The
-   * one-pixel guard is what stops it looping, it settles on the second frame
+   * one-pixel guard is what stops it looping — it settles on the second frame
    * and then does nothing at all.
    */
   useLayoutEffect(() => {
