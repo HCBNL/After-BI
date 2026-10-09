@@ -102,63 +102,23 @@ export function SiteSkeleton() {
 }
 
 /**
- * The app's own furniture, before the app exists.
- *
- * Drawn to match `AppShell` exactly, a rail on the left at lg, a header bar, a
- * card, a shortcut grid, a bottom bar, so that when React takes over there is
- * no moment where the layout changes. The static shell in `index.html` paints
- * the same shape from the first frame, which is what removes the white flash
- * entirely.
+ * The portal before it has drawn: a plain page in the theme's colour, nothing
+ * else. The home screen has two layouts (tiles and cards), so any placeholder
+ * shape would be the wrong one half the time; the app simply opens on its real
+ * screen as soon as it is ready.
  */
 export function ShellSkeleton() {
+  return <div className="min-h-dvh surface-page" aria-busy />;
+}
+
+/**
+ * Inside the shell, while a screen's data loads: nothing drawn, so the screen
+ * appears in its real layout the moment it is ready.
+ */
+export function QuietLoader({ label = 'Loading' }: { label?: string }) {
   return (
-    <div className="flex min-h-dvh surface-page" aria-busy>
-      <aside className="hidden w-[232px] shrink-0 border-r border-hairline surface-card p-3 lg:block">
-        <div className="skeleton h-10 w-full rounded-xl" />
-        <div className="mt-4 space-y-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="skeleton h-9 w-full rounded-xl" />
-          ))}
-        </div>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-hairline surface-card">
-          <div className="status-bar-fill" aria-hidden />
-          <div className="flex h-14 items-center gap-3 px-3 sm:h-16 sm:px-5">
-            <div className="min-w-0 flex-1">
-              <div className="skeleton h-4 w-44 rounded-full" />
-              <div className="skeleton mt-2 h-2.5 w-28 rounded-full" />
-            </div>
-            <div className="skeleton h-9 w-9 rounded-full" />
-          </div>
-        </header>
-
-        <main className="flex-1 px-3 py-4 sm:px-5 sm:py-6">
-          <div className="mx-auto max-w-[1400px]">
-            <div className="min-h-[168px] rounded-[var(--radius-card)] border border-hairline surface-card p-4 shadow-card sm:min-h-[186px] sm:p-5 lg:max-w-[720px]">
-              <div className="skeleton h-2.5 w-24 rounded-full" />
-              <div className="skeleton mt-3 h-8 w-28 rounded-lg" />
-              <div className="skeleton mt-3 h-3 w-full max-w-[15rem] rounded-full" />
-            </div>
-
-            <div className="surface-card mt-5 rounded-2xl border border-hairline p-3 shadow-card sm:p-4">
-              <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="flex flex-col items-center gap-1.5 py-2.5">
-                    <div className="skeleton h-11 w-11 rounded-xl" />
-                    <div className="skeleton h-2.5 w-10 rounded-full" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-
-      <div className="fixed inset-x-0 bottom-0 flex h-[3.75rem] items-center justify-center border-t border-hairline surface-card lg:hidden">
-        <Wordmark className="text-[1.05rem]" />
-      </div>
+    <div aria-busy className="min-h-[40vh]">
+      <span className="sr-only">{label}</span>
     </div>
   );
 }

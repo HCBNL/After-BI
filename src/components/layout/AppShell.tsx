@@ -4,7 +4,7 @@ import { Lock } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { lockedActionAt, PORTAL_ROOT } from '@/lib/tiles';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
-import { BrandLoader } from '@/components/brand/Loader';
+import { QuietLoader } from '@/components/brand/Loader';
 import { OrgProvider, useOrg } from '@/context/OrgContext';
 import { useAuth } from '@/context/AuthContext';
 import { DemoSetup } from '@/components/DemoSetup';
@@ -20,7 +20,7 @@ function OrgGate({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const location = useLocation();
 
-  if (loading) return <BrandLoader label="Getting your organisation ready" />;
+  if (loading) return <QuietLoader label="Getting your organisation ready" />;
 
   if (error) {
     return (
