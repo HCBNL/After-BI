@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useAuth, HOME_FOR_ROLE } from '@/context/AuthContext';
-import { PageSkeleton, ShellSkeleton, SiteSkeleton } from '@/components/brand/Loader';
+import { ShellSkeleton, SiteSkeleton } from '@/components/brand/Loader';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import LoginPage from '@/pages/auth/LoginPage';
 import type { Role } from '@/types';
@@ -133,7 +133,7 @@ function RouteSkeleton({ path }: { path: string }) {
   }
   /* An unmatched address lands on the public 404, which is a public page, so
      anything that is not the portal or an auth screen gets the site's shape. */
-  if (path === '/login' || path === '/forgot-password') return <PageSkeleton />;
+  if (path === '/login' || path === '/forgot-password') return <ShellSkeleton />;
   return <SiteSkeleton />;
 }
 

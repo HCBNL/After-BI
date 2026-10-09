@@ -14,7 +14,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Download, MapPin, PhoneCall, Users, Wallet, X } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button, SegmentedControl, Select, StatTile } from '@/components/ui';
-import { BrandLoader } from '@/components/brand/Loader';
+import { QuietLoader } from '@/components/brand/Loader';
 import { useAsync } from '@/hooks/useAsync';
 import { useOrg } from '@/context/OrgContext';
 import { listMembers, listOrdersSince, listSales } from '@/lib/db';
@@ -253,7 +253,7 @@ export default function AnalyticsPage() {
           The figures could not be read. Check the connection and reload.
         </p>
       ) : loading && !data ? (
-        <BrandLoader label="Working out the numbers" />
+        <QuietLoader label="Working out the numbers" />
       ) : (
         <div className="space-y-5">
           {/* --------------------------------------------------------- KPIs */}

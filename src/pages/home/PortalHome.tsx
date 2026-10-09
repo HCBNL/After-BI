@@ -28,7 +28,7 @@ import {
   Wallet,
   Warehouse,
 } from 'lucide-react';
-import { BrandLoader } from '@/components/brand/Loader';
+import { QuietLoader } from '@/components/brand/Loader';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
 import { HomeHero } from '@/components/home/HomeHero';
 import type { Kpi } from '@/components/home/HomeSlides';
@@ -470,7 +470,7 @@ export default function PortalHome() {
   }, [ready, startIfNew]);
 
   if (!user) return null;
-  if (!ready) return <BrandLoader />;
+  if (!ready) return <QuietLoader />;
 
   const orgName = settings?.name || 'Your organisation';
   const cards = layout === 'cards';
