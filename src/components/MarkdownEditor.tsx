@@ -3,13 +3,13 @@
  *
  * Deliberately not a rich-text editor. A `contenteditable` surface with a
  * document model, undo stack and paste sanitising is thousands of lines and a
- * class of bug that only shows up on somebody else's phone — and the thing
+ * class of bug that only shows up on somebody else's phone, and the thing
  * underneath is markdown either way, because that is what the model writes and
  * what `noteMarkdown.ts` parses.
  *
  * So the buttons do the one thing a toolbar is actually for: wrap or prefix the
  * selection so nobody has to remember what `##` means. Everything else is a
- * plain `<textarea>`, which every browser already gets right — including
+ * plain `<textarea>`, which every browser already gets right, including
  * autocorrect, dictation, undo, and the Android selection handles.
  *
  * Preview renders the same markdown through `LessonNoteView`, so what a teacher

@@ -12,8 +12,9 @@ import { createPortal } from 'react-dom';
 import { X, CheckCircle2, AlertTriangle, Info, XCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Button, IconButton } from './primitives';
+import { Hint } from './Hint';
 
-/* ------------------------------------------------------------------ Modal */
+/* Modal */
 
 const SIZE = {
   sm: 'max-w-md',
@@ -28,6 +29,7 @@ export function Modal({
   onClose,
   title,
   description,
+  note,
   children,
   footer,
   size = 'md',
@@ -36,7 +38,20 @@ export function Modal({
   open: boolean;
   onClose: () => void;
   title?: ReactNode;
+  /**
+   * WHICH OF THE TWO YOU WANT
+   *
+   * `description` is a subtitle: who this record belongs to, what it is worth,
+   * when it was made. It identifies the thing in front of you and it is
+   * printed, because covering it up would make the dialog ambiguous.
+   *
+   * `note` is an explanation: why this dialog behaves the way it does, what
+   * writing this form will actually do. It is worth having and it is worth
+   * reading once, so it lives behind the (i) beside the title rather than
+   * across the top of every dialog forever.
+ */
   description?: ReactNode;
+  note?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
   size?: keyof typeof SIZE;
@@ -101,7 +116,16 @@ export function Modal({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-6">
       <div
-        className="absolute inset-0 bg-brand-950/45 backdrop-blur-[2px] animate-fade-in"
+        /*
+           * A NEUTRAL scrim, not a tinted one.
+           *
+           * This was `bg-brand-950/45`, which in the reference app was a very dark
+           * maroon and read as plain shade. Against this product's green ramp,
+           * brand-950 is #022c22 and the whole page behind a drawer took on a
+           * visible green cast: which makes the accent look like a state rather
+           * than a colour, and tints every product photograph underneath it.
+ */
+          className="absolute inset-0 bg-[rgba(10,12,16,0.5)] backdrop-blur-[2px] animate-fade-in"
         onClick={closeOnBackdrop ? onClose : undefined}
         aria-hidden="true"
       />
@@ -115,10 +139,15 @@ export function Modal({
           SIZE[size],
         )}
       >
-        {(title || description) && (
+        {(title || description || note) && (
           <div className="flex items-start justify-between gap-4 border-b border-hairline px-5 py-4 sm:px-6">
             <div className="min-w-0">
-              {title && <h2 className="text-base font-bold text-primary">{title}</h2>}
+              {title && (
+                <div className="flex items-center gap-1.5">
+                  <h2 className="text-base font-bold text-primary">{title}</h2>
+                  {note && <Hint label="About this">{note}</Hint>}
+                </div>
+              )}
               {description && <p className="mt-1 text-[13px] text-muted leading-snug">{description}</p>}
             </div>
             <IconButton label="Close" onClick={onClose} className="-mr-1.5 -mt-1">
@@ -138,7 +167,7 @@ export function Modal({
   );
 }
 
-/* --------------------------------------------------------- ConfirmDialog */
+/* ConfirmDialog */
 
 export function ConfirmDialog({
   open,
@@ -181,7 +210,7 @@ export function ConfirmDialog({
   );
 }
 
-/* ------------------------------------------------------------------ Toast */
+/* Toast */
 
 type ToastTone = 'success' | 'error' | 'info' | 'warning';
 
@@ -280,3 +309,68 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/* Drawer */
+
+export function Drawer({
+  open,
+  onClose,
+  title,
+  note,
+  children,
+  side = 'right',
+  width = 'max-w-md',
+}: {
+  open: boolean;
+  onClose: () => void;
+  title?: ReactNode;
+  /** Explanation, folded behind the (i) beside the title. See `Modal`. */
+  note?: ReactNode;
+  children: ReactNode;
+  side?: 'left' | 'right';
+  width?: string;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-50">
+      <div /*
+           * A NEUTRAL scrim, not a tinted one.
+           *
+           * This was `bg-brand-950/45`, which in the reference app was a very dark
+           * maroon and read as plain shade. Against this product's green ramp,
+           * brand-950 is #022c22 and the whole page behind a drawer took on a
+           * visible green cast: which makes the accent look like a state rather
+           * than a colour, and tints every product photograph underneath it.
+ */
+          className="absolute inset-0 bg-[rgba(10,12,16,0.5)] backdrop-blur-[2px] animate-fade-in" onClick={onClose} aria-hidden="true" />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className={cn(
+          'surface-card absolute inset-y-0 flex w-full flex-col border-hairline shadow-pop',
+          width,
+          side === 'right' ? 'right-0 border-l' : 'left-0 border-r',
+        )}
+      >
+        <div className="flex items-center justify-between gap-4 border-b border-hairline px-5 py-4">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <h2 className="truncate text-base font-bold text-primary">{title}</h2>
+            {note && <Hint label="About this">{note}</Hint>}
+          </div>
+          <IconButton label="Close" onClick={onClose}>
+            <X size={18} />
+          </IconButton>
+        </div>
+        <div className="scrollbar-thin flex-1 overflow-y-auto p-5">{children}</div>
+      </div>
+    </div>,
+    document.body,
+  );
+}

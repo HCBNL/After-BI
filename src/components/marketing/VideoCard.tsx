@@ -25,7 +25,7 @@
 import { useRef, useState } from 'react';
 import { Play } from 'lucide-react';
 import { imageUrl } from '@/lib/cloudinary';
-import { parseVideo, youtubePoster } from '@/lib/site';
+import { parseVideo, youtubePoster } from '@/lib/video';
 import { cn } from '@/lib/cn';
 
 export function VideoCard({
@@ -48,7 +48,7 @@ export function VideoCard({
 
   /* The console's own poster wins; otherwise YouTube's, if there is one. */
   const still = poster ? imageUrl(poster, { width: 900 }) : youtubePoster(url);
-  const label = (title ?? '').trim() || 'Watch the walkthrough';
+  const label = (title ?? '').trim() || 'Watch the demo';
 
   /* Autoplay only ever follows a press, never a page load. */
   const src =
@@ -73,7 +73,7 @@ export function VideoCard({
            *
            * Without it, iOS Safari refuses to play a video where it sits and
            * throws its own full-screen player over the page instead. That is
-           * not a styling choice this card was making — it is the platform
+           * not a styling choice this card was making, it is the platform
            * default for any `<video>` that does not say otherwise, and it is
            * why the walkthrough leapt out of the shelf on a phone and stayed
            * inline on a laptop. One attribute, and it plays in the card at
@@ -81,7 +81,7 @@ export function VideoCard({
            *
            * `poster` and `preload` are the other half. The element used to be
            * created empty and told to play in the same breath, so the first
-           * second was a black box while it fetched — the stutter that reads
+           * second was a black box while it fetched, the stutter that reads
            * as the video crashing and starting over. It now shows the still it
            * was already showing and has the opening metadata in hand before
            * the press, so the picture never leaves the screen.
@@ -153,7 +153,7 @@ export function VideoCard({
             <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-[#0a0c10] shadow-pop transition-transform duration-300 group-hover:scale-110">
               <span
                 className="absolute inset-0 rounded-full bg-white/60"
-                style={{ animation: 'gs-pulse-ring 2.8s ease-out infinite' }}
+                style={{ animation: 'ab-pulse-ring 2.8s ease-out infinite' }}
                 aria-hidden
               />
               <Play size={22} className="relative ml-0.5" fill="currentColor" aria-hidden />
@@ -163,7 +163,7 @@ export function VideoCard({
           <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
             <span className="min-w-0">
               <span className="block text-[10.5px] font-bold uppercase tracking-[0.14em] text-white/60">
-                GetSchool
+                AfterBI
               </span>
               <span className="mt-0.5 block truncate text-[15px] font-bold text-white">{label}</span>
             </span>

@@ -1,5 +1,7 @@
 import {
   forwardRef,
+  useId,
+  useState,
   type ButtonHTMLAttributes,
   type HTMLAttributes,
   type InputHTMLAttributes,
@@ -7,12 +9,13 @@ import {
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Hint } from './Hint';
 import { cn } from '@/lib/cn';
 import { initials as makeInitials } from '@/lib/format';
+import { Hint } from './Hint';
 
-/* ------------------------------------------------------------------ Button */
+/* Button */
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger' | 'gold';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -56,8 +59,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   return (
     <button
       ref={ref}
-      disabled={disabled || loading}
       data-variant={variant}
+      disabled={disabled || loading}
       className={cn(BUTTON_BASE, BUTTON_VARIANT[variant], BUTTON_SIZE[size], full && 'w-full', className)}
       {...rest}
     >
@@ -125,7 +128,7 @@ export function IconButton({
   );
 }
 
-/* ----------------------------------------------------------------- Spinner */
+/* Spinner */
 
 export function Spinner({ size = 16, className }: { size?: number; className?: string }) {
   return (
@@ -143,7 +146,7 @@ export function Spinner({ size = 16, className }: { size?: number; className?: s
   );
 }
 
-/* -------------------------------------------------------------------- Card */
+/* Card */
 
 export function Card({
   className,
@@ -186,9 +189,9 @@ export function CardHeader({
             {icon}
           </span>
         )}
-        <div className="flex min-w-0 items-center gap-1.5">
+        <div className="min-w-0">
           <h3 className="text-[15px] font-bold text-primary leading-tight">{title}</h3>
-          {subtitle && <Hint label={typeof title === 'string' ? `About ${title}` : 'More about this'}>{subtitle}</Hint>}
+          {subtitle && <p className="mt-1 text-[13px] text-muted leading-snug">{subtitle}</p>}
         </div>
       </div>
       {action && <div className="shrink-0">{action}</div>}
@@ -196,7 +199,7 @@ export function CardHeader({
   );
 }
 
-/* ------------------------------------------------------------------- Badge */
+/* Badge */
 
 type BadgeTone =
   | 'neutral' | 'brand' | 'gold' | 'good' | 'warning' | 'serious' | 'critical' | 'info';
@@ -240,9 +243,9 @@ export function Badge({
   );
 }
 
-/* ------------------------------------------------------------- Form fields */
+/* Form fields */
 
-export function Label({
+function Label({
   children,
   htmlFor,
   required,
@@ -254,14 +257,21 @@ export function Label({
   hint?: string;
 }) {
   return (
-    <div className="mb-1.5 flex items-center gap-1.5">
-      <label htmlFor={htmlFor} className="text-[13px] font-semibold text-secondary">
+    <label htmlFor={htmlFor} className="mb-1.5 flex items-center gap-1.5">
+      <span className="text-[13px] font-semibold text-secondary">
         {children}
         {required && <span className="ml-0.5 text-status-critical">*</span>}
-      </label>
-      {/* The explanation lives behind the (i): a label shows its name and nothing else. */}
-      {hint && <Hint label={`About ${typeof children === 'string' ? children : 'this field'}`}>{hint}</Hint>}
-    </div>
+      </span>
+      {/*
+       * The hint is an (i), not a line of grey text at the end of the row.
+       *
+       * Forty-seven fields in this product carry one. Printed, they turned every
+       * form into two columns of prose: and because they are different lengths
+       * the labels never lined up. A hint answers a question somebody has once;
+       * it does not need to be on screen for everybody who already knows.
+ */}
+      {hint && <Hint label={typeof children === 'string' ? `About ${children}` : 'About this field'}>{hint}</Hint>}
+    </label>
   );
 }
 
@@ -376,51 +386,63 @@ export function Switch({
   onChange,
   label,
   description,
+  hint,
   disabled,
 }: {
   checked: boolean;
   onChange: (next: boolean) => void;
   label: string;
+  /** A few words on the current state. Printed. Keep it to one short line. */
   description?: string;
+  /** The longer "why would I". Folded behind the (i). */
+  hint?: string;
   disabled?: boolean;
 }) {
+  /*
+   * The (i) sits outside the switch, not inside it: a button inside a button is
+   * invalid HTML, and browsers resolve it by dropping one of them: which in
+   * practice means the disclosure silently stops opening.
+ */
   return (
-    <div className={cn('flex w-full items-center justify-between gap-4', disabled && 'opacity-50')}>
-      <span className="flex min-w-0 items-center gap-1.5">
-        <span
-          className="text-sm font-semibold text-primary"
-          onClick={() => !disabled && onChange(!checked)}
-        >
-          {label}
-        </span>
-        {description && <Hint label={`About ${label}`}>{description}</Hint>}
-      </span>
+    <div className="flex w-full items-center gap-1.5">
       <button
         type="button"
         role="switch"
         aria-checked={checked}
-        aria-label={label}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className={cn(
-          'relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed',
-          checked ? 'bg-brand-600' : 'bg-[var(--border-strong)]',
-        )}
+        className="flex min-w-0 flex-1 items-center justify-between gap-4 text-left disabled:opacity-50"
       >
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold text-primary">{label}</span>
+          {description && <span className="mt-0.5 block text-[12px] text-muted leading-snug">{description}</span>}
+        </span>
         <span
           className={cn(
-            'absolute left-0 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform',
-            checked ? 'translate-x-[22px]' : 'translate-x-0.5',
+            'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+            checked ? 'bg-brand-600' : 'bg-[var(--border-strong)]',
           )}
-        />
+        >
+          <span
+            className={cn(
+              'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform',
+              checked ? 'translate-x-[22px]' : 'translate-x-0.5',
+            )}
+          />
+        </span>
       </button>
+      {hint && (
+        <Hint label={`About ${label}`} align="right">
+          {hint}
+        </Hint>
+      )}
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ Avatar */
+/* Avatar */
 
-const AVATAR_SIZE = { xs: 'h-7 w-7 text-[10px]', sm: 'h-9 w-9 text-xs', md: 'h-11 w-11 text-sm', hero: 'h-14 w-14 text-base', desk: 'h-20 w-20 text-2xl', lg: 'h-16 w-16 text-lg', xl: 'h-24 w-24 text-2xl' };
+const AVATAR_SIZE = { xs: 'h-7 w-7 text-[10px]', sm: 'h-9 w-9 text-xs', md: 'h-11 w-11 text-sm', lg: 'h-16 w-16 text-lg', xl: 'h-24 w-24 text-2xl' };
 
 export function Avatar({
   name,
@@ -455,13 +477,10 @@ export function Avatar({
   );
 }
 
-/* --------------------------------------------------------------- Feedback */
+/* Feedback */
 
 export function Skeleton({ className }: { className?: string }) {
-  // No more grey placeholders anywhere: a loading screen shows the brand
-  // loader (`Loading` in brand/Loader.tsx) and nothing pretends to be content.
-  void className;
-  return null;
+  return <div className={cn('skeleton rounded-lg', className)} />;
 }
 
 export function EmptyState({
@@ -491,7 +510,98 @@ export function EmptyState({
   );
 }
 
-/* --------------------------------------------------------------- Progress */
+/**
+ * A banner that says one line, and keeps the rest until it is asked for.
+ *
+ * WHY THE BODY IS FOLDED AWAY BY DEFAULT
+ *
+ * These banners were three and four lines each: "Sent for approval. The office
+ * has it. You will see it move to Approved, or come back with a reason. Edit it
+ * to make a change and send again." All true, all useful once, and read by
+ * nobody after the first time. Stacked above a form they pushed the actual work
+ * down the page, and because each one is a different length no two screens
+ * lined up.
+ *
+ * So the headline stays, that is the signal, and it is one line, and the
+ * explanation sits behind it. Every banner is now the same height until
+ * somebody wants more, which is what makes a column of them look deliberate.
+ *
+ * TWO THINGS ARE NEVER FOLDED
+ *
+ *   - `critical`. An error is not an explanation, it is the answer to "why did
+ *     that not work", and hiding it behind a chevron would be hiding the one
+ *     sentence the person needs.
+ *   - A banner with no `title`. There is no headline to collapse behind, so the
+ *     body IS the headline.
+ *
+ * `defaultOpen` forces it open for the rare case that wants both: a rejection
+ * reason, where the head's words are the whole point of the banner.
+ */
+export function Alert({
+  tone = 'info',
+  title,
+  children,
+  icon,
+  className,
+  defaultOpen,
+}: {
+  tone?: 'info' | 'good' | 'warning' | 'critical';
+  title?: string;
+  children?: ReactNode;
+  icon?: ReactNode;
+  className?: string;
+  /** Force the body open. Errors and rejection reasons do this. */
+  defaultOpen?: boolean;
+}) {
+  const tones = {
+    info: 'bg-[#2a78d6]/8 border-[#2a78d6]/25 text-[#1c5cab] dark:text-[#7cb1f0]',
+    good: 'bg-[#0ca30c]/8 border-[#0ca30c]/25 text-[#0a7a0a] dark:text-[#4ec54e]',
+    warning: 'bg-[#fab219]/10 border-[#fab219]/30 text-[#8a6100] dark:text-[#fab219]',
+    critical: 'bg-[#d03b3b]/8 border-[#d03b3b]/25 text-[#a52929] dark:text-[#f08080]',
+  };
+
+  const collapsible = Boolean(title && children) && tone !== 'critical' && !defaultOpen;
+  const [open, setOpen] = useState(false);
+  const bodyId = useId();
+  const showBody = !collapsible || open;
+
+  return (
+    <div className={cn('rounded-xl border px-4 py-3', tones[tone], className)} role="status">
+      <div className="flex gap-3">
+        {icon && <span className="mt-0.5 shrink-0">{icon}</span>}
+
+        <div className="min-w-0 flex-1 text-[13px] leading-relaxed">
+          {title &&
+            (collapsible ? (
+              <button
+                type="button"
+                onClick={() => setOpen((v) => !v)}
+                aria-expanded={open}
+                aria-controls={bodyId}
+                className="flex w-full items-center gap-1.5 text-left font-bold"
+              >
+                <span className="min-w-0 flex-1 truncate">{title}</span>
+                <ChevronDown
+                  size={14}
+                  className={cn('shrink-0 opacity-70 transition-transform', open && 'rotate-180')}
+                />
+              </button>
+            ) : (
+              <p className="font-bold">{title}</p>
+            ))}
+
+          {showBody && (
+            <div id={bodyId} className={cn(title && collapsible && 'mt-1.5')}>
+              {children}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Progress */
 
 export function ProgressBar({
   value,
@@ -539,7 +649,7 @@ export function ProgressBar({
   );
 }
 
-/* ------------------------------------------------------------- Stat tile */
+/* Stat tile */
 
 export function StatTile({
   label,
@@ -598,3 +708,15 @@ export function StatTile({
   );
 }
 
+/* Divider */
+
+export function Divider({ label, className }: { label?: string; className?: string }) {
+  if (!label) return <hr className={cn('border-t border-hairline', className)} />;
+  return (
+    <div className={cn('flex items-center gap-3', className)}>
+      <hr className="flex-1 border-t border-hairline" />
+      <span className="text-[11px] font-bold uppercase tracking-wider text-muted">{label}</span>
+      <hr className="flex-1 border-t border-hairline" />
+    </div>
+  );
+}

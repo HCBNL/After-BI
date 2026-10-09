@@ -2,7 +2,7 @@
  * What is waiting for this person, worked out from the school's own records.
  *
  * This is what fills the space under the panel that used to be empty. It is
- * the banking app's "Finish setting up — 5 of 6 done" card, pointed at the
+ * the banking app's "Finish setting up: 5 of 6 done" card, pointed at the
  * work of a school: the registers still to come in, the lesson notes sent back,
  * the report cards built but not released.
  *
@@ -10,7 +10,7 @@
  *
  * Every row is read from real state, never from a stored "done" flag, so it
  * ticks itself off when the work is done. A row whose number could not be
- * read is left out rather than shown as zero — a register count that failed to
+ * read is left out rather than shown as zero: a register count that failed to
  * load must not tell a head teacher that no class has been marked.
  *
  * Three kinds of row. `todo` needs this person; `done` is finished and stays
@@ -63,7 +63,7 @@ export function TodoCard({
   const broken = failed && !items.length;
 
   const summary = loading
-    ? 'Checking the school records…'
+    ? 'Checking your records…'
     : broken
       ? 'This could not be checked just now.'
       : !tracked.length

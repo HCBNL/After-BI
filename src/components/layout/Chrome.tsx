@@ -19,6 +19,8 @@ import { RemindersProvider } from '@/context/RemindersContext';
 import { TourProvider } from '@/context/TourContext';
 import { actionsForRole, resolveTo, PORTAL_ROOT } from '@/lib/tiles';
 import { fullName } from '@/lib/roles';
+import { useEntitlements } from '@/lib/plans';
+import { OrgPlanBadge } from '@/components/brand/PlanBadge';
 import type { Role } from '@/types';
 import { BottomBar } from './BottomBar';
 import { MenuSheet } from './MenuSheet';
@@ -82,6 +84,7 @@ export function Chrome({
   const role: Role = user?.role ?? 'staff';
   const root = PORTAL_ROOT[role];
   const atHome = location.pathname === root;
+  const entitlements = useEntitlements();
 
   const fallbackTitle = useMemo(() => {
     if (atHome) return 'Home';
@@ -91,7 +94,7 @@ export function Chrome({
       .filter(({ to }) => location.pathname.startsWith(to.split('?')[0]))
       .sort((x, y) => y.to.length - x.to.length)[0];
     return match?.a.label ?? 'AfterBI';
-  }, [atHome, location.pathname, role, root]);
+  }, [atHome, location.pathname, role, root, entitlements]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -127,7 +130,10 @@ export function Chrome({
                 <h1 className="truncate text-[16.5px] font-bold leading-tight text-primary sm:text-[18px]">
                   {heading ?? fallbackTitle}
                 </h1>
-                <p className="truncate text-[11.5px] text-muted">{orgName}</p>
+                <p className="flex items-center gap-1 truncate text-[11.5px] text-muted">
+                  <span className="truncate">{orgName}</span>
+                  <OrgPlanBadge size={13} />
+                </p>
               </div>
               <div className="flex shrink-0 items-center gap-0.5">
                 <LanguageSwitch />

@@ -28,14 +28,17 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { getOrgSettings, listDistributors, listDistributorsById, listProducts, listWarehouses } from '@/lib/db';
+import { getOrgSettings, getTenant, listDistributors, listDistributorsById, listProducts, listWarehouses } from '@/lib/db';
 import { partnerScope } from '@/lib/roles';
-import { getActiveOrg } from '@/lib/tenant';
+import { getActiveOrg, type OrgTenant } from '@/lib/tenant';
+import { setEntitlements } from '@/lib/plans';
 import { useAuth } from '@/context/AuthContext';
 import type { Distributor, OrgSettings, Product, Warehouse } from '@/types';
 
 interface OrgValue {
   settings: OrgSettings | null;
+  /** The platform's record of this organisation: its plan and locked features. */
+  tenant: OrgTenant | null;
   products: Product[];
   distributors: Distributor[];
   warehouses: Warehouse[];
@@ -55,6 +58,7 @@ const OrgContext = createContext<OrgValue | null>(null);
 export function OrgProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [settings, setSettings] = useState<OrgSettings | null>(null);
+  const [tenant, setTenant] = useState<OrgTenant | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [distributors, setDistributors] = useState<Distributor[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -70,6 +74,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     /* An owner has no organisation. The platform console reads tenants, not
        products, so there is nothing here for it to wait on. */
     if (!user || user.role === 'owner' || !getActiveOrg()) {
+      setEntitlements(null);
       setLoading(false);
       return;
     }
@@ -83,9 +88,14 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       listProducts(),
       scope ? listDistributorsById(scope) : listDistributors(),
       listWarehouses(),
+      /* A failed read of the plan must not stop the organisation opening: no plan, nothing locked. */
+      getTenant().catch(() => null),
     ])
-      .then(([s, p, d, w]) => {
+      .then(([s, p, d, w, t]) => {
         if (!live) return;
+        /* Before `loading` turns false, so no screen ever renders with the wrong locks. */
+        setEntitlements(t);
+        setTenant(t);
         setSettings(s);
         setProducts(p);
         setDistributors(d);
@@ -110,6 +120,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
     return {
       settings,
+      tenant,
       products,
       distributors,
       warehouses,
@@ -124,7 +135,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
         warehouses.find((w) => w.kind === 'company') ??
         warehouses[0],
     };
-  }, [settings, products, distributors, warehouses, loading, error, reload]);
+  }, [settings, tenant, products, distributors, warehouses, loading, error, reload]);
 
   return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
 }

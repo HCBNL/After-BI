@@ -1,16 +1,9 @@
 /**
- * Lets a page tell the shell three things without the shell importing the page:
- *
- *   • its name, for the sticky header (`heading`);
- *   • that it draws its own red panel at the top (`panel`), in which case the
- *     shell hides its white header on that page, as it already does on home.
- *     See `PagePanel.tsx`;
- *   • and, the other way round, whether this shell can host such a panel at
- *     all (`inShell`). The school shell can; a shell that does not say so gets
- *     the plain page header, so no screen is ever drawn for a shell it was not
- *     designed for.
+ * Lets a page tell the shell its name (for the sticky header) and that it
+ * draws its own coloured panel (so the shell hides its white header), without
+ * the shell importing the page. `inShell` says whether this shell can host a
+ * panel at all; one that cannot gets the plain page header.
  */
-
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
 interface HeadingState {
@@ -27,8 +20,6 @@ export function PageHeadingProvider({ children, panels = false }: { children: Re
   const [heading, setHeadingState] = useState<string | null>(null);
   const [panel, setPanelState] = useState(false);
 
-  // Stable identities, so a page can call these from an effect without the
-  // effect re-running on every render of the shell.
   const setHeading = useCallback((title: string | null) => {
     setHeadingState((current) => (current === title ? current : title));
   }, []);

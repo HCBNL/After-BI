@@ -1,7 +1,7 @@
 /**
  * A video at the foot of an article.
  *
- * The owner pastes one link and does not have to know what kind it is —
+ * The owner pastes one link and does not have to know what kind it is , 
  * `parseVideo` sorts a YouTube or Vimeo link into an iframe and anything else
  * (a direct MP4, a Cloudinary video) into a `<video>` tag. An unrecognised or
  * empty string draws nothing, so a post with no video simply has no video.
@@ -12,7 +12,7 @@
  * paid to fetch a video they never started.
  */
 
-import { parseVideo } from '@/lib/site';
+import { parseVideo } from '@/lib/video';
 import { cn } from '@/lib/cn';
 
 export function VideoBlock({ url, className }: { url: string | undefined; className?: string }) {
