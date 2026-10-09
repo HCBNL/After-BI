@@ -105,6 +105,8 @@ function Price({ amount, size = 'lg' }: { amount: number; size?: 'lg' | 'sm' }) 
 function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: () => void }) {
   const monthly = plan.price ?? plan.perUser * plan.users;
   const perMonth = cycle === 'yearly' ? yearly(monthly) / 12 : monthly;
+  /* The headline is the price per user; the plan's total sits under it. */
+  const perUser = perMonth / plan.users;
   return (
     <div
       className={cn(
@@ -120,19 +122,19 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
       <h2 className="font-display text-[1.5rem] font-extrabold tracking-[-0.03em] text-navy-900">{plan.name}</h2>
       <p className="mt-1.5 min-h-[3rem] text-[15px] text-navy-600">{plan.forWho}</p>
 
-      <p className="mt-6 h-6 text-[16px] text-navy-400 line-through">{cycle === 'yearly' ? <Price amount={monthly} size="sm" /> : null}</p>
+      <p className="mt-6 h-6 text-[16px] text-navy-400 line-through">{cycle === 'yearly' ? <Price amount={plan.perUser} size="sm" /> : null}</p>
       <p className="flex items-baseline gap-1.5">
-        <Price amount={perMonth} />
-        <span className="whitespace-nowrap text-[15px] font-semibold text-navy-500">/month</span>
+        <Price amount={perUser} />
+        <span className="whitespace-nowrap text-[15px] font-semibold text-navy-500">/user/month</span>
       </p>
       <p className="mt-2 min-h-[2.6rem] text-[14.5px] leading-snug text-navy-600">
         {cycle === 'yearly' ? (
           <>
-            Billed <Price amount={yearly(monthly)} size="sm" /> yearly. Save <Price amount={monthly * 2} size="sm" />.
+            <Price amount={perMonth} size="sm" /> a month for {plan.users} users. Billed <Price amount={yearly(monthly)} size="sm" /> yearly.
           </>
         ) : (
           <>
-            <Price amount={plan.perUser} size="sm" /> per user, {plan.users} users
+            <Price amount={monthly} size="sm" /> a month for {plan.users} users
           </>
         )}
       </p>

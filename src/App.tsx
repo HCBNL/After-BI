@@ -112,6 +112,7 @@ const StaffCard = lazy(() => import('@/pages/staff/StaffCard'));
 const PlatformHome = lazy(() => import('@/pages/platform/PlatformHome'));
 const OrganisationsPage = lazy(() => import('@/pages/platform/OrganisationsPage'));
 const PricingPage = lazy(() => import('@/pages/platform/PricingPage'));
+const BanksPage = lazy(() => import('@/pages/platform/BanksPage'));
 const WebsitePage = lazy(() => import('@/pages/platform/WebsitePage'));
 const ProposalsPage = lazy(() => import('@/pages/platform/ProposalsPage'));
 const GuidePage = lazy(() => import('@/pages/shared/GuidePage'));
@@ -325,6 +326,7 @@ export default function App() {
             <Route path="all" element={<AllActions />} />
             <Route path="organisations" element={<OrganisationsPage />} />
             <Route path="pricing" element={<PricingPage />} />
+            <Route path="banks" element={<BanksPage />} />
             <Route path="website" element={<WebsitePage />} />
             <Route path="proposals" element={<ProposalsPage />} />
             <Route path="staff" element={<StaffPage />} />

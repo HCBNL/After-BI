@@ -8,9 +8,9 @@
  * (The concept is GetSchool's Company info, per organisation.)
  */
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Check, Copy, Download, FileBadge, Globe, Landmark, Mail, MapPin, MessageCircle, Phone, Share2 } from 'lucide-react';
+import { Building2, Check, ChevronLeft, ChevronRight, Copy, Download, FileBadge, Globe, Landmark, Mail, MapPin, MessageCircle, Phone, Share2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Card, useToast } from '@/components/ui';
 import { OrgPlanBadge, PlanPill } from '@/components/brand/PlanBadge';
@@ -22,6 +22,9 @@ import { PORTAL_ROOT } from '@/lib/tiles';
 import { saveFile } from '@/lib/download';
 import { cn } from '@/lib/cn';
 import type { BankAccount } from '@/types';
+import { useAsync } from '@/hooks/useAsync';
+import { listBankProfiles, type BankProfile } from '@/lib/bankProfiles';
+import { BankLogo } from '@/components/brand/BankLogo';
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -62,6 +65,9 @@ export default function CompanyInfo() {
   const { user } = useAuth();
   const { plan } = useEntitlements();
   const { done, copy } = useCopy();
+  /* The live logos, so a logo the platform updates shows here at once. */
+  const profiles = useAsync(() => listBankProfiles().catch(() => [] as BankProfile[]), [], { handleError: true });
+  const byId = new Map((profiles.data ?? []).map((p) => [p.id, p]));
 
   const name = settings?.name || 'Your organisation';
   const banks = (settings?.banks ?? []).filter((b) => b.accountNumber && b.bankName);
@@ -101,7 +107,11 @@ export default function CompanyInfo() {
               </div>
             </Card>
           ) : (
-            banks.map((b, i) => <BankCard key={b.id || i} bank={b} company={name} index={i} done={done} copy={copy} />)
+            <BankCarousel count={banks.length}>
+              {banks.map((b, i) => (
+                <BankCard key={b.id || i} bank={b} profile={b.bankId ? byId.get(b.bankId) : undefined} company={name} index={i} done={done} copy={copy} />
+              ))}
+            </BankCarousel>
           )}
           {banks.length > 0 && (
             <Alert tone="info" title="Pay only into these accounts">
@@ -154,14 +164,71 @@ export default function CompanyInfo() {
 
 /* one bank account, as a card */
 
+/**
+ * More than one account: one card at a time, sliding. Arrows, dots, or a swipe
+ * on a phone. One account: just the card.
+ */
+function BankCarousel({ count, children }: { count: number; children: ReactNode[] }) {
+  const [index, setIndex] = useState(0);
+  const start = useRef<number | null>(null);
+  if (count <= 1) return <>{children}</>;
+  const go = (n: number) => setIndex((n + count) % count);
+  const down = (e: ReactPointerEvent) => {
+    start.current = e.clientX;
+  };
+  const up = (e: ReactPointerEvent) => {
+    if (start.current === null) return;
+    const dx = e.clientX - start.current;
+    start.current = null;
+    if (Math.abs(dx) > 45) go(index + (dx < 0 ? 1 : -1));
+  };
+  return (
+    <div className="space-y-3">
+      <div className="overflow-hidden rounded-[28px]" onPointerDown={down} onPointerUp={up} style={{ touchAction: 'pan-y' }}>
+        <div className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: `translateX(-${index * 100}%)` }}>
+          {children.map((child, i) => (
+            <div key={i} className="w-full shrink-0" aria-hidden={i !== index} inert={i !== index ? true : undefined}>
+              {child}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <button type="button" onClick={() => go(index - 1)} aria-label="Previous account" className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-secondary hover:bg-[var(--surface-sunken)] hover:text-primary">
+          <ChevronLeft size={17} aria-hidden />
+        </button>
+        <div className="flex items-center gap-1.5">
+          {Array.from({ length: count }, (_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIndex(i)}
+              aria-label={`Account ${i + 1} of ${count}`}
+              className={cn('h-2 rounded-full transition-all', i === index ? 'w-6 bg-brand-600' : 'w-2 bg-[var(--border-strong)] hover:bg-[var(--text-muted)]')}
+            />
+          ))}
+          <span className="ml-2 text-[12px] font-semibold text-muted tabular">
+            {index + 1} of {count}
+          </span>
+        </div>
+        <button type="button" onClick={() => go(index + 1)} aria-label="Next account" className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-secondary hover:bg-[var(--surface-sunken)] hover:text-primary">
+          <ChevronRight size={17} aria-hidden />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function BankCard({
   bank,
+  profile,
   company,
   index,
   done,
   copy,
 }: {
   bank: BankAccount;
+  profile?: BankProfile;
   company: string;
   index: number;
   done: string | null;
@@ -172,13 +239,6 @@ function BankCard({
   const [saving, setSaving] = useState(false);
   const k = (s: string) => `${s}${index}`;
   const all = `Account number: ${bank.accountNumber}\nAccount name: ${bank.accountName}\nBank: ${bank.bankName}`;
-  const initials = bank.bankName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase();
 
   /* The card as a PNG, at twice screen resolution, without the buttons. Loaded on demand. */
   const downloadImage = async () => {
@@ -214,9 +274,9 @@ function BankCard({
       </div>
 
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5 rounded-2xl bg-white px-3 py-2 text-night shadow-card">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-night text-[12px] font-extrabold text-white">{initials}</span>
-          <span className="truncate text-[14px] font-extrabold uppercase tracking-wide">{bank.bankName}</span>
+        <div className="flex min-w-0 items-center gap-2.5 rounded-2xl bg-white py-1.5 pl-1.5 pr-3.5 text-night shadow-card">
+          <BankLogo size={40} bank={{ name: bank.bankName, logoUrl: profile?.logoUrl || bank.logoUrl, color: profile?.color }} />
+          <span className="truncate text-[14px] font-extrabold uppercase tracking-wide">{profile?.name || bank.bankName}</span>
         </div>
         <span aria-hidden className="relative mt-1 h-9 w-12 shrink-0 overflow-hidden rounded-md bg-gradient-to-br from-gold-200 via-gold-400 to-gold-600 shadow-inner">
           <span className="absolute inset-x-0 top-1/2 h-px bg-gold-800/40" />

@@ -562,6 +562,10 @@ export interface Target {
  */
 export interface BankAccount {
   id: string;
+  /** The platform's bank profile it was picked from (Platform, Bank profiles). Empty: typed by hand. */
+  bankId?: string;
+  /** Snapshot of that profile's logo when picked; Company info prefers the live profile's. */
+  logoUrl?: string;
   bankName: string;
   accountName: string;
   accountNumber: string;

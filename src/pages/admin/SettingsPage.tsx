@@ -25,6 +25,9 @@ import { useAuth } from '@/context/AuthContext';
 import { DEMO_PASSWORD, seedDemo, topUpDemo, type DemoProgress } from '@/lib/demo';
 import { saveOrgSettings } from '@/lib/db';
 import { ImagePicker } from '@/components/ImagePicker';
+import { BankLogo } from '@/components/brand/BankLogo';
+import { listBankProfiles } from '@/lib/bankProfiles';
+import { useAsync } from '@/hooks/useAsync';
 import { naira } from '@/lib/format';
 import type { BankAccount, OrgSettings } from '@/types';
 import { ROLE_LABEL, type Role } from '@/types';
@@ -48,6 +51,10 @@ export default function SettingsPage() {
     if (settings) setDraft(settings);
   }, [settings]);
 
+  /* The banks the platform keeps: pick one, type only the account number. */
+  const bankList = useAsync(() => listBankProfiles(), [], { handleError: true });
+  const profiles = (bankList.data ?? []).filter((b) => b.active);
+
   const set = <K extends keyof OrgSettings>(key: K, value: OrgSettings[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
 
@@ -60,7 +67,7 @@ export default function SettingsPage() {
            to be stable while this list is on screen, so React can tell two
            half-typed rows apart. The array index cannot: removing the first row
            would hand its text to the second. */
-        { id: crypto.randomUUID(), bankName: '', accountName: '', accountNumber: '' },
+        { id: crypto.randomUUID(), bankName: '', accountName: (current.name ?? '').toUpperCase(), accountNumber: '' },
       ],
     }));
 
@@ -86,9 +93,10 @@ export default function SettingsPage() {
      * number under a heading saying this is where to pay, and somebody rings
      * to ask. Blank rows are dropped; a partly-filled one stops the save.
      */
-    const banks = (draft.banks ?? []).filter(
-      (b) => b.bankName.trim() || b.accountName.trim() || b.accountNumber.trim(),
-    );
+    /* The account name is filled in for them, so a row counts as started only once it has a bank or a number. */
+    const banks = (draft.banks ?? [])
+      .filter((b) => b.bankName.trim() || b.accountNumber.trim())
+      .map((b) => ({ ...b, bankName: b.bankName.trim(), accountName: b.accountName.trim(), accountNumber: b.accountNumber.trim() }));
     const incomplete = banks.find(
       (b) => !b.bankName.trim() || !b.accountName.trim() || !b.accountNumber.trim(),
     );
@@ -270,12 +278,52 @@ export default function SettingsPage() {
           <div className="mt-4 space-y-3">
             {(draft.banks ?? []).map((bank, index) => (
               <div key={bank.id} className="rounded-xl border border-hairline surface-sunken p-3.5">
-                <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
+                <div className="grid gap-3 sm:grid-cols-[1.2fr_1fr_1fr_auto] sm:items-end">
                   <Field label={index === 0 ? 'Bank' : undefined}>
+                    <div className="flex items-center gap-2">
+                      {(bank.bankId || bank.bankName) && (
+                        <BankLogo
+                          size={40}
+                          bank={profiles.find((p) => p.id === bank.bankId) ?? { name: bank.bankName || 'Bank', logoUrl: bank.logoUrl }}
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        {profiles.length > 0 && (bank.bankId || !bank.bankName) ? (
+                          <Select
+                            value={bank.bankId ?? ''}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              if (v === '__other') return setBank(index, { bankId: '', logoUrl: '', bankName: ' ' });
+                              const p = profiles.find((x) => x.id === v);
+                              setBank(index, p ? { bankId: p.id, bankName: p.name, logoUrl: p.logoUrl ?? '' } : { bankId: '', bankName: '', logoUrl: '' });
+                            }}
+                          >
+                            <option value="">Choose the bank…</option>
+                            {profiles.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name}
+                              </option>
+                            ))}
+                            <option value="__other">Another bank (type it)</option>
+                          </Select>
+                        ) : (
+                          <Input
+                            value={bank.bankName.trimStart()}
+                            placeholder="Bank"
+                            onChange={(e) => setBank(index, { bankName: e.target.value, bankId: '' })}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </Field>
+                  <Field label={index === 0 ? 'Account number' : undefined}>
                     <Input
-                      value={bank.bankName}
-                      placeholder="Bank"
-                      onChange={(e) => setBank(index, { bankName: e.target.value })}
+                      value={bank.accountNumber}
+                      placeholder="0000000000"
+                      inputMode="numeric"
+                      maxLength={10}
+                      className="tabular"
+                      onChange={(e) => setBank(index, { accountNumber: e.target.value.replace(/\D/g, '') })}
                     />
                   </Field>
                   <Field label={index === 0 ? 'Account name' : undefined}>
@@ -283,15 +331,6 @@ export default function SettingsPage() {
                       value={bank.accountName}
                       placeholder="Account name"
                       onChange={(e) => setBank(index, { accountName: e.target.value })}
-                    />
-                  </Field>
-                  <Field label={index === 0 ? 'Account number' : undefined}>
-                    <Input
-                      value={bank.accountNumber}
-                      placeholder="0000000000"
-                      inputMode="numeric"
-                      className="tabular"
-                      onChange={(e) => setBank(index, { accountNumber: e.target.value })}
                     />
                   </Field>
                   <div className="flex justify-end pb-0.5">
