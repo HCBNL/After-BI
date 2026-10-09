@@ -264,6 +264,13 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['position', 'location', 'updatedAt']);
     }
 
+    /* Bank profiles: names and logos the platform owner keeps, so an
+       organisation picks its bank and types only the account number. */
+    match /bankProfiles/{bankId} {
+      allow read: if activeProfile();
+      allow write: if owner();
+    }
+
     match /posts/{slug} {
       allow read: if resource.data.status == 'published' || owner();
       allow write: if owner();
