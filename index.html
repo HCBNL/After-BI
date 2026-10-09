@@ -71,13 +71,8 @@
       #boot .strip { height: env(safe-area-inset-top, 0px); background: linear-gradient(135deg, #10b981, #047857); }
       #boot .blk { background: var(--sk-fill); border-radius: 12px; }
 
-      /* the portal */
-      #boot .app { display: flex; min-height: 100dvh; }
-      #boot .rail { display: none; width: 232px; flex-shrink: 0; border-right: 1px solid var(--sk-line); background: var(--sk-card); padding: 12px; }
-      @media (min-width: 1024px) { #boot .rail { display: block; } }
-      #boot .bar { height: 56px; border-bottom: 1px solid var(--sk-line); background: var(--sk-card); }
-      #boot .body { flex: 1; min-width: 0; }
-      #boot .pad { padding: 16px; }
+      /* the portal: a plain page in the theme's colour, nothing drawn on it */
+      #boot .app { min-height: 100dvh; background: var(--sk-page); }
 
       /* the public site: white, with the navy promo strip, exactly as SiteSkeleton */
       #boot .site { min-height: 100dvh; background: #ffffff; }
@@ -114,23 +109,8 @@
   <body>
     <div id="root">
       <div id="boot" aria-hidden="true">
-        <div class="app">
-          <div class="rail">
-            <div class="blk" style="height:40px"></div>
-            <div class="blk" style="height:36px;margin-top:16px"></div>
-            <div class="blk" style="height:36px;margin-top:8px"></div>
-            <div class="blk" style="height:36px;margin-top:8px"></div>
-            <div class="blk" style="height:36px;margin-top:8px"></div>
-          </div>
-          <div class="body">
-            <div class="strip"></div>
-            <div class="bar"></div>
-            <div class="pad">
-              <div class="blk" style="height:180px;max-width:720px"></div>
-              <div class="blk" style="height:120px;margin-top:20px"></div>
-            </div>
-          </div>
-        </div>
+        <!-- The portal and sign in open on a plain page: no placeholder layout. -->
+        <div class="app"></div>
 
         <div class="site lit">
           <div class="strip"></div>
