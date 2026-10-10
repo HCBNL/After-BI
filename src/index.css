@@ -1486,3 +1486,13 @@ html[data-lang='zh'] body {
   .hr-aurora, .hr-aurora-slow, .hr-digit, .hr-sheen, .hr-ring, .hr-confetti,
   .hr-breathe, .hr-breathe-red, .hr-rise, .hr-blink { animation: none !important; }
 }
+
+/*
+ * No scrollbars on a laptop or desktop, anywhere in the site or the app.
+ * Everything still scrolls with the mouse wheel, trackpad and keyboard; only
+ * the bar the browser draws at the edge is hidden.
+ */
+@media (min-width: 1024px) {
+  html, body, * { scrollbar-width: none !important; }
+  html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+}
