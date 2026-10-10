@@ -1488,11 +1488,9 @@ html[data-lang='zh'] body {
 }
 
 /*
- * No scrollbars on a laptop or desktop, anywhere in the site or the app.
- * Everything still scrolls with the mouse wheel, trackpad and keyboard; only
- * the bar the browser draws at the edge is hidden.
+ * No scrollbars anywhere: laptop, desktop, tablet or phone, in the site and
+ * the app. Everything still scrolls (wheel, trackpad, keyboard, finger); only
+ * the bar or indicator the browser draws at the edge is hidden.
  */
-@media (min-width: 1024px) {
-  html, body, * { scrollbar-width: none !important; }
-  html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-}
+html, body, * { scrollbar-width: none !important; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; background: transparent !important; -webkit-appearance: none; }
