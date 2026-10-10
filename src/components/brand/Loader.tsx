@@ -81,7 +81,7 @@ export function SiteSkeleton() {
  */
 export function SignalMark({ size = 88 }: { size?: number }) {
   return (
-    <svg className="ab-signal" viewBox="0 0 128 128" width={size} height={size} aria-hidden>
+    <svg className="ab-signal" viewBox="-8 -14 146 146" width={size} height={size} overflow="visible" aria-hidden>
       <defs>
         <linearGradient id="abs1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff7a1a" /><stop offset="1" stopColor="#f2332b" /></linearGradient>
         <linearGradient id="abs2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffd21f" /><stop offset="1" stopColor="#f5a400" /></linearGradient>
@@ -101,12 +101,10 @@ export function SignalMark({ size = 88 }: { size?: number }) {
 /** The whole screen while the app (or the website) is on its way: the mark and the name. */
 export function BootSplash({ label = 'Loading AfterBI' }: { label?: string }) {
   return (
-    <div className="ab-splash fixed inset-0 z-[60] flex flex-col items-center justify-center gap-[18px]" role="status" aria-label={label}>
-      <div className="ab-badge">
-        <SignalMark size={84} />
-      </div>
+    <div className="ab-splash fixed inset-0 z-[60] flex flex-col items-center justify-center gap-1.5" role="status" aria-label={label}>
+      <SignalMark size={104} />
       <span className="font-display text-[30px] font-extrabold leading-none tracking-[-0.04em] text-primary">AfterBI</span>
-      <span className="ab-tag">Sales and distribution, connected</span>
+      <span className="ab-tag mt-1.5">Sales and distribution, connected</span>
     </div>
   );
 }
