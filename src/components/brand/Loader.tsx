@@ -1,5 +1,4 @@
 import { cn } from '@/lib/cn';
-import { Wordmark, WordmarkLoading } from './Wordmark';
 
 /**
  * Waiting, drawn as the shape of what is coming.
@@ -20,11 +19,7 @@ import { Wordmark, WordmarkLoading } from './Wordmark';
  * nothing below knows its own shape. Everywhere else, draw the shape.
  */
 export function BrandLoader({ label = 'Loading' }: { label?: string }) {
-  return (
-    <div className="flex min-h-dvh items-center justify-center surface-page px-6">
-      <WordmarkLoading label={label} />
-    </div>
-  );
+  return <BootSplash label={label} />;
 }
 
 export function Loading({
@@ -76,49 +71,58 @@ export function PageSkeleton() {
  * as loading.
  */
 export function SiteSkeleton() {
+  return <BootSplash />;
+}
+
+/**
+ * The AfterBI mark, filling bar by bar like a network signal. The same drawing
+ * and animation as the splash in index.html (the keyframes live there, in the
+ * page head, so the very first frame already moves).
+ */
+export function SignalMark({ size = 88 }: { size?: number }) {
   return (
-    <div className="site min-h-dvh" aria-busy>
-      <div className="status-bar-fill" aria-hidden />
-      <div className="h-9 bg-navy-900" />
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-5 sm:h-[4.5rem] sm:px-8">
-        <Wordmark className="text-[1.35rem] !text-navy-900" />
-        <div className="h-10 w-40 rounded-full bg-navy-50" />
+    <svg className="ab-signal" viewBox="0 0 128 128" width={size} height={size} aria-hidden>
+      <defs>
+        <linearGradient id="abs1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff7a1a" /><stop offset="1" stopColor="#f2332b" /></linearGradient>
+        <linearGradient id="abs2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffd21f" /><stop offset="1" stopColor="#f5a400" /></linearGradient>
+        <linearGradient id="abs3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3ddc7a" /><stop offset="1" stopColor="#02a05c" /></linearGradient>
+        <linearGradient id="abs4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#45b0ff" /><stop offset="1" stopColor="#0e6dfd" /></linearGradient>
+      </defs>
+      <g transform="skewX(-9) translate(14 0)">
+        <rect className="b1" x="3" y="78" width="25" height="36" rx="12.5" fill="url(#abs1)" />
+        <rect className="b2" x="35" y="55" width="25" height="59" rx="12.5" fill="url(#abs2)" />
+        <rect className="b3" x="67" y="37" width="25" height="77" rx="12.5" fill="url(#abs3)" />
+        <rect className="b4" x="99" y="20" width="25" height="94" rx="12.5" fill="url(#abs4)" />
+      </g>
+    </svg>
+  );
+}
+
+/** The whole screen while the app (or the website) is on its way: the mark and the name. */
+export function BootSplash({ label = 'Loading AfterBI' }: { label?: string }) {
+  return (
+    <div className="ab-splash fixed inset-0 z-[60] flex flex-col items-center justify-center gap-[18px]" role="status" aria-label={label}>
+      <div className="ab-badge">
+        <SignalMark size={84} />
       </div>
-      <div className="site-wash">
-        <div className="mx-auto w-full max-w-7xl px-5 pb-20 pt-14 sm:px-8 sm:pt-20">
-          <div className="h-8 w-56 rounded-full bg-navy-100/70" />
-          <div className="mt-7 h-12 w-full max-w-2xl rounded-xl bg-navy-100/70" />
-          <div className="mt-3 h-12 w-full max-w-xl rounded-xl bg-navy-100/70" />
-          <div className="mt-8 h-4 w-full max-w-lg rounded-full bg-navy-100/60" />
-          <div className="mt-2.5 h-4 w-full max-w-md rounded-full bg-navy-100/60" />
-          <div className="mt-9 flex gap-3">
-            <div className="h-12 w-48 rounded-full bg-brand-100" />
-            <div className="h-12 w-44 rounded-full bg-navy-100/70" />
-          </div>
-        </div>
-      </div>
+      <span className="font-display text-[30px] font-extrabold leading-none tracking-[-0.04em] text-primary">AfterBI</span>
+      <span className="ab-tag">Sales and distribution, connected</span>
     </div>
   );
 }
 
-/**
- * The portal before it has drawn: a plain page in the theme's colour, nothing
- * else. The home screen has two layouts (tiles and cards), so any placeholder
- * shape would be the wrong one half the time; the app simply opens on its real
- * screen as soon as it is ready.
- */
 export function ShellSkeleton() {
-  return <div className="min-h-dvh surface-page" aria-busy />;
+  return <BootSplash />;
 }
 
 /**
- * Inside the shell, while a screen's data loads: nothing drawn, so the screen
- * appears in its real layout the moment it is ready.
+ * Inside the shell, while a screen's data loads: the signal mark, smaller,
+ * centred where the screen will be. The rail and bottom bar are already there.
  */
 export function QuietLoader({ label = 'Loading' }: { label?: string }) {
   return (
-    <div aria-busy className="min-h-[40vh]">
-      <span className="sr-only">{label}</span>
+    <div role="status" aria-label={label} className="flex min-h-[60vh] items-center justify-center">
+      <SignalMark size={56} />
     </div>
   );
 }

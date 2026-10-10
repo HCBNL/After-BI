@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import {
   BellRing,
   Building2,
@@ -62,6 +62,20 @@ export function NavRail({
   const { counts } = useReminders();
   const entitlements = useEntitlements();
   const [collapsed, setCollapsed] = useState(readCollapsed);
+  const location = useLocation();
+
+  /* The logo is the home button. Already home: refresh it. */
+  const goHome = (e: React.MouseEvent) => {
+    if (location.pathname === root) {
+      e.preventDefault();
+      window.location.reload();
+    }
+  };
+  const logo = (
+    <Link to={root} onClick={goHome} title="Home" aria-label="Home" className="rounded-lg transition-opacity hover:opacity-80">
+      <Wordmark className="text-[1.15rem]" />
+    </Link>
+  );
 
   useEffect(() => {
     try {
@@ -96,7 +110,7 @@ export function NavRail({
       {/* the top: pinned */}
       <div className="shrink-0 px-2.5 pt-3">
         <div className={cn('flex h-11 items-center', collapsed ? 'justify-center' : 'justify-between pl-2')}>
-          {!collapsed && <Wordmark className="text-[1.15rem]" />}
+          {!collapsed && logo}
           <button
             type="button"
             onClick={() => setCollapsed((c) => !c)}
@@ -140,16 +154,17 @@ export function NavRail({
           )}
         </button>
 
+      </div>
+
+      {/* the middle: every section open; scrollbar hidden so the icons stay centred */}
+      <div className="scrollbar-none flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2.5 pb-2">
+        {/* Home and Reminders scroll with everything else; the logo is the home button too. */}
         <div className="mt-2 space-y-0.5">
           <RailLink to={root} end icon={Home} label="Home" collapsed={collapsed} />
           {showReminders && (
             <RailLink to={`${root}/reminders`} icon={BellRing} label="Reminders" collapsed={collapsed} badge={counts.action} />
           )}
         </div>
-      </div>
-
-      {/* the middle: every section open; scrollbar hidden so the icons stay centred */}
-      <div className="scrollbar-none flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-2.5 pb-2">
         {groups.map(({ group, items }) => (
           <section key={group} aria-label={group} className="mt-3.5 first:mt-2">
             {collapsed ? (
@@ -166,11 +181,14 @@ export function NavRail({
             </ul>
           </section>
         ))}
+        {/* All actions sits at the end of the list, not pinned, so the menu has room. */}
+        <div className="mt-3.5 border-t border-hairline pt-2">
+          <RailLink to={`${root}/all`} icon={LayoutGrid} label="All actions" collapsed={collapsed} />
+        </div>
       </div>
 
-      {/* the foot: pinned */}
-      <div className="shrink-0 space-y-1.5 border-t border-hairline px-2.5 py-3">
-        <RailLink to={`${root}/all`} icon={LayoutGrid} label="All actions" collapsed={collapsed} />
+      {/* the foot: only the person signed in */}
+      <div className="shrink-0 border-t border-hairline px-2.5 py-3">
 
         <div className={cn('flex items-center gap-2', collapsed ? 'flex-col' : 'rounded-2xl bg-[var(--surface-sunken)] p-2')}>
           <Link
