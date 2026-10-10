@@ -20,6 +20,7 @@ import { useAuth } from '@/context/AuthContext';
 import { listTenants } from '@/lib/db';
 import { count, nairaShort } from '@/lib/format';
 import { PORTAL_ROOT } from '@/lib/tiles';
+import { useBootDone } from '@/lib/boot';
 
 const ROOT = PORTAL_ROOT.owner;
 
@@ -55,6 +56,7 @@ export default function PlatformHome() {
   const [layout] = useHomeLayout(user?.id);
   const { openMenu } = useShell();
   const { data, loading, error, reload } = useAsync(() => listTenants(), [], { handleError: true });
+  useBootDone(data !== undefined || Boolean(error));
 
   const summary = useMemo(() => {
     const all = data ?? [];

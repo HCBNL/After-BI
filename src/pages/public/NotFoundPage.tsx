@@ -13,8 +13,10 @@ import { Seo } from '@/components/Seo';
 import { PublicShell } from '@/components/marketing/kit';
 import { btn, container } from '@/components/marketing/tokens';
 import { SUPPORT_EMAIL } from '@/lib/site';
+import { useBootDone } from '@/lib/boot';
 
 export default function NotFoundPage() {
+  useBootDone();
   return (
     <>
       <Seo title="Page not found" description="That address does not exist." path="/404" noindex />

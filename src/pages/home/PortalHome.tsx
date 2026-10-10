@@ -29,6 +29,7 @@ import {
   Warehouse,
 } from 'lucide-react';
 import { QuietLoader } from '@/components/brand/Loader';
+import { useBootDone } from '@/lib/boot';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
 import { HomeHero } from '@/components/home/HomeHero';
 import type { Kpi } from '@/components/home/HomeSlides';
@@ -469,6 +470,7 @@ export default function PortalHome() {
     return () => window.clearTimeout(timer);
   }, [ready, startIfNew]);
 
+  useBootDone(ready);
   if (!user) return null;
   if (!ready) return <QuietLoader />;
 

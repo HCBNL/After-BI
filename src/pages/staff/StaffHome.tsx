@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Contact, FileText, IdCard } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { staffNumber } from '@/lib/staff';
+import { useBootDone } from '@/lib/boot';
 
 const TILES = [
   { to: 'proposals', label: 'Proposals', icon: FileText, text: 'Make a prospect their own proposal on the spot, signed and ready to send.' },
@@ -14,6 +15,7 @@ const TILES = [
 ];
 
 export default function StaffHome() {
+  useBootDone();
   const { user } = useAuth();
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';

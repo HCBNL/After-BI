@@ -11,8 +11,10 @@ import { Wordmark } from '@/components/brand/Wordmark';
 import { useAsync } from '@/hooks/useAsync';
 import { readStaffCard } from '@/lib/staff';
 import { COMPANY } from '@/lib/company';
+import { useBootDone } from '@/lib/boot';
 
 export default function VerifyStaffPage() {
+  useBootDone();
   const { staffNo = '' } = useParams();
   const { data, loading } = useAsync(() => readStaffCard(staffNo), [staffNo], { handleError: true });
   const active = data?.status === 'active';

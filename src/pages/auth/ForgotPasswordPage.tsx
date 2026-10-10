@@ -41,8 +41,10 @@ import { useAuth } from '@/context/AuthContext';
 import { BRAND } from '@/lib/siteMeta';
 import { readable } from './authText';
 import { Wordmark } from '@/components/brand/Wordmark';
+import { useBootDone } from '@/lib/boot';
 
 export default function ForgotPasswordPage() {
+  useBootDone();
   const { resetPassword } = useAuth();
   const location = useLocation();
 

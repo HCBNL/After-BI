@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Compass } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { PORTAL_ROOT } from '@/lib/tiles';
+import { useBootDone } from '@/lib/boot';
 
 /**
  * The 404, in two shapes.
@@ -15,6 +16,7 @@ import { PORTAL_ROOT } from '@/lib/tiles';
  * says which portal it was looking in.
  */
 export default function NotFoundPage({ inPortal }: { inPortal?: boolean }) {
+  useBootDone();
   const { user } = useAuth();
   const home = user ? PORTAL_ROOT[user.role] : '/';
 

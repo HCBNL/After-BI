@@ -14,8 +14,10 @@ import { Mark } from '@/components/brand/Wordmark';
 import { Seo } from '@/components/Seo';
 import { readCardHash, vcard, whatsappNumber } from '@/lib/businessCard';
 import { COMPANY } from '@/lib/company';
+import { useBootDone } from '@/lib/boot';
 
 export default function CardPage() {
+  useBootDone();
   const card = useMemo(() => readCardHash(window.location.hash), []);
 
   const saveContact = () => {

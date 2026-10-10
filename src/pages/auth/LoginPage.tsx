@@ -47,6 +47,7 @@ import { cn } from '@/lib/cn';
 import { useAuth, type AuthProblem } from '@/context/AuthContext';
 import { BRAND } from '@/lib/siteMeta';
 import { readable, problemText } from './authText';
+import { useBootDone } from '@/lib/boot';
 
 /* ------------------------------------------------------- the account problem */
 
@@ -95,6 +96,7 @@ function ProblemBox({ problem, onSignOut }: { problem: AuthProblem; onSignOut: (
 /* ------------------------------------------------------------------- the page */
 
 export default function LoginPage() {
+  useBootDone();
   const { signIn, signOut, problem } = useAuth();
 
   const [email, setEmail] = useState('');

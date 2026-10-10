@@ -9,6 +9,9 @@ import { lockZoom } from '@/lib/lockZoom';
 import { initPwa } from '@/lib/pwa';
 import { startI18n } from '@/lib/i18n';
 import './index.css';
+import { startBootTimer } from '@/lib/boot';
+
+startBootTimer();
 
 /*
  * The theme is stamped BEFORE React renders.
