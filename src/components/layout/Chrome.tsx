@@ -4,7 +4,7 @@
  * its own panel), and the home-screen chooser. `AppShell` wraps it for a
  * tenant, `PlatformShell` for the platform owner: same frame, one codebase.
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ComponentType } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -21,6 +21,7 @@ import { actionsForRole, resolveTo, PORTAL_ROOT } from '@/lib/tiles';
 import { fullName } from '@/lib/roles';
 import { useEntitlements } from '@/lib/plans';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
+import { QuietLoader } from '@/components/brand/Loader';
 import type { Role } from '@/types';
 import { BottomBar } from './BottomBar';
 import { MenuSheet } from './MenuSheet';
@@ -155,7 +156,11 @@ export function Chrome({
             <div className="mx-auto max-w-[1400px]">
               <Gate>
                 <ErrorBoundary resetOn={location.pathname} home={root}>
-                  <Outlet />
+                  {/* A page whose code is still arriving waits HERE, inside the shell,
+                      instead of throwing the whole screen back to the splash. */}
+                  <Suspense fallback={<QuietLoader />}>
+                    <Outlet />
+                  </Suspense>
                 </ErrorBoundary>
               </Gate>
             </div>

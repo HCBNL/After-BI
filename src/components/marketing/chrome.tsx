@@ -1,3 +1,4 @@
+import { useBootDone } from '@/lib/boot';
 /**
  * The bar at the top and the block at the bottom of every public page.
  *
@@ -56,6 +57,7 @@ function isActive(href: string, pathname: string): boolean {
 /* ------------------------------------------------------------- the header */
 
 export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }) {
+  useBootDone();
   const [sheet, setSheet] = useState(false);
   const [menu, setMenu] = useState<MenuKey | null>(null);
   const [lifted, setLifted] = useState(false);

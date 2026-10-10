@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 import { usePageHeading } from './PageHeading';
 import { PagePanel } from './PagePanel';
+import { useBootDone } from '@/lib/boot';
 
 /**
  * The top of a portal page.
@@ -25,6 +26,7 @@ export function PageHeader({
   children?: ReactNode;
 }) {
   const { setHeading, inShell } = usePageHeading();
+  useBootDone();
 
   useEffect(() => {
     setHeading(title);

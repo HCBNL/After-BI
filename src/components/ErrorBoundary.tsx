@@ -16,6 +16,7 @@
  */
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { bootDone } from '@/lib/boot';
 
 interface Props {
   children: ReactNode;
@@ -156,6 +157,8 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    /* An error page must never sit hidden behind the splash. */
+    bootDone();
     // Left in on purpose. When somebody sends a screenshot of this screen, the
     // console beside it is what makes the report actionable.
     console.error('Screen failed to render:', error, info.componentStack);
