@@ -68,8 +68,9 @@
       html[data-theme='dark'] { --sk-page: #0b0d10; --sk-card: #14171c; --sk-line: rgba(255,255,255,.1); --sk-fill: #101317; --sk-ink: #ffffff; }
       html, body { margin: 0; height: 100%; background: var(--sk-page); }
       /* The splash: the AfterBI mark filling bar by bar, like a signal, then the name. */
-      #boot { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-family: Inter, system-ui, sans-serif; }
-      #boot .name { font-size: 30px; font-weight: 800; letter-spacing: -0.04em; color: var(--sk-ink); }
+      #splash { position: fixed; inset: 0; z-index: 9999; transition: opacity .28s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-family: Inter, system-ui, sans-serif; }
+      #splash.gone { opacity: 0; pointer-events: none; }
+      #splash .name, .ab-splash .name { font-size: 30px; font-weight: 800; letter-spacing: -0.04em; color: var(--sk-ink); }
       .ab-signal rect { transform-box: fill-box; transform-origin: 50% 100%; animation: ab-signal 1.6s cubic-bezier(.3,.7,.3,1) infinite; opacity: .16; }
       .ab-signal .b2 { animation-delay: .16s; } .ab-signal .b3 { animation-delay: .32s; } .ab-signal .b4 { animation-delay: .48s; }
       @keyframes ab-signal { 0% { opacity: .16; transform: scaleY(.55); } 18% { opacity: 1; transform: scaleY(1.06); } 26%, 70% { opacity: 1; transform: scaleY(1); } 88%, 100% { opacity: .16; transform: scaleY(.55); } }
@@ -106,7 +107,14 @@
   </head>
   <body>
     <div id="root">
-      <div id="boot" class="ab-splash" role="status" aria-label="Loading AfterBI">
+      <div id="boot"></div>
+    </div>
+    <!--
+      THE ONE LOADING SCREEN. Outside #root, so React mounting does not remove
+      it: it stays over everything until the first real page has drawn, then
+      fades (src/lib/boot.ts). One splash, then the page; nothing in between.
+    -->
+    <div id="splash" class="ab-splash" role="status" aria-label="Loading AfterBI">
         <svg class="ab-signal" viewBox="-8 -14 146 146" width="104" height="104" overflow="visible" aria-hidden="true">
             <defs>
               <linearGradient id="abg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a1a"/><stop offset="1" stop-color="#f2332b"/></linearGradient>
@@ -124,7 +132,6 @@
         <div class="name">AfterBI</div>
         <div class="ab-tag">Sales and distribution, connected</div>
       </div>
-    </div>
     <!--
       A BOOT FAILURE THAT SAYS WHAT IS WRONG, RATHER THAN A WHITE SCREEN.
 
@@ -193,6 +200,8 @@
           box.appendChild(h);
           box.appendChild(p);
           box.appendChild(q);
+          var sp = document.getElementById('splash');
+          if (sp) sp.remove();
           root.replaceChildren ? root.replaceChildren(box) : ((root.innerHTML = ''), root.appendChild(box));
         }
 
