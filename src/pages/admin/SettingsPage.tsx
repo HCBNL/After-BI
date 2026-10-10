@@ -22,7 +22,7 @@ import {
 } from '@/components/ui';
 import { useOrg } from '@/context/OrgContext';
 import { useAuth } from '@/context/AuthContext';
-import { DEMO_PASSWORD, seedDemo, topUpDemo, type DemoProgress } from '@/lib/demo';
+import { DEMO_PASSWORD, topUpDemo, type DemoProgress } from '@/lib/demo';
 import { saveOrgSettings } from '@/lib/db';
 import { ImagePicker } from '@/components/ImagePicker';
 import { BankLogo } from '@/components/brand/BankLogo';
@@ -37,10 +37,8 @@ import { Checklist } from '@/components/Checklist';
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const [demoWord, setDemoWord] = useState('');
   const [demoStep, setDemoStep] = useState<DemoProgress | null>(null);
   const [demoBusy, setDemoBusy] = useState(false);
-  const [demoDone, setDemoDone] = useState(false);
   const { settings, warehouses, reload } = useOrg();
   const toast = useToast();
 
@@ -126,23 +124,6 @@ export default function SettingsPage() {
       toast.success('Up to date', 'This week has fresh sell-out and two new orders.');
     } catch (err) {
       toast.error('Nothing was added', err instanceof Error ? err.message : undefined);
-    } finally {
-      setDemoBusy(false);
-    }
-  };
-
-  const fillDemo = async () => {
-    if (!user) return;
-    setDemoBusy(true);
-    setDemoDone(false);
-    try {
-      await seedDemo(user, setDemoStep);
-      setDemoDone(true);
-      setDemoWord('');
-      reload();
-      toast.success('The demo organisation is ready', 'Open Home to see it.');
-    } catch (err) {
-      toast.error('The demo data stopped part way', err instanceof Error ? err.message : undefined);
     } finally {
       setDemoBusy(false);
     }
@@ -458,19 +439,15 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {user?.role === 'super_admin' && (
+        {user?.role === 'super_admin' && settings?.demo && settings.demoSeededAt && (
           <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
             <div className="flex items-center gap-1.5">
               <h2 className="text-[16px] font-bold text-primary">Demonstration</h2>
               <Hint label="About the demonstration">
-                {settings?.demoSeededAt
-                  ? 'Everything in it is live: raise an order, approve it, fulfil it from a depot, add a person. Rename the organisation above to the company you are presenting to and the whole app, and every printed document, follows.'
-                  : 'Fills this organisation with a catalogue, three depots with stock, ten distributors, six months of sell-out, orders at every stage, invoices part paid and overdue, two claims, targets, a pipeline, and sign-ins for a rep, a depot and a distributor. It takes about a minute.'}
+                Everything in it is live: raise an order, approve it, fulfil it from a depot, add a person. Rename the organisation above to the company you are presenting to and the whole app, and every printed document, follows.
               </Hint>
             </div>
-
-            {settings?.demoSeededAt ? (
-              <>
+            <>
                 <p className="mt-1.5 text-[13px] text-secondary">This organisation is filled with a working business.</p>
 
                 {settings.demoLogins?.length ? (
@@ -514,57 +491,7 @@ export default function SettingsPage() {
                     sell-out and two new orders, one of them waiting for your signature.
                   </Hint>
                 </div>
-              </>
-            ) : (
-              <>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-secondary">
-                  Use it only in an organisation created for demonstrations. Orders, invoices and the stock ledger
-                  cannot be deleted afterwards.
-                </p>
-
-                {demoStep && (
-                  <div className="mt-4">
-                    <div className="h-2 overflow-hidden rounded-full surface-sunken">
-                      <div
-                        className="h-full rounded-full bg-brand-600 transition-[width] duration-300 dark:bg-brand-500"
-                        style={{ width: `${(demoStep.done / demoStep.total) * 100}%` }}
-                      />
-                    </div>
-                    <p className="mt-2 text-[12.5px] text-muted">
-                      {demoStep.label} ({demoStep.done} of {demoStep.total})
-                    </p>
-                  </div>
-                )}
-
-                {demoDone && (
-                  <p className="mt-3 text-[13px] font-semibold text-status-good">
-                    Done. Open Home, Orders, Invoices and Analytics to see it.
-                  </p>
-                )}
-
-                <div className="mt-4 flex flex-wrap items-end gap-3">
-                  <div className="min-w-[180px]">
-                    <label htmlFor="demo-word" className="mb-1.5 block text-[13px] font-semibold text-primary">
-                      Type DEMO to unlock
-                    </label>
-                    <Input
-                      id="demo-word"
-                      value={demoWord}
-                      onChange={(e) => setDemoWord(e.target.value)}
-                      placeholder="DEMO"
-                      autoComplete="off"
-                    />
-                  </div>
-                  <Button
-                    loading={demoBusy}
-                    disabled={demoWord.trim().toUpperCase() !== 'DEMO'}
-                    onClick={() => void fillDemo()}
-                  >
-                    Fill with demo data
-                  </Button>
-                </div>
-              </>
-            )}
+            </>
           </section>
         )}
 
