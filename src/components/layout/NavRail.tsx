@@ -229,10 +229,9 @@ function RailLink({
   badge?: number;
 }) {
   /*
-    Each icon sits in its own rounded tile. Hovering lifts the tile with a hairline
-    ring; the current screen fills its tile with the product's accent colour
-    (--ground-a, set per dashboard by Profile → Appearance), so the active item
-    always matches the theme the person chose.
+    One container per row, no borders. Hover tints the row. The current screen
+    gets a soft accent wash (the product's colour, --ground-a) that fades out to
+    the right, and its icon tile is filled with that same colour.
   */
   return (
     <NavLink
@@ -242,9 +241,11 @@ function RailLink({
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
         cn(
-          'group relative flex items-center rounded-2xl transition-colors duration-200',
+          'group relative flex items-center rounded-xl transition-colors duration-150',
           collapsed ? 'justify-center p-1' : 'gap-3 px-1.5 py-1',
-          !isActive && 'hover:bg-[var(--surface-sunken)]',
+          isActive && !collapsed
+            ? 'bg-[linear-gradient(90deg,color-mix(in_oklab,var(--ground-a)_16%,transparent)_0%,transparent_100%)]'
+            : 'hover:bg-[var(--surface-sunken)]',
         )
       }
     >
@@ -252,10 +253,8 @@ function RailLink({
         <>
           <span
             className={cn(
-              'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
-              isActive
-                ? 'bg-[var(--ground-a)] text-white shadow-[0_8px_18px_-8px_var(--ground-a)]'
-                : 'bg-[var(--surface-sunken)] text-muted ring-1 ring-transparent group-hover:-translate-y-px group-hover:text-primary group-hover:ring-[var(--border-hairline)] group-hover:shadow-card',
+              'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors duration-150',
+              isActive ? 'bg-[var(--ground-a)] text-white' : 'bg-[var(--surface-sunken)] text-muted group-hover:text-primary',
             )}
           >
             <Icon size={17} aria-hidden />

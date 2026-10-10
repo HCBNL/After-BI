@@ -7,18 +7,31 @@
  * The platform owner sets the plan in Platform (Organisations); every member
  * of the organisation sees the same seal.
  *
- * Drawn as thirteen circles (a middle and twelve lobes) rather than one
- * scalloped path, so it renders identically from 12px to 48px.
+ * Drawn as one scalloped outline, twelve rounded lobes like a verified seal,
+ * with the tick cut into it. One path, so it stays crisp from 12px to 48px.
  */
 
 import { cn } from '@/lib/cn';
 import { PLANS, useEntitlements, type PlanId } from '@/lib/plans';
 
-const LOBES = [
-  [20.31, 14.23], [18.08, 18.08], [14.23, 20.31], [9.77, 20.31],
-  [5.92, 18.08], [3.69, 14.23], [3.69, 9.77], [5.92, 5.92],
-  [9.77, 3.69], [14.23, 3.69], [18.08, 5.92], [20.31, 9.77],
-] as const;
+const LOBES = 12;
+const CENTRE = 12;
+const VALLEY = 9.1; // where two lobes meet
+const CREST = 11.9; // the outward control point: sets how round each lobe is
+
+const at = (radius: number, angle: number) =>
+  `${(CENTRE + radius * Math.cos(angle)).toFixed(3)} ${(CENTRE + radius * Math.sin(angle)).toFixed(3)}`;
+
+/* One closed path: a valley, then a curved lobe out to the next valley, twelve times. */
+const SEAL_PATH = (() => {
+  const step = (Math.PI * 2) / LOBES;
+  let d = `M ${at(VALLEY, -Math.PI / 2)}`;
+  for (let i = 0; i < LOBES; i++) {
+    const start = -Math.PI / 2 + i * step;
+    d += ` Q ${at(CREST, start + step / 2)} ${at(VALLEY, start + step)}`;
+  }
+  return `${d} Z`;
+})();
 
 export function PlanBadge({ plan, size = 18, className }: { plan: PlanId; size?: number; className?: string }) {
   const seal = PLANS[plan];
@@ -26,14 +39,8 @@ export function PlanBadge({ plan, size = 18, className }: { plan: PlanId; size?:
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={cn('inline-block shrink-0', className)} role="img" aria-label={label}>
       <title>{label}</title>
-      <g fill={seal.fill}>
-        <circle cx="12" cy="12" r="9.2" />
-        {LOBES.map(([x, y]) => (
-          <circle key={`${x}-${y}`} cx={x} cy={y} r="3.3" />
-        ))}
-      </g>
+      <path d={SEAL_PATH} fill={seal.fill} stroke={seal.fill} strokeWidth="0.6" strokeLinejoin="round" />
       <path d="M8.2 12.3 L10.8 14.9 L15.9 9.5" fill="none" stroke="#ffffff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="12" cy="12" r="11.2" fill="none" stroke={seal.ring} strokeWidth="0.9" />
     </svg>
   );
 }
