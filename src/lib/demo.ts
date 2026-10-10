@@ -330,10 +330,10 @@ export async function seedDemo(actor: UserProfile, onProgress: (progress: DemoPr
     reason: 'Damage: four cartons crushed against the tailgate',
     actor,
   });
-  await decideReturn(claim, 'received', actor, {
-    creditValue: (damagedLine.pricing[damaged.category] ?? 0) * 4,
-    warehouseId: depots[0],
-  });
+  /* A return moves requested → approved → received; it cannot skip approval. */
+  const creditValue = (damagedLine.pricing[damaged.category] ?? 0) * 4;
+  await decideReturn(claim, 'approved', actor, { creditValue });
+  await decideReturn(claim, 'received', actor, { warehouseId: depots[0] });
   await createReturn({
     distributor: pick(customers),
     product: pick(products),
