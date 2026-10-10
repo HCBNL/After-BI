@@ -228,6 +228,12 @@ function RailLink({
   collapsed?: boolean;
   badge?: number;
 }) {
+  /*
+    Each icon sits in its own rounded tile. Hovering lifts the tile with a hairline
+    ring; the current screen fills its tile with the product's accent colour
+    (--ground-a, set per dashboard by Profile → Appearance), so the active item
+    always matches the theme the person chose.
+  */
   return (
     <NavLink
       to={to}
@@ -236,21 +242,41 @@ function RailLink({
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
         cn(
-          'relative flex items-center rounded-xl text-[13.5px] font-semibold transition-colors',
-          collapsed ? 'h-10 w-full justify-center px-0' : 'gap-2.5 px-3 py-2',
-          isActive
-            ? 'bg-brand-50 text-brand-900 dark:bg-brand-500/15 dark:text-brand-200'
-            : 'text-secondary hover:bg-[var(--surface-sunken)] hover:text-primary',
+          'group relative flex items-center rounded-2xl transition-colors duration-200',
+          collapsed ? 'justify-center p-1' : 'gap-3 px-1.5 py-1',
+          !isActive && 'hover:bg-[var(--surface-sunken)]',
         )
       }
     >
-      <span className="relative flex shrink-0 items-center justify-center">
-        <Icon size={17} aria-hidden />
-        {collapsed && Boolean(badge) && <span className="absolute -right-1.5 -top-1.5 h-2.5 w-2.5 rounded-full bg-status-critical" aria-hidden />}
-      </span>
-      {!collapsed && <span className="min-w-0 flex-1 truncate">{label}</span>}
-      {!collapsed && Boolean(badge) && (
-        <span className="tabular shrink-0 rounded-full bg-status-critical px-1.5 py-0.5 text-[10.5px] font-bold text-white">{badge}</span>
+      {({ isActive }) => (
+        <>
+          <span
+            className={cn(
+              'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200',
+              isActive
+                ? 'bg-[var(--ground-a)] text-white shadow-[0_8px_18px_-8px_var(--ground-a)]'
+                : 'bg-[var(--surface-sunken)] text-muted ring-1 ring-transparent group-hover:-translate-y-px group-hover:text-primary group-hover:ring-[var(--border-hairline)] group-hover:shadow-card',
+            )}
+          >
+            <Icon size={17} aria-hidden />
+            {collapsed && Boolean(badge) && (
+              <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-status-critical ring-2 ring-[var(--surface-card)]" aria-hidden />
+            )}
+          </span>
+          {!collapsed && (
+            <span
+              className={cn(
+                'min-w-0 flex-1 truncate text-[13.5px] font-semibold transition-colors',
+                isActive ? 'text-primary' : 'text-secondary group-hover:text-primary',
+              )}
+            >
+              {label}
+            </span>
+          )}
+          {!collapsed && Boolean(badge) && (
+            <span className="tabular mr-1 shrink-0 rounded-full bg-status-critical px-1.5 py-0.5 text-[10.5px] font-bold text-white">{badge}</span>
+          )}
+        </>
       )}
     </NavLink>
   );
