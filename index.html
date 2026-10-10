@@ -61,31 +61,28 @@
       gets a white rectangle for the length of one network round trip.
     -->
     <style>
-      :root { --sk-page: #ffffff; --sk-card: #ffffff; --sk-line: rgba(20,23,28,.1); --sk-fill: #f4f6f8; }
+      :root { --sk-page: #ffffff; --sk-card: #ffffff; --sk-line: rgba(20,23,28,.1); --sk-fill: #f4f6f8; --sk-ink: #0f1f36; }
       @media (prefers-color-scheme: dark) {
-        :root:not([data-theme='light']) { --sk-page: #0b0d10; --sk-card: #14171c; --sk-line: rgba(255,255,255,.1); --sk-fill: #101317; }
+        :root:not([data-theme='light']) { --sk-page: #0b0d10; --sk-card: #14171c; --sk-line: rgba(255,255,255,.1); --sk-fill: #101317; --sk-ink: #ffffff; }
       }
-      html[data-theme='dark'] { --sk-page: #0b0d10; --sk-card: #14171c; --sk-line: rgba(255,255,255,.1); --sk-fill: #101317; }
+      html[data-theme='dark'] { --sk-page: #0b0d10; --sk-card: #14171c; --sk-line: rgba(255,255,255,.1); --sk-fill: #101317; --sk-ink: #ffffff; }
       html, body { margin: 0; height: 100%; background: var(--sk-page); }
-      #boot { font-family: Inter, system-ui, sans-serif; }
-      #boot .strip { height: env(safe-area-inset-top, 0px); background: linear-gradient(135deg, #10b981, #047857); }
-      #boot .blk { background: var(--sk-fill); border-radius: 12px; }
-
-      /* the portal: a plain page in the theme's colour, nothing drawn on it */
-      #boot .app { min-height: 100dvh; background: var(--sk-page); }
-
-      /* the public site: white, with the navy promo strip, exactly as SiteSkeleton */
-      #boot .site { min-height: 100dvh; background: #ffffff; }
-      #boot .promo { height: 36px; background: #0f1f36; }
-      #boot .lit { background: linear-gradient(180deg, #f6faf8 0%, #ffffff 100%); }
-      #boot .col { margin: 0 auto; width: 100%; max-width: 80rem; box-sizing: border-box; padding: 0 1.25rem; }
-      @media (min-width: 640px) { #boot .col { padding: 0 2rem; } }
-      #boot .nav { display: flex; height: 64px; align-items: center; justify-content: space-between; }
-      #boot .gh { background: #e3ebf5; border-radius: 12px; }
-
-      /* One is hidden. Which one is decided by the script below. */
-      html[data-boot='site'] #boot .app { display: none; }
-      html:not([data-boot='site']) #boot .site { display: none; }
+      /* The splash: the AfterBI mark filling bar by bar, like a signal, then the name. */
+      #boot { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; font-family: Inter, system-ui, sans-serif; }
+      #boot .name { font-size: 30px; font-weight: 800; letter-spacing: -0.04em; color: var(--sk-ink); }
+      .ab-signal rect { transform-box: fill-box; transform-origin: 50% 100%; animation: ab-signal 1.6s cubic-bezier(.3,.7,.3,1) infinite; opacity: .16; }
+      .ab-signal .b2 { animation-delay: .16s; } .ab-signal .b3 { animation-delay: .32s; } .ab-signal .b4 { animation-delay: .48s; }
+      @keyframes ab-signal { 0% { opacity: .16; transform: scaleY(.55); } 18% { opacity: 1; transform: scaleY(1.06); } 26%, 70% { opacity: 1; transform: scaleY(1); } 88%, 100% { opacity: .16; transform: scaleY(.55); } }
+      @media (prefers-reduced-motion: reduce) { .ab-signal rect { animation: none; opacity: 1; } }
+      /* The splash wallpaper: faint line drawings of the trade (bars, carts, boxes, trucks, receipts), like a chat app's background. */
+      :root { --ab-doodle: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22260%22 height=%22260%22 viewBox=%220 0 260 260%22 fill=%22none%22 stroke=%22rgba(15,31,54,0.07)%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E %3Cg transform=%22translate(18 20) rotate(-8)%22%3E%3Crect x=%220%22 y=%2222%22 width=%227%22 height=%2212%22 rx=%223.5%22/%3E%3Crect x=%2211%22 y=%2215%22 width=%227%22 height=%2219%22 rx=%223.5%22/%3E%3Crect x=%2222%22 y=%228%22 width=%227%22 height=%2226%22 rx=%223.5%22/%3E%3Crect x=%2233%22 y=%220%22 width=%227%22 height=%2234%22 rx=%223.5%22/%3E%3C/g%3E %3Cg transform=%22translate(100 18)%22%3E%3Cpath d=%22M0 4h6l6 22h20l5-16H9%22/%3E%3Ccircle cx=%2215%22 cy=%2232%22 r=%222.5%22/%3E%3Ccircle cx=%2229%22 cy=%2232%22 r=%222.5%22/%3E%3C/g%3E %3Cg transform=%22translate(190 26) rotate(10)%22%3E%3Cpath d=%22M0 10l16-9 16 9v18l-16 9-16-9z%22/%3E%3Cpath d=%22M0 10l16 9 16-9M16 19v18%22/%3E%3C/g%3E %3Cg transform=%22translate(26 104)%22%3E%3Cpath d=%22M0 30l11-12 9 7 15-17%22/%3E%3Cpath d=%22M28 8h7v7%22/%3E%3Cpath d=%22M0 38h40%22/%3E%3C/g%3E %3Cg transform=%22translate(112 98) rotate(-6)%22%3E%3Cpath d=%22M0 6h22v20H0zM22 12h9l6 7v7H22%22/%3E%3Ccircle cx=%227%22 cy=%2229%22 r=%223%22/%3E%3Ccircle cx=%2230%22 cy=%2229%22 r=%223%22/%3E%3C/g%3E %3Cg transform=%22translate(196 104)%22%3E%3Cpath d=%22M2 0h24v36l-4-3-4 3-4-3-4 3-4-3-4 3z%22/%3E%3Cpath d=%22M8 9h12M8 16h12M8 23h7%22/%3E%3C/g%3E %3Cg transform=%22translate(30 192) rotate(12)%22%3E%3Cpath d=%22M14 0a12 12 0 0 1 12 12c0 9-12 22-12 22S2 21 2 12A12 12 0 0 1 14 0z%22/%3E%3Ccircle cx=%2214%22 cy=%2212%22 r=%224%22/%3E%3C/g%3E %3Cg transform=%22translate(108 190)%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2215%22/%3E%3Cpath d=%22M16 4v12l8 5%22/%3E%3C/g%3E %3Cg transform=%22translate(192 190) rotate(-10)%22%3E%3Crect x=%220%22 y=%220%22 width=%2234%22 height=%2226%22 rx=%224%22/%3E%3Cpath d=%22M0 8h34M6 18h8%22/%3E%3C/g%3E %3Cg transform=%22translate(74 62)%22%3E%3Cpath d=%22M5 0v10M0 5h10%22/%3E%3C/g%3E%3Cg transform=%22translate(160 150)%22%3E%3Cpath d=%22M5 0v10M0 5h10%22/%3E%3C/g%3E %3Cg transform=%22translate(236 70)%22%3E%3Ccircle cx=%223%22 cy=%223%22 r=%222%22/%3E%3C/g%3E%3Cg transform=%22translate(80 150)%22%3E%3Ccircle cx=%223%22 cy=%223%22 r=%222%22/%3E%3C/g%3E%3Cg transform=%22translate(164 238)%22%3E%3Ccircle cx=%223%22 cy=%223%22 r=%222%22/%3E%3C/g%3E %3C/svg%3E'); }
+      @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --ab-doodle: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22260%22 height=%22260%22 viewBox=%220 0 260 260%22 fill=%22none%22 stroke=%22rgba(255,255,255,0.06)%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E %3Cg transform=%22translate(18 20) rotate(-8)%22%3E%3Crect x=%220%22 y=%2222%22 width=%227%22 height=%2212%22 rx=%223.5%22/%3E%3Crect x=%2211%22 y=%2215%22 width=%227%22 height=%2219%22 rx=%223.5%22/%3E%3Crect x=%2222%22 y=%228%22 width=%227%22 height=%2226%22 rx=%223.5%22/%3E%3Crect x=%2233%22 y=%220%22 width=%227%22 height=%2234%22 rx=%223.5%22/%3E%3C/g%3E %3Cg transform=%22translate(100 18)%22%3E%3Cpath d=%22M0 4h6l6 22h20l5-16H9%22/%3E%3Ccircle cx=%2215%22 cy=%2232%22 r=%222.5%22/%3E%3Ccircle cx=%2229%22 cy=%2232%22 r=%222.5%22/%3E%3C/g%3E %3Cg transform=%22translate(190 26) rotate(10)%22%3E%3Cpath d=%22M0 10l16-9 16 9v18l-16 9-16-9z%22/%3E%3Cpath d=%22M0 10l16 9 16-9M16 19v18%22/%3E%3C/g%3E %3Cg transform=%22translate(26 104)%22%3E%3Cpath d=%22M0 30l11-12 9 7 15-17%22/%3E%3Cpath d=%22M28 8h7v7%22/%3E%3Cpath d=%22M0 38h40%22/%3E%3C/g%3E %3Cg transform=%22translate(112 98) rotate(-6)%22%3E%3Cpath d=%22M0 6h22v20H0zM22 12h9l6 7v7H22%22/%3E%3Ccircle cx=%227%22 cy=%2229%22 r=%223%22/%3E%3Ccircle cx=%2230%22 cy=%2229%22 r=%223%22/%3E%3C/g%3E %3Cg transform=%22translate(196 104)%22%3E%3Cpath d=%22M2 0h24v36l-4-3-4 3-4-3-4 3-4-3-4 3z%22/%3E%3Cpath d=%22M8 9h12M8 16h12M8 23h7%22/%3E%3C/g%3E %3Cg transform=%22translate(30 192) rotate(12)%22%3E%3Cpath d=%22M14 0a12 12 0 0 1 12 12c0 9-12 22-12 22S2 21 2 12A12 12 0 0 1 14 0z%22/%3E%3Ccircle cx=%2214%22 cy=%2212%22 r=%224%22/%3E%3C/g%3E %3Cg transform=%22translate(108 190)%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2215%22/%3E%3Cpath d=%22M16 4v12l8 5%22/%3E%3C/g%3E %3Cg transform=%22translate(192 190) rotate(-10)%22%3E%3Crect x=%220%22 y=%220%22 width=%2234%22 height=%2226%22 rx=%224%22/%3E%3Cpath d=%22M0 8h34M6 18h8%22/%3E%3C/g%3E %3Cg transform=%22translate(74 62)%22%3E%3Cpath d=%22M5 0v10M0 5h10%22/%3E%3C/g%3E%3Cg transform=%22translate(160 150)%22%3E%3Cpath d=%22M5 0v10M0 5h10%22/%3E%3C/g%3E %3Cg transform=%22translate(236 70)%22%3E%3Ccircle cx=%223%22 cy=%223%22 r=%222%22/%3E%3C/g%3E%3Cg transform=%22translate(80 150)%22%3E%3Ccircle cx=%223%22 cy=%223%22 r=%222%22/%3E%3C/g%3E%3Cg transform=%22translate(164 238)%22%3E%3Ccircle cx=%223%22 cy=%223%22 r=%222%22/%3E%3C/g%3E %3C/svg%3E'); } }
+      html[data-theme='dark'] { --ab-doodle: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22260%22 height=%22260%22 viewBox=%220 0 260 260%22 fill=%22none%22 stroke=%22rgba(255,255,255,0.06)%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E %3Cg transform=%22translate(18 20) rotate(-8)%22%3E%3Crect x=%220%22 y=%2222%22 width=%227%22 height=%2212%22 rx=%223.5%22/%3E%3Crect x=%2211%22 y=%2215%22 width=%227%22 height=%2219%22 rx=%223.5%22/%3E%3Crect x=%2222%22 y=%228%22 width=%227%22 height=%2226%22 rx=%223.5%22/%3E%3Crect x=%2233%22 y=%220%22 width=%227%22 height=%2234%22 rx=%223.5%22/%3E%3C/g%3E %3Cg transform=%22translate(100 18)%22%3E%3Cpath d=%22M0 4h6l6 22h20l5-16H9%22/%3E%3Ccircle cx=%2215%22 cy=%2232%22 r=%222.5%22/%3E%3Ccircle cx=%2229%22 cy=%2232%22 r=%222.5%22/%3E%3C/g%3E %3Cg transform=%22translate(190 26) rotate(10)%22%3E%3Cpath d=%22M0 10l16-9 16 9v18l-16 9-16-9z%22/%3E%3Cpath d=%22M0 10l16 9 16-9M16 19v18%22/%3E%3C/g%3E %3Cg transform=%22translate(26 104)%22%3E%3Cpath d=%22M0 30l11-12 9 7 15-17%22/%3E%3Cpath d=%22M28 8h7v7%22/%3E%3Cpath d=%22M0 38h40%22/%3E%3C/g%3E %3Cg transform=%22translate(112 98) rotate(-6)%22%3E%3Cpath d=%22M0 6h22v20H0zM22 12h9l6 7v7H22%22/%3E%3Ccircle cx=%227%22 cy=%2229%22 r=%223%22/%3E%3Ccircle cx=%2230%22 cy=%2229%22 r=%223%22/%3E%3C/g%3E %3Cg transform=%22translate(196 104)%22%3E%3Cpath d=%22M2 0h24v36l-4-3-4 3-4-3-4 3-4-3-4 3z%22/%3E%3Cpath d=%22M8 9h12M8 16h12M8 23h7%22/%3E%3C/g%3E %3Cg transform=%22translate(30 192) rotate(12)%22%3E%3Cpath d=%22M14 0a12 12 0 0 1 12 12c0 9-12 22-12 22S2 21 2 12A12 12 0 0 1 14 0z%22/%3E%3Ccircle cx=%2214%22 cy=%2212%22 r=%224%22/%3E%3C/g%3E %3Cg transform=%22translate(108 190)%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2215%22/%3E%3Cpath d=%22M16 4v12l8 5%22/%3E%3C/g%3E %3Cg transform=%22translate(192 190) rotate(-10)%22%3E%3Crect x=%220%22 y=%220%22 width=%2234%22 height=%2226%22 rx=%224%22/%3E%3Cpath d=%22M0 8h34M6 18h8%22/%3E%3C/g%3E %3Cg transform=%22translate(74 62)%22%3E%3Cpath d=%22M5 0v10M0 5h10%22/%3E%3C/g%3E%3Cg transform=%22translate(160 150)%22%3E%3Cpath d=%22M5 0v10M0 5h10%22/%3E%3C/g%3E %3Cg transform=%22translate(236 70)%22%3E%3Ccircle cx=%223%22 cy=%223%22 r=%222%22/%3E%3C/g%3E%3Cg transform=%22translate(80 150)%22%3E%3Ccircle cx=%223%22 cy=%223%22 r=%222%22/%3E%3C/g%3E%3Cg transform=%22translate(164 238)%22%3E%3Ccircle cx=%223%22 cy=%223%22 r=%222%22/%3E%3C/g%3E %3C/svg%3E'); }
+      .ab-splash { background-color: var(--sk-page, #fff); background-image: radial-gradient(ellipse 260px 220px at 50% 50%, var(--sk-page, #fff) 40%, transparent 100%), radial-gradient(circle at 50% 46%, rgba(238,106,0,.10), transparent 32%), radial-gradient(circle at 56% 54%, rgba(14,109,253,.08), transparent 38%), var(--ab-doodle); background-size: auto, auto, auto, 260px 260px; animation: ab-drift 60s linear infinite; }
+      @keyframes ab-drift { from { background-position: 0 0, 0 0, 0 0, 0 0; } to { background-position: 0 0, 0 0, 0 0, 260px 520px; } }
+      .ab-splash .ab-badge { display: flex; align-items: center; justify-content: center; width: 128px; height: 128px; border-radius: 36px; background: var(--sk-card, #fff); box-shadow: 0 24px 60px -24px rgba(15,31,54,.35), 0 0 0 1px var(--sk-line, rgba(0,0,0,.08)); }
+      .ab-splash .ab-tag { font-size: 13px; font-weight: 600; color: var(--sk-ink); opacity: .55; letter-spacing: .01em; margin-top: -8px; }
+      @media (prefers-reduced-motion: reduce) { .ab-splash { animation: none; } }
     </style>
 
     <!--
@@ -108,29 +105,25 @@
   </head>
   <body>
     <div id="root">
-      <div id="boot" aria-hidden="true">
-        <!-- The portal and sign in open on a plain page: no placeholder layout. -->
-        <div class="app"></div>
-
-        <div class="site lit">
-          <div class="strip"></div>
-          <div class="promo"></div>
-          <div class="col nav">
-            <div class="gh" style="height:18px;width:104px"></div>
-            <div class="gh" style="height:36px;width:150px"></div>
-          </div>
-          <div class="col" style="padding-top:56px;padding-bottom:80px">
-            <div class="gh" style="height:28px;width:180px;border-radius:999px"></div>
-            <div class="gh" style="height:44px;max-width:640px;margin-top:28px"></div>
-            <div class="gh" style="height:44px;max-width:540px;margin-top:12px"></div>
-            <div class="gh" style="height:16px;max-width:480px;margin-top:32px;border-radius:999px"></div>
-            <div class="gh" style="height:16px;max-width:400px;margin-top:10px;border-radius:999px"></div>
-            <div style="display:flex;gap:12px;margin-top:36px">
-              <div class="gh" style="height:48px;width:190px"></div>
-              <div class="gh" style="height:48px;width:160px"></div>
-            </div>
-          </div>
+      <div id="boot" class="ab-splash" role="status" aria-label="Loading AfterBI">
+        <div class="ab-badge">
+          <svg class="ab-signal" viewBox="0 0 128 128" width="84" height="84" aria-hidden="true">
+            <defs>
+              <linearGradient id="abg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a1a"/><stop offset="1" stop-color="#f2332b"/></linearGradient>
+              <linearGradient id="abg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd21f"/><stop offset="1" stop-color="#f5a400"/></linearGradient>
+              <linearGradient id="abg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3ddc7a"/><stop offset="1" stop-color="#02a05c"/></linearGradient>
+              <linearGradient id="abg4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#45b0ff"/><stop offset="1" stop-color="#0e6dfd"/></linearGradient>
+            </defs>
+            <g transform="skewX(-9) translate(14 0)">
+              <rect class="b1" x="3" y="78" width="25" height="36" rx="12.5" fill="url(#abg1)"/>
+              <rect class="b2" x="35" y="55" width="25" height="59" rx="12.5" fill="url(#abg2)"/>
+              <rect class="b3" x="67" y="37" width="25" height="77" rx="12.5" fill="url(#abg3)"/>
+              <rect class="b4" x="99" y="20" width="25" height="94" rx="12.5" fill="url(#abg4)"/>
+            </g>
+          </svg>
         </div>
+        <div class="name">AfterBI</div>
+        <div class="ab-tag">Sales and distribution, connected</div>
       </div>
     </div>
     <!--
