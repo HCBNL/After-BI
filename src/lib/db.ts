@@ -146,6 +146,54 @@ function newestFirst<T>(key: keyof T & string) {
  * writing the record would burn one, and the gap in the sequence is exactly what
  * somebody asks about.
  */
+/** `202610`: the year and month a monthly number belongs to. */
+function yearMonth(when = new Date()): string {
+  return `${when.getFullYear()}${String(when.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/**
+ * Monthly document numbers: `PI-202610001` (proforma, the order itself) and
+ * `DN202610001` (delivery note). Year, month, then the count for that month,
+ * so a number says when it was raised at a glance and restarts each month.
+ */
+const MONTHLY = {
+  PI: (ym: string, seq: number) => `PI-${ym}${String(seq).padStart(3, '0')}`,
+  DN: (ym: string, seq: number) => `DN${ym}${String(seq).padStart(3, '0')}`,
+} as const;
+
+async function nextMonthly(prefix: keyof typeof MONTHLY): Promise<string> {
+  const ym = yearMonth();
+  const ref = doc(db, orgPath('counters'), `${prefix}-${ym}`);
+  const seq = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const next = (snap.exists() ? (snap.data().value as number) : 0) + 1;
+    tx.set(ref, { value: next, updatedAt: serverTimestamp() }, { merge: true });
+    return next;
+  });
+  return MONTHLY[prefix](ym, seq);
+}
+
+/**
+ * The delivery note number for an order fulfilled before delivery notes were
+ * numbered. Given once, on first print, and kept on the order.
+ */
+export async function ensureDeliveryNumber(orderId: string): Promise<string> {
+  const ref = doc(db, orgPath('orders'), orderId);
+  const ym = yearMonth();
+  const counter = doc(db, orgPath('counters'), `DN-${ym}`);
+  return runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const existing = snap.exists() ? (snap.data() as Order).deliveryNumber : undefined;
+    if (existing) return existing;
+    const c = await tx.get(counter);
+    const next = (c.exists() ? (c.data().value as number) : 0) + 1;
+    const number = MONTHLY.DN(ym, next);
+    tx.set(counter, { value: next, updatedAt: serverTimestamp() }, { merge: true });
+    tx.update(ref, { deliveryNumber: number, updatedAt: serverTimestamp() });
+    return number;
+  });
+}
+
 async function nextNumber(prefix: 'PO' | 'INV' | 'RET'): Promise<string> {
   const year = new Date().getFullYear();
   const ref = doc(db, orgPath('counters'), `${prefix}-${year}`);
@@ -471,7 +519,7 @@ export async function createOrder(input: {
   const status: OrderStatus = !input.submit ? 'draft' : approvers.length ? 'pending_approval' : 'approved';
 
   const ref = await addDoc(collection(db, orgPath('orders')), {
-    orderNumber: await nextNumber('PO'),
+    orderNumber: await nextMonthly('PI'),
     distributorId: input.distributor.id,
     distributorName: input.distributor.company,
     lines,
@@ -594,6 +642,12 @@ export async function fulfilOrder(
     );
     const goods = order.lines.filter((_, index) => !isService[index]);
 
+    /* The delivery note's number, from this month's count. Read here, with every other read. */
+    const ym = yearMonth();
+    const dnRef = doc(db, orgPath('counters'), `DN-${ym}`);
+    const dnSnap = order.deliveryNumber ? null : await tx.get(dnRef);
+    const dnSeq = dnSnap ? (dnSnap.exists() ? (dnSnap.data().value as number) : 0) + 1 : 0;
+
     const positions = await Promise.all(
       goods.map(async (line) => {
         const ref = doc(db, orgPath('stock'), `${warehouseId}_${line.productId}`);
@@ -645,8 +699,11 @@ export async function fulfilOrder(
       });
     }
 
+    if (dnSnap) tx.set(dnRef, { value: dnSeq, updatedAt: serverTimestamp() }, { merge: true });
+
     tx.update(orderRef, {
       status: 'fulfilled',
+      ...(dnSnap ? { deliveryNumber: MONTHLY.DN(ym, dnSeq) } : {}),
       fulfilledAt: serverTimestamp(),
       fulfilledBy: actor.id,
       updatedAt: serverTimestamp(),
@@ -879,6 +936,21 @@ export function listInvoices(
     newestFirst<Invoice>('issuedOn'),
     filter.max,
   );
+}
+
+/** The live (not void) invoice raised from an order, if any. Read for the proforma's payment status. */
+export async function invoiceForOrder(order: Pick<Order, 'id' | 'distributorId'>): Promise<Invoice | null> {
+  try {
+    const rows = await list<Invoice>(
+      'invoices',
+      where('orderId', '==', order.id),
+      where('distributorId', '==', order.distributorId),
+      fsLimit(5),
+    );
+    return rows.find((invoice) => invoice.status !== 'void') ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function listPayments(invoiceId: string, distributorId?: string): Promise<Payment[]> {

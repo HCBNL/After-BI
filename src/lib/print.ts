@@ -37,7 +37,6 @@
  * the fallback for the one case the iframe cannot serve.
  */
 
-import { INVOICE_STATUS_LABEL } from '@/types';
 import { listPriceOf, summarise } from './pricing';
 import type { Distributor, Invoice, Order, OrderLine, OrgSettings, Payment } from '@/types';
 
@@ -100,6 +99,14 @@ export type PrintJob =
   | {
       kind: 'proforma';
       order: Order;
+      /** The invoice raised from this order, if any: decides the payment status printed. */
+      invoice?: Invoice | null;
+      distributor?: Distributor | null;
+      company: PrintCompany;
+    }
+  | {
+      kind: 'delivery';
+      order: Order;
       distributor?: Distributor | null;
       company: PrintCompany;
     }
@@ -142,7 +149,8 @@ const BASE_CSS = (brand: string) => `
   .logo .dot{display:inline-block;width:.24em;height:.24em;border-radius:50%;
              background:${brand};vertical-align:baseline;margin-left:.08em}
   .org-line{font-size:10px;color:#5b6167;margin-top:3px;line-height:1.5}
-  .doc-title{font-size:19px;font-weight:900;text-align:right;letter-spacing:.06em;color:${brand}}
+  .co-name{font-size:15px;font-weight:800;color:#101418;margin-top:8px;letter-spacing:-0.01em}
+  .doc-title{font-size:15px;font-weight:600;text-align:right;letter-spacing:.16em;color:${brand}}
   .doc-meta{font-size:11px;margin-top:4px;text-align:right;line-height:1.6}
 
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;margin-bottom:14px}
@@ -166,23 +174,26 @@ const BASE_CSS = (brand: string) => `
   .totals{min-width:264px;margin-left:auto}
   .t-row{display:flex;justify-content:space-between;gap:24px;padding:4px 0;font-size:12px}
   .t-final{font-weight:900;font-size:14px;border-top:2px solid #1a1d21;padding-top:6px;margin-top:4px}
-  .balance{margin-top:12px;background:#fdf2f2;border:1.5px solid #d03b3b;border-radius:6px;
+  /* Print friendly: white boxes, hairline borders, the brand colour as the only accent. */
+  .balance{margin-top:12px;background:#fff;border:1px solid #d7dbdf;border-left:4px solid ${brand};border-radius:6px;
            padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:16px}
-  .balance .lab{font-size:13px;font-weight:900;color:#a52929}
-  .balance .sub{font-size:10px;color:#8a7070;margin-top:2px}
-  .balance .val{font-size:19px;font-weight:900;color:#a52929;white-space:nowrap}
+  .balance .lab{font-size:12.5px;font-weight:800;color:${brand};letter-spacing:.03em}
+  .balance .sub{font-size:10px;color:#5b6167;margin-top:2px}
+  .balance .val{font-size:18px;font-weight:900;color:#1a1d21;white-space:nowrap}
 
-  .bank{margin-top:22px;padding:10px 12px;border:1px solid #d7dbdf;border-radius:6px;
+  .bank{margin-top:16px;padding:10px 12px;border:1px solid #d7dbdf;border-radius:6px;
         background:rgba(255,255,255,.85)}
   .bank h4{font-weight:800;margin-bottom:6px;font-size:10.5px;letter-spacing:.04em}
   .bank .accts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;font-size:11px}
-  .bank .warn{margin-top:8px;font-size:9.5px;color:#8a6100;font-style:italic;line-height:1.5}
+  .bank .warn{margin-top:8px;font-size:9.5px;color:#5b6167;font-style:italic;line-height:1.5}
   .bank .none{font-size:11px;color:#8a9097;font-style:italic}
 
   .notes{margin-top:10px;font-size:11px;color:#41474d;line-height:1.55}
-  .goodwill{margin-top:10px;background:#f2fbf2;border:1px solid #9fd99f;border-radius:6px;
-            padding:8px 12px;font-size:11px;color:#0a5a0a;line-height:1.5;page-break-inside:avoid;break-inside:avoid}
+  .goodwill{margin-top:10px;background:#fff;border:1px solid #d7dbdf;border-left:4px solid ${brand};border-radius:6px;
+            padding:8px 12px;font-size:11px;color:#1a1d21;line-height:1.5;page-break-inside:avoid;break-inside:avoid}
   .sig{display:grid;grid-template-columns:1fr 1fr;gap:44px;margin-top:34px}
+  .sig-img{height:52px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:2px}
+  .sig-img img{max-height:50px;max-width:180px;object-fit:contain}
   .sig-line{border-top:1px solid #1a1d21;padding-top:6px;font-size:11px;text-align:center;font-weight:700}
   .sig-sub{font-size:9.5px;color:#7a8087;text-align:center;margin-top:2px}
 
@@ -192,7 +203,11 @@ const BASE_CSS = (brand: string) => `
                    background:${brand};vertical-align:baseline;margin-left:.08em}
   .foot .sub{font-size:9px;color:#8a9097;margin-top:3px;line-height:1.5}
 
-  @media print{body{padding:0}.page{padding-bottom:16mm}}
+  .status{display:inline-block;margin-top:5px;padding:3px 9px;border-radius:999px;font-size:9.5px;font-weight:800;letter-spacing:.08em;
+          background:#fff;color:${brand};border:1px solid ${brand}}
+  /* On paper, "Generated with AfterBI" sits at the foot of every page. */
+  @media print{body{padding:0}.page{padding-bottom:20mm}
+    .foot{position:fixed;left:0;right:0;bottom:0;margin:0;padding:6px 0 2px;background:#fff}}
 `;
 
 function watermark(mark: string): string {
@@ -201,10 +216,9 @@ function watermark(mark: string): string {
 }
 
 function header(settings: OrgSettings, title: string, meta: string): string {
-  const short = settings.shortName || settings.name;
   const mark = settings.logoUrl
-    ? `<img class="logo-img" src="${esc(settings.logoUrl)}" alt="${esc(short)}" />`
-    : `<div class="logo">${esc(short)}<span class="dot"></span></div>`;
+    ? `<img class="logo-img" src="${esc(settings.logoUrl)}" alt="${esc(settings.name)}" />`
+    : '';
 
   /*
    * `TIN TIN-20984412`.
@@ -217,14 +231,18 @@ function header(settings: OrgSettings, title: string, meta: string): string {
   const tax = settings.taxId?.trim();
   const taxLine = tax ? (/^(tin|rc)\b/i.test(tax) ? tax : `TIN ${tax}`) : '';
 
-  const lines = [settings.name, settings.address,
-    [settings.phone, settings.email].filter(Boolean).join(' · '), taxLine]
+  const rc = settings.rcNumber?.trim();
+  const rcLine = rc ? (/^rc\b/i.test(rc) ? rc : `RC ${rc}`) : '';
+
+  const lines = [settings.address,
+    [settings.phone, settings.email].filter(Boolean).join(' · '), [rcLine, taxLine].filter(Boolean).join(' · ')]
     .filter(Boolean)
     .map((line) => `<div>${esc(line)}</div>`)
     .join('');
 
+  /* The registered name, under the logo and above everything else. */
   return `<div class="head">
-    <div>${mark}<div class="org-line">${lines}</div></div>
+    <div>${mark}<div class="co-name">${esc(settings.name)}</div><div class="org-line">${lines}</div></div>
     <div><div class="doc-title">${esc(title)}</div><div class="doc-meta">${meta}</div></div>
   </div>`;
 }
@@ -254,10 +272,10 @@ function lineTable(lines: OrderLine[]): string {
       .join('');
     return `<table class="items">
     <colgroup><col style="width:30px"/><col/><col style="width:76px"/>
-      <col style="width:56px"/><col style="width:96px"/><col style="width:96px"/><col style="width:112px"/></colgroup>
+      <col style="width:52px"/><col style="width:96px"/><col style="width:112px"/><col style="width:110px"/></colgroup>
     <thead><tr>
       <th>NO.</th><th>ITEM</th><th>UNIT</th>
-      <th class="num">QTY</th><th class="num">LIST PRICE (₦)</th><th class="num">YOUR PRICE (₦)</th><th class="num">AMOUNT (₦)</th>
+      <th class="num">QTY</th><th class="num" style="white-space:normal">NORMAL PRICE (₦)</th><th class="num" style="white-space:normal">DISCOUNTED PRICE (₦)</th><th class="num">AMOUNT (₦)</th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
@@ -294,16 +312,16 @@ function lineTable(lines: OrderLine[]): string {
 function discountRows(lines: OrderLine[], note?: string | null): string {
   const { gross, discount } = summarise(lines);
   if (!(discount > 0)) return '';
-  return `<div class="t-row"><span>Subtotal (list price)</span><span>${money(gross)}</span></div>
-    <div class="t-row" style="color:#0a7a0a;font-weight:700"><span>Less: ${esc(note || 'Goodwill discount')}</span><span>(${money(discount)})</span></div>`;
+  return `<div class="t-row"><span>Normal price</span><span>${money(gross)}</span></div>
+    <div class="t-row" style="font-weight:700"><span>Discount${note ? ` (${esc(note)})` : ''}</span><span>(${money(discount)})</span></div>`;
 }
 
 function goodwill(lines: OrderLine[], note?: string | null): string {
   const { gross, discount, net } = summarise(lines);
   if (!(discount > 0)) return '';
   return `<div class="goodwill">
-    <strong>${esc(note || 'Goodwill discount')}:</strong> a discount of <strong>${money(discount)}</strong>
-    has been given on this order. List value ${money(gross)}, now ${money(net)}.
+    <strong>Discount${note ? ` (${esc(note)})` : ''}: ${money(discount)}</strong>.
+    Normal price ${money(gross)}, discounted price <strong>${money(net)}</strong>.
   </div>`;
 }
 
@@ -317,7 +335,7 @@ function goodwill(lines: OrderLine[], note?: string | null): string {
  * and it works because the invoice is the only thing the payer checks.
  */
 function bankBlock(settings: OrgSettings): string {
-  const short = esc(settings.shortName || settings.name);
+  const company = esc(settings.name);
   const banks = (settings.banks ?? []).filter((b) => String(b.accountNumber ?? '').trim());
 
   const body = banks.length
@@ -338,39 +356,167 @@ function bankBlock(settings: OrgSettings): string {
   return `<div class="bank">
     <h4>PAYMENT: DESIGNATED BANK ACCOUNTS ONLY</h4>
     ${body}
-    <div class="warn">Only payments into ${short}'s designated accounts above are recognised.
-      ${short} is not responsible for money paid into any other account.</div>
+    <div class="warn">Only payments into the account${banks.length === 1 ? '' : 's'} above, in the name of ${company}, are recognised.
+      ${company} is not responsible for money paid into any other account or in any other name.</div>
   </div>`;
 }
 
-function signatures(settings: OrgSettings, company: PrintCompany, billTo: string, billAddress: string): string {
+/** Who signed for the company, and whether the stored signature may be printed for them. */
+export interface SignedBy {
+  /** Printed only when it is the company's signatory's own. */
+  image?: string;
+  name: string;
+  title?: string;
+  /** "Approved 22 Oct 2026". */
+  note?: string;
+}
+
+const sameName = (a?: string, b?: string) =>
+  Boolean(a && b) && a!.toLowerCase().replace(/[^a-z]/g, '') === b!.toLowerCase().replace(/[^a-z]/g, '');
+
+function signatures(
+  settings: OrgSettings,
+  company: PrintCompany,
+  billTo: string,
+  _billAddress: string,
+  signed?: SignedBy | null,
+): string {
+  if (signed) {
+    return `<div class="sig">
+    <div>
+      <div class="sig-img">${signed.image ? `<img src="${esc(signed.image)}" alt="Signature" />` : ''}</div>
+      <div class="sig-line">FOR: ${esc(settings.name).toUpperCase()}</div>
+      <div class="sig-sub">${esc([signed.name, signed.title].filter(Boolean).join(', '))}${signed.note ? ` · ${esc(signed.note)}` : ''}</div>
+    </div>
+    <div>
+      <div class="sig-img"></div>
+      <div class="sig-line">CUSTOMER SIGNATURE</div>
+      <div class="sig-sub">${esc(billTo)}</div>
+    </div>
+  </div>`;
+  }
   const who = company.preparedBy ? esc(company.preparedBy) : esc(settings.name);
+  /* The signatory is named by their job title (Managing Director), not their app role (Super admin). */
+  const role =
+    sameName(company.preparedBy, settings.signatoryName) && settings.signatoryTitle
+      ? settings.signatoryTitle
+      : company.preparedByRole;
   return `<div class="sig">
     <div>
       <div class="sig-line">FOR: ${who}</div>
-      ${company.preparedByRole ? `<div class="sig-sub">${esc(company.preparedByRole)}</div>` : ''}
+      ${role ? `<div class="sig-sub">${esc(role)}</div>` : ''}
     </div>
     <div>
       <div class="sig-line">CUSTOMER SIGNATURE</div>
-      <div class="sig-sub">${esc(billAddress || billTo)}</div>
+      <div class="sig-sub">${esc(billTo)}</div>
     </div>
   </div>`;
 }
 
-function footer(settings: OrgSettings, note: string): string {
-  const short = settings.shortName || settings.name;
+/** The AfterBI four bar mark, small, for the footer. */
+const AFTERBI_MARK = `<svg viewBox="0 0 130 120" width="15" height="14" style="vertical-align:-1px;margin-right:5px" aria-hidden="true"><g transform="skewX(-9) translate(14 0)"><rect x="3" y="78" width="25" height="36" rx="12.5" fill="#f2332b"/><rect x="35" y="55" width="25" height="59" rx="12.5" fill="#f5a400"/><rect x="67" y="37" width="25" height="77" rx="12.5" fill="#02a05c"/><rect x="99" y="20" width="25" height="94" rx="12.5" fill="#0e6dfd"/></g></svg>`;
+
+function footer(_settings: OrgSettings, note: string): string {
   return `<div class="foot">
-    <div class="mark">Generated with ${esc(short)}<span class="dot"></span></div>
+    <div class="mark">${AFTERBI_MARK}Generated with AfterBI</div>
     <div class="sub">${esc(note)} · Printed ${new Date().toLocaleString('en-NG')} (WAT)</div>
   </div>`;
 }
 
+/* payment status */
+
+type PayTone = 'pending' | 'paid' | 'part' | 'late' | 'void';
+
+interface PayState {
+  tone: PayTone;
+  label: string;
+}
+
+/** Where the money stands on an invoice, in the words a customer reads. */
+function payState(invoice: Pick<Invoice, 'status' | 'total' | 'amountPaid' | 'dueOn'> | null | undefined): PayState {
+  if (!invoice) return { tone: 'pending', label: 'PAYMENT PENDING' };
+  if (invoice.status === 'void') return { tone: 'void', label: 'VOID' };
+  const owing = Math.max(0, invoice.total - (invoice.amountPaid ?? 0));
+  if (owing <= 0.009) return { tone: 'paid', label: 'PAID' };
+  const today = new Date().toISOString().slice(0, 10);
+  if (invoice.dueOn && invoice.dueOn < today) return { tone: 'late', label: 'OVERDUE' };
+  if ((invoice.amountPaid ?? 0) > 0) return { tone: 'part', label: 'PART PAID' };
+  return { tone: 'pending', label: 'PAYMENT PENDING' };
+}
+
+function statusPill(state: PayState): string {
+  return `<span class="status">${state.label}</span>`;
+}
+
+/** The band under the totals: what is still owed, or that nothing is. */
+function balanceBand(total: number, paid: number, state: PayState, dueLine: string): string {
+  const owing = Math.max(0, total - paid);
+  if (state.tone === 'paid') {
+    return `<div class="balance">
+      <div><div class="lab">PAID IN FULL</div>
+        <div class="sub">Nothing outstanding. Thank you.</div></div>
+      <div class="val">${money(total)}</div>
+    </div>`;
+  }
+  const label = state.tone === 'late' ? 'OVERDUE: AMOUNT DUE' : state.tone === 'part' ? 'BALANCE DUE (PART PAID)' : 'AMOUNT DUE: PAYMENT PENDING';
+  return `<div class="balance">
+    <div>
+      <div class="lab">${label}</div>
+      <div class="sub">${paid > 0 ? `${money(paid)} received. ` : ''}${dueLine}</div>
+    </div>
+    <div class="val">${money(owing)}</div>
+  </div>`;
+}
+
+/* who signs */
+
+/**
+ * An approved (or fulfilled) order is signed for the company.
+ *
+ * The stored signature (Settings, Signature) is printed only when it is the
+ * signer's own: the order went straight through (raised by the super admin, or
+ * under the threshold) or the person who approved it is the named signatory.
+ * Approved by somebody else, their name is printed without anybody's ink.
+ */
+function orderSigner(order: Order, settings: OrgSettings): SignedBy | null {
+  if (order.status !== 'approved' && order.status !== 'fulfilled') return null;
+  const approval = (order.approvals ?? []).find((a) => a.decision === 'approved');
+  const when = order.approvedAt ?? approval?.decidedAt;
+  const note = when ? `Approved ${printDate(when)}` : 'Approved';
+  if (approval && !sameName(approval.name, settings.signatoryName)) {
+    return { name: approval.name, note };
+  }
+  const name = settings.signatoryName || approval?.name || order.createdByName;
+  return { image: settings.signatureUrl || undefined, name, title: settings.signatoryTitle, note };
+}
+
+/** An issued invoice is the company's document, signed by its signatory. */
+function invoiceSigner(invoice: Invoice, settings: OrgSettings): SignedBy | null {
+  if (invoice.status === 'draft' || invoice.status === 'void') return null;
+  if (!settings.signatoryName && !settings.signatureUrl) return null;
+  return {
+    image: settings.signatureUrl || undefined,
+    name: settings.signatoryName || settings.name,
+    title: settings.signatoryTitle,
+    note: `Issued ${printDate(invoice.issuedOn)}`,
+  };
+}
+
 /* variants */
+
+function fullAddress(distributor: Distributor | null | undefined): string {
+  const street = distributor?.address?.trim() ?? '';
+  const state = distributor?.location?.trim() ?? '';
+  if (!state || street.toLowerCase().includes(state.toLowerCase())) return street;
+  const stateLine = /state$|fct|abuja/i.test(state) ? state : `${state} State`;
+  return [street, stateLine].filter(Boolean).join(', ');
+}
 
 function billingBlock(distributor: Distributor | null | undefined, fallbackName: string) {
   return {
     name: distributor?.company || fallbackName,
-    address: distributor?.address ?? '',
+    /* Shop or street, then the state: "Shop 12, Main Market, Onitsha, Anambra State". */
+    address: fullAddress(distributor),
     phone: distributor?.phone ?? '',
     contact: distributor?.contactName ?? '',
   };
@@ -382,8 +528,11 @@ function proformaDoc(job: Extract<PrintJob, { kind: 'proforma' }>): { title: str
   const validity = settings.proformaValidityDays ?? 7;
   const bill = billingBlock(distributor, order.distributorName);
 
+  const live = job.invoice && job.invoice.status !== 'void' ? job.invoice : null;
+  const state = payState(live);
   const meta = `<div><strong>No.: ${esc(order.orderNumber)}</strong></div>
-    <div style="font-size:10px;color:#5b6167">Valid ${validity} days from issue</div>`;
+    <div style="font-size:10px;color:#5b6167">Valid ${validity} days from issue</div>
+    ${order.status === 'cancelled' || order.status === 'rejected' ? statusPill({ tone: 'void', label: order.status.toUpperCase() }) : statusPill(state)}`;
 
   return {
     title: order.orderNumber,
@@ -414,11 +563,88 @@ function proformaDoc(job: Extract<PrintJob, { kind: 'proforma' }>): { title: str
         </div>
       </div>
       ${goodwill(order.lines, order.discountNote)}
+      ${
+        order.status === 'cancelled' || order.status === 'rejected'
+          ? ''
+          : balanceBand(
+              order.total,
+              live?.amountPaid ?? 0,
+              state,
+              live ? `Invoice ${esc(live.invoiceNumber)}, due ${printDate(live.dueOn)}.` : `Pay into the account below, quoting ${esc(order.orderNumber)}.`,
+            )
+      }
 
       ${order.note ? `<div class="notes"><strong>Note:</strong> ${esc(order.note)}</div>` : ''}
-      ${signatures(settings, company, bill.name, bill.address)}
+      ${settings.invoiceFooter ? `<div class="notes">${esc(settings.invoiceFooter)}</div>` : ''}
       ${bankBlock(settings)}
+      ${signatures(settings, company, bill.name, bill.address, orderSigner(order, settings))}
       ${footer(settings, `Proforma invoice · valid ${validity} days from issue`)}
+    `,
+  };
+}
+
+/**
+ * The delivery note: what left the depot, for the driver and the customer to
+ * sign. Quantities only, no prices, because it travels with the goods and is
+ * read by people who do not need to see what they cost.
+ */
+function deliveryDoc(job: Extract<PrintJob, { kind: 'delivery' }>): { title: string; body: string } {
+  const { order, distributor, company } = job;
+  const settings = company.settings;
+  const bill = billingBlock(distributor, order.distributorName);
+  const number = order.deliveryNumber || 'DN pending';
+  const goods = order.lines.filter((l) => !l.service);
+  const services = order.lines.filter((l) => l.service);
+
+  const meta = `<div><strong>No.: ${esc(number)}</strong></div>
+    <div style="font-size:10px;color:#5b6167">Order ref: ${esc(order.orderNumber)}</div>`;
+
+  const rows = goods
+    .map(
+      (line, i) => `<tr>
+        <td class="num">${i + 1}</td>
+        <td>${esc(line.productName)}${line.category ? ` <span style="font-size:9.5px;color:#8a9097">(${esc(line.category)})</span>` : ''}</td>
+        <td>${esc(line.unit)}</td>
+        <td class="num" style="font-weight:700">${line.quantity.toLocaleString('en-NG')}</td>
+        <td></td>
+      </tr>`,
+    )
+    .join('');
+
+  return {
+    title: number,
+    body: `
+      ${header(settings, 'DELIVERY NOTE', meta)}
+      <div class="grid">
+        <div>
+          <div class="row"><span class="k">Deliver to:</span><strong>${esc(bill.name)}</strong></div>
+          ${bill.contact ? `<div class="row"><span class="k">Attn:</span><span>${esc(bill.contact)}</span></div>` : ''}
+          ${bill.address ? `<div class="row"><span class="k">Address:</span><span>${esc(bill.address)}</span></div>` : ''}
+          ${bill.phone ? `<div class="row"><span class="k">Phone:</span><span>${esc(bill.phone)}</span></div>` : ''}
+        </div>
+        <div style="text-align:right">
+          <div class="row" style="justify-content:flex-end"><span class="k">Dispatched:</span><span>${printDate(order.fulfilledAt ?? new Date())}</span></div>
+          <div class="row" style="justify-content:flex-end"><span class="k">Order date:</span><span>${printDate(order.createdAt)}</span></div>
+          ${services.map((s) => `<div class="row" style="justify-content:flex-end"><span class="k">${esc(s.productName)}:</span><span>${esc(s.note || 'Included')}</span></div>`).join('')}
+        </div>
+      </div>
+
+      <table class="items">
+        <colgroup><col style="width:32px"/><col/><col style="width:100px"/><col style="width:80px"/><col style="width:150px"/></colgroup>
+        <thead><tr><th>NO.</th><th>ITEM</th><th>UNIT</th><th class="num">QTY</th><th>CONDITION ON ARRIVAL</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="5" style="text-align:center;color:#8a9097">No goods on this order.</td></tr>'}</tbody>
+      </table>
+      <div style="font-size:11px;color:#5b6167">Total units:
+        <strong>${goods.reduce((s, l) => s + l.quantity, 0).toLocaleString('en-NG')}</strong></div>
+
+      ${order.note ? `<div class="notes"><strong>Note:</strong> ${esc(order.note)}</div>` : ''}
+
+      <div class="sig" style="grid-template-columns:1fr 1fr 1fr;gap:28px;margin-top:40px">
+        <div><div class="sig-img"></div><div class="sig-line">DISPATCHED BY</div><div class="sig-sub">${esc(settings.name)}</div></div>
+        <div><div class="sig-img"></div><div class="sig-line">DRIVER AND VEHICLE NO.</div><div class="sig-sub">Name, signature, plate number</div></div>
+        <div><div class="sig-img"></div><div class="sig-line">RECEIVED IN GOOD CONDITION</div><div class="sig-sub">${esc(bill.name)}: name, signature, date</div></div>
+      </div>
+      ${footer(settings, `Delivery note ${number} · order ${order.orderNumber}`)}
     `,
   };
 }
@@ -427,13 +653,9 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
   const { invoice, distributor, company } = job;
   const settings = company.settings;
   const bill = billingBlock(distributor, invoice.distributorName);
-  const owing = Math.max(0, invoice.total - invoice.amountPaid);
-  const today = new Date().toISOString().slice(0, 10);
-  const late = invoice.status !== 'paid' && invoice.dueOn < today;
-
+  const state = invoice.status === 'draft' ? { tone: 'void' as const, label: 'DRAFT' } : payState(invoice);
   const meta = `<div><strong>No.: ${esc(invoice.invoiceNumber)}</strong></div>
-    <div style="font-size:10.5px;color:${late ? '#a52929' : '#5b6167'};font-weight:700">
-      ${esc(late ? 'Overdue' : INVOICE_STATUS_LABEL[invoice.status]).toUpperCase()}</div>`;
+    ${statusPill(state)}`;
 
   return {
     title: invoice.invoiceNumber,
@@ -444,6 +666,7 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
           <div class="row"><span class="k">Bill to:</span><strong>${esc(bill.name)}</strong></div>
           ${bill.contact ? `<div class="row"><span class="k">Attn:</span><span>${esc(bill.contact)}</span></div>` : ''}
           ${bill.address ? `<div class="row"><span class="k">Address:</span><span>${esc(bill.address)}</span></div>` : ''}
+          ${bill.phone ? `<div class="row"><span class="k">Phone:</span><span>${esc(bill.phone)}</span></div>` : ''}
           ${invoice.orderNumber ? `<div class="row"><span class="k">Order ref:</span><span>${esc(invoice.orderNumber)}</span></div>` : ''}
         </div>
         <div style="text-align:right">
@@ -461,30 +684,16 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
         <div class="totals">
           ${discountRows(invoice.lines, invoice.discountNote)}
           <div class="t-row t-final"><span>TOTAL</span><span>${money(invoice.total)}</span></div>
-          ${invoice.amountPaid > 0 ? `<div class="t-row" style="color:#0a7a0a;margin-top:5px"><span>Paid to date</span><span>${money(invoice.amountPaid)}</span></div>` : ''}
+          ${invoice.amountPaid > 0 ? `<div class="t-row" style="margin-top:5px"><span>Paid to date</span><span>${money(invoice.amountPaid)}</span></div>` : ''}
         </div>
       </div>
 
       ${goodwill(invoice.lines, invoice.discountNote)}
-      ${
-        owing > 0
-          ? `<div class="balance">
-              <div>
-                <div class="lab">OUTSTANDING BALANCE</div>
-                <div class="sub">Payment due ${printDate(invoice.dueOn)}</div>
-              </div>
-              <div class="val">${money(owing)}</div>
-            </div>`
-          : `<div class="balance" style="background:#f2fbf2;border-color:#0ca30c">
-              <div><div class="lab" style="color:#0a7a0a">PAID IN FULL</div>
-                <div class="sub" style="color:#6f8a6f">Nothing outstanding on this invoice.</div></div>
-              <div class="val" style="color:#0a7a0a">${money(invoice.total)}</div>
-            </div>`
-      }
+      ${invoice.status === 'void' ? '' : balanceBand(invoice.total, invoice.amountPaid ?? 0, payState(invoice), `Payment due ${printDate(invoice.dueOn)}.`)}
 
       ${settings.invoiceFooter ? `<div class="notes">${esc(settings.invoiceFooter)}</div>` : ''}
-      ${signatures(settings, company, bill.name, bill.address)}
       ${bankBlock(settings)}
+      ${signatures(settings, company, bill.name, bill.address, invoiceSigner(invoice, settings))}
       ${footer(settings, 'Invoice')}
     `,
   };
@@ -542,7 +751,7 @@ function statementDoc(job: Extract<PrintJob, { kind: 'statement' }>): { title: s
       <div class="grid">
         <div>
           ${distributor.contactName ? `<div class="row"><span class="k">Attn:</span><span>${esc(distributor.contactName)}</span></div>` : ''}
-          ${distributor.address ? `<div class="row"><span class="k">Address:</span><span>${esc(distributor.address)}</span></div>` : ''}
+          ${fullAddress(distributor) ? `<div class="row"><span class="k">Address:</span><span>${esc(fullAddress(distributor))}</span></div>` : ''}
         </div>
         <div style="text-align:right">
           ${distributor.creditLimit !== undefined ? `<div class="row" style="justify-content:flex-end"><span class="k">Credit limit:</span><span>${money(distributor.creditLimit)}</span></div>` : ''}
@@ -560,12 +769,12 @@ function statementDoc(job: Extract<PrintJob, { kind: 'statement' }>): { title: s
         <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:#8a9097">Nothing on this account yet.</td></tr>'}</tbody>
       </table>
 
-      <div class="balance" ${running <= 0 ? 'style="background:#f2fbf2;border-color:#0ca30c"' : ''}>
+      <div class="balance">
         <div>
-          <div class="lab" ${running <= 0 ? 'style="color:#0a7a0a"' : ''}>BALANCE CARRIED FORWARD</div>
+          <div class="lab">BALANCE CARRIED FORWARD</div>
           <div class="sub">${entries.length} entries to ${printDate(new Date())}</div>
         </div>
-        <div class="val" ${running <= 0 ? 'style="color:#0a7a0a"' : ''}>${money(running)}</div>
+        <div class="val">${money(running)}</div>
       </div>
 
       ${bankBlock(settings)}
@@ -580,13 +789,19 @@ function build(job: PrintJob): { title: string; html: string } {
   const settings = job.company.settings;
   const brand = /^#[0-9a-f]{6}$/i.test(settings.brandColor ?? '') ? settings.brandColor! : '#10b981';
   const doc =
-    job.kind === 'proforma' ? proformaDoc(job) : job.kind === 'invoice' ? invoiceDoc(job) : statementDoc(job);
+    job.kind === 'proforma'
+      ? proformaDoc(job)
+      : job.kind === 'delivery'
+        ? deliveryDoc(job)
+        : job.kind === 'invoice'
+          ? invoiceDoc(job)
+          : statementDoc(job);
 
   return {
     title: doc.title,
     html: `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />
       <title>${esc(doc.title)}</title><style>${BASE_CSS(brand)}</style></head>
-      <body>${watermark(settings.shortName || settings.name)}<div class="page">${doc.body}</div></body></html>`,
+      <body>${watermark('AfterBI')}<div class="page">${doc.body}</div></body></html>`,
   };
 }
 
