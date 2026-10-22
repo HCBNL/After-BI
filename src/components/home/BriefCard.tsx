@@ -89,10 +89,7 @@ export function BriefCard({ root, className }: { root: string; className?: strin
       )}
 
       {brief.pipeline.some((stage) => stage.count > 0) && (
-        <div className="mt-5 rounded-2xl border border-hairline surface-sunken p-4 sm:p-5">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted">Order trail</p>
-          <Pipeline stages={brief.pipeline} bottleneck={brief.bottleneck?.key} className="mt-1" />
-        </div>
+        <Pipeline stages={brief.pipeline} bottleneck={brief.bottleneck?.key} className="mt-5" />
       )}
 
       {brief.insights.length > 0 && <Insights items={brief.insights} className="mt-4" />}
@@ -202,12 +199,21 @@ export function Pipeline({ stages, bottleneck, className }: { stages: Stage[]; b
   const seg = (i: number) => ({ left: i > from && i <= to, right: i >= from && i < to });
 
   return (
-    <div className={cn('@container', className)}>
-      <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <p className="text-[13px] font-semibold text-secondary">
-          <span className="tabular text-[22px] font-bold text-primary">{count(totalCount)}</span> order{totalCount === 1 ? '' : 's'} on the way
+    <div className={cn('ab-hero @container relative isolate overflow-hidden rounded-[22px] p-5 text-white shadow-card sm:p-6', className)}>
+      {/* The AfterBI bars, in their own colours, faint behind the trail. */}
+      <SignatureBars className="pointer-events-none absolute -right-12 -top-16 -z-10 h-56 w-56 opacity-[0.14]" />
+      <SignatureBars className="pointer-events-none absolute -bottom-12 left-[38%] -z-10 h-32 w-32 opacity-[0.08]" />
+
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/60">Order trail</p>
+      <div className="mb-5 mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <p className="text-[13.5px] font-semibold text-white/80">
+          <span className="tabular text-[26px] font-bold text-white">{count(totalCount)}</span> order{totalCount === 1 ? '' : 's'} on the way
         </p>
-        {totalValue > 0 && <p className="tabular text-[13px] font-semibold text-muted">worth {nairaShort(totalValue)}</p>}
+        {totalValue > 0 && <p className="tabular text-[13.5px] font-semibold text-white/60">worth {nairaShort(totalValue)}</p>}
+        <span className="ml-auto flex items-center gap-3 text-[11.5px] font-semibold text-white/70">
+          <span className="flex items-center gap-1.5"><span className="ab-trail-active h-2.5 w-2.5 rounded-full" />Pending</span>
+          <span className="flex items-center gap-1.5"><span className="ab-trail-clear h-2.5 w-2.5 rounded-full" />Clear</span>
+        </span>
       </div>
 
       {/* across, when there is room */}
@@ -224,6 +230,20 @@ export function Pipeline({ stages, bottleneck, className }: { stages: Stage[]; b
         ))}
       </ol>
     </div>
+  );
+}
+
+/** The AfterBI four bars in their own colours, for decoration. */
+function SignatureBars({ className }: { className?: string }) {
+  return (
+    <svg viewBox="-8 -14 146 146" className={className} aria-hidden focusable="false">
+      <g transform="skewX(-9) translate(14 0)">
+        <rect x="3" y="78" width="25" height="36" rx="12.5" fill="#f2332b" />
+        <rect x="35" y="55" width="25" height="59" rx="12.5" fill="#f5a400" />
+        <rect x="67" y="37" width="25" height="77" rx="12.5" fill="#02a05c" />
+        <rect x="99" y="20" width="25" height="94" rx="12.5" fill="#0e6dfd" />
+      </g>
+    </svg>
   );
 }
 
@@ -249,20 +269,19 @@ function TrailStop({
 
   const node = (
     <span className="relative z-10 flex items-center justify-center">
-      {blocked && lit && <span aria-hidden className="absolute h-14 w-14 animate-ping rounded-full bg-status-warning/20" style={{ animationDuration: '2.4s' }} />}
+      {/* Pending stops pulse like a notification. */}
+      {lit && <span aria-hidden className="ab-trail-ping absolute h-14 w-14 rounded-full" />}
       <span
         className={cn(
-          'relative flex h-11 w-11 items-center justify-center rounded-full border-2 transition-colors',
-          lit
-            ? blocked
-              ? 'border-status-warning bg-status-warning text-white shadow-[0_8px_20px_-8px_rgba(250,178,25,0.7)]'
-              : 'border-brand-600 bg-brand-600 text-white shadow-[0_8px_20px_-10px_rgba(0,0,0,0.45)] dark:border-brand-500 dark:bg-brand-500'
-            : 'border-[var(--border-strong)] surface-card text-muted',
+          'relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/90 text-white transition-colors',
+          lit ? 'ab-trail-active' : 'ab-trail-clear',
+          /* the stop holding up the most gets a halo as well */
+          blocked && lit && 'ring-4 ring-white/25',
         )}
       >
         <Icon size={18} strokeWidth={2} aria-hidden />
         {lit && (
-          <span className="tabular absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--surface-card)] px-1 text-[10.5px] font-bold text-primary shadow ring-1 ring-[var(--border-hairline)]">
+          <span className="tabular absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10.5px] font-bold text-[#0f1f36] shadow">
             {stage.count > 99 ? '99+' : stage.count}
           </span>
         )}
@@ -272,12 +291,11 @@ function TrailStop({
 
   const text = (
     <>
-      <p className={cn('text-[12.5px] font-semibold leading-tight', lit ? 'text-primary' : 'text-muted')}>{TRAIL_LABEL[stage.key] ?? stage.label}</p>
-      <p className={cn('tabular mt-1 text-[15px] font-bold leading-none', lit ? (done ? 'text-status-good' : 'text-primary') : 'text-muted opacity-60')}>
-        {lit ? nairaShort(stage.value) : 'Clear'}
-      </p>
+      <p className={cn('text-[12.5px] font-semibold leading-tight', lit ? 'text-white' : 'text-white/75')}>{TRAIL_LABEL[stage.key] ?? stage.label}</p>
+      {lit && <p className="tabular mt-1.5 text-[16px] font-bold leading-none text-white">{nairaShort(stage.value)}</p>}
+      <span className="sr-only">{lit ? `${stage.count} pending` : 'Nothing waiting'}</span>
       {late && (
-        <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-status-warning/12 px-2 py-0.5 text-[11px] font-semibold text-[#8a6100] dark:text-[#fab219]">
+        <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#fab219]/20 px-2 py-0.5 text-[11px] font-semibold text-[#ffd77a]">
           <Clock size={11} aria-hidden />
           {stage.key === 'collect' ? `${count(stage.stuck)} past due` : `${count(stage.stuck)} waiting too long`}
         </span>
@@ -285,7 +303,7 @@ function TrailStop({
     </>
   );
 
-  const line = (on: boolean) => (on ? 'bg-brand-600 dark:bg-brand-500' : 'bg-[var(--border-hairline)]');
+  const line = (on: boolean) => (on ? 'ab-trail-line-on' : 'bg-white/20');
 
   if (layout === 'across') {
     return (
@@ -293,7 +311,7 @@ function TrailStop({
         {/* the track runs edge to edge behind the node, so the trail is one unbroken line */}
         {!first && <span aria-hidden className={cn('absolute left-0 right-1/2 top-[26px] h-[3px] -translate-y-1/2', line(seg.left))} />}
         {!last && <span aria-hidden className={cn('absolute left-1/2 right-0 top-[26px] h-[3px] -translate-y-1/2', line(seg.right))} />}
-        <Link to={stage.to} className="group relative mx-1 flex flex-col items-center rounded-2xl px-1 pb-3 pt-1 text-center transition-colors hover:bg-[var(--surface-card)]">
+        <Link to={stage.to} className="group relative mx-1 flex flex-col items-center rounded-2xl px-1 pb-3 pt-1 text-center transition-colors hover:bg-white/[0.06]">
           {node}
           <div className="mt-3 flex flex-col items-center">{text}</div>
         </Link>
@@ -303,14 +321,14 @@ function TrailStop({
 
   return (
     <li className="relative">
-      <Link to={stage.to} className="group flex gap-3.5 rounded-2xl py-1.5 pr-2 transition-colors hover:bg-[var(--surface-card)]">
+      <Link to={stage.to} className="group flex gap-3.5 rounded-2xl py-1.5 pr-2 transition-colors hover:bg-white/[0.06]">
         <div className="relative flex w-11 shrink-0 justify-center">
           {!first && <span aria-hidden className={cn('absolute bottom-1/2 top-[-6px] w-[3px]', line(seg.left))} />}
           {!last && <span aria-hidden className={cn('absolute bottom-[-6px] top-1/2 w-[3px]', line(seg.right))} />}
           {node}
         </div>
         <div className="min-w-0 flex-1 py-1.5">{text}</div>
-        <ChevronRight size={16} aria-hidden className="mt-3 shrink-0 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
+        <ChevronRight size={16} aria-hidden className="mt-3 shrink-0 text-white/60 opacity-0 transition-opacity group-hover:opacity-100" />
       </Link>
     </li>
   );
