@@ -67,7 +67,7 @@ function Actions({ item, primary, secondary }: { item: Kpi; primary: string; sec
         <Link
           to={item.action.to}
           className={cn(
-            'inline-flex h-8 items-center rounded-full px-3.5 text-[12.5px] font-bold transition-opacity hover:opacity-90',
+            'inline-flex h-8 items-center rounded-full px-3.5 text-label font-bold transition-opacity hover:opacity-90',
             primary,
           )}
         >
@@ -78,7 +78,7 @@ function Actions({ item, primary, secondary }: { item: Kpi; primary: string; sec
         <Link
           to={item.secondary.to}
           className={cn(
-            'inline-flex h-8 items-center gap-0.5 rounded-full px-3 text-[12.5px] font-semibold transition-opacity hover:opacity-90',
+            'inline-flex h-8 items-center gap-0.5 rounded-full px-3 text-label font-semibold transition-opacity hover:opacity-90',
             secondary,
           )}
         >
@@ -99,8 +99,8 @@ function Failure({ onRetry, onPanel, className }: { onRetry?: () => void; onPane
         className,
       )}
     >
-      <p className={cn('text-[14.5px] font-semibold', !onPanel && 'text-primary')}>Your numbers did not load</p>
-      <p className={cn('mt-1 text-[13px] leading-snug', onPanel ? 'text-white/70' : 'text-secondary')}>
+      <p className={cn('text-body font-semibold', !onPanel && 'text-primary')}>Your numbers did not load</p>
+      <p className={cn('mt-1 text-label leading-snug', onPanel ? 'text-white/70' : 'text-secondary')}>
         Everything else still works. This is usually the connection.
       </p>
       {onRetry && (
@@ -108,7 +108,7 @@ function Failure({ onRetry, onPanel, className }: { onRetry?: () => void; onPane
           type="button"
           onClick={onRetry}
           className={cn(
-            'mt-3 self-start rounded-full px-3.5 py-1.5 text-[12.5px] font-bold',
+            'mt-3 self-start rounded-full px-3.5 py-1.5 text-label font-bold',
             onPanel ? 'bg-white/15' : 'bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-200',
           )}
         >
@@ -129,15 +129,15 @@ function BannerCard({ item, index }: { item: Kpi; index: number }) {
     >
       <BrandBars className="pointer-events-none absolute -bottom-10 -right-8 -z-10 h-40 w-40 text-white/[0.08]" />
       <div className="flex items-start justify-between gap-3">
-        <p className="pt-1 text-[13px] font-semibold text-white/80">{item.label}</p>
+        <p className="pt-1 text-label font-semibold text-white/80">{item.label}</p>
         {item.icon && (
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/15" aria-hidden>
             {item.icon}
           </span>
         )}
       </div>
-      <p className="tabular mt-1 font-display text-[32px] font-bold leading-none tracking-[-0.02em]">{item.value}</p>
-      <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-snug text-white/85">{item.caption}</p>
+      <p className="tabular mt-1 font-display text-display font-bold leading-none tracking-[-0.02em]">{item.value}</p>
+      <p className="mt-1.5 line-clamp-2 text-label leading-snug text-white/85">{item.caption}</p>
       <Progress value={item.progress} track="bg-white/20" fill="bg-white" />
       <Actions item={item} primary="bg-white text-[#14171c]" secondary="bg-white/15 text-white" />
     </article>
@@ -185,10 +185,10 @@ function GlassCard({ item }: { item: Kpi }) {
             {item.icon}
           </span>
         )}
-        <p className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-white/85">{item.label}</p>
+        <p className="min-w-0 flex-1 truncate text-body font-semibold text-white/85">{item.label}</p>
       </div>
-      <p className="tabular mt-3 font-display text-[40px] font-bold leading-none tracking-[-0.03em]">{item.value}</p>
-      <p className="mt-2 line-clamp-2 text-[12.5px] leading-snug text-white/70">{item.caption}</p>
+      <p className="tabular mt-3 font-display text-jumbo font-bold leading-none tracking-[-0.03em]">{item.value}</p>
+      <p className="mt-2 line-clamp-2 text-label leading-snug text-white/70">{item.caption}</p>
       <Progress value={item.progress} track="bg-white/15" fill="bg-white" />
       <Actions item={item} primary="bg-white text-[color:var(--hero)]" secondary="bg-white/[0.12] text-white" />
     </article>
@@ -263,12 +263,12 @@ function TipCard({ tip }: { tip: Tip }) {
     >
       <BrandBars className="pointer-events-none absolute -bottom-12 -right-10 -z-10 h-44 w-44 text-white/[0.07]" />
       <div className="flex min-w-0 flex-1 flex-col">
-        <h3 className="font-display text-[17px] font-bold leading-[1.22] tracking-[-0.01em]">{tip.title}</h3>
+        <h3 className="font-display text-title font-bold leading-[1.22] tracking-[-0.01em]">{tip.title}</h3>
         {tip.cta && (
           <div className="mt-auto pt-3">
             <Link
               to={tip.cta.to}
-              className="inline-flex h-8 items-center gap-0.5 rounded-full bg-white px-3.5 text-[12.5px] font-bold text-[#14171c] transition-opacity hover:opacity-90"
+              className="inline-flex h-8 items-center gap-0.5 rounded-full bg-white px-3.5 text-label font-semibold text-[#14171c] transition-opacity hover:opacity-90"
             >
               {tip.cta.label}
               <ChevronRight size={14} aria-hidden />

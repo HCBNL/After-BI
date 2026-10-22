@@ -91,7 +91,7 @@ function ShowAll({
       onClick={onToggle}
       aria-expanded={expanded}
       className={cn(
-        'mx-auto mt-3 flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold transition-colors',
+        'mx-auto mt-3 flex items-center gap-1.5 rounded-full px-4 py-2 text-label font-bold transition-colors',
         dark ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-secondary hover:bg-[var(--surface-sunken)] hover:text-primary',
         /* Above xl two rows already hold every tile: nothing hidden, no button. */
         !expanded && count <= large && 'xl:hidden',
@@ -121,7 +121,7 @@ function DeskTiles({ role }: { role: Role }) {
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.12] text-white transition-colors group-hover:bg-white group-hover:text-[color:var(--hero)]">
               <Icon size={21} strokeWidth={1.8} aria-hidden />
             </span>
-            <span className="line-clamp-2 text-[12.5px] font-semibold leading-tight text-white/90">{action.label}</span>
+            <span className="line-clamp-2 text-label font-semibold leading-tight text-white/90">{action.label}</span>
           </Link>
         );
       })}
@@ -158,7 +158,7 @@ export function DeskHero({
 
       <div className="mx-auto max-w-[1440px] px-5 pt-6">
         <div className="flex items-center justify-between gap-4">
-          <p className="text-[13.5px] font-medium text-white/65">{today}</p>
+          <p className="text-body font-medium text-white/65">{today}</p>
           <div className="flex items-center gap-2">
             <HeroThemeButton />
             <LayoutButton />
@@ -168,12 +168,12 @@ export function DeskHero({
         <div className="mt-4 flex items-center gap-5">
           <ProfilePhoto user={user} size="lg" />
           <div className="min-w-0">
-            <p className="text-[15px] font-medium text-white/70">{hello},</p>
-            <h1 className="flex items-center gap-2 font-display text-[34px] font-bold leading-[1.12] tracking-[-0.025em] text-white">
+            <p className="text-lead font-medium text-white/70">{hello},</p>
+            <h1 className="flex items-center gap-2 font-display text-display font-bold leading-[1.12] tracking-[-0.025em] text-white">
               <span className="truncate">{displayName(user)}</span>
               <OrgPlanBadge size={26} />
             </h1>
-            <p className="mt-1 truncate text-[14px] text-white/60">{orgName}</p>
+            <p className="mt-1 truncate text-body text-white/60">{orgName}</p>
           </div>
         </div>
 
@@ -206,13 +206,13 @@ export function DeskShortcuts({ role }: { role: Role }) {
       className="rounded-[22px] border border-hairline surface-card p-5 shadow-card"
     >
       <div className="flex items-center justify-between gap-3">
-        <h2 id="desk-shortcuts-heading" className="text-[16px] font-bold text-primary">
+        <h2 id="desk-shortcuts-heading" className="text-title font-semibold text-primary">
           Shortcuts
         </h2>
         <button
           type="button"
           onClick={() => openMenu({ search: true })}
-          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-label font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"
         >
           <Search size={15} aria-hidden />
           Find anything
@@ -232,7 +232,7 @@ export function DeskShortcuts({ role }: { role: Role }) {
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-800 transition-colors group-hover:bg-brand-600 group-hover:text-white dark:bg-brand-500/15 dark:text-brand-200 dark:group-hover:bg-brand-500 dark:group-hover:text-white">
                 <Icon size={20} strokeWidth={1.9} aria-hidden />
               </span>
-              <span className="line-clamp-2 text-[12.5px] font-semibold leading-tight text-secondary group-hover:text-primary">
+              <span className="line-clamp-2 text-label font-semibold leading-tight text-secondary group-hover:text-primary">
                 {action.label}
               </span>
             </Link>
@@ -305,12 +305,12 @@ export function MonthCard({ footnote }: { footnote?: string }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-brand-600 text-white shadow-[0_10px_24px_-12px_rgba(0,0,0,0.45)] dark:bg-brand-500">
-            <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] opacity-80">{today.name.slice(0, 3)}</span>
-            <span className="font-display text-[24px] font-bold leading-none">{today.day}</span>
+            <span className="text-micro font-semibold uppercase tracking-[0.14em] opacity-80">{today.name.slice(0, 3)}</span>
+            <span className="font-display text-headline font-bold leading-none">{today.day}</span>
           </span>
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-bold text-primary">{weekday}</p>
-            <p className="text-[12.5px] text-muted">
+            <p className="truncate text-lead font-semibold text-primary">{weekday}</p>
+            <p className="text-label text-muted">
               Day {today.day} of {today.days} · {today.left > 0 ? `${today.left} day${today.left === 1 ? '' : 's'} to go` : 'Last day'}
             </p>
           </div>
@@ -319,7 +319,7 @@ export function MonthCard({ footnote }: { footnote?: string }) {
 
       {/* month and arrows */}
       <div className="mt-4 flex items-center justify-between gap-2">
-        <p className="text-[13.5px] font-bold text-primary">
+        <p className="text-body font-semibold text-primary">
           {view.name} {view.year}
         </p>
         <div className="flex items-center gap-0.5">
@@ -330,7 +330,7 @@ export function MonthCard({ footnote }: { footnote?: string }) {
             <button
               type="button"
               onClick={() => setOffset(0)}
-              className="h-8 rounded-lg px-2 text-[12px] font-semibold text-brand-700 transition-colors hover:bg-[var(--surface-sunken)] dark:text-brand-300"
+              className="h-8 rounded-lg px-2 text-caption font-semibold text-brand-700 transition-colors hover:bg-[var(--surface-sunken)] dark:text-brand-300"
             >
               Today
             </button>
@@ -344,7 +344,7 @@ export function MonthCard({ footnote }: { footnote?: string }) {
       {/* the grid */}
       <div className="mt-2 grid grid-cols-7 gap-y-1 text-center">
         {WEEKDAYS.map((d, i) => (
-          <span key={d} className={cn('pb-1 text-[10.5px] font-semibold uppercase tracking-wide', i >= 5 ? 'text-muted opacity-70' : 'text-muted')}>
+          <span key={d} className={cn('pb-1 text-micro font-semibold uppercase tracking-wide', i >= 5 ? 'text-muted opacity-70' : 'text-muted')}>
             {d.slice(0, 2)}
           </span>
         ))}
@@ -356,7 +356,7 @@ export function MonthCard({ footnote }: { footnote?: string }) {
               <span
                 title={cell.inMonth ? `${cell.n} ${view.name} ${view.year}` : undefined}
                 className={cn(
-                  'tabular flex h-8 w-8 items-center justify-center rounded-full text-[12.5px] transition-colors',
+                  'tabular flex h-8 w-8 items-center justify-center rounded-full text-label transition-colors',
                   !cell.inMonth && 'text-muted opacity-40',
                   cell.inMonth && !isToday && past && 'text-muted',
                   cell.inMonth && !isToday && !past && (cell.weekend ? 'text-secondary' : 'font-semibold text-primary'),
@@ -376,7 +376,7 @@ export function MonthCard({ footnote }: { footnote?: string }) {
         <div className="h-1.5 overflow-hidden rounded-full surface-sunken" aria-hidden>
           <div className="h-full rounded-full bg-brand-600 dark:bg-brand-500" style={{ width: `${(today.day / today.days) * 100}%` }} />
         </div>
-        <div className="mt-2 flex items-center justify-between gap-3 text-[12px] text-muted">
+        <div className="mt-2 flex items-center justify-between gap-3 text-caption text-muted">
           <span className="truncate">{footnote ?? `Month ends ${today.days} ${today.name}`}</span>
           <span className="shrink-0 font-semibold text-secondary">{Math.round((today.day / today.days) * 100)}% of the month</span>
         </div>

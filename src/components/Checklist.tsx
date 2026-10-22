@@ -14,7 +14,7 @@ export function Checklist({
   disabled?: boolean;
   empty: string;
 }) {
-  if (!items.length) return empty ? <p className="text-[13px] text-muted">{empty}</p> : null;
+  if (!items.length) return empty ? <p className="text-label text-muted">{empty}</p> : null;
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {items.map((item) => {
@@ -23,7 +23,7 @@ export function Checklist({
           <label
             key={item.id}
             className={cn(
-              'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-[13.5px] text-primary transition-colors',
+              'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-body text-primary transition-colors',
               on ? 'border-brand-500/50 bg-brand-50/60 dark:bg-brand-500/10' : 'border-hairline',
               disabled ? 'opacity-60' : 'cursor-pointer',
             )}

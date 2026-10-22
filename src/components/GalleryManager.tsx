@@ -67,10 +67,10 @@ export function GalleryManager({
 
   if (!cloudinaryConfigured) {
     return (
-      <p className="text-[12.5px] leading-relaxed text-muted">
+      <p className="text-label leading-relaxed text-muted">
         Picture uploads are not set up on this deployment yet. Add{' '}
-        <code className="break-all font-mono text-[11.5px]">VITE_CLOUDINARY_CLOUD_NAME</code> and{' '}
-        <code className="break-all font-mono text-[11.5px]">VITE_CLOUDINARY_UPLOAD_PRESET</code>, then redeploy.
+        <code className="break-all font-mono text-caption">VITE_CLOUDINARY_CLOUD_NAME</code> and{' '}
+        <code className="break-all font-mono text-caption">VITE_CLOUDINARY_UPLOAD_PRESET</code>, then redeploy.
       </p>
     );
   }
@@ -91,7 +91,7 @@ export function GalleryManager({
                 className="h-full w-full object-cover"
                 loading="lazy"
               />
-              <span className="absolute left-1.5 top-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white">
+              <span className="absolute left-1.5 top-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-micro font-semibold text-white">
                 {index + 1}
               </span>
               <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/45 px-1.5 py-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
@@ -134,7 +134,7 @@ export function GalleryManager({
         type="button"
         disabled={busy}
         onClick={() => input.current?.click()}
-        className="tap inline-flex items-center gap-1.5 rounded-xl border border-hairline px-3.5 text-[13.5px] font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary disabled:opacity-50"
+        className="tap inline-flex items-center gap-1.5 rounded-xl border border-hairline px-3.5 text-body font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary disabled:opacity-50"
       >
         {busy ? <Spinner size={14} className="text-brand-600 dark:text-brand-400" /> : <ImagePlus size={15} />}
         {busy ? 'Uploading…' : value.length ? 'Add more' : 'Add pictures'}

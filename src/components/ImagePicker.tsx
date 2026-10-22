@@ -88,7 +88,7 @@ export function ImagePicker({
     <div className={fill ? 'w-full' : undefined}>
       {(label || hint) && (
         <div className="mb-2 flex items-center gap-1.5">
-          {label && <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted">{label}</p>}
+          {label && <p className="text-micro font-semibold uppercase tracking-[0.1em] text-muted">{label}</p>}
           {/* The note sits behind the (i), like every other field's, not as prose under the box. */}
           {hint && <Hint label={label ? `About ${label.toLowerCase()}` : 'About this picture'}>{hint}</Hint>}
         </div>
@@ -116,14 +116,14 @@ export function ImagePicker({
               loading="lazy"
             />
           ) : (
-            <span className="flex flex-col items-center gap-1 px-2 text-center text-[11.5px] font-medium leading-tight text-muted">
+            <span className="flex flex-col items-center gap-1 px-2 text-center text-caption font-medium leading-tight text-muted">
               {placeholder ?? <ImagePlus size={18} />}
               {!placeholder && <span>Tap to upload</span>}
             </span>
           )}
 
           {value && canUpload && (
-            <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-black/55 py-1 text-[11px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-black/55 py-1 text-micro font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
               <Upload size={11} aria-hidden /> Change
             </span>
           )}
@@ -149,10 +149,10 @@ export function ImagePicker({
       </div>
 
       {!cloudinaryConfigured && (
-        <p className="mt-2 text-[11.5px] leading-relaxed text-muted">
+        <p className="mt-2 text-caption leading-relaxed text-muted">
           Picture uploads are not set up on this deployment yet. Add{' '}
-          <code className="break-all font-mono text-[11px]">VITE_CLOUDINARY_CLOUD_NAME</code> and{' '}
-          <code className="break-all font-mono text-[11px]">VITE_CLOUDINARY_UPLOAD_PRESET</code>, then redeploy.
+          <code className="break-all font-mono text-micro">VITE_CLOUDINARY_CLOUD_NAME</code> and{' '}
+          <code className="break-all font-mono text-micro">VITE_CLOUDINARY_UPLOAD_PRESET</code>, then redeploy.
         </p>
       )}
 

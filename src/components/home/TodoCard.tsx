@@ -78,10 +78,10 @@ export function TodoCard({
       data-tour="todo"
       className={cn('rounded-[22px] border border-hairline surface-card p-4 shadow-card sm:p-5', className)}
     >
-      <h2 id="todo-heading" className="text-[16px] font-bold text-primary">
+      <h2 id="todo-heading" className="text-title font-semibold text-primary">
         To do
       </h2>
-      <p className="mt-0.5 text-[13px] text-secondary">{summary}</p>
+      <p className="mt-0.5 text-label text-secondary">{summary}</p>
 
       {!loading && tracked.length > 0 && (
         <div className="mt-3 h-2 overflow-hidden rounded-full surface-sunken" aria-hidden>
@@ -97,7 +97,7 @@ export function TodoCard({
           <button
             type="button"
             onClick={onRetry}
-            className="mt-3 text-[13.5px] font-semibold text-brand-700 hover:underline dark:text-brand-400"
+            className="mt-3 text-body font-semibold text-brand-700 hover:underline dark:text-brand-400"
           >
             Try again
           </button>
@@ -121,18 +121,18 @@ export function TodoCard({
                   <span className="min-w-0 flex-1">
                     <span
                       className={cn(
-                        'block truncate text-[14px] font-semibold',
+                        'block truncate text-body font-semibold',
                         item.state === 'done' ? 'text-secondary' : 'text-primary',
                       )}
                     >
                       {item.title}
                     </span>
                     {item.detail && (
-                      <span className="line-clamp-2 block text-[12.5px] leading-snug text-muted">{item.detail}</span>
+                      <span className="line-clamp-2 block text-label leading-snug text-muted">{item.detail}</span>
                     )}
                   </span>
                   {item.state === 'todo' && item.count ? (
-                    <span className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-brand-600 px-1.5 text-[11.5px] font-bold text-white dark:bg-brand-500">
+                    <span className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-brand-600 px-1.5 text-caption font-semibold text-white dark:bg-brand-500">
                       {item.count}
                     </span>
                   ) : (

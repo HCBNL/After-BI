@@ -24,8 +24,8 @@ function RoleCard({ guide, open: startOpen = false }: { guide: RoleGuide; open?:
       >
         <span aria-hidden className="mt-2 block h-[3px] w-6 shrink-0 rounded-full bg-brand-500" />
         <span className="min-w-0 flex-1">
-          <span className="block text-[16px] font-bold text-primary">{guide.name}</span>
-          <span className="mt-0.5 block text-[13.5px] leading-snug text-secondary">{guide.purpose}</span>
+          <span className="block text-title font-semibold text-primary">{guide.name}</span>
+          <span className="mt-0.5 block text-body leading-snug text-secondary">{guide.purpose}</span>
         </span>
         <ChevronDown
           size={18}
@@ -59,12 +59,12 @@ function Section({
   const List = numbered ? 'ol' : 'ul';
   return (
     <div className={className}>
-      <h3 className="text-[12px] font-bold uppercase tracking-[0.08em] text-muted">{title}</h3>
+      <h3 className="text-caption font-semibold uppercase tracking-[0.08em] text-muted">{title}</h3>
       <List className="mt-2 space-y-1.5">
         {items.map((item, index) => (
-          <li key={index} className="flex gap-2.5 text-[13.5px] leading-snug text-secondary">
+          <li key={index} className="flex gap-2.5 text-body leading-snug text-secondary">
             {numbered ? (
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-[11px] font-bold text-white">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-micro font-semibold text-white">
                 {index + 1}
               </span>
             ) : (

@@ -300,10 +300,10 @@ export function HomeChooser({ open, onClose, uid }: { open: boolean; onClose: ()
           <X size={19} aria-hidden />
         </button>
 
-        <h2 id="home-chooser-title" className="px-8 text-center font-display text-[20px] font-bold text-primary">
+        <h2 id="home-chooser-title" className="px-8 text-center font-display text-heading font-bold text-primary">
           Choose your home screen
         </h2>
-        <p className="mx-auto mt-1.5 max-w-[19rem] text-center text-[13px] leading-snug text-muted">
+        <p className="mx-auto mt-1.5 max-w-[19rem] text-center text-label leading-snug text-muted">
           Both have everything. They differ in what you see first.
         </p>
 
@@ -340,8 +340,8 @@ export function HomeChooser({ open, onClose, uid }: { open: boolean; onClose: ()
                     </span>
                   )}
                 </span>
-                <span className="mt-2.5 block text-[14.5px] font-bold text-primary">{option.name}</span>
-                <span className="block text-[12px] text-muted">{option.description}</span>
+                <span className="mt-2.5 block text-body font-semibold text-primary">{option.name}</span>
+                <span className="block text-caption text-muted">{option.description}</span>
               </button>
             );
           })}

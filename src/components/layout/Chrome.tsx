@@ -128,10 +128,10 @@ export function Chrome({
                 </button>
               )}
               <div className="min-w-0 flex-1">
-                <h1 className="truncate text-[16.5px] font-bold leading-tight text-primary sm:text-[18px]">
+                <h1 className="truncate text-title font-semibold leading-tight text-primary sm:text-heading">
                   {heading ?? fallbackTitle}
                 </h1>
-                <p className="flex items-center gap-1 truncate text-[11.5px] text-muted">
+                <p className="flex items-center gap-1 truncate text-caption text-muted">
                   <span className="truncate">{orgName}</span>
                   <OrgPlanBadge size={13} />
                 </p>

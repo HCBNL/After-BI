@@ -50,7 +50,7 @@ export function PageHeader({
       <h2 className="sr-only">{title}</h2>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5">
         {description ? (
-          <p className="min-w-0 max-w-2xl text-[13.5px] leading-relaxed text-secondary">{description}</p>
+          <p className="min-w-0 max-w-2xl text-body leading-relaxed text-secondary">{description}</p>
         ) : (
           <span />
         )}

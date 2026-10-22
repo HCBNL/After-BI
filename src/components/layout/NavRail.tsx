@@ -73,7 +73,7 @@ export function NavRail({
   };
   const logo = (
     <Link to={root} onClick={goHome} title="Home" aria-label="Home" className="rounded-lg transition-opacity hover:opacity-80">
-      <Wordmark className="text-[1.15rem]" />
+      <Wordmark className="text-heading" />
     </Link>
   );
 
@@ -130,7 +130,7 @@ export function NavRail({
         ) : (
           <div className="mt-1.5 flex items-center gap-2 rounded-xl bg-[var(--surface-sunken)] px-3 py-2">
             <Building2 size={15} className="shrink-0 text-muted" aria-hidden />
-            <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-secondary">{orgName}</span>
+            <span className="min-w-0 flex-1 truncate text-caption font-medium text-secondary">{orgName}</span>
             <OrgPlanBadge size={17} />
           </div>
         )}
@@ -141,7 +141,7 @@ export function NavRail({
           aria-label="Search"
           title="Search (Ctrl K)"
           className={cn(
-            'mt-2 flex h-10 w-full items-center rounded-xl text-[13px] text-muted transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary',
+            'mt-2 flex h-10 w-full items-center rounded-xl text-label text-muted transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary',
             collapsed ? 'justify-center' : 'gap-2.5 border border-hairline px-3',
           )}
         >
@@ -149,7 +149,7 @@ export function NavRail({
           {!collapsed && (
             <>
               <span className="flex-1 text-left">Search</span>
-              <kbd className="rounded-md border border-hairline px-1.5 py-0.5 font-sans text-[10.5px] font-semibold text-muted">Ctrl K</kbd>
+              <kbd className="rounded-md border border-hairline px-1.5 py-0.5 font-sans text-micro font-semibold text-muted">Ctrl K</kbd>
             </>
           )}
         </button>
@@ -170,7 +170,7 @@ export function NavRail({
             {collapsed ? (
               <span aria-hidden className="mx-auto mb-1.5 block h-px w-6 bg-[var(--border-hairline)]" />
             ) : (
-              <p className="px-3 pb-1 text-[12px] font-semibold text-muted">{group}</p>
+              <p className="px-3 pb-1 text-micro font-semibold uppercase tracking-[0.08em] text-muted">{group}</p>
             )}
             <ul className="space-y-0.5">
               {items.map((action) => (
@@ -199,8 +199,8 @@ export function NavRail({
             <Avatar name={`${person.firstName} ${person.lastName}`} src={person.photoURL} size="sm" />
             {!collapsed && (
               <span className="min-w-0">
-                <span className="block truncate text-[13px] font-semibold text-primary">{fullName(person)}</span>
-                <span className="block truncate text-[11.5px] text-muted">{ROLE_LABEL[role]}</span>
+                <span className="block truncate text-label font-medium text-primary">{fullName(person)}</span>
+                <span className="block truncate text-caption text-muted">{ROLE_LABEL[role]}</span>
               </span>
             )}
           </Link>
@@ -265,15 +265,16 @@ function RailLink({
           {!collapsed && (
             <span
               className={cn(
-                'min-w-0 flex-1 truncate text-[13.5px] font-semibold transition-colors',
-                isActive ? 'text-primary' : 'text-secondary group-hover:text-primary',
+                /* The rail is lighter than the page: medium weight, label size; the active item alone steps up. */
+                'min-w-0 flex-1 truncate text-label transition-colors',
+                isActive ? 'font-semibold text-primary' : 'font-medium text-secondary group-hover:text-primary',
               )}
             >
               {label}
             </span>
           )}
           {!collapsed && Boolean(badge) && (
-            <span className="tabular mr-1 shrink-0 rounded-full bg-status-critical px-1.5 py-0.5 text-[10.5px] font-bold text-white">{badge}</span>
+            <span className="tabular mr-1 shrink-0 rounded-full bg-status-critical px-1.5 py-0.5 text-micro font-bold text-white">{badge}</span>
           )}
         </>
       )}

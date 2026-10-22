@@ -101,8 +101,8 @@ export default function NigeriaMap({
           className="pointer-events-none absolute z-10 min-w-[10rem] -translate-x-1/2 -translate-y-[115%] rounded-xl border border-hairline surface-card px-3 py-2 shadow-pop"
           style={{ left: hover.x, top: hover.y }}
         >
-          <p className="text-[13px] font-bold text-primary">{hover.state}</p>
-          <p className="tabular text-[12.5px] text-secondary">
+          <p className="text-label font-semibold text-primary">{hover.state}</p>
+          <p className="tabular text-label text-secondary">
             {hovered ? format(hovered) : 'No revenue'}
             {hovered && total ? ` · ${((hovered / total) * 100).toFixed(1)}%` : ''}
           </p>
@@ -110,7 +110,7 @@ export default function NigeriaMap({
       )}
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 text-[11.5px] text-muted">
+        <div className="flex items-center gap-1.5 text-caption text-muted">
           <span>Less</span>
           <span className="h-3 w-5 rounded-sm" style={{ background: 'var(--surface-sunken)' }} />
           {STEPS.map((color) => (
@@ -118,7 +118,7 @@ export default function NigeriaMap({
           ))}
           <span>More</span>
         </div>
-        <p className="text-[10.5px] text-muted">
+        <p className="text-micro text-muted">
           Map: svg-maps,{' '}
           <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer" className="underline">
             CC BY 4.0

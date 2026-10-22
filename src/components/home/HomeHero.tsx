@@ -114,12 +114,12 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
     <>
       <div className="flex items-center gap-3 px-5 pb-6 pt-5">
         <div className="min-w-0 flex-1">
-          <p className="text-[13.5px] font-medium text-white/70">{hello},</p>
-          <h1 className="mt-0.5 break-words font-display text-[24px] font-bold leading-[1.15] tracking-[-0.02em] text-white">
+          <p className="text-body font-medium text-white/70">{hello},</p>
+          <h1 className="mt-0.5 break-words font-display text-headline font-bold leading-[1.15] tracking-[-0.02em] text-white">
             {displayName(user)}
             <OrgPlanBadge size={20} className="ml-1.5 inline-block -translate-y-0.5 align-middle" />
           </h1>
-          <p className="mt-1.5 truncate text-[12.5px] text-white/55">{orgName}</p>
+          <p className="mt-1.5 truncate text-label text-white/55">{orgName}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2.5">
           <LayoutButton />
@@ -138,7 +138,7 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
                 className="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-[18px] bg-white/[0.09] px-1.5 py-3 text-center ring-1 ring-inset ring-white/[0.07] transition-[background-color,transform] duration-150 hover:bg-white/[0.15] active:scale-[0.97] active:bg-white/20"
               >
                 <Icon size={22} strokeWidth={1.8} className="shrink-0 text-white" aria-hidden />
-                <span className="line-clamp-2 text-[11px] font-semibold leading-[1.25] text-white/90">
+                <span className="line-clamp-2 text-micro font-semibold leading-[1.25] text-white/90">
                   {action.label}
                 </span>
               </Link>
@@ -150,7 +150,7 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="mx-auto mt-3 flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+            className="mx-auto mt-3 flex items-center gap-1.5 rounded-full px-4 py-2 text-label font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
           >
             {expanded ? 'Show less' : `Show all (${actions.length})`}
             {expanded ? <ChevronUp size={15} aria-hidden /> : <ChevronDown size={15} aria-hidden />}
@@ -195,14 +195,14 @@ function CardsPanel({
 
       <div className="flex items-end justify-between gap-4 px-5 pt-3">
         <div className="min-w-0">
-          <p className="text-[13px] font-medium text-white/70">{hello},</p>
-          <h1 className="truncate font-display text-[21px] font-bold leading-tight tracking-[-0.02em] text-white">
+          <p className="text-label font-medium text-white/70">{hello},</p>
+          <h1 className="truncate font-display text-headline font-bold leading-tight tracking-[-0.02em] text-white">
             {displayName(user)}
           </h1>
         </div>
         <div className="shrink-0 text-right">
-          <p className="text-[11.5px] font-medium text-white/60">{month.name}</p>
-          <p className="font-display text-[16px] font-bold leading-tight text-white">
+          <p className="text-caption font-medium text-white/60">{month.name}</p>
+          <p className="font-display text-title font-bold leading-tight text-white">
             Day {month.day}
             <span className="font-semibold text-white/55"> of {month.days}</span>
           </p>

@@ -330,7 +330,7 @@ export function Tour({
         style={{ ...cardStyle, width }}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
+          <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">
             {index + 1} of {steps.length}
           </p>
           <button
@@ -343,8 +343,8 @@ export function Tour({
           </button>
         </div>
 
-        <h2 className="mt-1.5 text-[16px] font-bold leading-tight text-primary">{step.title}</h2>
-        <p className="mt-1.5 text-[13.5px] leading-relaxed text-secondary">{step.body}</p>
+        <h2 className="mt-1.5 text-title font-semibold leading-tight text-primary">{step.title}</h2>
+        <p className="mt-1.5 text-body leading-relaxed text-secondary">{step.body}</p>
 
         <div className="mt-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5" aria-hidden>
@@ -364,7 +364,7 @@ export function Tour({
               <button
                 type="button"
                 onClick={() => setIndex(index - 1)}
-                className="tap rounded-lg px-3 text-[13.5px] font-semibold text-secondary transition-colors hover:text-primary"
+                className="tap rounded-lg px-3 text-body font-semibold text-secondary transition-colors hover:text-primary"
               >
                 Back
               </button>
@@ -372,7 +372,7 @@ export function Tour({
             <button
               type="button"
               onClick={() => (last ? onClose() : setIndex(index + 1))}
-              className="tap inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 text-[13.5px] font-bold text-white transition-colors hover:bg-brand-800"
+              className="tap inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 text-body font-semibold text-white transition-colors hover:bg-brand-800"
             >
               {last ? 'Done' : 'Next'}
               {!last && <ArrowRight size={14} aria-hidden />}

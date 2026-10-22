@@ -111,7 +111,7 @@ export function Prose({ body, className }: { body: string; className?: string })
 
     if (/^###\s+/.test(line)) {
       blocks.push(
-        <h3 key={key} className="mt-8 text-[17px] font-bold text-primary">
+        <h3 key={key} className="mt-8 text-title font-bold text-primary">
           {inline(line.replace(/^###\s+/, ''), key)}
         </h3>,
       );
@@ -144,7 +144,7 @@ export function Prose({ body, className }: { body: string; className?: string })
       blocks.push(
         <blockquote
           key={key}
-          className="my-6 border-l-[3px] border-brand-700 pl-5 text-[16px] italic leading-relaxed text-secondary dark:border-brand-500"
+          className="my-6 border-l-[3px] border-brand-700 pl-5 text-title italic leading-relaxed text-secondary dark:border-brand-500"
         >
           {inline(quote.join(' '), key)}
         </blockquote>,
@@ -166,7 +166,7 @@ export function Prose({ body, className }: { body: string; className?: string })
       blocks.push(
         <List
           key={key}
-          className={`my-5 space-y-2 pl-5 text-[16px] leading-relaxed text-secondary ${
+          className={`my-5 space-y-2 pl-5 text-title leading-relaxed text-secondary ${
             bulleted ? 'list-disc' : 'list-decimal'
           }`}
         >
@@ -195,7 +195,7 @@ export function Prose({ body, className }: { body: string; className?: string })
       at += 1;
     }
     blocks.push(
-      <p key={key} className="my-5 text-[16px] leading-[1.75] text-secondary">
+      <p key={key} className="my-5 text-title leading-[1.75] text-secondary">
         {inline(paragraph.join(' '), key)}
       </p>,
     );

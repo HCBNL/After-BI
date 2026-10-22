@@ -38,9 +38,9 @@ const BUTTON_VARIANT: Record<ButtonVariant, string> = {
 };
 
 const BUTTON_SIZE: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3 text-[13px]',
-  md: 'h-11 px-5 text-sm',
-  lg: 'h-13 px-7 text-[15px]',
+  sm: 'h-9 px-3 text-label',
+  md: 'h-11 px-5 text-body',
+  lg: 'h-13 px-7 text-lead',
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -190,8 +190,8 @@ export function CardHeader({
           </span>
         )}
         <div className="min-w-0">
-          <h3 className="text-[15px] font-bold text-primary leading-tight">{title}</h3>
-          {subtitle && <p className="mt-1 text-[13px] text-muted leading-snug">{subtitle}</p>}
+          <h3 className="text-lead font-semibold text-primary leading-tight">{title}</h3>
+          {subtitle && <p className="mt-1 text-label text-muted leading-snug">{subtitle}</p>}
         </div>
       </div>
       {action && <div className="shrink-0">{action}</div>}
@@ -231,7 +231,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ring-1 ring-inset',
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-micro font-semibold uppercase tracking-wide ring-1 ring-inset',
         BADGE_TONE[tone],
         className,
       )}
@@ -258,7 +258,7 @@ function Label({
 }) {
   return (
     <label htmlFor={htmlFor} className="mb-1.5 flex items-center gap-1.5">
-      <span className="text-[13px] font-semibold text-secondary">
+      <span className="text-label font-medium text-secondary">
         {children}
         {required && <span className="ml-0.5 text-status-critical">*</span>}
       </span>
@@ -276,7 +276,7 @@ function Label({
 }
 
 const FIELD_BASE =
-  'w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-card)] px-3.5 text-sm ' +
+  'w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-card)] px-3.5 text-body ' +
   'text-[var(--text-primary)] placeholder:text-[var(--text-muted)] transition-shadow ' +
   'focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25 ' +
   'disabled:opacity-60 disabled:cursor-not-allowed';
@@ -376,7 +376,7 @@ export function Field({
         </Label>
       )}
       {children}
-      {error && <p className="mt-1.5 text-[12px] font-medium text-status-critical">{error}</p>}
+      {error && <p className="mt-1.5 text-caption font-medium text-status-critical">{error}</p>}
     </div>
   );
 }
@@ -414,8 +414,8 @@ export function Switch({
         className="flex min-w-0 flex-1 items-center justify-between gap-4 text-left disabled:opacity-50"
       >
         <span className="min-w-0">
-          <span className="block text-sm font-semibold text-primary">{label}</span>
-          {description && <span className="mt-0.5 block text-[12px] text-muted leading-snug">{description}</span>}
+          <span className="block text-body font-semibold text-primary">{label}</span>
+          {description && <span className="mt-0.5 block text-caption text-muted leading-snug">{description}</span>}
         </span>
         <span
           className={cn(
@@ -442,7 +442,7 @@ export function Switch({
 
 /* Avatar */
 
-const AVATAR_SIZE = { xs: 'h-7 w-7 text-[10px]', sm: 'h-9 w-9 text-xs', md: 'h-11 w-11 text-sm', lg: 'h-16 w-16 text-lg', xl: 'h-24 w-24 text-2xl' };
+const AVATAR_SIZE = { xs: 'h-7 w-7 text-micro', sm: 'h-9 w-9 text-caption', md: 'h-11 w-11 text-body', lg: 'h-16 w-16 text-title', xl: 'h-24 w-24 text-headline' };
 
 export function Avatar({
   name,
@@ -503,8 +503,8 @@ export function EmptyState({
           {icon}
         </span>
       )}
-      <h3 className="text-base font-bold text-primary">{title}</h3>
-      {description && <p className="mt-1.5 max-w-sm text-sm text-muted leading-relaxed">{description}</p>}
+      <h3 className="text-lead font-semibold text-primary">{title}</h3>
+      {description && <p className="mt-1.5 max-w-sm text-body text-muted leading-relaxed">{description}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );
@@ -570,7 +570,7 @@ export function Alert({
       <div className="flex gap-3">
         {icon && <span className="mt-0.5 shrink-0">{icon}</span>}
 
-        <div className="min-w-0 flex-1 text-[13px] leading-relaxed">
+        <div className="min-w-0 flex-1 text-label leading-relaxed">
           {title &&
             (collapsible ? (
               <button
@@ -578,7 +578,7 @@ export function Alert({
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
                 aria-controls={bodyId}
-                className="flex w-full items-center gap-1.5 text-left font-bold"
+                className="flex w-full items-center gap-1.5 text-left font-semibold"
               >
                 <span className="min-w-0 flex-1 truncate">{title}</span>
                 <ChevronDown
@@ -631,8 +631,8 @@ export function ProgressBar({
     <div className={className}>
       {(label || showValue) && (
         <div className="mb-1.5 flex items-baseline justify-between gap-2">
-          {label && <span className="text-[12px] font-medium text-secondary">{label}</span>}
-          {showValue && <span className="tabular text-[12px] font-bold text-primary">{Math.round(pct)}%</span>}
+          {label && <span className="text-caption font-medium text-secondary">{label}</span>}
+          {showValue && <span className="tabular text-caption font-bold text-primary">{Math.round(pct)}%</span>}
         </div>
       )}
       <div
@@ -680,20 +680,20 @@ export function StatTile({
   return (
     <div className={cn('surface-card rounded-2xl border border-hairline p-4 shadow-card sm:p-5', className)}>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[12px] font-semibold uppercase tracking-wide text-muted">{label}</p>
+        <p className="text-caption font-semibold uppercase tracking-wide text-muted">{label}</p>
         {icon && (
           <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', iconTone[tone])}>
             {icon}
           </span>
         )}
       </div>
-      <p className="mt-2 text-[26px] font-extrabold leading-none text-primary sm:text-[30px]">{value}</p>
+      <p className="tabular mt-2 font-display text-headline font-bold leading-none text-primary sm:text-display">{value}</p>
       {(hint || delta !== undefined) && (
         <div className="mt-2 flex items-center gap-2">
           {delta !== undefined && (
             <span
               className={cn(
-                'inline-flex items-center gap-0.5 text-[12px] font-bold tabular',
+                'inline-flex items-center gap-0.5 text-caption font-bold tabular',
                 delta >= 0 ? 'text-[#006300] dark:text-[#0ca30c]' : 'text-status-critical',
               )}
             >
@@ -701,7 +701,7 @@ export function StatTile({
               {Math.abs(delta)}%
             </span>
           )}
-          {hint && <span className="text-[12px] text-muted">{hint}</span>}
+          {hint && <span className="text-caption text-muted">{hint}</span>}
         </div>
       )}
     </div>
@@ -715,7 +715,7 @@ export function Divider({ label, className }: { label?: string; className?: stri
   return (
     <div className={cn('flex items-center gap-3', className)}>
       <hr className="flex-1 border-t border-hairline" />
-      <span className="text-[11px] font-bold uppercase tracking-wider text-muted">{label}</span>
+      <span className="text-micro font-semibold uppercase tracking-wider text-muted">{label}</span>
       <hr className="flex-1 border-t border-hairline" />
     </div>
   );

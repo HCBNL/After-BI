@@ -103,7 +103,7 @@ export function BootSplash({ label = 'Loading AfterBI' }: { label?: string }) {
   return (
     <div className="ab-splash fixed inset-0 z-[60] flex flex-col items-center justify-center gap-1.5" role="status" aria-label={label}>
       <SignalMark size={104} />
-      <span className="font-display text-[30px] font-extrabold leading-none tracking-[-0.04em] text-primary">AfterBI</span>
+      <span className="font-display text-display font-bold leading-none tracking-[-0.04em] text-primary">AfterBI</span>
       <span className="ab-tag mt-1.5">Sales and distribution, connected</span>
     </div>
   );

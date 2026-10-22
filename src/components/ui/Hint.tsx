@@ -84,7 +84,7 @@ export function Hint({
             role="note"
             className={cn(
               'absolute top-6 z-20 block w-max max-w-[min(19rem,72vw)] rounded-xl border border-hairline',
-              'surface-card p-3 pr-7 text-[12px] leading-relaxed text-secondary shadow-card',
+              'surface-card p-3 pr-7 text-caption leading-relaxed text-secondary shadow-card',
               align === 'right' ? 'right-0' : 'left-0',
             )}
           >
@@ -122,13 +122,13 @@ export function HintFooter({ children, label = 'More about this' }: { children: 
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls={id}
-        className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-muted transition-colors hover:text-brand-700 dark:hover:text-brand-300"
+        className="inline-flex items-center gap-1.5 text-caption font-semibold text-muted transition-colors hover:text-brand-700 dark:hover:text-brand-300"
       >
         <Info size={13} />
         {label}
       </button>
       {open && (
-        <p id={id} className="mt-2 text-[12px] leading-relaxed text-secondary">
+        <p id={id} className="mt-2 text-caption leading-relaxed text-secondary">
           {children}
         </p>
       )}

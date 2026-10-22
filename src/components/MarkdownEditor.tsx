@@ -135,7 +135,7 @@ export function MarkdownEditor({
         placeholder={placeholder}
         // 16px, because anything smaller makes iOS Safari zoom the page on
         // focus and the teacher then cannot get it square again.
-        className="block w-full resize-y bg-[var(--surface-page)] px-3.5 py-3 text-[16px] leading-relaxed text-primary outline-none placeholder:text-muted"
+        className="block w-full resize-y bg-[var(--surface-page)] px-3.5 py-3 text-title leading-relaxed text-primary outline-none placeholder:text-muted"
       />
     </div>
   );

@@ -58,11 +58,11 @@ export function PagePanel({
           >
             <ArrowLeft size={21} aria-hidden />
           </button>
-          <h1 className="max-w-[72%] truncate text-[16px] font-bold">{title}</h1>
+          <h1 className="max-w-[72%] truncate text-title font-semibold">{title}</h1>
         </div>
 
         <div className="hidden items-center justify-between gap-4 lg:flex">
-          <h1 className="truncate font-display text-[30px] font-bold leading-tight tracking-[-0.025em]">{title}</h1>
+          <h1 className="truncate font-display text-display font-bold leading-tight tracking-[-0.025em]">{title}</h1>
           <div className="flex shrink-0 items-center gap-2">
             <HeroThemeButton />
             {user && <ProfilePhoto user={user} />}
@@ -72,7 +72,7 @@ export function PagePanel({
         {(description || actions) && (
           <div className="mt-1 flex flex-col items-center gap-4 text-center lg:mt-2 lg:flex-row lg:items-end lg:justify-between lg:text-left">
             {description && (
-              <p className="max-w-md text-[13px] leading-relaxed text-white/75 lg:max-w-2xl lg:text-[14px]">
+              <p className="max-w-md text-label leading-relaxed text-white/75 lg:max-w-2xl lg:text-body">
                 {description}
               </p>
             )}

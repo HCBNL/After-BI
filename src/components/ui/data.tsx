@@ -72,7 +72,7 @@ export function DataTable<T>({
   return (
     <div className={cn('surface-card overflow-hidden rounded-2xl border border-hairline shadow-card', className)}>
       <div className="scrollbar-thin overflow-x-auto">
-        <table className="w-full min-w-full border-collapse text-sm">
+        <table className="w-full min-w-full border-collapse text-body">
           <thead>
             <tr className="border-b border-hairline surface-sunken">
               {columns.map((col) => (
@@ -82,7 +82,7 @@ export function DataTable<T>({
                   style={col.width ? { width: col.width } : undefined}
                   className={cn(
                     pad,
-                    'text-[11px] font-bold uppercase tracking-wide text-muted',
+                    'text-micro font-semibold uppercase tracking-wide text-muted',
                     col.align === 'right' && 'text-right',
                     col.align === 'center' && 'text-center',
                     !col.align && 'text-left',
@@ -208,7 +208,7 @@ export function Tabs({
             aria-selected={isActive}
             onClick={() => onChange(tab.id)}
             className={cn(
-              'relative flex shrink-0 items-center gap-2 whitespace-nowrap px-3.5 py-2.5 text-[13px] font-semibold transition-colors',
+              'relative flex shrink-0 items-center gap-2 whitespace-nowrap px-3.5 py-2.5 text-label font-semibold transition-colors',
               isActive ? 'text-brand-700 dark:text-brand-300' : 'text-muted hover:text-primary',
             )}
           >
@@ -217,7 +217,7 @@ export function Tabs({
             {tab.count !== undefined && (
               <span
                 className={cn(
-                  'rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular',
+                  'rounded-full px-1.5 py-0.5 text-micro font-bold tabular',
                   isActive
                     ? 'bg-brand-100 text-brand-800 dark:bg-brand-900/60 dark:text-brand-200'
                     : 'bg-[var(--surface-sunken)] text-muted',
@@ -269,7 +269,7 @@ export function SegmentedControl<T extends string>({
             onClick={() => onChange(option.value)}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-lg font-semibold transition-all',
-              size === 'sm' ? 'px-2.5 py-1 text-[12px]' : 'px-3 py-1.5 text-[13px]',
+              size === 'sm' ? 'px-2.5 py-1 text-caption' : 'px-3 py-1.5 text-label',
               isActive
                 ? 'surface-card text-primary shadow-sm'
                 : 'text-muted hover:text-primary',
@@ -327,7 +327,7 @@ export function Pagination({
 }) {
   if (pageCount <= 1) {
     return total !== undefined ? (
-      <p className="text-[12px] text-muted tabular">{total} record{total === 1 ? '' : 's'}</p>
+      <p className="text-caption text-muted tabular">{total} record{total === 1 ? '' : 's'}</p>
     ) : null;
   }
 
@@ -336,7 +336,7 @@ export function Pagination({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <p className="text-[12px] text-muted tabular">
+      <p className="text-caption text-muted tabular">
         {from && to && total ? `Showing ${from} to ${to} of ${total}` : `Page ${page} of ${pageCount}`}
       </p>
       <div className="flex items-center gap-1">
@@ -348,7 +348,7 @@ export function Pagination({
         >
           <ChevronLeft size={16} />
         </button>
-        <span className="px-2 text-[12px] font-bold text-primary tabular">
+        <span className="px-2 text-caption font-bold text-primary tabular">
           {page} / {pageCount}
         </span>
         <button

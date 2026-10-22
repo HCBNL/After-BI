@@ -187,15 +187,15 @@ export class ErrorBoundary extends Component<Props, State> {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-5 py-10">
         <div className="w-full max-w-md text-center">
-          <h1 className="text-[19px] font-bold text-primary">{title}</h1>
+          <h1 className="text-heading font-semibold text-primary">{title}</h1>
 
-          <p className="mt-2 text-[14px] leading-relaxed text-secondary">{body}</p>
+          <p className="mt-2 text-body leading-relaxed text-secondary">{body}</p>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
             {kind === 'signed-out' ? (
               <a
                 href="/login"
-                className="tap flex items-center rounded-xl bg-brand-600 px-4 text-[14.5px] font-semibold text-white transition-colors hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+                className="tap flex items-center rounded-xl bg-brand-600 px-4 text-body font-semibold text-white transition-colors hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
               >
                 Sign in again
               </a>
@@ -203,7 +203,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={() => void hardReload()}
-                className="tap rounded-xl bg-brand-600 px-4 text-[14.5px] font-semibold text-white transition-colors hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+                className="tap rounded-xl bg-brand-600 px-4 text-body font-semibold text-white transition-colors hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
               >
                 Reload the app
               </button>
@@ -211,7 +211,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={() => this.setState({ error: null })}
-                className="tap rounded-xl bg-brand-600 px-4 text-[14.5px] font-semibold text-white transition-colors hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+                className="tap rounded-xl bg-brand-600 px-4 text-body font-semibold text-white transition-colors hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
               >
                 Try again
               </button>
@@ -225,7 +225,7 @@ export class ErrorBoundary extends Component<Props, State> {
  */}
             <a
               href={home}
-              className="tap flex items-center rounded-xl border border-hairline px-4 text-[14.5px] font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"
+              className="tap flex items-center rounded-xl border border-hairline px-4 text-body font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"
             >
               Back to the main screen
             </a>
@@ -235,7 +235,7 @@ export class ErrorBoundary extends Component<Props, State> {
             The message itself, small and last. A teacher will not read it, but
             it is the difference between a useful screenshot and a useless one.
           */}
-          <p className="mt-6 break-words font-mono text-[11.5px] leading-relaxed text-muted">
+          <p className="mt-6 break-words font-mono text-caption leading-relaxed text-muted">
             {error.message}
           </p>
         </div>

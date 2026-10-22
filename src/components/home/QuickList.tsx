@@ -40,7 +40,7 @@ export function QuickList({ role, onMore, className }: { role: Role; onMore: () 
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-200">
                   <Icon size={18} strokeWidth={1.9} aria-hidden />
                 </span>
-                <span className="line-clamp-2 min-w-0 flex-1 text-[13.5px] font-semibold leading-tight text-primary">{action.label}</span>
+                <span className="line-clamp-2 min-w-0 flex-1 text-body font-semibold leading-tight text-primary">{action.label}</span>
               </Link>
             </li>
           );
@@ -49,7 +49,7 @@ export function QuickList({ role, onMore, className }: { role: Role; onMore: () 
       <button
         type="button"
         onClick={onMore}
-        className="flex w-full items-center justify-center gap-2 py-3 text-[13.5px] font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"
+        className="flex w-full items-center justify-center gap-2 py-3 text-body font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"
       >
         <Menu size={16} aria-hidden />
         More

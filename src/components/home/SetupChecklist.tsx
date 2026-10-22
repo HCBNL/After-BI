@@ -78,14 +78,14 @@ export function SetupChecklist({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 id="setup-heading" className="text-[15px] font-bold text-primary">
+          <h2 id="setup-heading" className="text-lead font-semibold text-primary">
             Finish setting up
           </h2>
-          <p className="mt-1 text-[12.5px] leading-snug text-muted">
+          <p className="mt-1 text-label leading-snug text-muted">
             {next ? `Next: ${next.hint}` : 'Almost there.'}
           </p>
         </div>
-        <span className="tabular shrink-0 rounded-full bg-[var(--surface-sunken)] px-2.5 py-1 text-[11px] font-bold text-secondary">
+        <span className="tabular shrink-0 rounded-full bg-[var(--surface-sunken)] px-2.5 py-1 text-micro font-bold text-secondary">
           {done} of {steps.length}
         </span>
       </div>
@@ -125,7 +125,7 @@ export function SetupChecklist({
               </span>
               <span
                 className={cn(
-                  'min-w-0 flex-1 text-[13.5px] font-semibold',
+                  'min-w-0 flex-1 text-body font-semibold',
                   step.done ? 'text-muted line-through' : 'text-primary',
                 )}
               >

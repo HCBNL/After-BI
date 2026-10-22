@@ -90,7 +90,7 @@ export function ThemeToggle({
           aria-pressed={choice === value}
           title={label}
           className={cn(
-            'inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[12.5px] font-semibold transition-all',
+            'inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-label font-semibold transition-all',
             full && 'flex-1',
             choice === value ? 'surface-card text-primary shadow-sm' : 'text-muted hover:text-primary',
           )}

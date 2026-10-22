@@ -144,11 +144,11 @@ export function Modal({
             <div className="min-w-0">
               {title && (
                 <div className="flex items-center gap-1.5">
-                  <h2 className="text-base font-bold text-primary">{title}</h2>
+                  <h2 className="text-title font-semibold text-primary">{title}</h2>
                   {note && <Hint label="About this">{note}</Hint>}
                 </div>
               )}
-              {description && <p className="mt-1 text-[13px] text-muted leading-snug">{description}</p>}
+              {description && <p className="mt-1 text-label text-muted leading-snug">{description}</p>}
             </div>
             <IconButton label="Close" onClick={onClose} className="-mr-1.5 -mt-1">
               <X size={18} />
@@ -205,7 +205,7 @@ export function ConfirmDialog({
         </>
       }
     >
-      <p className="text-sm leading-relaxed text-secondary">{message}</p>
+      <p className="text-body leading-relaxed text-secondary">{message}</p>
     </Modal>
   );
 }
@@ -292,9 +292,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             >
               <span className={cn('mt-0.5 shrink-0', TOAST_TONE[toast.tone])}>{TOAST_ICON[toast.tone]}</span>
               <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-bold text-primary">{toast.title}</p>
+                <p className="text-label font-semibold text-primary">{toast.title}</p>
                 {toast.description && (
-                  <p className="mt-0.5 text-[12px] leading-snug text-muted">{toast.description}</p>
+                  <p className="mt-0.5 text-caption leading-snug text-muted">{toast.description}</p>
                 )}
               </div>
               <IconButton label="Dismiss" onClick={() => remove(toast.id)} className="-mr-1.5 -mt-1 h-7 w-7">
@@ -361,7 +361,7 @@ export function Drawer({
       >
         <div className="flex items-center justify-between gap-4 border-b border-hairline px-5 py-4">
           <div className="flex min-w-0 items-center gap-1.5">
-            <h2 className="truncate text-base font-bold text-primary">{title}</h2>
+            <h2 className="truncate text-title font-semibold text-primary">{title}</h2>
             {note && <Hint label="About this">{note}</Hint>}
           </div>
           <IconButton label="Close" onClick={onClose}>

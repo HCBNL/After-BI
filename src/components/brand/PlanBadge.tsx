@@ -56,7 +56,7 @@ export function PlanPill({ plan, className }: { plan: PlanId; className?: string
   const seal = PLANS[plan];
   return (
     <span
-      className={cn('inline-flex items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2.5 text-[11.5px] font-bold text-primary', className)}
+      className={cn('inline-flex items-center gap-1.5 rounded-full py-0.5 pl-0.5 pr-2.5 text-caption font-semibold text-primary', className)}
       style={{ background: `${seal.fill}24` }}
     >
       <PlanBadge plan={plan} size={18} />

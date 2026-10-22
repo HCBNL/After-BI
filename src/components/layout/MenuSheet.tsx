@@ -37,7 +37,7 @@ function ActionRow({ action, role, onClose }: { action: AppAction; role: Role; o
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-200">
           <Icon size={17} strokeWidth={1.9} aria-hidden />
         </span>
-        <span className="min-w-0 flex-1 truncate text-[15.5px] font-medium text-primary">{action.label}</span>
+        <span className="min-w-0 flex-1 truncate text-body font-medium text-primary">{action.label}</span>
         <span
           aria-hidden
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-sunken)] text-secondary"
@@ -148,7 +148,7 @@ export function MenuSheet({
   if (!open) return null;
 
   const tile =
-    'flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white/[0.1] px-2 py-3 text-center text-[12.5px] font-semibold text-white ring-1 ring-inset ring-white/[0.08] transition-colors hover:bg-white/[0.16] active:bg-white/20';
+    'flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white/[0.1] px-2 py-3 text-center text-label font-semibold text-white ring-1 ring-inset ring-white/[0.08] transition-colors hover:bg-white/[0.16] active:bg-white/20';
 
   return (
     <div
@@ -181,7 +181,7 @@ export function MenuSheet({
             >
               <X size={21} aria-hidden />
             </button>
-            <p className="text-[16px] font-bold">Menu</p>
+            <p className="text-title font-semibold">Menu</p>
           </div>
 
           <div className="mt-2 flex items-center gap-3 px-1">
@@ -189,8 +189,8 @@ export function MenuSheet({
               <Avatar name={personName} src={photoURL} size="sm" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[15px] font-bold leading-tight">{personName}</p>
-              <p className="mt-0.5 flex items-center gap-1 truncate text-[12px] text-white/60">
+              <p className="truncate text-lead font-semibold leading-tight">{personName}</p>
+              <p className="mt-0.5 flex items-center gap-1 truncate text-caption text-white/60">
                 <span className="truncate">
                   {ROLE_LABEL[role]}, {orgName}
                 </span>
@@ -224,7 +224,7 @@ export function MenuSheet({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search"
               aria-label="Search the menu"
-              className="h-11 w-full rounded-xl border-0 bg-white pl-10 pr-3 text-[14.5px] text-[#141414] outline-none placeholder:text-[#8a8a8f]"
+              className="h-11 w-full rounded-xl border-0 bg-white pl-10 pr-3 text-body text-[#141414] outline-none placeholder:text-[#8a8a8f]"
             />
           </div>
 
@@ -269,7 +269,7 @@ export function MenuSheet({
                 ))}
               </ul>
             ) : (
-              <p className="px-5 py-10 text-center text-[14px] text-muted">
+              <p className="px-5 py-10 text-center text-body text-muted">
                 Nothing here matches &ldquo;{query.trim()}&rdquo;.
               </p>
             )
@@ -281,7 +281,7 @@ export function MenuSheet({
                   <section key={group} aria-labelledby={`menu-${group}`}>
                     <h3
                       id={`menu-${group}`}
-                      className="sticky top-0 z-10 flex items-center gap-2 border-y border-hairline bg-[var(--surface-sunken)] px-5 py-2.5 text-[13.5px] font-bold text-primary"
+                      className="sticky top-0 z-10 flex items-center gap-2 border-y border-hairline bg-[var(--surface-sunken)] px-5 py-2.5 text-micro font-semibold uppercase tracking-[0.08em] text-muted"
                     >
                       <GroupIcon size={15} className="text-brand-700 dark:text-brand-400" aria-hidden />
                       {group}
@@ -300,7 +300,7 @@ export function MenuSheet({
 
         <div className="shrink-0 space-y-3 border-t border-hairline px-4 py-3 pb-safe-4">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[13px] font-semibold text-secondary">Colour</span>
+            <span className="text-label font-semibold text-secondary">Colour</span>
             <AccentPicker size={30} />
           </div>
           <ThemeToggle full />

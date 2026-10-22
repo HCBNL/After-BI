@@ -33,10 +33,10 @@ export function DemoSetup({ onDone }: { onDone: () => void }) {
   return (
     <div className="mx-auto flex min-h-[60dvh] max-w-md flex-col items-center justify-center text-center">
       <WordmarkLoading />
-      <h1 className="mt-5 font-display text-[22px] font-bold tracking-[-0.02em] text-primary">
+      <h1 className="mt-5 font-display text-headline font-bold tracking-[-0.02em] text-primary">
         Setting up the demonstration
       </h1>
-      <p className="mt-2 text-[13.5px] leading-relaxed text-secondary">
+      <p className="mt-2 text-body leading-relaxed text-secondary">
         A catalogue, three depots with stock, ten distributors, six months of trading and the sign-ins to show it
         with. It takes about a minute. Leave this open.
       </p>
@@ -48,15 +48,15 @@ export function DemoSetup({ onDone }: { onDone: () => void }) {
             style={{ width: `${percent}%` }}
           />
         </div>
-        <p className="mt-2.5 text-[12.5px] text-muted">
+        <p className="mt-2.5 text-label text-muted">
           {step ? `${step.label} (${step.done} of ${step.total})` : 'Starting'}
         </p>
       </div>
 
       {error && (
         <div className="mt-5 w-full rounded-2xl border border-hairline surface-card p-4 text-left shadow-card">
-          <p className="text-[13.5px] font-bold text-primary">It stopped part way</p>
-          <p className="mt-1 text-[13px] leading-relaxed text-secondary">{error}</p>
+          <p className="text-body font-semibold text-primary">It stopped part way</p>
+          <p className="mt-1 text-label leading-relaxed text-secondary">{error}</p>
           <Button className="mt-3" size="sm" onClick={() => setAttempt((n) => n + 1)}>
             Try again
           </Button>

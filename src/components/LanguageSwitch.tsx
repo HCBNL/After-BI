@@ -56,7 +56,7 @@ export function LanguageSwitch({
               title={lang.label}
               onClick={() => !on && setLang(lang.code)}
               className={cn(
-                'flex h-8 items-center gap-2 rounded-full px-2.5 text-[13px] font-bold transition-colors sm:px-3',
+                'flex h-8 items-center gap-2 rounded-full px-2.5 text-label font-semibold transition-colors sm:px-3',
                 on ? 'bg-white text-navy-900' : 'text-white/80 hover:bg-white/10 hover:text-white',
               )}
             >
@@ -79,7 +79,7 @@ export function LanguageSwitch({
             onClick={() => lang.code !== current && setLang(lang.code)}
             aria-pressed={lang.code === current}
             className={cn(
-              'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13.5px] font-semibold transition-colors',
+              'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-body font-semibold transition-colors',
               lang.code === current ? 'surface-card text-primary shadow-sm' : 'text-secondary hover:text-primary',
             )}
           >
@@ -100,7 +100,7 @@ export function LanguageSwitch({
         aria-expanded={open}
         aria-label="Language"
         className={cn(
-          'tap inline-flex items-center gap-1.5 rounded-full px-2.5 text-[14px] font-bold transition-colors',
+          'tap inline-flex items-center gap-1.5 rounded-full px-2.5 text-body font-semibold transition-colors',
           onInk ? 'text-white hover:bg-white/10' : 'text-navy-900 hover:bg-black/5 dark:text-white dark:hover:bg-white/10',
         )}
       >
@@ -125,7 +125,7 @@ export function LanguageSwitch({
                 setOpen(false);
                 if (lang.code !== current) setLang(lang.code);
               }}
-              className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[14.5px] font-semibold hover:bg-black/5"
+              className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-body font-semibold hover:bg-black/5"
             >
               <span className="flex items-center gap-2.5">
                 <Flag lang={lang.code} />

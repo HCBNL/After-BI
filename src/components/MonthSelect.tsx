@@ -47,7 +47,7 @@ export function MonthSelect({
         value={value}
         aria-label={label}
         onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-card)] pl-9 pr-9 text-[13.5px] font-semibold text-[var(--text-primary)] focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
+        className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-card)] pl-9 pr-9 text-body font-semibold text-[var(--text-primary)] focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
       >
         {months.map((m) => (
           <option key={m} value={m}>

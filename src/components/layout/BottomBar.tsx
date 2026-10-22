@@ -81,7 +81,7 @@ export function BottomBar({
                   )}
                 >
                   <MenuIcon size={21} strokeWidth={menuOpen ? 2.4 : 1.9} aria-hidden />
-                  <span className="text-[10.5px] font-semibold leading-none">{slot.label}</span>
+                  <span className="text-micro font-medium leading-none">{slot.label}</span>
                 </button>
               </li>
             );
@@ -114,7 +114,7 @@ export function BottomBar({
                 {({ isActive }) => (
                   <>
                     <Icon size={21} strokeWidth={isActive && !menuOpen ? 2.4 : 1.9} aria-hidden />
-                    <span className="max-w-full truncate text-[10.5px] font-semibold leading-none">
+                    <span className="max-w-full truncate text-micro font-medium leading-none">
                       {slot.label}
                     </span>
                   </>

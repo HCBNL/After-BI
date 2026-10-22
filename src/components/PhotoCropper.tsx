@@ -119,7 +119,7 @@ export function PhotoCropper({ src, onChange }: { src: string; onChange: (dataUr
           <Plus size={16} />
         </button>
       </div>
-      <p className="text-[12px] text-muted">Drag to move. Fit the face inside the oval.</p>
+      <p className="text-caption text-muted">Drag to move. Fit the face inside the oval.</p>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export function BankLogo({ bank, size = 44 }: { bank: Pick<BankProfile, 'name' |
         <img src={bank.logoUrl} alt="" className="max-h-full max-w-full object-contain" />
       ) : (
         <span
-          className="flex h-full w-full items-center justify-center rounded-lg text-[12px] font-extrabold text-white"
+          className="flex h-full w-full items-center justify-center rounded-lg text-caption font-semibold text-white"
           style={{ background: bank.color || '#0f1f36' }}
         >
           {initials}

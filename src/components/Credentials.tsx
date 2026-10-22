@@ -23,7 +23,7 @@ export function Credentials({ name, email, password }: { name: string; email: st
 
   return (
     <div className="rounded-2xl border border-hairline surface-sunken p-4">
-      <dl className="space-y-2 text-[13.5px]">
+      <dl className="space-y-2 text-body">
         {[
           ['Address', address],
           ['Email', email],
@@ -45,7 +45,7 @@ export function Credentials({ name, email, password }: { name: string; email: st
       >
         {copied ? 'Copied' : 'Copy sign-in details'}
       </Button>
-      <p className="mt-2.5 text-[12px] leading-snug text-muted">
+      <p className="mt-2.5 text-caption leading-snug text-muted">
         They can change the password after signing in with “Forgot password?”.
       </p>
     </div>

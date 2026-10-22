@@ -64,21 +64,21 @@ export function BriefCard({ root, className }: { root: string; className?: strin
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-[0.1em] text-brand-700 dark:text-brand-400">
+          <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-[0.1em] text-brand-700 dark:text-brand-400">
             <Sparkles size={13} aria-hidden /> Your brief
           </p>
-          <h2 id="brief-heading" className="mt-1 text-[17px] font-bold text-primary">
+          <h2 id="brief-heading" className="mt-1 text-title font-semibold text-primary">
             {brief.greeting}
           </h2>
         </div>
         <Link
           to={`${root}/tasks`}
-          className="shrink-0 rounded-lg px-2 py-1 text-[12.5px] font-semibold text-brand-700 hover:bg-[var(--surface-sunken)] dark:text-brand-400"
+          className="shrink-0 rounded-lg px-2 py-1 text-label font-semibold text-brand-700 hover:bg-[var(--surface-sunken)] dark:text-brand-400"
         >
           My tasks
         </Link>
       </div>
-      <p className="mt-1.5 max-w-3xl text-[14px] leading-relaxed text-secondary">{brief.summary}</p>
+      <p className="mt-1.5 max-w-3xl text-body leading-relaxed text-secondary">{brief.summary}</p>
 
       {brief.focus.length > 0 && (
         <ol className="mt-4 space-y-2">
@@ -97,7 +97,7 @@ export function BriefCard({ root, className }: { root: string; className?: strin
       <div className="mt-4 flex justify-end">
         <Link
           to={`${root}/reminders`}
-          className="inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700 hover:underline dark:text-brand-400"
+          className="inline-flex items-center gap-1 text-label font-semibold text-brand-700 hover:underline dark:text-brand-400"
         >
           Everything that needs you <ArrowRight size={14} aria-hidden />
         </Link>
@@ -130,18 +130,18 @@ function FocusRow({ item, rank, kept }: { item: FocusItem; rank?: number; kept: 
   return (
     <li className="flex items-start gap-3 rounded-2xl surface-sunken p-3">
       {rank !== undefined ? (
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-[12.5px] font-bold text-white dark:bg-brand-500 dark:text-brand-950">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-label font-semibold text-white dark:bg-brand-500 dark:text-brand-950">
           {rank}
         </span>
       ) : (
         <span className={cn('mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full', DOT[item.severity])} aria-hidden />
       )}
       <div className="min-w-0 flex-1">
-        <Link to={item.to} className="block text-[14px] font-semibold leading-snug text-primary hover:underline">
+        <Link to={item.to} className="block text-body font-semibold leading-snug text-primary hover:underline">
           {item.title}
         </Link>
-        <p className="mt-0.5 text-[12.5px] leading-snug text-secondary">{item.detail}</p>
-        <p className="mt-1 flex items-center gap-1.5 text-[11.5px] text-muted">
+        <p className="mt-0.5 text-label leading-snug text-secondary">{item.detail}</p>
+        <p className="mt-1 flex items-center gap-1.5 text-caption text-muted">
           <span className={cn('h-1.5 w-1.5 rounded-full', DOT[item.severity])} aria-hidden />
           {item.reason}
         </p>
@@ -193,7 +193,8 @@ export function Pipeline({ stages, bottleneck, className }: { stages: Stage[]; b
   const totalCount = inFlight.reduce((sum, s) => sum + s.count, 0);
   const totalValue = inFlight.reduce((sum, s) => sum + s.value, 0);
   /* The lit stretch of the trail: from the first stop holding orders to the last. */
-  const litIdx = stages.map((s, i) => (s.count > 0 ? i : -1)).filter((i) => i >= 0);
+  /* Paid is the end of the road, not something waiting, so it never lights the trail red. */
+  const litIdx = stages.map((s, i) => (s.count > 0 && s.key !== 'paid' ? i : -1)).filter((i) => i >= 0);
   const from = litIdx.length ? litIdx[0] : -1;
   const to = litIdx.length ? litIdx[litIdx.length - 1] : -1;
   const seg = (i: number) => ({ left: i > from && i <= to, right: i >= from && i < to });
@@ -204,15 +205,16 @@ export function Pipeline({ stages, bottleneck, className }: { stages: Stage[]; b
       <SignatureBars className="pointer-events-none absolute -right-12 -top-16 -z-10 h-56 w-56 opacity-[0.14]" />
       <SignatureBars className="pointer-events-none absolute -bottom-12 left-[38%] -z-10 h-32 w-32 opacity-[0.08]" />
 
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/60">Order trail</p>
+      <p className="text-micro font-bold uppercase tracking-[0.14em] text-white/60">Order trail</p>
       <div className="mb-5 mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <p className="text-[13.5px] font-semibold text-white/80">
-          <span className="tabular text-[26px] font-bold text-white">{count(totalCount)}</span> order{totalCount === 1 ? '' : 's'} on the way
+        <p className="text-body font-semibold text-white/80">
+          <span className="tabular text-headline font-bold text-white">{count(totalCount)}</span> order{totalCount === 1 ? '' : 's'} on the way
         </p>
-        {totalValue > 0 && <p className="tabular text-[13.5px] font-semibold text-white/60">worth {nairaShort(totalValue)}</p>}
-        <span className="ml-auto flex items-center gap-3 text-[11.5px] font-semibold text-white/70">
+        {totalValue > 0 && <p className="tabular text-body font-semibold text-white/60">worth {nairaShort(totalValue)}</p>}
+        <span className="ml-auto flex items-center gap-3 text-caption font-semibold text-white/70">
           <span className="flex items-center gap-1.5"><span className="ab-trail-active h-2.5 w-2.5 rounded-full" />Pending</span>
           <span className="flex items-center gap-1.5"><span className="ab-trail-clear h-2.5 w-2.5 rounded-full" />Clear</span>
+          <span className="flex items-center gap-1.5"><span className="ab-trail-pending h-2.5 w-2.5 rounded-full ring-1 ring-white/40" />Not yet</span>
         </span>
       </div>
 
@@ -263,8 +265,10 @@ function TrailStop({
   layout: 'across' | 'down';
 }) {
   const Icon = STAGE_ICON[stage.key];
-  const lit = stage.count > 0;
   const done = stage.key === 'paid';
+  /* Pending: orders waiting at this stop. Paid is never pending; it is reached or not yet. */
+  const lit = stage.count > 0 && !done;
+  const reached = done && stage.count > 0;
   const late = stage.stuck > 0 && !done;
 
   const node = (
@@ -273,15 +277,19 @@ function TrailStop({
       {lit && <span aria-hidden className="ab-trail-ping absolute h-14 w-14 rounded-full" />}
       <span
         className={cn(
-          'relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/90 text-white transition-colors',
-          lit ? 'ab-trail-active' : 'ab-trail-clear',
+          'relative flex h-11 w-11 items-center justify-center rounded-full border-2 transition-colors',
+          lit
+            ? 'ab-trail-active border-white/90 text-white'
+            : done && !reached
+              ? /* the last stop, not reached yet: solid grey, so the line stops at its edge */ 'ab-trail-pending border-white/50 text-white/80'
+              : 'ab-trail-clear border-white/90',
           /* the stop holding up the most gets a halo as well */
           blocked && lit && 'ring-4 ring-white/25',
         )}
       >
         <Icon size={18} strokeWidth={2} aria-hidden />
-        {lit && (
-          <span className="tabular absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10.5px] font-bold text-[#0f1f36] shadow">
+        {(lit || reached) && (
+          <span className="tabular absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-micro font-bold text-[#0f1f36] shadow">
             {stage.count > 99 ? '99+' : stage.count}
           </span>
         )}
@@ -291,11 +299,11 @@ function TrailStop({
 
   const text = (
     <>
-      <p className={cn('text-[12.5px] font-semibold leading-tight', lit ? 'text-white' : 'text-white/75')}>{TRAIL_LABEL[stage.key] ?? stage.label}</p>
-      {lit && <p className="tabular mt-1.5 text-[16px] font-bold leading-none text-white">{nairaShort(stage.value)}</p>}
+      <p className={cn('text-label font-semibold leading-tight', lit || reached ? 'text-white' : done ? 'text-white/55' : 'text-white/75')}>{TRAIL_LABEL[stage.key] ?? stage.label}</p>
+      {(lit || reached) && <p className="tabular mt-1.5 text-title font-bold leading-none text-white">{nairaShort(stage.value)}</p>}
       <span className="sr-only">{lit ? `${stage.count} pending` : 'Nothing waiting'}</span>
       {late && (
-        <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#fab219]/20 px-2 py-0.5 text-[11px] font-semibold text-[#ffd77a]">
+        <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#fab219]/20 px-2 py-0.5 text-micro font-semibold text-[#ffd77a]">
           <Clock size={11} aria-hidden />
           {stage.key === 'collect' ? `${count(stage.stuck)} past due` : `${count(stage.stuck)} waiting too long`}
         </span>
@@ -355,11 +363,11 @@ export function Insights({ items, className }: { items: Insight[]; className?: s
         return (
           <li key={insight.id}>
             {insight.to ? (
-              <Link to={insight.to} className="flex gap-2 text-[13px] leading-snug text-secondary hover:text-primary">
+              <Link to={insight.to} className="flex gap-2 text-label leading-snug text-secondary hover:text-primary">
                 {body}
               </Link>
             ) : (
-              <p className="flex gap-2 text-[13px] leading-snug text-secondary">{body}</p>
+              <p className="flex gap-2 text-label leading-snug text-secondary">{body}</p>
             )}
           </li>
         );
