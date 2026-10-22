@@ -354,7 +354,7 @@ function TargetModal({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Month" required>
-            <MonthSelect value={period} onChange={setPeriod} ahead={12} back={12} className="w-full" />
+            <MonthSelect value={period} onChange={setPeriod} ahead={24} back={24} className="w-full" />
           </Field>
           <Field label="Target" required>
             <Input
