@@ -219,6 +219,10 @@ export type DistributorStatus = 'pending' | 'active' | 'inactive';
 export interface Distributor {
   id: string;
   company: string;
+  /** The name it is registered under with the CAC, when it differs from the trading name. */
+  registeredName?: string;
+  /** CAC registration number: RC for a company, BN for a business name. */
+  cacNumber?: string;
   contactName: string;
   email: string;
   phone?: string;

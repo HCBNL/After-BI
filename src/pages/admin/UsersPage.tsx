@@ -12,6 +12,7 @@
 
 import { useMemo, useState } from 'react';
 import { UserPlus, Users } from 'lucide-react';
+import { setIdCardActive } from '@/lib/idCards';
 import { PageHeader } from '@/components/layout/PageHeader';
 import {
   Avatar,
@@ -219,6 +220,8 @@ function MemberModal({
          or it would still read it through the rules. */
       if (!needsDistributor && member.distributorId) await clearDistributorLink(member.id);
       if (role === 'sales_rep') await setRepDistributors(member.id, distributorIds);
+      /* A suspended person's ID card stops verifying at once; restoring them brings it back. */
+      if ((member.active !== false) !== active) await setIdCardActive(member.id, active);
       onSaved();
     } catch (err) {
       toast.error('Not saved', err instanceof Error ? err.message : undefined);

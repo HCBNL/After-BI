@@ -20,7 +20,8 @@ import { useOrg } from '@/context/OrgContext';
 import { updateProfile } from '@/lib/db';
 import { publicDataUrl } from '@/lib/staff';
 import { saveFile } from '@/lib/download';
-import { cardLink, type BusinessCard } from '@/lib/businessCard';
+import { type BusinessCard } from '@/lib/businessCard';
+import { idVerifyUrl, publishIdCard } from '@/lib/idCards';
 import { buildStaffCard, type CardIssuer, type IdCardLayout } from '@/lib/staffCardPdf';
 import { ROLE_LABEL, type OrgSettings } from '@/types';
 
@@ -80,16 +81,34 @@ export function useOrgStaffDetails() {
     phone: user?.phone ?? '',
   });
   const [saving, setSaving] = useState(false);
+  const orgName = settings?.name || 'Your organisation';
+  const staffNo = user ? orgStaffNumber(user.id, orgName) : '';
+  /* The public record the card's QR checks against (lib/idCards.ts). */
+  const publish = async () => {
+    if (!user?.orgId || !details.fullName.trim()) return;
+    await publishIdCard({
+      uid: user.id,
+      orgId: user.orgId,
+      name: details.fullName.trim(),
+      position: details.position.trim(),
+      company: orgName,
+      logo: settings?.logoUrl ?? '',
+      phone: details.phone.trim(),
+      email: user.email ?? '',
+      website: settings?.website ?? '',
+      location: details.location.trim(),
+      staffNo,
+    }).catch(() => undefined);
+  };
   const save = async () => {
     setSaving(true);
     try {
       if (user) await updateProfile(user.id, { position: details.position.trim(), location: details.location.trim(), phone: details.phone.trim() });
+      await publish();
     } finally {
       setSaving(false);
     }
   };
-  const orgName = settings?.name || 'Your organisation';
-  const staffNo = user ? orgStaffNumber(user.id, orgName) : '';
   const card: BusinessCard = {
     name: details.fullName,
     position: details.position,
@@ -101,12 +120,25 @@ export function useOrgStaffDetails() {
     website: settings?.website ?? '',
     logo: settings?.logoUrl ?? '',
   };
-  return { user, settings, details, setDetails, save, saving, staffNo, card, orgName };
+  return { user, settings, details, setDetails, save, saving, staffNo, card, orgName, publish };
 }
 
 export default function OrgIdCard() {
   const toast = useToast();
-  const { user, settings, details, setDetails, save, saving, staffNo, card, orgName } = useOrgStaffDetails();
+  const { user, settings, details, setDetails, save, saving, staffNo, orgName, publish } = useOrgStaffDetails();
+  /* A real, scannable code on the preview too: it opens the public staff check. */
+  const [qrPreview, setQrPreview] = useState('');
+  useEffect(() => {
+    if (!user) return;
+    let live = true;
+    void import('qrcode')
+      .then(({ default: QRCode }) => QRCode.toDataURL(idVerifyUrl(user.id), { margin: 1, width: 240, errorCorrectionLevel: 'M' }))
+      .then((url) => live && setQrPreview(url))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [user]);
   const [source, setSource] = useState('');
   const [photo, setPhoto] = useState(() => (user ? readStored(photoKey(user.id)) : ''));
   const [remember, setRemember] = useState(() => Boolean(user && readStored(photoKey(user.id))));
@@ -147,10 +179,11 @@ export default function OrgIdCard() {
       const [mark, signature, qr] = await Promise.all([
         settings?.logoUrl ? publicDataUrl(settings.logoUrl).catch(() => '') : Promise.resolve(''),
         settings?.signatureUrl ? publicDataUrl(settings.signatureUrl).catch(() => '') : Promise.resolve(''),
-        /* Without the logo, so the printed code stays small enough to scan. */
-        QRCode.toDataURL(cardLink({ ...card, logo: '' }), { margin: 1, width: 320, errorCorrectionLevel: 'L' }).catch(() => ''),
+        /* The code opens the public staff check for this person. */
+        QRCode.toDataURL(idVerifyUrl(user!.id), { margin: 1, width: 320, errorCorrectionLevel: 'M' }).catch(() => ''),
+        publish(),
       ]);
-      const doc = await buildStaffCard({ ...details, staffNo, photo, mark, signature, qr, issuer, qrLabel: 'Scan for contact' }, layout);
+      const doc = await buildStaffCard({ ...details, staffNo, photo, mark, signature, qr, issuer, qrLabel: 'Scan to verify' }, layout);
       await saveFile(`${orgName.replace(/[^a-z0-9]+/gi, '_')}_ID_${details.fullName.replace(/[^a-z0-9]+/gi, '_')}.pdf`, doc.output('blob'));
     } catch (err) {
       toast.error('Could not make the card', err instanceof Error ? err.message : 'Try again.');
@@ -258,7 +291,7 @@ export default function OrgIdCard() {
               ]}
             />
           </div>
-          <Preview side={side} details={details} staffNo={staffNo} photo={photo} issuer={issuer} logo={settings?.logoUrl} signature={settings?.signatureUrl} />
+          <Preview side={side} details={details} staffNo={staffNo} photo={photo} issuer={issuer} logo={settings?.logoUrl} signature={settings?.signatureUrl} qr={qrPreview} />
           <div>
             <p className="mb-2 text-[13px] font-semibold text-primary">Print on</p>
             <SegmentedControl
@@ -289,6 +322,7 @@ function Preview({
   issuer,
   logo,
   signature,
+  qr: qrPreview,
 }: {
   side: 'front' | 'back';
   details: { fullName: string; position: string; location: string; phone: string };
@@ -297,6 +331,7 @@ function Preview({
   issuer: CardIssuer;
   logo?: string;
   signature?: string;
+  qr?: string;
 }) {
   const rows = [
     ['OFFICE', issuer.address],
@@ -367,10 +402,13 @@ function Preview({
             </div>
           </div>
           <div className="absolute inset-x-[18px] flex items-end gap-3" style={{ bottom: 38 }}>
-            <div className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded bg-[#eceef3] text-center text-[6px] text-[#686e7e]">
-              Scan for
-              <br />
-              contact
+            <div className="flex w-[60px] shrink-0 flex-col items-center">
+              {qrPreview ? (
+                <img src={qrPreview} alt="Scan to verify" className="h-[60px] w-[60px] rounded" />
+              ) : (
+                <div className="h-[60px] w-[60px] rounded bg-[#eceef3]" />
+              )}
+              <span className="mt-0.5 text-[5.5px] font-semibold text-[#686e7e]">Scan to verify</span>
             </div>
             <div className="flex-1 text-center">
               {signature ? <img src={signature} alt="" className="mx-auto h-8 object-contain" /> : <div className="h-8" />}

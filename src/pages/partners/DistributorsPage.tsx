@@ -347,6 +347,23 @@ function DistributorModal({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Registered business name" hint="The name on their CAC certificate, if it differs from the trading name above. Printed on proformas, invoices and statements for accountability.">
+            <Input
+              value={draft.registeredName ?? ''}
+              onChange={(e) => set('registeredName', e.target.value)}
+              placeholder="As on the CAC certificate"
+            />
+          </Field>
+          <Field label="CAC number" hint="RC number for a limited company, BN number for a business name. Printed on proformas, invoices and statements.">
+            <Input
+              value={draft.cacNumber ?? ''}
+              onChange={(e) => set('cacNumber', e.target.value.toUpperCase())}
+              placeholder="RC 1234567 or BN 1234567"
+            />
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Email" hint="Their contact email">
             <Input type="email" value={draft.email ?? ''} onChange={(e) => set('email', e.target.value)} />
           </Field>

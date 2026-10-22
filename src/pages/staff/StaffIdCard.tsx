@@ -56,6 +56,19 @@ export function useStaffDetails() {
 export default function StaffIdCard() {
   const toast = useToast();
   const { user, details, setDetails, save, saving, staffNo } = useStaffDetails();
+  /* A real, scannable code on the preview: it opens the public staff check. */
+  const [qrPreview, setQrPreview] = useState('');
+  useEffect(() => {
+    if (!staffNo) return;
+    let live = true;
+    void import('qrcode')
+      .then(({ default: QRCode }) => QRCode.toDataURL(staffVerifyUrl(staffNo), { margin: 1, width: 240, errorCorrectionLevel: 'M' }))
+      .then((url) => live && setQrPreview(url))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [staffNo]);
   const [source, setSource] = useState('');
   const [photo, setPhoto] = useState(() => (user ? readStored(photoKey(user.id)) : ''));
   const [remember, setRemember] = useState(() => Boolean(user && readStored(photoKey(user.id))));
@@ -198,7 +211,7 @@ export default function StaffIdCard() {
               ]}
             />
           </div>
-          <StaffPreview side={side} details={details} staffNo={staffNo} photo={photo} />
+          <StaffPreview side={side} details={details} staffNo={staffNo} photo={photo} qr={qrPreview} />
           <div>
             <p className="mb-2 text-[13px] font-semibold text-primary">Print on</p>
             <SegmentedControl
@@ -226,11 +239,13 @@ function StaffPreview({
   details,
   staffNo,
   photo,
+  qr,
 }: {
   side: 'front' | 'back';
   details: { fullName: string; position: string; location: string; phone: string };
   staffNo: string;
   photo: string;
+  qr?: string;
 }) {
   return (
     <div
@@ -308,10 +323,9 @@ function StaffPreview({
             </div>
           </div>
           <div className="absolute inset-x-[18px] flex items-end gap-3" style={{ bottom: 38 }}>
-            <div className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded bg-[#eceef3] text-center text-[6px] text-[#686e7e]">
-              Scan to
-              <br />
-              verify
+            <div className="flex w-[60px] shrink-0 flex-col items-center">
+              {qr ? <img src={qr} alt="Scan to verify" className="h-[60px] w-[60px] rounded" /> : <div className="h-[60px] w-[60px] rounded bg-[#eceef3]" />}
+              <span className="mt-0.5 text-[5.5px] font-semibold text-[#686e7e]">Scan to verify</span>
             </div>
             <div className="flex-1 text-center">
               <img src="/brand/signature.png" alt="" className="mx-auto h-8 object-contain" />
