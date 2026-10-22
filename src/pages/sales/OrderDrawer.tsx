@@ -38,6 +38,8 @@ import { pickApprovers } from '@/lib/approvals';
 import { orderAmendment } from '@/lib/amend';
 import { formatDateTime, naira, count } from '@/lib/format';
 import { printDocument } from '@/lib/print';
+import { PORTAL_ROOT } from '@/lib/tiles';
+import { Link } from 'react-router-dom';
 import { listPriceOf, summarise } from '@/lib/pricing';
 import { ORDER_STATUS_LABEL, ROLE_LABEL, type Order } from '@/types';
 
@@ -60,14 +62,30 @@ export function OrderDrawer({
   const [note, setNote] = useState('');
   const [depot, setDepot] = useState('');
   const [busy, setBusy] = useState(false);
-  const [confirm, setConfirm] = useState<null | 'reject' | 'fulfil' | 'recall' | 'cancel'>(null);
+  const [confirm, setConfirm] = useState<null | 'approve' | 'reject' | 'fulfil' | 'recall' | 'cancel'>(null);
   /* A recall or cancel reason, shared by both confirm dialogs below. */
   const [reason] = useState('');
 
-  const { data: order, loading, reload } = useAsync(
-    () => (orderId ? getOrder(orderId) : Promise.resolve(null)),
+  /*
+   * Keyed on the order id, so the drawer never shows the PREVIOUS answer for a
+   * new order. Without the key, opening a just raised order showed the empty
+   * result from when no order was open ("That order no longer exists") until
+   * the read came back a moment later.
+   */
+  const { data: order, loading: fetching, reload } = useAsync(
+    async () => {
+      if (!orderId) return null;
+      /* A just raised order can take a beat to be readable; ask once more before saying it is gone. */
+      const first = await getOrder(orderId);
+      if (first) return first;
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      return getOrder(orderId);
+    },
     [orderId],
+    { key: orderId ?? '' },
   );
+  /* Undefined means "not here yet"; null means the read came back empty. */
+  const loading = fetching || order === undefined;
 
   /*
    * EVERY HOOK ABOVE THE EARLY RETURN, WITHOUT EXCEPTION.
@@ -127,6 +145,7 @@ export function OrderDrawer({
   /* The one source of truth for edit / recall / cancel. See `lib/amend.ts`. */
   const amend = orderAmendment(user, order ?? null);
   const priced = summarise(order?.lines ?? []);
+  const root = user ? PORTAL_ROOT[user.role] : '';
 
   const approversFor = () => (user ? pickApprovers(members, settings, user) : []);
 
@@ -341,9 +360,17 @@ export function OrderDrawer({
             naming the stage and who can act.
           */}
           {!amend.canEdit && !amend.canRecall && !amend.canCancel && amend.reason && (
-            <p className="rounded-xl border border-hairline surface-sunken px-3.5 py-2.5 text-[12.5px] leading-snug text-muted">
-              {amend.reason}
-            </p>
+            <div className="rounded-xl border border-hairline surface-sunken px-3.5 py-2.5 text-[12.5px] leading-snug text-muted">
+              <p>{amend.reason}</p>
+              {order.status === 'fulfilled' && root && user?.role !== 'sales_rep' && (
+                <Link
+                  to={`${root}/returns?new=1&account=${order.distributorId}`}
+                  className="mt-2 inline-flex items-center gap-1 text-[12.5px] font-bold text-brand-700 hover:underline dark:text-brand-300"
+                >
+                  <Undo2 size={13} aria-hidden /> Raise a return for {order.distributorName}
+                </Link>
+              )}
+            </div>
           )}
 
           {amend.canRecall && !amend.canEdit && amend.reason && (
@@ -521,12 +548,7 @@ export function OrderDrawer({
                   size="sm"
                   icon={<Check size={15} />}
                   loading={busy}
-                  onClick={() =>
-                    run(
-                      () => decideOrder(order.id, 'approved', user!, note.trim() || undefined),
-                      'Approved',
-                    )
-                  }
+                  onClick={() => setConfirm('approve')}
                 >
                   Approve
                 </Button>
@@ -634,11 +656,24 @@ export function OrderDrawer({
       />
 
       <ConfirmDialog
+        open={confirm === 'approve'}
+        onClose={() => setConfirm(null)}
+        title="Approve this order?"
+        message="Check the lines, prices and any discount now. Once approved it can be fulfilled, and once fulfilled with a delivery note it can never be edited or reversed by anyone, including the super admin. The only way back after that is a return raised on the customer's account."
+        confirmLabel="Approve"
+        loading={busy}
+        onConfirm={() => {
+          setConfirm(null);
+          void run(() => decideOrder(order!.id, 'approved', user!, note.trim() || undefined), 'Approved');
+        }}
+      />
+
+      <ConfirmDialog
         open={confirm === 'fulfil'}
         onClose={() => setConfirm(null)}
-        title="Fulfil and deduct stock?"
-        message="Every line comes out of the depot and goes into the ledger. This cannot be undone from here. A mistake is corrected with an adjustment."
-        confirmLabel="Fulfil"
+        title="Fulfil this order? This is final"
+        message="Every line comes out of the depot, a delivery note number is given, and the order is locked for good. Nobody can edit or cancel it after this, including the super admin. To reverse anything later, raise a return on the customer's account."
+        confirmLabel="Yes, fulfil"
         loading={busy}
         onConfirm={() => {
           setConfirm(null);

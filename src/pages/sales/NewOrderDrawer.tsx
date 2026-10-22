@@ -68,7 +68,8 @@ export function NewOrderDrawer({
 }: {
   open: boolean;
   onClose: () => void;
-  onCreated: (orderId: string) => void;
+  /** `outcome`: where the order now stands, for the confirmation the page shows. */
+  onCreated: (orderId: string, outcome: 'draft' | 'sent' | 'approved' | 'updated') => void;
   /** When set, this edits that order instead of raising a new one. */
   order?: Order | null;
 }) {
@@ -290,11 +291,13 @@ export function NewOrderDrawer({
         /* A draft being sent on in the same action. An order that was already
            in flight stays where it is; an admin amending it has not re-submitted
            it on the author's behalf. */
+        let outcome: 'sent' | 'approved' | 'updated' = 'updated';
         if (send && order.status === 'draft') {
-          await submitOrder(order.id, approvers, user);
+          const status = await submitOrder(order.id, approvers, user);
+          outcome = status === 'approved' ? 'approved' : 'sent';
         }
 
-        onCreated(order.id);
+        onCreated(order.id, outcome);
         return;
       }
 
@@ -309,7 +312,7 @@ export function NewOrderDrawer({
       });
 
       reset();
-      onCreated(id);
+      onCreated(id, !send ? 'draft' : approvers.length ? 'sent' : 'approved');
     } catch (err) {
       toast.error(
         order ? 'That change was not saved' : 'That order was not raised',

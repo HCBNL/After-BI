@@ -21,6 +21,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Check, Plus, RotateCcw, Truck, X } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import {
@@ -62,7 +63,10 @@ export default function ReturnsPage() {
   const [filter, setFilter] = useState<'open' | 'all'>('open');
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState<ReturnRecord | null>(null);
-  const [raising, setRaising] = useState(false);
+  /* Opened from a fulfilled order ("Raise a return"): the form starts on that customer. */
+  const [params, setParams] = useSearchParams();
+  const [raising, setRaising] = useState(params.get('new') === '1');
+  const presetAccount = params.get('account') ?? undefined;
 
   const { data, loading, reload } = useAsync(() => listReturns(scope), [scope], { handleError: true });
   const returns = useMemo(() => data ?? [], [data]);
@@ -180,9 +184,14 @@ export default function ReturnsPage() {
 
       <RaiseReturnModal
         open={raising}
-        onClose={() => setRaising(false)}
+        presetAccount={presetAccount}
+        onClose={() => {
+          setRaising(false);
+          if (params.get('new')) setParams({}, { replace: true });
+        }}
         onRaised={() => {
           setRaising(false);
+          if (params.get('new')) setParams({}, { replace: true });
           reload();
           toast.success('Return raised', 'Operations will decide whether it can come back.');
         }}
@@ -386,10 +395,12 @@ function ReturnDrawer({
 
 function RaiseReturnModal({
   open,
+  presetAccount,
   onClose,
   onRaised,
 }: {
   open: boolean;
+  presetAccount?: string;
   onClose: () => void;
   onRaised: () => void;
 }) {
@@ -399,7 +410,7 @@ function RaiseReturnModal({
 
   const scope = partnerScope(user);
   const scoped = scope && scope.length === 1 ? scope[0] : undefined;
-  const [distributorId, setDistributorId] = useState(scoped ?? '');
+  const [distributorId, setDistributorId] = useState(scoped ?? presetAccount ?? '');
   const [productId, setProductId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [reasonType, setReasonType] = useState('Damaged in transit');

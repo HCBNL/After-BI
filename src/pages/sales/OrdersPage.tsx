@@ -291,16 +291,18 @@ export default function OrdersPage() {
           next.delete('new');
           setParams(next, { replace: true });
         }}
-        onCreated={(id) => {
-          const wasEdit = Boolean(editing);
+        onCreated={(id, outcome) => {
           setCreating(false);
           setEditing(null);
           reload();
           openOrder(id);
-          toast.success(
-            wasEdit ? 'Order updated' : 'Order raised',
-            wasEdit ? undefined : 'It is in your drafts until you send it for approval.',
-          );
+          const said = {
+            draft: ['Saved as a draft', 'It stays in your drafts until you send it for approval.'],
+            sent: ['Sent for approval', 'It is waiting for a signature. You can print the proforma now.'],
+            approved: ['Order approved', 'It is ready to fulfil. You can print the proforma now.'],
+            updated: ['Order updated', undefined],
+          } as const;
+          toast.success(said[outcome][0], said[outcome][1]);
         }}
       />
     </div>
