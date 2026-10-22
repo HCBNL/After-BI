@@ -30,7 +30,7 @@ import { WHATSAPP_URL } from '@/lib/site';
 import { SiteFooter, SiteHeader } from './chrome';
 import { BookDemo } from './BookDemo';
 import { btn, container } from './tokens';
-import { SiteImage } from './site-ui';
+import { SiteImage, SiteImagesProvider } from './site-ui';
 
 /* ---------------------------------------------------------------- the ask */
 
@@ -140,6 +140,15 @@ export function PublicShell({
   const book = useCallback(() => setBooking(true), []);
   const ask = useMemo(() => ({ book, home }), [book, home]);
 
+  /* Every uploaded picture, slot to address. The older per module field is
+     read too, so pictures published before slots existed still show. */
+  const images = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const [slug, url] of Object.entries(home?.moduleImages ?? {})) if (url) out[`module-${slug}`] = url;
+    for (const [slot, url] of Object.entries(home?.images ?? {})) if (url) out[slot] = url;
+    return out;
+  }, [home]);
+
   /*
    * Dark past the page's edges too.
    *
@@ -161,6 +170,7 @@ export function PublicShell({
 
   return (
     <AskContext.Provider value={ask}>
+     <SiteImagesProvider value={images}>
       <div className="site flex min-h-[100dvh] flex-col">
         <SiteHeader overlay={overlay} onBook={book} />
         <main className="flex-1">{children}</main>
@@ -170,6 +180,7 @@ export function PublicShell({
 
       <WhatsAppButton />
       <BookDemo open={booking} onClose={() => setBooking(false)} />
+     </SiteImagesProvider>
     </AskContext.Provider>
   );
 }

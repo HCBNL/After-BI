@@ -114,34 +114,30 @@ export function ShellSkeleton() {
 }
 
 /**
- * Inside the shell, while a screen's code or data loads.
- *
- * No skeleton, on purpose: the shell serves two kinds of screen (home, with its
- * own hero, and every other page, with the coloured panel), and a skeleton
- * shaped like one is a lie on the other. So it is the brand, centred in the
- * space the screen will fill: the signal mark on a soft halo, a slim moving
- * bar, and the words. It fades in after a beat, so a screen that is ready at
- * once never flashes it.
+ * Inside the shell, while a screen's code or data loads: the AfterBI logo,
+ * exactly as it is, fixed at the centre of the screen. Nothing around it, no
+ * halo, no colour wash, no bar. It fades in after a beat, so a screen that is
+ * ready at once never flashes it. `inline` keeps it inside a page instead
+ * (under that page's own panel), still centred.
  */
 export function QuietLoader({ label = 'Loading', inline = false }: { label?: string; inline?: boolean }) {
+  const mark = <img src="/brand/afterbi-mark.png" alt="" width={64} height={64} className="h-16 w-16 select-none object-contain" draggable={false} />;
+  if (inline) {
+    return (
+      <div role="status" aria-label={label} className="ab-quiet flex min-h-[38vh] items-center justify-center py-10">
+        {mark}
+        <span className="sr-only">{label}</span>
+      </div>
+    );
+  }
   return (
-    <div
-      role="status"
-      aria-label={label}
-      className={cn(
-        'ab-quiet flex flex-col items-center justify-center',
-        /* A whole screen: centred in the viewport. Inside a page, under its
-           panel: centred in the space left. */
-        inline ? 'min-h-[38vh] py-10' : 'min-h-[calc(100dvh-14rem)] lg:min-h-[calc(100dvh-7rem)]',
-      )}
-    >
-      <div className="ab-quiet-halo relative flex h-28 w-28 items-center justify-center rounded-full">
-        <SignalMark size={60} />
+    <>
+      {/* Keeps the page's height while the logo sits fixed over the screen's centre. */}
+      <div aria-hidden className="min-h-[60vh]" />
+      <div role="status" aria-label={label} className="ab-quiet pointer-events-none fixed inset-0 z-30 flex items-center justify-center">
+        {mark}
+        <span className="sr-only">{label}</span>
       </div>
-      <div className="ab-quiet-bar mt-6" aria-hidden>
-        <span />
-      </div>
-      <p className="mt-3 text-[12.5px] font-semibold tracking-wide text-muted">{label}</p>
-    </div>
+    </>
   );
 }

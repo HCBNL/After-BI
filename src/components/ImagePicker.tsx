@@ -41,6 +41,8 @@ interface Props {
   /** Shown in the empty state when there is no picture yet. */
   placeholder?: string;
   disabled?: boolean;
+  /** Stretch to the column's width (height from `height`/`size`), so pickers side by side match. */
+  fill?: boolean;
 }
 
 export function ImagePicker({
@@ -54,6 +56,7 @@ export function ImagePicker({
   shape = 'square',
   placeholder,
   disabled = false,
+  fill = false,
 }: Props) {
   const boxHeight = height ?? size;
   const input = useRef<HTMLInputElement>(null);
@@ -79,97 +82,87 @@ export function ImagePicker({
   };
 
   const rounded = shape === 'circle' ? 'rounded-full' : 'rounded-xl';
+  const canUpload = cloudinaryConfigured && !disabled && !busy;
 
   return (
-    <div>
+    <div className={fill ? 'w-full' : undefined}>
       {(label || hint) && (
         <div className="mb-2 flex items-center gap-1.5">
-          {label && <p className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-muted">{label}</p>}
-          {/* The note sits behind the (i), like every other field's, not as prose under the buttons. */}
+          {label && <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted">{label}</p>}
+          {/* The note sits behind the (i), like every other field's, not as prose under the box. */}
           {hint && <Hint label={label ? `About ${label.toLowerCase()}` : 'About this picture'}>{hint}</Hint>}
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-4">
-        <div
+      {/* The box IS the button: tap it to upload or change. */}
+      <div className="group relative" style={fill ? { height: boxHeight } : { width: size, height: boxHeight }}>
+        <button
+          type="button"
+          disabled={!canUpload}
+          onClick={() => input.current?.click()}
+          aria-label={value ? `Change ${label ?? 'the picture'}` : `Upload ${label ?? 'a picture'}`}
           className={cn(
-            'relative flex shrink-0 items-center justify-center overflow-hidden border border-hairline',
-            value ? 'surface-sunken' : 'poster-glow',
+            'relative flex h-full w-full items-center justify-center overflow-hidden border transition-colors',
+            value ? 'border-hairline surface-sunken' : 'border-dashed border-[var(--border-strong)] hover:border-brand-500',
+            canUpload && 'cursor-pointer',
             rounded,
           )}
-          style={{ width: size, height: boxHeight }}
         >
           {value ? (
             <img
-              src={imageUrl(value, { width: size })}
+              src={imageUrl(value, { width: fill ? 480 : size })}
               alt=""
-              /* A logo is letterboxed so none of it is lost; a cover is cropped,
-                 because cropping is exactly what it will do in place and the
-                 preview should not flatter it. */
-              className={cn('h-full w-full', height ? 'object-cover' : 'object-contain')}
+              className={cn('h-full w-full p-2', height && !fill ? 'object-cover' : 'object-contain')}
               loading="lazy"
             />
           ) : (
-            <span className="px-2 text-center text-[11px] font-medium leading-tight text-white/60">
-              {placeholder ?? <ImagePlus size={20} className="mx-auto" />}
+            <span className="flex flex-col items-center gap-1 px-2 text-center text-[11.5px] font-medium leading-tight text-muted">
+              {placeholder ?? <ImagePlus size={18} />}
+              {!placeholder && <span>Tap to upload</span>}
+            </span>
+          )}
+
+          {value && canUpload && (
+            <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-black/55 py-1 text-[11px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <Upload size={11} aria-hidden /> Change
             </span>
           )}
 
           {busy && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[var(--surface-page)]/75">
+            <span className="absolute inset-0 flex items-center justify-center bg-[var(--surface-page)]/75">
               <Spinner size={20} className="text-brand-600 dark:text-brand-400" />
-            </div>
+            </span>
           )}
-        </div>
+        </button>
 
-        <div className="min-w-0 flex-1 basis-48">
-          {cloudinaryConfigured ? (
-            <>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  disabled={disabled || busy}
-                  onClick={() => input.current?.click()}
-                  className="tap inline-flex items-center gap-1.5 rounded-xl border border-hairline px-3 text-[13.5px] font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary disabled:opacity-50"
-                >
-                  <Upload size={14} />
-                  {value ? 'Change' : 'Upload'}
-                </button>
-
-                {value && (
-                  <button
-                    type="button"
-                    disabled={disabled || busy}
-                    onClick={() => onChange('')}
-                    className="tap inline-flex items-center gap-1.5 rounded-xl px-3 text-[13.5px] font-semibold text-muted transition-colors hover:text-status-critical disabled:opacity-50"
-                  >
-                    <Trash2 size={14} />
-                    Remove
-                  </button>
-                )}
-              </div>
-
-            </>
-          ) : (
-            <p className="text-[12.5px] leading-relaxed text-muted">
-              Picture uploads are not set up on this deployment yet. Add{' '}
-              {/* `break-all`, these are long unbreakable tokens, and without it
-                  they are the widest thing on the page and push it sideways. */}
-              <code className="break-all font-mono text-[11.5px]">VITE_CLOUDINARY_CLOUD_NAME</code> and{' '}
-              <code className="break-all font-mono text-[11.5px]">VITE_CLOUDINARY_UPLOAD_PRESET</code>, then redeploy.
-              You can still paste a link to a picture hosted elsewhere.
-            </p>
-          )}
-
-          <input
-            ref={input}
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            className="hidden"
-            onChange={(event) => void choose(event.target.files?.[0])}
-          />
-        </div>
+        {value && !disabled && !busy && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            aria-label={`Remove ${label ?? 'the picture'}`}
+            title="Remove"
+            className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-lg bg-white/90 text-muted shadow-sm ring-1 ring-black/5 transition-colors hover:text-status-critical dark:bg-black/60"
+          >
+            <Trash2 size={13} aria-hidden />
+          </button>
+        )}
       </div>
+
+      {!cloudinaryConfigured && (
+        <p className="mt-2 text-[11.5px] leading-relaxed text-muted">
+          Picture uploads are not set up on this deployment yet. Add{' '}
+          <code className="break-all font-mono text-[11px]">VITE_CLOUDINARY_CLOUD_NAME</code> and{' '}
+          <code className="break-all font-mono text-[11px]">VITE_CLOUDINARY_UPLOAD_PRESET</code>, then redeploy.
+        </p>
+      )}
+
+      <input
+        ref={input}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="hidden"
+        onChange={(event) => void choose(event.target.files?.[0])}
+      />
     </div>
   );
 }
