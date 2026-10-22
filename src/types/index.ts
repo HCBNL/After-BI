@@ -247,7 +247,13 @@ export interface OrderLine {
   category: string;
   unit: string;
   quantity: number;
-  /** Resolved from `product.pricing[distributor.category]` at write time. */
+  /**
+   * The tier price on the day (the list price), before any adjustment.
+   * Absent on lines written before prices could be adjusted: read it with
+   * `listPriceOf()`, which falls back to `unitPrice`.
+   */
+  listPrice?: number;
+  /** The price actually charged. The tier price unless someone allowed to adjusted it. */
   unitPrice: number;
   /** `quantity × unitPrice`, stored rather than computed. */
   lineTotal: number;
@@ -285,8 +291,16 @@ export interface Order extends AmendmentTrail {
   distributorId: string;
   distributorName: string;
   lines: OrderLine[];
-  /** Sum of `lineTotal`. Stored, so a list does not have to reduce every row. */
+  /** Sum of `lineTotal`. Stored, so a list does not have to reduce every row. This is what is owed. */
   total: number;
+  /** What the lines come to at list price, before any discount. */
+  grossTotal?: number;
+  /** `grossTotal` minus `total`: the goodwill given on this order. */
+  discountTotal?: number;
+  /** Why, printed on the proforma and invoice. "Goodwill discount" when left blank. */
+  discountNote?: string;
+  /** Who last set an adjusted price on this order. */
+  priceAdjustedBy?: string;
   status: OrderStatus;
 
   /** UIDs required to sign off, fixed at submission. */
@@ -465,6 +479,10 @@ export interface Invoice extends AmendmentTrail {
   distributorName: string;
   lines: OrderLine[];
   total: number;
+  /** Copied from the order: list value and the discount given on it. */
+  grossTotal?: number;
+  discountTotal?: number;
+  discountNote?: string;
   /** Sum of payments received. `total - amountPaid` is what is owed. */
   amountPaid: number;
   status: InvoiceStatus;
@@ -597,6 +615,10 @@ export interface OrgSettings {
   approvalThreshold?: number;
   /** Roles that sign orders over the threshold. None chosen: the super admin signs. */
   approverRoles?: Role[];
+  /** Roles that may adjust the unit price on an order. The super admin always may; distributors never. */
+  priceEditRoles?: Role[];
+  /** When true, any order carrying a discount needs a signature, whatever its value. */
+  discountNeedsApproval?: boolean;
   /**
    * The accounts a distributor may pay into.
    *

@@ -55,6 +55,7 @@ const RemindersPage = lazy(() => import('./pages/shared/RemindersPage'));
 
 const StockPage = lazy(() => import('@/pages/inventory/StockPage'));
 const ProductsPage = lazy(() => import('@/pages/inventory/ProductsPage'));
+const CostingPage = lazy(() => import('@/pages/inventory/CostingPage'));
 const MovementsPage = lazy(() => import('@/pages/inventory/MovementsPage'));
 const WarehousesPage = lazy(() => import('@/pages/inventory/WarehousesPage'));
 const ReturnsPage = lazy(() => import('@/pages/inventory/ReturnsPage'));
@@ -388,6 +389,7 @@ export default function App() {
             {/* Administrators only: see `AdminOnly` above for why these are
                 guarded rather than simply left off the staff menu. */}
             <Route path="products" element={<AdminOnly><ProductsPage /></AdminOnly>} />
+            <Route path="costing" element={<AdminOnly><CostingPage /></AdminOnly>} />
             <Route path="warehouses" element={<AdminOnly><WarehousesPage /></AdminOnly>} />
             <Route path="credit" element={<AdminOnly><CreditPage /></AdminOnly>} />
             <Route path="scorecards" element={<AdminOnly><ScorecardsPage /></AdminOnly>} />
