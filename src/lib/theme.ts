@@ -126,7 +126,8 @@ function mix(hex: string, toward: [number, number, number], amount: number): str
 }
 
 const BLACK: [number, number, number] = [0, 0, 0];
-const NIGHT: [number, number, number] = [10, 12, 16];
+/* Dark panels lean navy, not black, so a custom colour stays bright at night. */
+const NIGHT: [number, number, number] = [15, 28, 46];
 
 function applyAccent(accent: Accent): void {
   const root = document.documentElement;
@@ -140,7 +141,7 @@ function applyAccent(accent: Accent): void {
   const [r, g, b] = rgb(accent);
   root.dataset.accent = 'custom';
   root.style.setProperty('--c-hero', mix(accent, BLACK, 0.45));
-  root.style.setProperty('--c-hero-dark', mix(accent, NIGHT, 0.82));
+  root.style.setProperty('--c-hero-dark', mix(accent, NIGHT, 0.6));
   root.style.setProperty('--c-glow', `rgba(${r}, ${g}, ${b}, 0.22)`);
   root.style.setProperty('--c-ground-a', mix(accent, BLACK, 0.2));
   root.style.setProperty('--c-ground-b', mix(accent, BLACK, 0.38));
