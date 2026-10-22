@@ -296,7 +296,7 @@ export interface OrderApproval {
 
 export interface Order extends AmendmentTrail {
   id: string;
-  /** Human-readable, sequential per org: `PO-2026-0041`. See `docNumbers.ts`. */
+  /** Human readable, per org: `PI-202610001` (year, month, count that month). Older orders say `PO-2026-0041`. */
   orderNumber: string;
   distributorId: string;
   distributorName: string;
@@ -328,6 +328,8 @@ export interface Order extends AmendmentTrail {
   rejectedAt?: string;
   fulfilledAt?: string;
   fulfilledBy?: string;
+  /** The delivery note's own number, given when the goods leave: `DN202610001`. */
+  deliveryNumber?: string;
 
   /* Pulled back out of the approval queue by whoever raised it. Every
      signature is cleared at the same time: see `recallOrder`. */

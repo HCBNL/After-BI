@@ -27,12 +27,12 @@
  */
 
 import { useState } from 'react';
-import { Ban, Check, PackageCheck, Pencil, Printer, Send, Undo2, X } from 'lucide-react';
+import { Ban, Check, PackageCheck, Pencil, Printer, Send, Truck, Undo2, X } from 'lucide-react';
 import { Alert, Badge, Button, ConfirmDialog, Divider, Drawer, Field, Hint, Select, Textarea, useToast } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
-import { cancelOrder, decideOrder, fulfilOrder, getOrder, listApproverPool, recallOrder, submitOrder } from '@/lib/db';
+import { cancelOrder, decideOrder, ensureDeliveryNumber, fulfilOrder, getOrder, invoiceForOrder, listApproverPool, recallOrder, submitOrder } from '@/lib/db';
 import { isOperations } from '@/lib/roles';
 import { pickApprovers } from '@/lib/approvals';
 import { orderAmendment } from '@/lib/amend';
@@ -83,6 +83,12 @@ export function OrderDrawer({
    * builds when raising one.
  */
   const { data: members } = useAsync(() => listApproverPool(), []);
+
+  /* The invoice raised from this order, if any: the proforma prints its payment status. */
+  const { data: orderInvoice } = useAsync(
+    () => (order ? invoiceForOrder(order) : Promise.resolve(null)),
+    [order?.id, order?.status],
+  );
 
   if (!orderId) return null;
 
@@ -153,6 +159,7 @@ export function OrderDrawer({
               <p className="text-[15px] font-bold text-primary">{order.distributorName}</p>
               <p className="mt-0.5 text-[12.5px] text-muted">
                 Raised by {order.createdByName} · {formatDateTime(order.createdAt)}
+                {order.deliveryNumber ? ` · Delivery note ${order.deliveryNumber}` : ''}
               </p>
             </div>
             <Badge
@@ -228,6 +235,7 @@ export function OrderDrawer({
                     printDocument({
                       kind: 'proforma',
                       order,
+                      invoice: orderInvoice ?? null,
                       distributor: distributorById(order.distributorId) ?? null,
                       company: {
                         settings,
@@ -241,6 +249,33 @@ export function OrderDrawer({
                 }}
               >
                 Proforma
+              </Button>
+            )}
+            {settings && order.status === 'fulfilled' && (
+              <Button
+                size="sm"
+                variant="outline"
+                icon={<Truck size={15} />}
+                onClick={async () => {
+                  try {
+                    /* Orders fulfilled before delivery notes were numbered get their DN on first print. */
+                    let deliveryNumber = order.deliveryNumber;
+                    if (!deliveryNumber) {
+                      deliveryNumber = await ensureDeliveryNumber(order.id).catch(() => undefined);
+                      if (deliveryNumber) reload();
+                    }
+                    printDocument({
+                      kind: 'delivery',
+                      order: { ...order, deliveryNumber },
+                      distributor: distributorById(order.distributorId) ?? null,
+                      company: { settings },
+                    });
+                  } catch (err) {
+                    toast.error('Could not print', err instanceof Error ? err.message : undefined);
+                  }
+                }}
+              >
+                Delivery note
               </Button>
             )}
 
@@ -385,11 +420,11 @@ export function OrderDrawer({
               {priced.discount > 0 && (
                 <div className="space-y-1 border-b border-hairline px-4 py-3 text-[12.5px]">
                   <div className="flex items-center justify-between text-muted">
-                    <span>Subtotal at list price</span>
+                    <span>Normal price</span>
                     <span className="tabular">{naira(priced.gross, true)}</span>
                   </div>
                   <div className="flex items-center justify-between font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
-                    <span>Less {order.discountNote || 'goodwill discount'}</span>
+                    <span>Discount{order.discountNote ? ` (${order.discountNote})` : ''}</span>
                     <span className="tabular">({naira(priced.discount, true)})</span>
                   </div>
                 </div>

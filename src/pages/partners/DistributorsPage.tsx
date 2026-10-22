@@ -29,6 +29,7 @@ import {
   Modal,
   SearchInput,
   Select,
+  Textarea,
   useToast,
   type Column,
 } from '@/components/ui';
@@ -354,8 +355,17 @@ function DistributorModal({
           </Field>
         </div>
 
+        <Field label="Address" hint="Shop number, street, market or area and town, for example Shop 12, Main Market, Onitsha. The state below is added after it on every proforma, invoice and statement.">
+          <Textarea
+            rows={2}
+            value={draft.address ?? ''}
+            onChange={(e) => set('address', e.target.value)}
+            placeholder="Shop 12, Main Market, Onitsha"
+          />
+        </Field>
+
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="State" hint="Feeds the coverage map on Analytics.">
+          <Field label="State" hint="Feeds the coverage map on Analytics, and is printed after the address on proformas, invoices and statements.">
             <StateSelect value={draft.location ?? ''} onChange={(next) => set('location', next)} />
           </Field>
           <Field

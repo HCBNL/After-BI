@@ -528,11 +528,11 @@ export function NewOrderDrawer({
               {discount > 0 && (
                 <>
                   <div className="flex items-center justify-between text-[12.5px] text-muted">
-                    <span>Subtotal at list price</span>
+                    <span>Normal price</span>
                     <span className="tabular">{naira(gross, true)}</span>
                   </div>
                   <div className="flex items-center justify-between text-[12.5px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
-                    <span>Less discount</span>
+                    <span>Discount</span>
                     <span className="tabular">({naira(discount, true)})</span>
                   </div>
                 </>
@@ -546,13 +546,13 @@ export function NewOrderDrawer({
             {discount > 0 && canPrice && (
               <Field
                 label="Reason for the discount"
-                hint="Printed on the proforma and invoice under the discount. Left blank, it says Goodwill discount."
+                hint="Optional. Printed beside the discount on the proforma and invoice, for example Bulk order."
                 className="mt-3"
               >
                 <Input
                   value={discountNote}
                   onChange={(e) => setDiscountNote(e.target.value)}
-                  placeholder="Goodwill discount"
+                  placeholder="Bulk order"
                 />
               </Field>
             )}
