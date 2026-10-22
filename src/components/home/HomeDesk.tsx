@@ -5,7 +5,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronUp, Moon, Search, Sun } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Moon, Search, Sun } from 'lucide-react';
 import { useShell } from '@/components/layout/ShellContext';
 import { setStoredTheme } from '@/lib/theme';
 import { actionsForRole, resolveTo } from '@/lib/tiles';
@@ -244,75 +244,141 @@ export function DeskShortcuts({ role }: { role: Role }) {
   );
 }
 
-const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+/** Lagos "today", re-read every 30 seconds so the card turns over at midnight on its own. */
+function useLagosToday() {
+  const [now, setNow] = useState(() => monthPosition());
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const next = monthPosition();
+      setNow((current) => (current.day === next.day && current.month === next.month && current.year === next.year ? current : next));
+    }, 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return now;
+}
 
 /**
- * Where the sales month stands, as a card: today ringed on a small calendar,
- * the days gone filled, the days left empty: month-end is when targets close.
+ * A live calendar: real dates, today marked, the days of the sales month gone
+ * shown quieter, and arrows to look at other months. Month end is when targets
+ * close, so the bar and the days left stay underneath.
  */
 export function MonthCard({ footnote }: { footnote?: string }) {
-  const m = useMemo(() => monthPosition(), []);
-  const cells: (number | null)[] = [
-    ...Array.from({ length: m.firstWeekday }, () => null),
-    ...Array.from({ length: m.days }, (_, i) => i + 1),
-  ];
+  const today = useLagosToday();
+  const [offset, setOffset] = useState(0);
+
+  const view = useMemo(() => {
+    const first = new Date(Date.UTC(today.year, today.month - 1 + offset, 1));
+    const year = first.getUTCFullYear();
+    const month = first.getUTCMonth() + 1;
+    const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const lead = (first.getUTCDay() + 6) % 7;
+    const prevDays = new Date(Date.UTC(year, month - 1, 0)).getUTCDate();
+    const name = first.toLocaleDateString('en-GB', { month: 'long', timeZone: 'UTC' });
+    const cells: { n: number; inMonth: boolean; weekend: boolean; key: string }[] = [];
+    for (let i = 0; i < lead; i += 1) cells.push({ n: prevDays - lead + 1 + i, inMonth: false, weekend: i >= 5, key: `p${i}` });
+    for (let d = 1; d <= days; d += 1) cells.push({ n: d, inMonth: true, weekend: (lead + d - 1) % 7 >= 5, key: `d${d}` });
+    let t = 1;
+    while (cells.length % 7 !== 0 || cells.length < 35) {
+      cells.push({ n: t, inMonth: false, weekend: cells.length % 7 >= 5, key: `n${t}` });
+      t += 1;
+    }
+    return { year, month, days, name, cells };
+  }, [today, offset]);
+
+  const isThisMonth = offset === 0;
+  const weekday = useMemo(
+    () => new Date(Date.UTC(today.year, today.month - 1, today.day)).toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' }),
+    [today],
+  );
+
+  const navButton =
+    'flex h-8 w-8 items-center justify-center rounded-lg text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary';
 
   return (
     <section
-      aria-label="This month"
+      aria-label="Calendar"
       className="relative isolate flex w-full flex-col overflow-hidden rounded-[22px] border border-hairline surface-card p-5 shadow-card"
     >
-      <BrandBars className="pointer-events-none absolute -right-6 -top-8 -z-10 h-36 w-36 text-brand-600/[0.07] dark:text-brand-400/[0.09]" />
-      <p className="text-[13px] font-semibold text-secondary">
-        Sales month, {m.name} {m.year}
-      </p>
-      <p className="mt-2 font-display text-[40px] font-bold leading-none tracking-[-0.03em] text-primary">
-        Day {m.day}
-        <span className="text-[19px] font-semibold tracking-normal text-muted"> of {m.days}</span>
-      </p>
-
-      <div className="my-auto py-5">
-        <div
-          className="mx-auto grid w-full max-w-[17rem] grid-cols-7 gap-1.5"
-          role="img"
-          aria-label={`Day ${m.day} of ${m.days}`}
-        >
-          {WEEKDAYS.map((d, i) => (
-            <span key={`h${i}`} aria-hidden className="pb-0.5 text-center text-[10.5px] font-semibold text-muted">
-              {d}
-            </span>
-          ))}
-          {cells.map((n, i) =>
-            n === null ? (
-              <span key={`e${i}`} aria-hidden />
-            ) : (
-              <span
-                key={n}
-                title={`${n} ${m.name}`}
-                className={cn(
-                  'block aspect-square rounded-[5px]',
-                  n < m.day && 'bg-brand-600/80 dark:bg-brand-500/75',
-                  n === m.day && 'bg-brand-600 outline outline-2 outline-offset-2 outline-brand-600/35 dark:bg-brand-500',
-                  n > m.day && 'surface-sunken',
-                )}
-              />
-            ),
-          )}
+      {/* today, large */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-brand-600 text-white shadow-[0_10px_24px_-12px_rgba(0,0,0,0.45)] dark:bg-brand-500">
+            <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] opacity-80">{today.name.slice(0, 3)}</span>
+            <span className="font-display text-[24px] font-bold leading-none">{today.day}</span>
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-[15px] font-bold text-primary">{weekday}</p>
+            <p className="text-[12.5px] text-muted">
+              Day {today.day} of {today.days} · {today.left > 0 ? `${today.left} day${today.left === 1 ? '' : 's'} to go` : 'Last day'}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div>
-        <div className="h-2 overflow-hidden rounded-full surface-sunken" aria-hidden>
-          <div
-            className="h-full rounded-full bg-brand-600 dark:bg-brand-500"
-            style={{ width: `${(m.day / m.days) * 100}%` }}
-          />
+      {/* month and arrows */}
+      <div className="mt-4 flex items-center justify-between gap-2">
+        <p className="text-[13.5px] font-bold text-primary">
+          {view.name} {view.year}
+        </p>
+        <div className="flex items-center gap-0.5">
+          <button type="button" aria-label="Previous month" className={navButton} onClick={() => setOffset((o) => o - 1)}>
+            <ChevronLeft size={16} />
+          </button>
+          {!isThisMonth && (
+            <button
+              type="button"
+              onClick={() => setOffset(0)}
+              className="h-8 rounded-lg px-2 text-[12px] font-semibold text-brand-700 transition-colors hover:bg-[var(--surface-sunken)] dark:text-brand-300"
+            >
+              Today
+            </button>
+          )}
+          <button type="button" aria-label="Next month" className={navButton} onClick={() => setOffset((o) => o + 1)}>
+            <ChevronRight size={16} />
+          </button>
         </div>
-        <div className="mt-2.5 flex items-center justify-between gap-3 text-[12.5px] text-muted">
-          <span className="truncate">{footnote ?? `Month ends ${m.days} ${m.name}`}</span>
-          <span className="shrink-0 font-semibold text-secondary">
-            {m.left > 0 ? `${m.left} day${m.left === 1 ? '' : 's'} to go` : 'Last day'}
+      </div>
+
+      {/* the grid */}
+      <div className="mt-2 grid grid-cols-7 gap-y-1 text-center">
+        {WEEKDAYS.map((d, i) => (
+          <span key={d} className={cn('pb-1 text-[10.5px] font-semibold uppercase tracking-wide', i >= 5 ? 'text-muted opacity-70' : 'text-muted')}>
+            {d.slice(0, 2)}
           </span>
+        ))}
+        {view.cells.map((cell) => {
+          const isToday = isThisMonth && cell.inMonth && cell.n === today.day;
+          const past = isThisMonth ? cell.inMonth && cell.n < today.day : offset < 0;
+          return (
+            <span key={cell.key} className="flex items-center justify-center">
+              <span
+                title={cell.inMonth ? `${cell.n} ${view.name} ${view.year}` : undefined}
+                className={cn(
+                  'tabular flex h-8 w-8 items-center justify-center rounded-full text-[12.5px] transition-colors',
+                  !cell.inMonth && 'text-muted opacity-40',
+                  cell.inMonth && !isToday && past && 'text-muted',
+                  cell.inMonth && !isToday && !past && (cell.weekend ? 'text-secondary' : 'font-semibold text-primary'),
+                  cell.inMonth && !isToday && 'hover:bg-[var(--surface-sunken)]',
+                  isToday && 'bg-brand-600 font-bold text-white shadow-sm dark:bg-brand-500',
+                )}
+              >
+                {cell.n}
+              </span>
+            </span>
+          );
+        })}
+      </div>
+
+      {/* the sales month */}
+      <div className="mt-auto pt-4">
+        <div className="h-1.5 overflow-hidden rounded-full surface-sunken" aria-hidden>
+          <div className="h-full rounded-full bg-brand-600 dark:bg-brand-500" style={{ width: `${(today.day / today.days) * 100}%` }} />
+        </div>
+        <div className="mt-2 flex items-center justify-between gap-3 text-[12px] text-muted">
+          <span className="truncate">{footnote ?? `Month ends ${today.days} ${today.name}`}</span>
+          <span className="shrink-0 font-semibold text-secondary">{Math.round((today.day / today.days) * 100)}% of the month</span>
         </div>
       </div>
     </section>

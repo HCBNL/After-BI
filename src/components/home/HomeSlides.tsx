@@ -257,13 +257,13 @@ function TipCard({ tip }: { tip: Tip }) {
   const Icon = tip.icon;
   return (
     <article
-      className="relative isolate flex min-h-[152px] w-full gap-3 overflow-hidden rounded-[22px] p-4 text-white shadow-card"
+      title={tip.body}
+      className="relative isolate flex min-h-[128px] w-full gap-3 overflow-hidden rounded-[22px] p-4 text-white shadow-card"
       style={{ backgroundImage: TIP_GROUNDS[tip.tone] }}
     >
       <BrandBars className="pointer-events-none absolute -bottom-12 -right-10 -z-10 h-44 w-44 text-white/[0.07]" />
       <div className="flex min-w-0 flex-1 flex-col">
         <h3 className="font-display text-[17px] font-bold leading-[1.22] tracking-[-0.01em]">{tip.title}</h3>
-        <p className="mt-1.5 line-clamp-3 text-[12.5px] leading-snug text-white/80">{tip.body}</p>
         {tip.cta && (
           <div className="mt-auto pt-3">
             <Link
