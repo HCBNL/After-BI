@@ -158,7 +158,7 @@ export function Chrome({
                 <ErrorBoundary resetOn={location.pathname} home={root}>
                   {/* A page whose code is still arriving waits HERE, inside the shell,
                       instead of throwing the whole screen back to the splash. */}
-                  <Suspense fallback={<QuietLoader />}>
+                  <Suspense fallback={<QuietLoader label="Opening" />}>
                     <Outlet />
                   </Suspense>
                 </ErrorBoundary>

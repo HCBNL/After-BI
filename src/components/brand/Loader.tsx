@@ -114,13 +114,34 @@ export function ShellSkeleton() {
 }
 
 /**
- * Inside the shell, while a screen's data loads: the signal mark, smaller,
- * centred where the screen will be. The rail and bottom bar are already there.
+ * Inside the shell, while a screen's code or data loads.
+ *
+ * No skeleton, on purpose: the shell serves two kinds of screen (home, with its
+ * own hero, and every other page, with the coloured panel), and a skeleton
+ * shaped like one is a lie on the other. So it is the brand, centred in the
+ * space the screen will fill: the signal mark on a soft halo, a slim moving
+ * bar, and the words. It fades in after a beat, so a screen that is ready at
+ * once never flashes it.
  */
-export function QuietLoader({ label = 'Loading' }: { label?: string }) {
+export function QuietLoader({ label = 'Loading', inline = false }: { label?: string; inline?: boolean }) {
   return (
-    <div role="status" aria-label={label} className="flex min-h-[60vh] items-center justify-center">
-      <SignalMark size={56} />
+    <div
+      role="status"
+      aria-label={label}
+      className={cn(
+        'ab-quiet flex flex-col items-center justify-center',
+        /* A whole screen: centred in the viewport. Inside a page, under its
+           panel: centred in the space left. */
+        inline ? 'min-h-[38vh] py-10' : 'min-h-[calc(100dvh-14rem)] lg:min-h-[calc(100dvh-7rem)]',
+      )}
+    >
+      <div className="ab-quiet-halo relative flex h-28 w-28 items-center justify-center rounded-full">
+        <SignalMark size={60} />
+      </div>
+      <div className="ab-quiet-bar mt-6" aria-hidden>
+        <span />
+      </div>
+      <p className="mt-3 text-[12.5px] font-semibold tracking-wide text-muted">{label}</p>
     </div>
   );
 }

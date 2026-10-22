@@ -17,7 +17,7 @@
 
 import { useRef, useState } from 'react';
 import { ImagePlus, Trash2, Upload } from 'lucide-react';
-import { Spinner, useToast } from '@/components/ui';
+import { Hint, Spinner, useToast } from '@/components/ui';
 import { cloudinaryConfigured, imageUrl, uploadImage, type UploadKind } from '@/lib/cloudinary';
 import { cn } from '@/lib/cn';
 
@@ -82,7 +82,13 @@ export function ImagePicker({
 
   return (
     <div>
-      {label && <p className="mb-2 text-[11.5px] font-bold uppercase tracking-[0.1em] text-muted">{label}</p>}
+      {(label || hint) && (
+        <div className="mb-2 flex items-center gap-1.5">
+          {label && <p className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-muted">{label}</p>}
+          {/* The note sits behind the (i), like every other field's, not as prose under the buttons. */}
+          {hint && <Hint label={label ? `About ${label.toLowerCase()}` : 'About this picture'}>{hint}</Hint>}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-4">
         <div
@@ -143,7 +149,6 @@ export function ImagePicker({
                 )}
               </div>
 
-              {hint && <p className="mt-2 text-[12px] leading-relaxed text-muted">{hint}</p>}
             </>
           ) : (
             <p className="text-[12.5px] leading-relaxed text-muted">
