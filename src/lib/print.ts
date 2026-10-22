@@ -522,6 +522,11 @@ function billingBlock(distributor: Distributor | null | undefined, fallbackName:
     address: fullAddress(distributor),
     phone: distributor?.phone ?? '',
     contact: distributor?.contactName ?? '',
+    registered:
+      distributor?.registeredName && distributor.registeredName.trim().toLowerCase() !== (distributor.company ?? '').trim().toLowerCase()
+        ? distributor.registeredName.trim()
+        : '',
+    cac: distributor?.cacNumber?.trim() ?? '',
   };
 }
 
@@ -544,6 +549,8 @@ function proformaDoc(job: Extract<PrintJob, { kind: 'proforma' }>): { title: str
       <div class="grid">
         <div>
           <div class="row"><span class="k">Bill to:</span><strong>${esc(bill.name)}</strong></div>
+          ${bill.registered ? `<div class="row"><span class="k">Reg. name:</span><span>${esc(bill.registered)}</span></div>` : ''}
+          ${bill.cac ? `<div class="row"><span class="k">CAC no.:</span><span>${esc(bill.cac)}</span></div>` : ''}
           ${bill.contact ? `<div class="row"><span class="k">Attn:</span><span>${esc(bill.contact)}</span></div>` : ''}
           ${bill.address ? `<div class="row"><span class="k">Address:</span><span>${esc(bill.address)}</span></div>` : ''}
           ${bill.phone ? `<div class="row"><span class="k">Phone:</span><span>${esc(bill.phone)}</span></div>` : ''}
@@ -621,6 +628,8 @@ function deliveryDoc(job: Extract<PrintJob, { kind: 'delivery' }>): { title: str
       <div class="grid">
         <div>
           <div class="row"><span class="k">Deliver to:</span><strong>${esc(bill.name)}</strong></div>
+          ${bill.registered ? `<div class="row"><span class="k">Reg. name:</span><span>${esc(bill.registered)}</span></div>` : ''}
+          ${bill.cac ? `<div class="row"><span class="k">CAC no.:</span><span>${esc(bill.cac)}</span></div>` : ''}
           ${bill.contact ? `<div class="row"><span class="k">Attn:</span><span>${esc(bill.contact)}</span></div>` : ''}
           ${bill.address ? `<div class="row"><span class="k">Address:</span><span>${esc(bill.address)}</span></div>` : ''}
           ${bill.phone ? `<div class="row"><span class="k">Phone:</span><span>${esc(bill.phone)}</span></div>` : ''}
@@ -667,6 +676,8 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
       <div class="grid">
         <div>
           <div class="row"><span class="k">Bill to:</span><strong>${esc(bill.name)}</strong></div>
+          ${bill.registered ? `<div class="row"><span class="k">Reg. name:</span><span>${esc(bill.registered)}</span></div>` : ''}
+          ${bill.cac ? `<div class="row"><span class="k">CAC no.:</span><span>${esc(bill.cac)}</span></div>` : ''}
           ${bill.contact ? `<div class="row"><span class="k">Attn:</span><span>${esc(bill.contact)}</span></div>` : ''}
           ${bill.address ? `<div class="row"><span class="k">Address:</span><span>${esc(bill.address)}</span></div>` : ''}
           ${bill.phone ? `<div class="row"><span class="k">Phone:</span><span>${esc(bill.phone)}</span></div>` : ''}
@@ -753,6 +764,8 @@ function statementDoc(job: Extract<PrintJob, { kind: 'statement' }>): { title: s
       ${header(settings, 'STATEMENT OF ACCOUNT', meta)}
       <div class="grid">
         <div>
+          ${distributor.registeredName ? `<div class="row"><span class="k">Reg. name:</span><span>${esc(distributor.registeredName)}</span></div>` : ''}
+          ${distributor.cacNumber ? `<div class="row"><span class="k">CAC no.:</span><span>${esc(distributor.cacNumber)}</span></div>` : ''}
           ${distributor.contactName ? `<div class="row"><span class="k">Attn:</span><span>${esc(distributor.contactName)}</span></div>` : ''}
           ${fullAddress(distributor) ? `<div class="row"><span class="k">Address:</span><span>${esc(fullAddress(distributor))}</span></div>` : ''}
         </div>
