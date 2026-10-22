@@ -82,7 +82,8 @@ export function initTheme(): ResolvedTheme {
  * coloured panels and the first banner, in light and dark alike. See the
  * `[data-accent]` blocks at the end of index.css.
  */
-export type Preset = 'green' | 'blue' | 'orange' | 'gold';
+/* Red is not a theme colour: in this app red means "pending", so it is kept for that alone. */
+export type Preset = 'green' | 'blue' | 'gold';
 
 /** A preset's id, or any colour as `#rrggbb` chosen from the palette. */
 export type Accent = Preset | `#${string}`;
@@ -90,21 +91,21 @@ export type Accent = Preset | `#${string}`;
 export const ACCENTS: { id: Preset; label: string; swatch: string }[] = [
   { id: 'green', label: 'Green', swatch: '#10B981' },
   { id: 'blue', label: 'Blue', swatch: '#29AEFF' },
-  { id: 'orange', label: 'Orange', swatch: '#E8441A' },
-  { id: 'gold', label: 'Gold', swatch: '#F5C518' },
+  { id: 'gold', label: 'Yellow', swatch: '#F5C518' },
 ];
 
 const ACCENT_KEY = 'afterbi.accent';
 const HEX = /^#[0-9a-f]{6}$/i;
 
 export function isPreset(accent: Accent): accent is Preset {
-  return accent === 'green' || accent === 'blue' || accent === 'orange' || accent === 'gold';
+  return accent === 'green' || accent === 'blue' || accent === 'gold';
 }
 
 export function getStoredAccent(): Accent {
   try {
     const stored = localStorage.getItem(ACCENT_KEY) ?? '';
-    if (stored === 'blue' || stored === 'orange' || stored === 'gold') return stored;
+    /* A device that had chosen the old orange falls back to the default green. */
+    if (stored === 'blue' || stored === 'gold') return stored;
     if (HEX.test(stored)) return stored.toLowerCase() as Accent;
   } catch {
     /* blocked storage: the default */
@@ -129,7 +130,7 @@ const NIGHT: [number, number, number] = [10, 12, 16];
 
 function applyAccent(accent: Accent): void {
   const root = document.documentElement;
-  const vars = ['--c-hero', '--c-hero-dark', '--c-glow', '--c-ground-a', '--c-ground-b', '--c-ground-c'];
+  const vars = ['--c-hero', '--c-hero-dark', '--c-glow', '--c-ground-a', '--c-ground-b', '--c-ground-c', '--c-swatch', '--c-swatch-ink'];
   if (isPreset(accent)) {
     vars.forEach((v) => root.style.removeProperty(v));
     if (accent === 'green') delete root.dataset.accent;
@@ -144,6 +145,9 @@ function applyAccent(accent: Accent): void {
   root.style.setProperty('--c-ground-a', mix(accent, BLACK, 0.2));
   root.style.setProperty('--c-ground-b', mix(accent, BLACK, 0.38));
   root.style.setProperty('--c-ground-c', mix(accent, BLACK, 0.68));
+  /* The colour itself, for "done" marks on the panels, and the ink that reads on it. */
+  root.style.setProperty('--c-swatch', accent);
+  root.style.setProperty('--c-swatch-ink', 0.299 * r + 0.587 * g + 0.114 * b > 170 ? '#1a1a1a' : '#ffffff');
 }
 
 export function setStoredAccent(accent: Accent): void {
