@@ -46,6 +46,7 @@ import { APPROVER_POOL } from './approvals';
 import { db } from './firebase';
 import { orgPath, requireOrg, TENANTS, type CollectionKey } from './tenant';
 import { naira, todayISO } from './format';
+import { kobo, summarise } from './pricing';
 import type {
   Distributor,
   Invoice,
@@ -407,29 +408,33 @@ export function listOrdersSince(fromISO: string, max = 5000): Promise<Order[]> {
 /**
  * A new order, numbered and priced.
  *
- * The caller hands in lines with a product and a quantity; this resolves the
- * price from the distributor's own tier and snapshots everything. A caller
- * cannot pass a price, on purpose: that is how a rep's screen ends up able to
- * discount an order by editing a field, with no record of who authorised it.
+ * The caller hands in lines with a product, a quantity and, when the person is
+ * allowed to adjust prices (`mayAdjustPrice` in lib/pricing.ts), the price they
+ * agreed. The list price always comes from the distributor's own tier and is
+ * stored beside it, so the gap between the two is a visible discount on the
+ * order, the approval and the printed proforma and invoice: never a silent one.
  */
 export async function createOrder(input: {
   distributor: Pick<Distributor, 'id' | 'company' | 'category'>;
-  lines: { product: Product; quantity: number }[];
+  lines: { product: Product; quantity: number; unitPrice?: number }[];
   note?: string;
+  discountNote?: string;
   author: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>;
   submit?: boolean;
   approvers?: { uid: string; name: string }[];
 }): Promise<string> {
-  const lines: OrderLine[] = input.lines.map(({ product, quantity }) => {
-    const unitPrice = product.pricing[input.distributor.category] ?? 0;
+  const lines: OrderLine[] = input.lines.map(({ product, quantity, unitPrice: agreed }) => {
+    const listPrice = product.pricing[input.distributor.category] ?? 0;
+    const unitPrice = agreed !== undefined && agreed > 0 ? kobo(agreed) : listPrice;
     return {
       productId: product.id,
       productName: product.name,
       category: product.category,
       unit: product.unit,
       quantity,
+      listPrice,
       unitPrice,
-      lineTotal: unitPrice * quantity,
+      lineTotal: kobo(unitPrice * quantity),
     };
   });
 
@@ -439,8 +444,10 @@ export async function createOrder(input: {
   }
   if (!lines.length) throw new Error('Add at least one line to the order.');
 
-  const total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
+  const priced = summarise(lines);
+  const total = kobo(priced.net);
   const approvers = input.approvers ?? [];
+  const authorName = `${input.author.firstName} ${input.author.lastName}`;
 
   /*
    * AN ORDER NOBODY HAS TO SIGN IS APPROVED, NOT "AWAITING APPROVAL".
@@ -464,6 +471,10 @@ export async function createOrder(input: {
     distributorName: input.distributor.company,
     lines,
     total,
+    grossTotal: kobo(priced.gross),
+    discountTotal: kobo(priced.discount),
+    discountNote: priced.discount > 0 ? input.discountNote?.trim() || null : null,
+    priceAdjustedBy: priced.discount > 0 ? authorName : null,
     status,
     ...(status === 'approved' ? { approvedAt: serverTimestamp() } : {}),
     approvers: approvers.map((a) => a.uid),
@@ -471,7 +482,7 @@ export async function createOrder(input: {
     approvals: [],
     note: input.note ?? null,
     createdBy: input.author.id,
-    createdByName: `${input.author.firstName} ${input.author.lastName}`,
+    createdByName: authorName,
     createdByRole: input.author.role,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -1068,15 +1079,15 @@ export async function listTenants(): Promise<(import('./tenant').OrgTenant)[]> {
  * separate on purpose: the policy is shared with the screens that draw the
  * buttons, and the shape enforcement belongs next to the write.
  *
- * Re-pricing happens here rather than in the caller, for the same reason it
- * does in `createOrder`: a caller that could pass a price could discount an
- * order from a text field.
+ * The list price is resolved here, never by the caller: an adjusted price
+ * passed in is stored beside it, so any discount stays visible.
  */
 export async function updateOrder(
   orderId: string,
   patch: {
-    lines?: { product: Product; quantity: number }[];
+    lines?: { product: Product; quantity: number; unitPrice?: number }[];
     note?: string;
+    discountNote?: string;
     distributor?: Pick<Distributor, 'id' | 'company' | 'category'>;
   },
   actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
@@ -1126,27 +1137,49 @@ export async function updateOrder(
         const account = await tx.get(doc(db, orgPath('distributors'), order.distributorId));
         accountTier = account.exists() ? tierOf((account.data() as Distributor).category) : undefined;
       }
-      const lines: OrderLine[] = patch.lines.map(({ product, quantity }) => {
-        /* If the distributor did not change, keep pricing at the tier the order
-           was raised under: an amendment is not a re-quote. */
-        const price = tier
+      const lines: OrderLine[] = patch.lines.map(({ product, quantity, unitPrice: agreed }) => {
+        /* If the distributor did not change, keep the list price the order was
+           raised under: an amendment is not a re-quote. */
+        const existing = order.lines.find((l) => l.productId === product.id);
+        const listPrice = tier
           ? (product.pricing[tier] ?? 0)
-          : (order.lines.find((l) => l.productId === product.id)?.unitPrice ??
+          : (existing?.listPrice ??
+             existing?.unitPrice ??
              (accountTier ? product.pricing[accountTier] : undefined) ??
              0);
-        if (!price) throw new Error(`${product.name} has no price for this distributor's tier, so it cannot go on the order.`);
+        if (!listPrice) throw new Error(`${product.name} has no price for this distributor's tier, so it cannot go on the order.`);
+        const unitPrice =
+          agreed !== undefined && agreed > 0
+            ? kobo(agreed)
+            : tier
+              ? listPrice
+              : (existing?.unitPrice ?? listPrice);
         return {
           productId: product.id,
           productName: product.name,
           category: product.category,
           unit: product.unit,
           quantity,
-          unitPrice: price,
-          lineTotal: price * quantity,
+          listPrice,
+          unitPrice,
+          lineTotal: kobo(unitPrice * quantity),
         };
       });
+      const priced = summarise(lines);
+      const before = summarise(order.lines);
       next.lines = lines;
-      next.total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
+      next.total = kobo(priced.net);
+      next.grossTotal = kobo(priced.gross);
+      next.discountTotal = kobo(priced.discount);
+      if (priced.discount <= 0) {
+        next.discountNote = null;
+        next.priceAdjustedBy = null;
+      } else if (Math.abs(priced.discount - before.discount) > 0.009) {
+        next.priceAdjustedBy = `${actor.firstName} ${actor.lastName}`;
+      }
+    }
+    if (patch.discountNote !== undefined && next.discountNote !== null) {
+      next.discountNote = patch.discountNote.trim() || null;
     }
 
     /*
@@ -1503,7 +1536,7 @@ export async function removeTarget(
  */
 export async function createInvoice(input: {
   distributor: Pick<Distributor, 'id' | 'company' | 'paymentTermsDays'>;
-  order?: Pick<Order, 'id' | 'orderNumber' | 'lines' | 'total'>;
+  order?: Pick<Order, 'id' | 'orderNumber' | 'lines' | 'total' | 'discountNote'>;
   lines?: OrderLine[];
   total?: number;
   issuedOn?: string;
@@ -1537,6 +1570,16 @@ export async function createInvoice(input: {
     distributorName: input.distributor.company,
     lines,
     total,
+    ...(() => {
+      const priced = summarise(lines);
+      return priced.discount > 0
+        ? {
+            grossTotal: kobo(priced.gross),
+            discountTotal: kobo(priced.discount),
+            discountNote: input.order?.discountNote ?? null,
+          }
+        : {};
+    })(),
     amountPaid: 0,
     status: input.issue === false ? 'draft' : 'issued',
     issuedOn,

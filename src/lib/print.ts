@@ -38,6 +38,7 @@
  */
 
 import { INVOICE_STATUS_LABEL } from '@/types';
+import { listPriceOf, summarise } from './pricing';
 import type { Distributor, Invoice, Order, OrderLine, OrgSettings, Payment } from '@/types';
 
 /* escaping */
@@ -179,6 +180,8 @@ const BASE_CSS = (brand: string) => `
   .bank .none{font-size:11px;color:#8a9097;font-style:italic}
 
   .notes{margin-top:10px;font-size:11px;color:#41474d;line-height:1.55}
+  .goodwill{margin-top:10px;background:#f2fbf2;border:1px solid #9fd99f;border-radius:6px;
+            padding:8px 12px;font-size:11px;color:#0a5a0a;line-height:1.5;page-break-inside:avoid;break-inside:avoid}
   .sig{display:grid;grid-template-columns:1fr 1fr;gap:44px;margin-top:34px}
   .sig-line{border-top:1px solid #1a1d21;padding-top:6px;font-size:11px;text-align:center;font-weight:700}
   .sig-sub{font-size:9.5px;color:#7a8087;text-align:center;margin-top:2px}
@@ -227,6 +230,39 @@ function header(settings: OrgSettings, title: string, meta: string): string {
 }
 
 function lineTable(lines: OrderLine[]): string {
+  /*
+   * With a discount anywhere on the document, every line shows its list price
+   * beside the price charged, so the customer can see exactly where the
+   * goodwill went. Without one, the table is the plain six columns.
+   */
+  const discounted = summarise(lines).discount > 0;
+  if (discounted) {
+    const rows = lines
+      .map((line, i) => {
+        const list = listPriceOf(line);
+        const off = list > line.unitPrice;
+        return `<tr>
+        <td class="num">${i + 1}</td>
+        <td>${esc(line.productName)}${line.category ? ` <span style="font-size:9.5px;color:#8a9097">(${esc(line.category)})</span>` : ''}</td>
+        <td>${esc(line.unit)}</td>
+        <td class="num">${line.quantity.toLocaleString('en-NG')}</td>
+        <td class="num"${off ? ' style="color:#8a9097;text-decoration:line-through"' : ''}>${amount(list)}</td>
+        <td class="num"${off ? ' style="font-weight:700"' : ''}>${amount(line.unitPrice)}</td>
+        <td class="num" style="font-weight:700">${amount(line.lineTotal)}</td>
+      </tr>`;
+      })
+      .join('');
+    return `<table class="items">
+    <colgroup><col style="width:30px"/><col/><col style="width:76px"/>
+      <col style="width:56px"/><col style="width:96px"/><col style="width:96px"/><col style="width:112px"/></colgroup>
+    <thead><tr>
+      <th>NO.</th><th>ITEM</th><th>UNIT</th>
+      <th class="num">QTY</th><th class="num">LIST PRICE (₦)</th><th class="num">YOUR PRICE (₦)</th><th class="num">AMOUNT (₦)</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+  }
+
   const rows = lines
     .map(
       (line, i) => `<tr>
@@ -249,6 +285,26 @@ function lineTable(lines: OrderLine[]): string {
     </tr></thead>
     <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:#8a9097">No lines on this document.</td></tr>'}</tbody>
   </table>`;
+}
+
+/**
+ * Subtotal and discount rows for the totals block, and the goodwill line under
+ * the table. Both empty when nothing was discounted.
+ */
+function discountRows(lines: OrderLine[], note?: string | null): string {
+  const { gross, discount } = summarise(lines);
+  if (!(discount > 0)) return '';
+  return `<div class="t-row"><span>Subtotal (list price)</span><span>${money(gross)}</span></div>
+    <div class="t-row" style="color:#0a7a0a;font-weight:700"><span>Less: ${esc(note || 'Goodwill discount')}</span><span>(${money(discount)})</span></div>`;
+}
+
+function goodwill(lines: OrderLine[], note?: string | null): string {
+  const { gross, discount, net } = summarise(lines);
+  if (!(discount > 0)) return '';
+  return `<div class="goodwill">
+    <strong>${esc(note || 'Goodwill discount')}:</strong> a discount of <strong>${money(discount)}</strong>
+    has been given on this order. List value ${money(gross)}, now ${money(net)}.
+  </div>`;
 }
 
 /**
@@ -350,9 +406,11 @@ function proformaDoc(job: Extract<PrintJob, { kind: 'proforma' }>): { title: str
         <div style="font-size:11px;color:#5b6167">Total units:
           <strong>${order.lines.reduce((s, l) => s + l.quantity, 0).toLocaleString('en-NG')}</strong></div>
         <div class="totals">
+          ${discountRows(order.lines, order.discountNote)}
           <div class="t-row t-final"><span>TOTAL</span><span>${money(order.total)}</span></div>
         </div>
       </div>
+      ${goodwill(order.lines, order.discountNote)}
 
       ${order.note ? `<div class="notes"><strong>Note:</strong> ${esc(order.note)}</div>` : ''}
       ${bankBlock(settings)}
@@ -398,11 +456,13 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
         <div style="font-size:11px;color:#5b6167">Total units:
           <strong>${invoice.lines.reduce((s, l) => s + l.quantity, 0).toLocaleString('en-NG')}</strong></div>
         <div class="totals">
+          ${discountRows(invoice.lines, invoice.discountNote)}
           <div class="t-row t-final"><span>TOTAL</span><span>${money(invoice.total)}</span></div>
           ${invoice.amountPaid > 0 ? `<div class="t-row" style="color:#0a7a0a;margin-top:5px"><span>Paid to date</span><span>${money(invoice.amountPaid)}</span></div>` : ''}
         </div>
       </div>
 
+      ${goodwill(invoice.lines, invoice.discountNote)}
       ${
         owing > 0
           ? `<div class="balance">

@@ -60,6 +60,7 @@ import {
   Contact,
   Banknote,
   BriefcaseBusiness,
+  Calculator,
   Landmark,
   UsersRound,
 } from 'lucide-react';
@@ -412,6 +413,15 @@ const ACTIONS: AppAction[] = [
     description: 'The catalogue itself: names, units, the three price tiers, minimum order.',
     icon: Package,
     to: 'products',
+    roles: ADMINS,
+    group: 'Stock',
+  },
+  {
+    id: 'costing',
+    label: 'Costing',
+    description: 'Landed cost per unit from product, freight, clearance and delivery, then your price at any margin.',
+    icon: Calculator,
+    to: 'costing',
     roles: ADMINS,
     group: 'Stock',
   },
