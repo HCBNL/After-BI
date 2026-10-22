@@ -172,7 +172,7 @@ const BASE_CSS = (brand: string) => `
   .balance .sub{font-size:10px;color:#8a7070;margin-top:2px}
   .balance .val{font-size:19px;font-weight:900;color:#a52929;white-space:nowrap}
 
-  .bank{margin-top:14px;padding:10px 12px;border:1px solid #d7dbdf;border-radius:6px;
+  .bank{margin-top:22px;padding:10px 12px;border:1px solid #d7dbdf;border-radius:6px;
         background:rgba(255,255,255,.85)}
   .bank h4{font-weight:800;margin-bottom:6px;font-size:10.5px;letter-spacing:.04em}
   .bank .accts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;font-size:11px}
@@ -243,7 +243,7 @@ function lineTable(lines: OrderLine[]): string {
         const off = list > line.unitPrice;
         return `<tr>
         <td class="num">${i + 1}</td>
-        <td>${esc(line.productName)}${line.category ? ` <span style="font-size:9.5px;color:#8a9097">(${esc(line.category)})</span>` : ''}</td>
+        <td>${esc(line.productName)}${line.category ? ` <span style="font-size:9.5px;color:#8a9097">(${esc(line.category)})</span>` : ''}${line.note ? `<div style="font-size:10px;color:#41474d;margin-top:2px">${esc(line.note)}</div>` : ''}</td>
         <td>${esc(line.unit)}</td>
         <td class="num">${line.quantity.toLocaleString('en-NG')}</td>
         <td class="num"${off ? ' style="color:#8a9097;text-decoration:line-through"' : ''}>${amount(list)}</td>
@@ -267,7 +267,7 @@ function lineTable(lines: OrderLine[]): string {
     .map(
       (line, i) => `<tr>
         <td class="num">${i + 1}</td>
-        <td>${esc(line.productName)}${line.category ? ` <span style="font-size:9.5px;color:#8a9097">(${esc(line.category)})</span>` : ''}</td>
+        <td>${esc(line.productName)}${line.category ? ` <span style="font-size:9.5px;color:#8a9097">(${esc(line.category)})</span>` : ''}${line.note ? `<div style="font-size:10px;color:#41474d;margin-top:2px">${esc(line.note)}</div>` : ''}</td>
         <td>${esc(line.unit)}</td>
         <td class="num">${line.quantity.toLocaleString('en-NG')}</td>
         <td class="num">${amount(line.unitPrice)}</td>
@@ -323,10 +323,13 @@ function bankBlock(settings: OrgSettings): string {
   const body = banks.length
     ? `<div class="accts">${banks
         .map(
-          (b) => `<div>
+          (b) => `<div style="display:flex;gap:8px;align-items:flex-start">
+            ${b.logoUrl ? `<img src="${esc(b.logoUrl)}" alt="" style="width:30px;height:30px;object-fit:contain;border-radius:6px;border:1px solid #e3e6e9;background:#fff;flex-shrink:0" />` : ''}
+            <div>
             <div style="font-weight:800">${esc(b.bankName)}</div>
             <div>${esc(b.accountName)}</div>
-            <div style="font-variant-numeric:tabular-nums">Acct: ${esc(b.accountNumber)}</div>
+            <div style="font-variant-numeric:tabular-nums;font-size:13px;font-weight:800;letter-spacing:.04em">${esc(b.accountNumber)}</div>
+            </div>
           </div>`,
         )
         .join('')}</div>`
@@ -413,8 +416,8 @@ function proformaDoc(job: Extract<PrintJob, { kind: 'proforma' }>): { title: str
       ${goodwill(order.lines, order.discountNote)}
 
       ${order.note ? `<div class="notes"><strong>Note:</strong> ${esc(order.note)}</div>` : ''}
-      ${bankBlock(settings)}
       ${signatures(settings, company, bill.name, bill.address)}
+      ${bankBlock(settings)}
       ${footer(settings, `Proforma invoice · valid ${validity} days from issue`)}
     `,
   };
@@ -480,8 +483,8 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
       }
 
       ${settings.invoiceFooter ? `<div class="notes">${esc(settings.invoiceFooter)}</div>` : ''}
-      ${bankBlock(settings)}
       ${signatures(settings, company, bill.name, bill.address)}
+      ${bankBlock(settings)}
       ${footer(settings, 'Invoice')}
     `,
   };

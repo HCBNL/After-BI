@@ -82,6 +82,13 @@ export interface SiteHome {
    */
   moduleImages?: Record<string, string>;
 
+  /**
+   * Every other picture on the public site, keyed by slot (see SITE_IMAGES in
+   * lib/site.ts). Uploaded from Platform, Website. An empty or missing slot
+   * draws its built in stand in.
+   */
+  images?: Record<string, string>;
+
   /** The picture on the About page, beside the story. 4:5, 1000 × 1250. */
   aboutImage?: string;
 
@@ -142,6 +149,7 @@ export const MAX_HOME_VIDEOS = 4;
 export const EMPTY_HOME: SiteHome = {
   banners: [],
   moduleImages: {},
+  images: {},
   aboutImage: '',
   shareImage: '',
   aboutFounder: '',

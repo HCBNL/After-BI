@@ -741,35 +741,126 @@ export const LOGOS: { name: string; src: string }[] = [];
 /* ------------------------------------------------------------ the pictures */
 
 /**
- * Every picture slot on the public site.
+ * Every picture slot on the public site, grouped the way Platform, Website
+ * lists them.
  *
- * Drop a file named `<key>.webp`, `<key>.png` or `<key>.jpg` into
- * `public/site/` and it appears. Until then the page draws its own picture.
+ * Each one is uploaded from Platform, Website (stored on `site/home` as
+ * `images[key]`). A file named `<key>.webp`, `.png` or `.jpg` in `public/site/`
+ * still works as a second source. Until either exists, the slot draws its own
+ * stand in, so the site is never broken while pictures are being added.
  */
-export const SITE_IMAGES = {
-  hero: { size: '1200 × 1500 (portrait)', what: 'A person using AfterBI on a phone or tablet, in a warehouse, depot or shop. Real, natural photo. The floating cards are added by the site.' },
-  'tab-sales': { size: '1400 × 1000', what: 'Sales tab: AfterBI screens for orders and pipeline, arranged on a light background (laptop screen plus phone).' },
-  'tab-operations': { size: '1400 × 1000', what: 'Operations tab: AfterBI inventory and deliveries screens, arranged on a light background.' },
-  'tab-finance': { size: '1400 × 1000', what: 'Finance tab: AfterBI invoice, statement and credit screens, arranged on a light background.' },
-  'tab-intelligence': { size: '1400 × 1000', what: 'Intelligence tab: AfterBI analytics and sell out dashboards, arranged on a light background.' },
-  showcase: { size: '1200 × 1000', what: 'A sales rep or store owner holding a phone or tablet with AfterBI on screen, in a store.' },
-  'module-leads': { size: '1600 × 1000', what: 'Screenshot: the Leads pipeline board.' },
-  'module-orders': { size: '1600 × 1000', what: 'Screenshot: the Orders screen.' },
-  'module-targets': { size: '1600 × 1000', what: 'Screenshot: Targets or Scorecards.' },
-  'module-distributor-portal': { size: '1600 × 1000', what: 'Screenshot: the distributor (partner) portal on a phone.' },
-  'module-stock': { size: '1600 × 1000', what: 'Screenshot: the Stock screen.' },
-  'module-deliveries': { size: '1600 × 1000', what: 'Screenshot: the Deliveries screen.' },
-  'module-invoices': { size: '1600 × 1000', what: 'Screenshot: an invoice or a customer statement.' },
-  'module-credit': { size: '1600 × 1000', what: 'Screenshot: the Credit screen with ageing.' },
-  'module-sell-out': { size: '1600 × 1000', what: 'Screenshot: the Sell out screen.' },
-  'module-analytics': { size: '1600 × 1000', what: 'Screenshot: the Analytics screen or territory map.' },
-  'module-automation': { size: '1600 × 1000', what: 'Screenshot: Reminders, Tasks or Approvals.' },
-  'module-access': { size: '1600 × 1000', what: 'Screenshot: the Users screen showing roles.' },
-  'solution-manufacturers': { size: '1200 × 800', what: 'A modern factory or production line.' },
-  'solution-importers': { size: '1200 × 800', what: 'A modern warehouse with racking and pallets.' },
-  'solution-distributors': { size: '1200 × 800', what: 'A distribution centre with a delivery van loading.' },
-  'solution-modern-trade': { size: '1200 × 800', what: 'A supermarket aisle with stocked shelves.' },
-  'cta-team': { size: '1200 × 900', what: 'A professional on a video call or a team at work, smiling.' },
-} as const;
+export const SLOT_GROUPS = [
+  'Front page',
+  'Industries',
+  'Platform page',
+  'Modules',
+  'Solutions',
+  'Pricing',
+  'Book a demo and support',
+  'Menus and closing band',
+] as const;
+export type SlotGroup = (typeof SLOT_GROUPS)[number];
 
-export type SiteImageKey = keyof typeof SITE_IMAGES;
+export interface SiteSlot {
+  group: SlotGroup;
+  /** What the owner sees above the upload box. */
+  label: string;
+  /** Pixel size to export at. */
+  size: string;
+  /** The shape the slot draws at, as a CSS aspect ratio (`4/5`). */
+  ratio: string;
+  /** What to put in it. Shown behind the (i). */
+  what: string;
+}
+
+const INDUSTRY_PHOTO: Record<IndustryIcon, string> = {
+  food: 'Packaged foods and snacks on a shelf or in a warehouse.',
+  drinks: 'Soft drinks, water or juice: crates, bottles or a cold room.',
+  care: 'Personal care and beauty products: soaps, creams, cosmetics.',
+  home: 'Home care products: detergents, cleaners, tissue.',
+  baby: 'Baby food, formula or diapers on a store shelf.',
+  agro: 'Agribusiness: grain bags, farm produce, a farm or an agro store.',
+  pharma: 'Health and wellness: pharmacy shelves or supplements.',
+  build: 'Building materials: cement bags, paint, tiles or a hardware store.',
+  electronics: 'Consumer electronics: phones, TVs or appliances in a store.',
+  spirits: 'Wines and spirits: bottles on a shelf or in a cellar.',
+  stationery: 'Stationery and office supplies: books, paper, pens.',
+  fashion: 'Fashion and textiles: fabric rolls, clothing racks or shoes.',
+};
+
+const MODULE_PHOTO: Record<string, string> = {
+  leads: 'Screenshot: the Leads pipeline board.',
+  orders: 'Screenshot: the Orders screen.',
+  targets: 'Screenshot: Targets or Scorecards.',
+  'distributor-portal': 'Screenshot: the distributor (partner) portal on a phone.',
+  stock: 'Screenshot: the Stock screen.',
+  deliveries: 'Screenshot: the Deliveries screen.',
+  invoices: 'Screenshot: an invoice or a customer statement.',
+  credit: 'Screenshot: the Credit screen with ageing.',
+  'sell-out': 'Screenshot: the Sell out screen.',
+  analytics: 'Screenshot: the Analytics screen or territory map.',
+  automation: 'Screenshot: Reminders, Tasks or Approvals.',
+  access: 'Screenshot: the Users screen showing roles.',
+};
+
+const SOLUTION_PHOTO: Record<string, string> = {
+  manufacturers: 'A modern factory or production line.',
+  importers: 'A modern warehouse with racking and pallets.',
+  distributors: 'A distribution centre with a delivery van loading.',
+  'modern-trade': 'A supermarket aisle with stocked shelves.',
+};
+
+const STEP_PHOTO = [
+  'Someone setting things up at a desk: price lists, a laptop, a planning board.',
+  'A team being onboarded: people with phones and laptops, a short meeting.',
+  'Goods moving on their own: a loaded van leaving, a forklift, a busy depot.',
+  'Growth: a manager reading a dashboard, a full store shelf, a handshake.',
+];
+
+const DEMO_PHOTO = [
+  'Tailored: someone preparing a product list or price list on a laptop.',
+  '30 minutes: a short video call or a screen being shown to a client.',
+  'Your team: sales, operations and finance people around one screen.',
+  'No pressure: a relaxed conversation, a proposal on a table, a handshake.',
+];
+
+function buildSlots(): Record<string, SiteSlot> {
+  const slots: Record<string, SiteSlot> = {
+    hero: { group: 'Front page', label: 'Hero photo', size: '1200 × 1500', ratio: '4/5', what: 'The big picture at the top of the front page. A person using AfterBI on a phone or tablet, in a warehouse, depot or shop. Real, natural photo. The floating cards are added by the site.' },
+    'tab-sales': { group: 'Front page', label: 'Lifecycle tab: Sales', size: '1400 × 1000', ratio: '7/5', what: 'Shown when the Sales tab is picked. AfterBI order and pipeline screens on a light background (laptop plus phone).' },
+    'tab-operations': { group: 'Front page', label: 'Lifecycle tab: Operations', size: '1400 × 1000', ratio: '7/5', what: 'Shown when the Operations tab is picked. AfterBI stock and deliveries screens on a light background.' },
+    'tab-finance': { group: 'Front page', label: 'Lifecycle tab: Finance', size: '1400 × 1000', ratio: '7/5', what: 'Shown when the Finance tab is picked. AfterBI invoice, statement and credit screens on a light background.' },
+    'tab-intelligence': { group: 'Front page', label: 'Lifecycle tab: Intelligence', size: '1400 × 1000', ratio: '7/5', what: 'Shown when the Intelligence tab is picked. AfterBI analytics and sell out dashboards on a light background.' },
+    showcase: { group: 'Front page', label: 'In your pocket', size: '1200 × 1000', ratio: '6/5', what: 'The "Your whole business, in your pocket" section. A sales rep or store owner holding a phone or tablet with AfterBI on screen, in a store.' },
+    'home-faq': { group: 'Front page', label: 'Questions section', size: '1000 × 1250', ratio: '4/5', what: 'Beside the frequently asked questions. A friendly support person, or someone working at a laptop.' },
+    'features-hero': { group: 'Platform page', label: 'Platform page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Platform page (/features). The whole product: laptop and phone with AfterBI, or a team at work.' },
+    'solutions-hero': { group: 'Solutions', label: 'Solutions page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Solutions page. The value chain: factory, warehouse, truck and store in one picture.' },
+    'plan-starter': { group: 'Pricing', label: 'Starter plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Starter plan card. A small team or a single shop getting started.' },
+    'plan-growth': { group: 'Pricing', label: 'Growth plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Growth plan card. A busy distributor with several reps and a depot.' },
+    'plan-premium': { group: 'Pricing', label: 'Premium plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Premium plan card. A large operation: big warehouse, fleet, many people.' },
+    'help-contact': { group: 'Book a demo and support', label: 'Sign in help: contact box', size: '1000 × 750', ratio: '4/3', what: 'Beside "None of those?" on the sign in help page. A friendly support person on a phone or headset.' },
+    'menu-platform': { group: 'Menus and closing band', label: 'Platform menu card', size: '800 × 450', ratio: '16/9', what: 'The dark card in the Platform drop down menu ("Explore the platform"). AfterBI on a laptop.' },
+    'menu-support': { group: 'Menus and closing band', label: 'Support menu card', size: '800 × 450', ratio: '16/9', what: 'The dark card in the Support drop down menu ("Already a customer?"). Someone signing in on a phone or laptop.' },
+    'cta-team': { group: 'Menus and closing band', label: 'Closing band', size: '1200 × 900', ratio: '4/3', what: 'The green "Ready to see AfterBI in action?" band at the bottom of every page. A professional on a video call or a team at work, smiling.' },
+  };
+  for (const item of INDUSTRIES) {
+    slots[`industry-${item.icon}`] = { group: 'Industries', label: item.name, size: '800 × 600', ratio: '4/3', what: `The ${item.name} card in "Built for every consumer goods category" (front page and Solutions page). ${INDUSTRY_PHOTO[item.icon]}` };
+  }
+  MONTH_STEPS.forEach((step, index) => {
+    slots[`step-${index + 1}`] = { group: 'Platform page', label: `Step ${index + 1}: ${step.title}`, size: '800 × 500', ratio: '16/10', what: `Box ${index + 1} of "Live in four steps" on the Platform page. ${STEP_PHOTO[index]}` };
+  });
+  for (const m of MODULES) {
+    slots[`module-${m.slug}`] = { group: 'Modules', label: m.name, size: '1600 × 1000', ratio: '16/10', what: `The ${m.name} picture: its card on the Platform page, the top of its own page, and the related capability cards. ${MODULE_PHOTO[m.slug] ?? 'A screenshot of this part of AfterBI.'}` };
+  }
+  for (const s of SOLUTIONS) {
+    slots[s.image] = { group: 'Solutions', label: s.name, size: '1200 × 800', ratio: '3/2', what: `The ${s.name} section of the Solutions page, its tile at the top, and the "Who it is built for" cards. ${SOLUTION_PHOTO[s.slug] ?? ''}`.trim() };
+  }
+  DEMO_PHOTO.forEach((what, index) => {
+    slots[`demo-${index + 1}`] = { group: 'Book a demo and support', label: `Demo page box ${index + 1}`, size: '800 × 500', ratio: '16/10', what: `Box ${index + 1} on the Book a demo page. ${what}` };
+  });
+  return slots;
+}
+
+export const SITE_IMAGES: Record<string, SiteSlot> = buildSlots();
+
+export type SiteImageKey = string;

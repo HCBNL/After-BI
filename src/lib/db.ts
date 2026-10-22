@@ -416,16 +416,19 @@ export function listOrdersSince(fromISO: string, max = 5000): Promise<Order[]> {
  */
 export async function createOrder(input: {
   distributor: Pick<Distributor, 'id' | 'company' | 'category'>;
-  lines: { product: Product; quantity: number; unitPrice?: number }[];
+  lines: { product: Product; quantity: number; unitPrice?: number; note?: string }[];
   note?: string;
   discountNote?: string;
   author: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>;
   submit?: boolean;
   approvers?: { uid: string; name: string }[];
 }): Promise<string> {
-  const lines: OrderLine[] = input.lines.map(({ product, quantity, unitPrice: agreed }) => {
-    const listPrice = product.pricing[input.distributor.category] ?? 0;
-    const unitPrice = agreed !== undefined && agreed > 0 ? kobo(agreed) : listPrice;
+  const lines: OrderLine[] = input.lines.map(({ product, quantity, unitPrice: agreed, note }) => {
+    const tierPrice = product.pricing[input.distributor.category] ?? 0;
+    const unitPrice = agreed !== undefined && agreed > 0 ? kobo(agreed) : tierPrice;
+    /* A service is priced per order (Logistics to Kano is not Logistics to
+       Ikeja), so its price is never a discount against a list. */
+    const listPrice = product.service ? unitPrice : tierPrice;
     return {
       productId: product.id,
       productName: product.name,
@@ -435,6 +438,8 @@ export async function createOrder(input: {
       listPrice,
       unitPrice,
       lineTotal: kobo(unitPrice * quantity),
+      ...(product.service ? { service: true } : {}),
+      ...(note?.trim() ? { note: note.trim() } : {}),
     };
   });
 
@@ -575,8 +580,22 @@ export async function fulfilOrder(
     }
 
     /* every read first */
-    const positions = await Promise.all(
+    /*
+     * Services (Logistics) are never stocked, so they are not checked or
+     * deducted. A line raised before it carried the flag is checked against
+     * the product itself, so an order already waiting goes through too.
+     */
+    const isService = await Promise.all(
       order.lines.map(async (line) => {
+        if (line.service) return true;
+        const product = await tx.get(doc(db, orgPath('products'), line.productId));
+        return product.exists() && Boolean((product.data() as Product).service);
+      }),
+    );
+    const goods = order.lines.filter((_, index) => !isService[index]);
+
+    const positions = await Promise.all(
+      goods.map(async (line) => {
         const ref = doc(db, orgPath('stock'), `${warehouseId}_${line.productId}`);
         const snap = await tx.get(ref);
         return { line, ref, held: snap.exists() ? (snap.data().quantity as number) : 0, exists: snap.exists() };
@@ -655,10 +674,25 @@ export async function saveWarehouse(warehouse: Partial<Warehouse> & { id?: strin
   return ref.id;
 }
 
-export function listStock(warehouseId?: string): Promise<StockPosition[]> {
-  return warehouseId
-    ? list<StockPosition>('stock', where('warehouseId', '==', warehouseId)).then(byText<StockPosition>('productName'))
-    : list<StockPosition>('stock', orderBy('productName'));
+/** Products that are services (Logistics): never part of stock. */
+async function serviceProductIds(): Promise<Set<string>> {
+  const rows = await list<Product>('products', where('service', '==', true)).catch(() => [] as Product[]);
+  return new Set(rows.map((p) => p.id));
+}
+
+/**
+ * Stock positions, without services. Anything ever recorded against a product
+ * now marked as a service (Logistics) is left out, so it never counts in
+ * inventory, low stock, the home screen or the stock export.
+ */
+export async function listStock(warehouseId?: string): Promise<StockPosition[]> {
+  const [rows, services] = await Promise.all([
+    warehouseId
+      ? list<StockPosition>('stock', where('warehouseId', '==', warehouseId)).then(byText<StockPosition>('productName'))
+      : list<StockPosition>('stock', orderBy('productName')),
+    serviceProductIds(),
+  ]);
+  return services.size ? rows.filter((row) => !services.has(row.productId)) : rows;
 }
 
 /** Positions at or below their own threshold: what the home screen counts. */
@@ -694,6 +728,9 @@ export async function moveStock(input: {
   actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName'>;
 }): Promise<number> {
   if (input.quantity <= 0) throw new Error('A movement must be for at least one unit.');
+  if ((input.product as Partial<Product>).service) {
+    throw new Error(`${input.product.name} is a service, so it has no stock. It is priced on each order instead.`);
+  }
 
   const ref = doc(db, orgPath('stock'), `${input.warehouseId}_${input.product.id}`);
   const actorName = `${input.actor.firstName} ${input.actor.lastName}`;
@@ -1085,7 +1122,7 @@ export async function listTenants(): Promise<(import('./tenant').OrgTenant)[]> {
 export async function updateOrder(
   orderId: string,
   patch: {
-    lines?: { product: Product; quantity: number; unitPrice?: number }[];
+    lines?: { product: Product; quantity: number; unitPrice?: number; note?: string }[];
     note?: string;
     discountNote?: string;
     distributor?: Pick<Distributor, 'id' | 'company' | 'category'>;
@@ -1137,7 +1174,7 @@ export async function updateOrder(
         const account = await tx.get(doc(db, orgPath('distributors'), order.distributorId));
         accountTier = account.exists() ? tierOf((account.data() as Distributor).category) : undefined;
       }
-      const lines: OrderLine[] = patch.lines.map(({ product, quantity, unitPrice: agreed }) => {
+      const lines: OrderLine[] = patch.lines.map(({ product, quantity, unitPrice: agreed, note }) => {
         /* If the distributor did not change, keep the list price the order was
            raised under: an amendment is not a re-quote. */
         const existing = order.lines.find((l) => l.productId === product.id);
@@ -1147,7 +1184,9 @@ export async function updateOrder(
              existing?.unitPrice ??
              (accountTier ? product.pricing[accountTier] : undefined) ??
              0);
-        if (!listPrice) throw new Error(`${product.name} has no price for this distributor's tier, so it cannot go on the order.`);
+        if (!listPrice && !(product.service && agreed && agreed > 0)) {
+          throw new Error(`${product.name} has no price for this distributor's tier, so it cannot go on the order.`);
+        }
         const unitPrice =
           agreed !== undefined && agreed > 0
             ? kobo(agreed)
@@ -1160,9 +1199,11 @@ export async function updateOrder(
           category: product.category,
           unit: product.unit,
           quantity,
-          listPrice,
+          listPrice: product.service ? unitPrice : listPrice,
           unitPrice,
           lineTotal: kobo(unitPrice * quantity),
+          ...(product.service ? { service: true } : {}),
+          ...(note?.trim() ? { note: note.trim() } : {}),
         };
       });
       const priced = summarise(lines);
