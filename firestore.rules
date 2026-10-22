@@ -396,10 +396,13 @@ service cloud.firestore {
         && request.resource.data.lines == resource.data.lines;
       allow update: if resource.data.status in ['approved', 'rejected', 'cancelled']
         && admin(orgId);
+      /* Fulfilled is final: goods have left. The only write left is giving an
+         older order its delivery note number. Reversals go through returns. */
       allow update: if resource.data.status == 'fulfilled'
-        && admin(orgId)
-        && request.resource.data.lines == resource.data.lines
-        && request.resource.data.total == resource.data.total;
+        && member(orgId)
+        && !(role() in ['distributor', 'sales_rep'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deliveryNumber', 'updatedAt'])
+        && resource.data.get('deliveryNumber', '') == '';
       allow delete: if immutable();
     }
 
