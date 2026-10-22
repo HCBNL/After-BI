@@ -32,6 +32,7 @@ import { naira } from '@/lib/format';
 import type { BankAccount, OrgSettings } from '@/types';
 import { ROLE_LABEL, type Role } from '@/types';
 import { APPROVER_ROLES } from '@/lib/approvals';
+import { PRICE_EDIT_ROLES } from '@/lib/pricing';
 import { REMINDER_FIELDS, thresholdsFrom } from '@/lib/reminders';
 import { Checklist } from '@/components/Checklist';
 
@@ -130,7 +131,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="[&>*:not(.ab-panel)]:max-w-2xl">
+    <div>
       <PageHeader
         title="Settings"
         description="Company details, invoice footer, and the threshold above which an order needs a signature."
@@ -141,26 +142,23 @@ export default function SettingsPage() {
         }
       />
 
-      <div className="space-y-6">
-        <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
+      <div className="space-y-5">
+        <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-[15px] font-bold text-primary">Your company</h2>
+            <h2 className="text-[17px] font-bold text-primary">Your company</h2>
             <Hint label="About your company details">
               This is what appears on invoices and statements, and at the top of the app.
             </Hint>
           </div>
 
-          <div className="mt-4 space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <div className="mt-5 space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Field label="Name" required>
                 <Input value={draft.name ?? ''} onChange={(e) => set('name', e.target.value)} />
               </Field>
               <Field label="Short name" hint="For tight spaces">
                 <Input value={draft.shortName ?? ''} onChange={(e) => set('shortName', e.target.value)} />
               </Field>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Email">
                 <Input type="email" value={draft.email ?? ''} onChange={(e) => set('email', e.target.value)} />
               </Field>
@@ -169,11 +167,10 @@ export default function SettingsPage() {
               </Field>
             </div>
 
+            <div className="grid gap-4 lg:grid-cols-[2fr_1fr_1fr]">
             <Field label="Address" hint="Printed on invoices">
-              <Textarea rows={2} value={draft.address ?? ''} onChange={(e) => set('address', e.target.value)} />
+              <Textarea rows={1} value={draft.address ?? ''} onChange={(e) => set('address', e.target.value)} />
             </Field>
-
-            <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Tax ID" hint="Required on Nigerian invoices">
                 <Input value={draft.taxId ?? ''} onChange={(e) => set('taxId', e.target.value)} />
               </Field>
@@ -182,11 +179,18 @@ export default function SettingsPage() {
               </Field>
             </div>
 
+            <div className="grid gap-4 lg:grid-cols-2">
             <Field label="Website" hint="Shown on Company info, business cards and ID cards.">
               <Input value={draft.website ?? ''} onChange={(e) => set('website', e.target.value)} placeholder="www.yourcompany.com" />
             </Field>
+            <Field label="Logo URL" hint="Or paste the address of a logo already online.">
+              <Input value={draft.logoUrl ?? ''} onChange={(e) => set('logoUrl', e.target.value)} />
+            </Field>
+            </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <Divider label="Branding and signatory" />
+
+            <div className="grid gap-6 lg:grid-cols-3">
               <ImagePicker
                 kind="logo"
                 label="Logo"
@@ -203,18 +207,14 @@ export default function SettingsPage() {
                 height={64}
                 size={160}
               />
-            </div>
-            <Field label="Logo URL" hint="Or paste the address of a logo already online.">
-              <Input value={draft.logoUrl ?? ''} onChange={(e) => set('logoUrl', e.target.value)} />
-            </Field>
-
-            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-4">
               <Field label="ID cards are signed by" hint="Name printed under the signature on staff ID cards.">
                 <Input value={draft.signatoryName ?? ''} onChange={(e) => set('signatoryName', e.target.value)} placeholder="Full name" />
               </Field>
               <Field label="Their title">
                 <Input value={draft.signatoryTitle ?? ''} onChange={(e) => set('signatoryTitle', e.target.value)} placeholder="Managing Director" />
               </Field>
+              </div>
             </div>
 
             {/*
@@ -245,9 +245,9 @@ export default function SettingsPage() {
         </section>
 
         {/* bank accounts */}
-        <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
+        <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-[15px] font-bold text-primary">Bank accounts</h2>
+            <h2 className="text-[17px] font-bold text-primary">Bank accounts and documents</h2>
             <Hint label="About bank accounts">
               These are printed on every proforma, invoice and statement, under a line saying that
               money paid anywhere else is not recognised. Paying an account that turns out to belong
@@ -329,6 +329,7 @@ export default function SettingsPage() {
 
             <Divider />
 
+            <div className="grid gap-4 lg:grid-cols-[3fr_1fr]">
             <Field label="Invoice footer" hint="One line under the totals, such as payment terms, a thank you or a returns policy.">
               <Textarea
                 rows={2}
@@ -346,13 +347,15 @@ export default function SettingsPage() {
                 trailing={<span className="text-[13px] text-muted">days</span>}
               />
             </Field>
+            </div>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
-          <h2 className="text-[15px] font-bold text-primary">How orders flow</h2>
+        <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
+          <h2 className="text-[17px] font-bold text-primary">How orders flow</h2>
 
-          <div className="mt-4 space-y-4">
+          <div className="mt-5 space-y-5">
+            <div className="grid gap-4 lg:grid-cols-2">
             <Field
               label="Approval threshold"
               hint="Orders at or above this figure need a signature. Zero means none do."
@@ -372,6 +375,22 @@ export default function SettingsPage() {
                   : 'Every order is approved the moment it is raised.'}
               </p>
             </Field>
+            <Field label="Default depot" hint="Where an order is fulfilled from unless another is chosen">
+              <Select
+                value={draft.defaultWarehouseId ?? ''}
+                onChange={(e) => set('defaultWarehouseId', e.target.value)}
+              >
+                <option value="">No default</option>
+                {warehouses.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
             <Field label="Who signs" hint="Any one of them can approve. Tick nobody and your super admin signs.">
               <Checklist
                 items={APPROVER_ROLES.map((r) => ({ id: r, label: ROLE_LABEL[r] }))}
@@ -386,21 +405,38 @@ export default function SettingsPage() {
               </p>
             </Field>
 
-            <Field label="Default depot" hint="Where an order is fulfilled from unless another is chosen">
-              <Select
-                value={draft.defaultWarehouseId ?? ''}
-                onChange={(e) => set('defaultWarehouseId', e.target.value)}
-              >
-                <option value="">No default</option>
-                {warehouses.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
-                  </option>
-                ))}
-              </Select>
+            <Field
+              label="Who can adjust prices"
+              hint="These roles get a price box on every order line, to give a customer a better price than the tier. The list price stays on the order and the discount prints on the proforma and invoice. Your super admin always can; distributors never can."
+            >
+              <Checklist
+                items={PRICE_EDIT_ROLES.map((r) => ({ id: r, label: ROLE_LABEL[r] }))}
+                value={draft.priceEditRoles ?? ['admin']}
+                onChange={(next) => set('priceEditRoles', next as Role[])}
+                empty=""
+              />
+              <p className="mt-2 text-[12px] leading-snug text-muted">
+                {(draft.priceEditRoles ?? ['admin']).length
+                  ? 'Those roles and your super admin can set the price on an order.'
+                  : 'Only your super admin can set the price on an order.'}
+              </p>
             </Field>
+            </div>
 
             <Divider />
+
+            <div className="grid gap-5 lg:grid-cols-2">
+            <Switch
+              checked={Boolean(draft.discountNeedsApproval)}
+              onChange={(next) => set('discountNeedsApproval', next)}
+              label="Discounted orders need a signature"
+              description={
+                draft.discountNeedsApproval
+                  ? 'Any order with a discount waits for approval, whatever its value.'
+                  : 'A discount only needs a signature when the order is over the threshold.'
+              }
+              hint="Orders raised by your super admin still go straight through."
+            />
 
             <Switch
               checked={draft.setupComplete ?? false}
@@ -408,20 +444,21 @@ export default function SettingsPage() {
               label="Hide the setup checklist"
               hint="Switch this on once you are set up, or if you do things differently. It hides the list on every administrator's home screen."
             />
+            </div>
           </div>
         </section>
 
 
-        <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
+        <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-[16px] font-bold text-primary">Reminders</h2>
+            <h2 className="text-[17px] font-bold text-primary">Reminders</h2>
             <Hint label="About reminders">
               How long something may wait before the Reminders screen says so. Everyone sees only their own:
               signatures waiting on them, their accounts, their depots. Nothing is emailed to anybody.
             </Hint>
           </div>
           <p className="mt-1 text-[13px] text-secondary">How long things may wait before they are flagged.</p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {REMINDER_FIELDS.map((field) => (
               <Field key={field.key} label={field.label} hint={field.hint}>
                 <Input
@@ -440,9 +477,9 @@ export default function SettingsPage() {
         </section>
 
         {user?.role === 'super_admin' && settings?.demo && settings.demoSeededAt && (
-          <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
+          <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
             <div className="flex items-center gap-1.5">
-              <h2 className="text-[16px] font-bold text-primary">Demonstration</h2>
+              <h2 className="text-[17px] font-bold text-primary">Demonstration</h2>
               <Hint label="About the demonstration">
                 Everything in it is live: raise an order, approve it, fulfil it from a depot, add a person. Rename the organisation above to the company you are presenting to and the whole app, and every printed document, follows.
               </Hint>

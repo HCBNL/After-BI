@@ -472,7 +472,7 @@ export default function PortalHome() {
 
   useBootDone(ready);
   if (!user) return null;
-  if (!ready) return <QuietLoader />;
+  if (!ready) return <QuietLoader label="Getting your home ready" />;
 
   const orgName = settings?.name || 'Your organisation';
   const cards = layout === 'cards';

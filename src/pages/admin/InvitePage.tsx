@@ -124,7 +124,7 @@ export default function InvitePage() {
         }
       />
 
-      <div className="mx-auto max-w-xl">
+      <div>
         {made ? (
           <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
             <h2 className="text-[16px] font-bold text-primary">{made.name} can sign in now</h2>
@@ -154,19 +154,19 @@ export default function InvitePage() {
               </Alert>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Field label="First name" required>
                 <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="off" />
               </Field>
               <Field label="Last name">
                 <Input value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="off" />
               </Field>
-            </div>
-
             <Field label="Email address" required hint="What they sign in with">
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
             </Field>
+            </div>
 
+            <div className="grid gap-4 lg:grid-cols-2">
             <Field label="Role" required>
               <Select value={role} onChange={(e) => setRole(e.target.value as TeamRole)}>
                 {roles.map((r) => (
@@ -189,6 +189,7 @@ export default function InvitePage() {
                 </Select>
               </Field>
             )}
+            </div>
 
             {needsAccounts && (
               <fieldset>
@@ -235,6 +236,7 @@ export default function InvitePage() {
               </fieldset>
             )}
 
+            <div className="grid gap-4 lg:grid-cols-2">
             <Field label="Phone">
               <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="off" />
             </Field>
@@ -252,8 +254,9 @@ export default function InvitePage() {
                 </Button>
               </div>
             </Field>
+            </div>
 
-            <Button type="submit" full loading={busy} icon={<UserPlus size={16} />}>
+            <Button type="submit" full className="lg:w-auto lg:px-8" loading={busy} icon={<UserPlus size={16} />}>
               Create account
             </Button>
           </form>

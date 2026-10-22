@@ -1222,7 +1222,7 @@ function PaySettings({ value, onSaved }: { value: HrSettings; onSaved: () => voi
 
   const c = Number(cycleStart) || 24;
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <form onSubmit={(e) => void save(e)} className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Salary day of the month" hint="If it lands on a day off or holiday, pay moves to the working day before.">

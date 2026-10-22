@@ -167,7 +167,7 @@ export default function PlatformHome() {
   }, [settled, startIfNew]);
 
   if (!user) return null;
-  if (loading && data === undefined) return <QuietLoader />;
+  if (loading && data === undefined) return <QuietLoader label="Getting the platform ready" />;
 
   const cards = layout === 'cards';
   const failed = Boolean(error);

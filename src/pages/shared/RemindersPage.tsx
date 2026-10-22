@@ -104,7 +104,7 @@ export default function RemindersPage() {
       )}
 
       {loading && !checkedAt ? (
-        <QuietLoader label="Reading your records" />
+        <QuietLoader inline label="Reading your records" />
       ) : shown.length === 0 ? (
         <div className="rounded-2xl border border-hairline surface-card p-10 text-center shadow-card">
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">

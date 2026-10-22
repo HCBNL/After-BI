@@ -76,18 +76,18 @@ export default function SetupPage() {
   ];
 
   return (
-    <div className="[&>*:not(.ab-panel)]:max-w-3xl">
+    <div>
       <PageHeader
         title="Setup"
         description="The whole setup in order. Each step depends on the one above it."
       />
 
-      <ol className="space-y-3">
+      <ol className="grid gap-3 lg:grid-cols-2">
         {steps.map((step, index) => (
           <li key={step.id}>
             <Link
               to={step.to}
-              className="flex gap-4 rounded-2xl border border-hairline surface-card p-5 shadow-card transition-colors hover:bg-[var(--surface-sunken)]"
+              className="flex h-full gap-4 rounded-2xl border border-hairline surface-card p-5 shadow-card transition-colors hover:bg-[var(--surface-sunken)]"
             >
               <span
                 className={cn(

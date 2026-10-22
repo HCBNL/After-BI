@@ -163,7 +163,7 @@ export default function TasksPage() {
 
       {/* ------------------------------------------------------------ list */}
       {tasksLoading && tasks.length === 0 ? (
-        <QuietLoader label="Reading your tasks" />
+        <QuietLoader inline label="Reading your tasks" />
       ) : shown.length === 0 ? (
         <EmptyState
           icon={<Check size={22} />}

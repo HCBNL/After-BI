@@ -23,6 +23,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { listOrders } from '@/lib/db';
 import { formatDate, naira, count } from '@/lib/format';
+import { summarise } from '@/lib/pricing';
 import { PORTAL_ROOT } from '@/lib/tiles';
 
 export default function ApprovalsPage() {
@@ -124,6 +125,11 @@ export default function ApprovalsPage() {
 
                 <div className="shrink-0 text-right">
                   <p className="tabular text-[15px] font-extrabold text-primary">{naira(order.total)}</p>
+                  {summarise(order.lines ?? []).discount > 0 && (
+                    <p className="tabular mt-0.5 text-[11.5px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+                      {naira(summarise(order.lines).discount)} discount
+                    </p>
+                  )}
                   <Badge tone="gold" className="mt-1">
                     {user && (order.approvers ?? []).includes(user.id) ? 'Awaiting you' : 'Super admin'}
                   </Badge>

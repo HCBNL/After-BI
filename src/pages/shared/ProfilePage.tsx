@@ -75,8 +75,11 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="[&>*:not(.ab-panel)]:max-w-xl">
+    <div>
       <PageHeader title="Profile" />
+
+      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+      <div className="space-y-5">
 
       <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
         <div className="flex items-center gap-4">
@@ -124,7 +127,10 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <section className="mt-5 rounded-2xl border border-hairline surface-card p-5 shadow-card">
+      </div>
+
+      <div className="space-y-5">
+      <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
         <div className="flex items-center gap-1.5">
           <h2 className="text-[15px] font-bold text-primary">Set by your administrator</h2>
           <Hint label="About these details">
@@ -153,7 +159,7 @@ export default function ProfilePage() {
         </dl>
       </section>
 
-      <section className="mt-5 rounded-2xl border border-hairline surface-card p-5 shadow-card">
+      <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-[15px] font-bold text-primary">Appearance</h2>
@@ -179,7 +185,7 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <section className="mt-5 rounded-2xl border border-hairline surface-card p-5 shadow-card">
+      <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
 
         <div className="flex flex-wrap items-center justify-between gap-3">
 
@@ -201,8 +207,11 @@ export default function ProfilePage() {
 
       </section>
 
+      </div>
+      </div>
+
       <Button
-        className="mt-5"
+        className="mt-5 lg:w-auto"
         variant="outline"
         full
         icon={<LogOut size={15} />}

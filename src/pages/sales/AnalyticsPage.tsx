@@ -253,7 +253,7 @@ export default function AnalyticsPage() {
           The figures could not be read. Check the connection and reload.
         </p>
       ) : loading && !data ? (
-        <QuietLoader label="Working out the numbers" />
+        <QuietLoader inline label="Working out the numbers" />
       ) : (
         <div className="space-y-5">
           {/* --------------------------------------------------------- KPIs */}

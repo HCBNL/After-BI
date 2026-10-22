@@ -159,7 +159,8 @@ export default function ReportsPage() {
         description="Sales, stock and debtors, as a spreadsheet, for whoever asked for it in Excel."
       />
 
-      <div className="max-w-xl rounded-2xl border border-hairline surface-card p-5 shadow-card">
+      <div className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
+        <div className="grid gap-4 lg:grid-cols-3">
         <Field label="What to export" required>
           <Select value={dataset} onChange={(e) => setDataset(e.target.value as Dataset)}>
             {(Object.keys(LABEL) as Dataset[]).map((key) => (
@@ -171,15 +172,16 @@ export default function ReportsPage() {
         </Field>
 
         {dataset !== 'stock' && (
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <>
             <Field label="From" required>
               <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
             </Field>
             <Field label="To" required>
               <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
             </Field>
-          </div>
+          </>
         )}
+        </div>
 
         {dataset === 'stock' && (
           <p className="mt-3 flex items-center gap-1.5 text-[12.5px] text-muted">

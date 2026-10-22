@@ -257,6 +257,11 @@ function ProductModal({
               Retire
             </Button>
           )}
+          {draft.id && root && (
+            <LinkButton to={`${root}/costing?product=${draft.id}`} variant="outline">
+              Work out prices
+            </LinkButton>
+          )}
           {draft.id && draft.status === 'active' && root && (
             <LinkButton to={`${root}/stock?add=${draft.id}`} variant="outline">
               Add to a depot

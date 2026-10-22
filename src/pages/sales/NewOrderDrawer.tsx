@@ -17,17 +17,15 @@
  * Changing the distributor DOES re-price, because the tier is what sets the
  * price and the old one no longer applies.
  *
- * THE PRICE IS NOT A FIELD ON THIS FORM, AND THAT IS THE POINT.
+ * THE PRICE STARTS AT THE TIER, AND CAN BE ADJUSTED BY THOSE ALLOWED TO
  *
  * Pick a distributor, pick products, set quantities. The price comes from the
- * product's tier, `product.pricing[distributor.category]`, and is shown but
- * never typed. The version this replaces had an editable unit price on every
- * line, which meant any rep could discount any order to anything, with no
- * record of who authorised it and no way to tell a keying error from a deal.
- *
- * A genuine special price is a tier (`SA`) on the distributor's account, set
- * by an administrator, which leaves a trail. That is the difference between a
- * discount and a leak.
+ * product's tier, `product.pricing[distributor.category]`. Anyone whose role is
+ * ticked under Settings, "Who can adjust prices" (the super admin always), gets
+ * a price box on every line and can take ₦4,000 down to ₦3,800. The tier price
+ * is kept beside it as the list price, so the discount is a line of its own on
+ * the order, in the approval and on the printed proforma and invoice: a
+ * discount with a name on it, never a leak.
  *
  * THE CREDIT CHECK RUNS BEFORE THE ORDER, NOT AFTER
  *
@@ -55,7 +53,9 @@ import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
 import { createOrder, creditPosition, listApproverPool, submitOrder, updateOrder } from '@/lib/db';
-import { partnerScope } from '@/lib/roles';
+import { listCostSheets, latestUnitCosts } from '@/lib/costing';
+import { kobo, mayAdjustPrice } from '@/lib/pricing';
+import { isAdmin, partnerScope } from '@/lib/roles';
 import { pickApprovers } from '@/lib/approvals';
 import { naira, count } from '@/lib/format';
 import { TIER_LABEL, type Order, type Product } from '@/types';
@@ -87,7 +87,17 @@ export function NewOrderDrawer({
   );
   const [search, setSearch] = useState('');
   const [note, setNote] = useState(order?.note ?? '');
+  /* Adjusted prices only: a product missing here is charged at its list price. */
+  const seedPrices = (o?: Order | null): Record<string, number> =>
+    Object.fromEntries(
+      (o?.lines ?? [])
+        .filter((l) => typeof l.listPrice === 'number' && l.listPrice !== l.unitPrice)
+        .map((l) => [l.productId, l.unitPrice]),
+    );
+  const [prices, setPrices] = useState<Record<string, number>>(() => seedPrices(order));
+  const [discountNote, setDiscountNote] = useState(order?.discountNote ?? '');
   const [busy, setBusy] = useState(false);
+  const canPrice = mayAdjustPrice(user?.role, settings);
 
   /* Re-seed when a different order is opened, or when the drawer is reopened
      for a new one. Without this the form keeps the previous order's basket,
@@ -97,6 +107,8 @@ export function NewOrderDrawer({
     setDistributorId(order?.distributorId ?? scoped ?? '');
     setLines(Object.fromEntries((order?.lines ?? []).map((l) => [l.productId, l.quantity])));
     setNote(order?.note ?? '');
+    setPrices(seedPrices(order));
+    setDiscountNote(order?.discountNote ?? '');
     setSearch('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, order?.id]);
@@ -134,6 +146,14 @@ export function NewOrderDrawer({
      whether anybody does. */
   const { data: members } = useAsync(() => listApproverPool(), []);
 
+  /* Landed cost per unit, from saved costings. Administrators only: the rules
+     refuse costings to everyone else, so nobody else asks. */
+  const { data: sheets } = useAsync(
+    () => (open && user && isAdmin(user.role) ? listCostSheets().catch(() => []) : Promise.resolve([])),
+    [open, user?.role],
+  );
+  const unitCosts = useMemo(() => latestUnitCosts(sheets), [sheets]);
+
   const chosen = useMemo(
     () =>
       Object.entries(lines)
@@ -147,31 +167,52 @@ export function NewOrderDrawer({
   );
 
   /**
-   * The price one line will actually be written at.
+   * The list price of one line: the tier price it is measured against.
    *
    * On a new order, or after the distributor has changed, that is the tier
-   * price. On an amendment to the same distributor it is whatever the line was
-   * raised at: and for a line being ADDED to an existing order there is no
-   * historic price, so it falls back to the tier. That last case is the only
-   * one where an amendment introduces a current price, and it is correct: the
-   * line is new.
+   * price. On an amendment to the same distributor it is whatever list price
+   * the line was raised at: and for a line being ADDED to an existing order
+   * there is no historic price, so it falls back to the tier. That last case is
+   * the only one where an amendment introduces a current price, and it is
+   * correct: the line is new.
  */
-  const priceFor = useMemo(
+  const listFor = useMemo(
     () => (productId: string, product: Product): number => {
       if (!editing || tierChanged) return product.pricing[distributor?.category ?? 'OT'] ?? 0;
       const existing = order?.lines.find((l) => l.productId === productId);
-      return existing?.unitPrice ?? product.pricing[distributor?.category ?? 'OT'] ?? 0;
+      return existing?.listPrice ?? existing?.unitPrice ?? product.pricing[distributor?.category ?? 'OT'] ?? 0;
     },
     [editing, tierChanged, distributor, order],
   );
 
-  const total = useMemo(
-    () => chosen.reduce((sum, line) => sum + priceFor(line.product.id, line.product) * line.quantity, 0),
-    [chosen, priceFor],
+  /** The price one line will actually be charged at: adjusted, or the list price. */
+  const priceFor = useMemo(
+    () => (productId: string, product: Product): number => prices[productId] ?? listFor(productId, product),
+    [prices, listFor],
   );
 
+  const setPrice = (product: Product, raw: string) =>
+    setPrices((current) => {
+      const next = { ...current };
+      const value = Number(raw);
+      if (raw.trim() === '' || !(value > 0) || kobo(value) === listFor(product.id, product)) delete next[product.id];
+      else next[product.id] = kobo(value);
+      return next;
+    });
+
+  const { total, gross, discount } = useMemo(() => {
+    let net = 0;
+    let list = 0;
+    for (const line of chosen) {
+      net += priceFor(line.product.id, line.product) * line.quantity;
+      list += listFor(line.product.id, line.product) * line.quantity;
+    }
+    return { total: kobo(net), gross: kobo(list), discount: kobo(Math.max(0, list - net)) };
+  }, [chosen, priceFor, listFor]);
+
   const threshold = settings?.approvalThreshold ?? 0;
-  const needsApproval = threshold > 0 && total >= threshold;
+  const discountSigned = Boolean(settings?.discountNeedsApproval) && discount > 0;
+  const needsApproval = (threshold > 0 && total >= threshold) || discountSigned;
 
   const setQuantity = (product: Product, quantity: number) => {
     setLines((current) => {
@@ -186,6 +227,8 @@ export function NewOrderDrawer({
 
   const reset = () => {
     setLines({});
+    setPrices({});
+    setDiscountNote('');
     setNote('');
     setSearch('');
     if (!scoped) setDistributorId('');
@@ -195,6 +238,7 @@ export function NewOrderDrawer({
     if (!user || !distributor || !chosen.length) return;
     setBusy(true);
     try {
+      const priced = chosen.map((line) => ({ ...line, unitPrice: priceFor(line.product.id, line.product) }));
       const approvers = send && needsApproval ? pickApprovers(members, settings, user) : [];
       /*
        * Over the threshold with nobody able to sign: the database would refuse
@@ -217,8 +261,9 @@ export function NewOrderDrawer({
         await updateOrder(
           order.id,
           {
-            lines: chosen,
+            lines: priced,
             note: note.trim(),
+            discountNote: discountNote.trim(),
             ...(tierChanged ? { distributor } : {}),
           },
           user,
@@ -238,8 +283,9 @@ export function NewOrderDrawer({
 
       const id = await createOrder({
         distributor,
-        lines: chosen,
+        lines: priced,
         note: note.trim() || undefined,
+        discountNote: discountNote.trim() || undefined,
         author: user,
         submit: send,
         approvers,
@@ -276,6 +322,7 @@ export function NewOrderDrawer({
                  distributor's tier, and silently re-pricing a basket somebody
                  has already built is how an order goes out at the wrong rate. */
               setLines({});
+              setPrices({});
             }}
           >
             <option value="">Choose a distributor…</option>
@@ -329,15 +376,27 @@ export function NewOrderDrawer({
             <ul className="space-y-1.5">
               {chosen.map(({ product, quantity }) => {
                 const unitPrice = priceFor(product.id, product);
+                const listPrice = listFor(product.id, product);
+                const off = Math.max(0, listPrice - unitPrice) * quantity;
+                const cost = unitCosts.get(product.id);
                 return (
                   <li
                     key={product.id}
-                    className="flex items-center gap-2 rounded-xl surface-card px-3 py-2"
+                    className="rounded-xl surface-card px-3 py-2"
                   >
+                   <div className="flex items-center gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] font-semibold text-primary">{product.name}</p>
                       <p className="tabular text-[11.5px] text-muted">
-                        {naira(unitPrice)} · {product.unit}
+                        {unitPrice !== listPrice ? (
+                          <>
+                            <span className="line-through">{naira(listPrice, true)}</span>{' '}
+                            <span className="font-semibold text-primary">{naira(unitPrice, true)}</span>
+                          </>
+                        ) : (
+                          naira(unitPrice, true)
+                        )}{' '}
+                        · {product.unit} · {naira(unitPrice * quantity, true)}
                       </p>
                     </div>
 
@@ -375,15 +434,96 @@ export function NewOrderDrawer({
                         <Trash2 size={14} />
                       </button>
                     </div>
+                   </div>
+
+                    {/* The price box: only for roles allowed to adjust prices. */}
+                    {canPrice && (
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-hairline pt-2">
+                        <label className="flex items-center gap-2 text-[11.5px] font-semibold text-muted">
+                          Price per unit
+                          <span className="relative">
+                            <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[12px] text-muted">₦</span>
+                            <input
+                              type="number"
+                              inputMode="decimal"
+                              min={0}
+                              step="any"
+                              key={`${product.id}-${prices[product.id] ?? 'list'}`}
+                              defaultValue={unitPrice}
+                              aria-label={`Price per unit of ${product.name}`}
+                              onBlur={(e) => {
+                                const value = Number(e.target.value);
+                                if (!(value > 0)) e.target.value = String(listPrice);
+                                setPrice(product, e.target.value);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                              }}
+                              className="tabular h-8 w-28 rounded-lg border border-hairline bg-transparent pl-6 pr-2 text-[13px] font-bold text-primary"
+                            />
+                          </span>
+                        </label>
+                        {off > 0 && (
+                          <span className="tabular text-[11.5px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+                            {naira(off, true)} off
+                          </span>
+                        )}
+                        {unitPrice > listPrice && (
+                          <span className="text-[11.5px] text-muted">Above list price</span>
+                        )}
+                        {prices[product.id] !== undefined && (
+                          <button
+                            type="button"
+                            onClick={() => setPrice(product, '')}
+                            className="text-[11.5px] font-semibold text-brand-700 underline dark:text-brand-300"
+                          >
+                            Back to {naira(listPrice, true)}
+                          </button>
+                        )}
+                        {cost !== undefined && unitPrice < cost && (
+                          <span className="tabular w-full text-[11.5px] font-semibold text-status-critical">
+                            Below landed cost of {naira(cost, true)} per unit
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </li>
                 );
               })}
             </ul>
 
-            <div className="mt-3 flex items-center justify-between px-1">
-              <span className="text-[12px] font-bold uppercase tracking-wide text-muted">Total</span>
-              <span className="tabular text-[17px] font-extrabold text-primary">{naira(total)}</span>
+            <div className="mt-3 space-y-1 px-1">
+              {discount > 0 && (
+                <>
+                  <div className="flex items-center justify-between text-[12.5px] text-muted">
+                    <span>Subtotal at list price</span>
+                    <span className="tabular">{naira(gross, true)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[12.5px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+                    <span>Less discount</span>
+                    <span className="tabular">({naira(discount, true)})</span>
+                  </div>
+                </>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-[12px] font-bold uppercase tracking-wide text-muted">Total</span>
+                <span className="tabular text-[17px] font-extrabold text-primary">{naira(total, true)}</span>
+              </div>
             </div>
+
+            {discount > 0 && canPrice && (
+              <Field
+                label="Reason for the discount"
+                hint="Printed on the proforma and invoice under the discount. Left blank, it says Goodwill discount."
+                className="mt-3"
+              >
+                <Input
+                  value={discountNote}
+                  onChange={(e) => setDiscountNote(e.target.value)}
+                  placeholder="Goodwill discount"
+                />
+              </Field>
+            )}
           </section>
         )}
 
@@ -448,7 +588,9 @@ export function NewOrderDrawer({
         <div className="sticky bottom-0 -mx-5 border-t border-hairline surface-card px-5 pb-safe-4 pt-3">
           {needsApproval && (
             <p className="mb-2 text-[12px] leading-snug text-muted">
-              Over {naira(threshold)}, so this needs a signature before it can be fulfilled.
+              {threshold > 0 && total >= threshold
+                ? `Over ${naira(threshold)}, so this needs a signature before it can be fulfilled.`
+                : 'It carries a discount, so this needs a signature before it can be fulfilled.'}
             </p>
           )}
           <div className="flex flex-wrap gap-2">

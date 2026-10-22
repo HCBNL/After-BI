@@ -38,6 +38,7 @@ import { pickApprovers } from '@/lib/approvals';
 import { orderAmendment } from '@/lib/amend';
 import { formatDateTime, naira, count } from '@/lib/format';
 import { printDocument } from '@/lib/print';
+import { listPriceOf, summarise } from '@/lib/pricing';
 import { ORDER_STATUS_LABEL, ROLE_LABEL, type Order } from '@/types';
 
 export function OrderDrawer({
@@ -119,6 +120,7 @@ export function OrderDrawer({
 
   /* The one source of truth for edit / recall / cancel. See `lib/amend.ts`. */
   const amend = orderAmendment(user, order ?? null);
+  const priced = summarise(order?.lines ?? []);
 
   const approversFor = () => (user ? pickApprovers(members, settings, user) : []);
 
@@ -320,6 +322,15 @@ export function OrderDrawer({
             </p>
           )}
 
+          {/* A discount is stated before anybody signs, not discovered after. */}
+          {priced.discount > 0 && (
+            <Alert tone="warning" title={`Prices adjusted: ${naira(priced.discount, true)} below list`}>
+              {order.priceAdjustedBy ? `Set by ${order.priceAdjustedBy}. ` : ''}At list price this order is{' '}
+              {naira(priced.gross, true)}; it is charged at {naira(priced.net, true)}. The discount prints on
+              the proforma and the invoice.
+            </Alert>
+          )}
+
           {/* the lines */}
           <section>
             {/*
@@ -350,18 +361,41 @@ export function OrderDrawer({
                       {line.productName}
                     </p>
                     <p className="tabular mt-0.5 text-[12px] text-muted">
-                      {count(line.quantity)} × {naira(line.unitPrice)} · {line.unit}
+                      {count(line.quantity)} ×{' '}
+                      {listPriceOf(line) > line.unitPrice && (
+                        <span className="line-through">{naira(listPriceOf(line), true)}</span>
+                      )}{' '}
+                      {naira(line.unitPrice, true)} · {line.unit}
                     </p>
+                    {listPriceOf(line) > line.unitPrice && (
+                      <p className="tabular mt-0.5 text-[11.5px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+                        {naira((listPriceOf(line) - line.unitPrice) * line.quantity, true)} off (
+                        {naira(listPriceOf(line) - line.unitPrice, true)} per unit)
+                      </p>
+                    )}
                   </div>
                   <p className="tabular shrink-0 text-[13.5px] font-bold text-primary">
-                    {naira(line.lineTotal)}
+                    {naira(line.lineTotal, true)}
                   </p>
                 </div>
               ))}
 
+              {priced.discount > 0 && (
+                <div className="space-y-1 border-b border-hairline px-4 py-3 text-[12.5px]">
+                  <div className="flex items-center justify-between text-muted">
+                    <span>Subtotal at list price</span>
+                    <span className="tabular">{naira(priced.gross, true)}</span>
+                  </div>
+                  <div className="flex items-center justify-between font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+                    <span>Less {order.discountNote || 'goodwill discount'}</span>
+                    <span className="tabular">({naira(priced.discount, true)})</span>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between gap-3 surface-sunken px-4 py-3">
                 <p className="text-[12px] font-bold uppercase tracking-wide text-muted">Total</p>
-                <p className="tabular text-[16px] font-extrabold text-primary">{naira(order.total)}</p>
+                <p className="tabular text-[16px] font-extrabold text-primary">{naira(order.total, true)}</p>
               </div>
             </div>
 
