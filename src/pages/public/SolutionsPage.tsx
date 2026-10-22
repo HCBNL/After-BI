@@ -8,7 +8,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container, eyebrow } from '@/components/marketing/tokens';
-import { CheckList, IndustryIcon, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { CheckList, IndustryCard, ModuleIcon, PictureFallback, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { SceneMock } from '@/components/marketing/mocks';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
@@ -41,14 +41,32 @@ function Body() {
             title="Built for your part of the value chain"
             body="From manufacturer to modern trade, one platform configured to how you sell."
           />
-          <div className="mx-auto mt-10 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <SiteImage
+            slot="solutions-hero"
+            alt="AfterBI across the value chain"
+            eager
+            width={1400}
+            className="mx-auto mt-10 aspect-[21/9] max-w-6xl rounded-[2rem] shadow-[0_30px_70px_-34px_rgba(15,31,54,0.45)]"
+            fallback={<PictureFallback tone="dark" />}
+          />
+          <div className="mx-auto mt-6 grid max-w-6xl grid-cols-2 gap-3 lg:grid-cols-4">
             {SOLUTIONS.map((s) => (
               <a
                 key={s.slug}
                 href={`#${s.slug}`}
-                className="rounded-2xl bg-white px-5 py-4 text-center text-[15px] font-bold text-navy-900 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-900 hover:text-white"
+                className="group relative block overflow-hidden rounded-2xl ring-1 ring-navy-900/10 transition-transform hover:-translate-y-0.5"
               >
-                {s.name}
+                <SiteImage
+                  slot={s.image}
+                  alt={s.name}
+                  width={420}
+                  className="aspect-[3/2]"
+                  imgClassName="transition-transform duration-500 group-hover:scale-[1.05]"
+                  fallback={<SceneMock slug={s.modules[0]} />}
+                />
+                <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/85 to-transparent px-4 pb-3 pt-10 text-left text-[14.5px] font-bold text-white">
+                  {s.name}
+                </span>
               </a>
             ))}
           </div>
@@ -103,14 +121,9 @@ function Body() {
           kicker="Industries"
           title="Built for every consumer goods category"
         />
-        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {INDUSTRIES.map((item) => (
-            <div key={item.name} className="flex flex-col items-center gap-4 rounded-2xl bg-white/[0.06] p-6 text-center ring-1 ring-inset ring-white/10">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500/15 text-brand-300">
-                <IndustryIcon icon={item.icon} />
-              </span>
-              <span className="text-[15.5px] font-bold">{item.name}</span>
-            </div>
+            <IndustryCard key={item.name} icon={item.icon} name={item.name} className="ring-white/10" />
           ))}
         </div>
       </Section>

@@ -464,7 +464,7 @@ function RaiseReturnModal({
           <Field label="Product" required>
             <Select value={productId} onChange={(e) => setProductId(e.target.value)}>
               <option value="">Choose…</option>
-              {products.map((p) => (
+              {products.filter((p) => !p.service).map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>

@@ -200,6 +200,12 @@ export interface Product {
   pricing: Partial<Record<PriceTier, number>>;
   /** Minimum order quantity. */
   moq: number;
+  /**
+   * A service, not goods: Logistics, delivery, installation. Never stocked,
+   * never counted in inventory, never checked or deducted when an order is
+   * fulfilled, and always orderable. Its price is set on each order line.
+   */
+  service?: boolean;
   imageUrl?: string;
   status: 'active' | 'inactive';
   createdAt?: string;
@@ -257,6 +263,10 @@ export interface OrderLine {
   unitPrice: number;
   /** `quantity × unitPrice`, stored rather than computed. */
   lineTotal: number;
+  /** A service line (Logistics): no stock is checked or moved for it. */
+  service?: boolean;
+  /** A word on the line, printed under it: "Lagos to Kano", "Two drops". */
+  note?: string;
 }
 
 export type OrderStatus =

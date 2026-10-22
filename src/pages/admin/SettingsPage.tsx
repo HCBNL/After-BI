@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Plus, Save, Trash2 } from 'lucide-react';
+import { Check, Copy, Plus, Save, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import {
   Button, Divider, Field, Hint, IconButton, Input, Select, Switch, Textarea, useToast,
@@ -183,31 +183,38 @@ export default function SettingsPage() {
             <Field label="Website" hint="Shown on Company info, business cards and ID cards.">
               <Input value={draft.website ?? ''} onChange={(e) => set('website', e.target.value)} placeholder="www.yourcompany.com" />
             </Field>
-            <Field label="Logo URL" hint="Or paste the address of a logo already online.">
-              <Input value={draft.logoUrl ?? ''} onChange={(e) => set('logoUrl', e.target.value)} />
+            <Field label="Logo URL" hint="Or paste the address of a logo already online. The copy button copies the address of the logo you uploaded.">
+              <Input
+                value={draft.logoUrl ?? ''}
+                onChange={(e) => set('logoUrl', e.target.value)}
+                trailing={<CopyButton text={draft.logoUrl ?? ''} />}
+              />
             </Field>
             </div>
 
             <Divider label="Branding and signatory" />
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Both boxes stretch to their column at the same height, so they line up. Tap a box to upload. */}
               <ImagePicker
                 kind="logo"
                 label="Logo"
-                hint="On printed documents, Company info, staff ID cards and business cards."
+                hint="On printed documents, Company info, staff ID cards and business cards. Tap the box to upload or change it."
                 value={draft.logoUrl ?? ''}
                 onChange={(url) => set('logoUrl', url)}
+                fill
+                height={158}
               />
               <ImagePicker
                 kind="logo"
                 label="Signature for ID cards"
-                hint="A clear signature on a white background, printed on the back of every staff ID card."
+                hint="A clear signature on a white background, printed on the back of every staff ID card. Tap the box to upload or change it."
                 value={draft.signatureUrl ?? ''}
                 onChange={(url) => set('signatureUrl', url)}
-                height={64}
-                size={160}
+                fill
+                height={158}
               />
-              <div className="space-y-4">
+              <div className="flex flex-col justify-between gap-4 sm:col-span-2 lg:col-span-1">
               <Field label="ID cards are signed by" hint="Name printed under the signature on staff ID cards.">
                 <Input value={draft.signatoryName ?? ''} onChange={(e) => set('signatoryName', e.target.value)} placeholder="Full name" />
               </Field>
@@ -539,5 +546,30 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** A small copy button that sits inside a field. */
+function CopyButton({ text }: { text: string }) {
+  const [done, setDone] = useState(false);
+  if (!text) return null;
+  return (
+    <button
+      type="button"
+      aria-label="Copy the address"
+      title="Copy"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setDone(true);
+          window.setTimeout(() => setDone(false), 1500);
+        } catch {
+          /* clipboard blocked: nothing to do */
+        }
+      }}
+      className="flex h-7 w-7 items-center justify-center rounded-lg text-muted transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"
+    >
+      {done ? <Check size={14} className="text-status-good" /> : <Copy size={14} />}
+    </button>
   );
 }

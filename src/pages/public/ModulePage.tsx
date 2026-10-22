@@ -12,7 +12,8 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container, eyebrow } from '@/components/marketing/tokens';
-import { CheckList, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { CheckList, IconBadge, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { SceneMock } from '@/components/marketing/mocks';
 import { ModuleMock } from '@/components/marketing/mocks';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
@@ -109,14 +110,23 @@ function Body({ slug }: { slug: string }) {
               <Link
                 key={s.slug}
                 to={`/solutions#${s.slug}`}
-                className="group rounded-2xl bg-white p-7 ring-1 ring-navy-900/8 transition-shadow hover:shadow-[0_20px_44px_-24px_rgba(15,31,54,0.35)]"
+                className="group overflow-hidden rounded-2xl bg-white ring-1 ring-navy-900/8 transition-shadow hover:shadow-[0_20px_44px_-24px_rgba(15,31,54,0.35)]"
               >
+                <SiteImage
+                  slot={s.image}
+                  alt={s.name}
+                  width={640}
+                  className="aspect-[3/1]"
+                  fallback={<SceneMock slug={s.modules[0]} />}
+                />
+                <div className="p-7">
                 <p className={eyebrow}>{s.name}</p>
                 <p className="mt-2 text-[18px] font-bold text-navy-900">{s.blurb}</p>
                 <CheckList items={s.points} className="mt-5" />
                 <span className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-700">
                   See the solution <ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-1" />
                 </span>
+                </div>
               </Link>
             ))}
           </div>
@@ -130,16 +140,28 @@ function Body({ slug }: { slug: string }) {
             <Link
               key={m.slug}
               to={`/features/${m.slug}`}
-              className="group flex flex-col rounded-2xl p-7 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-50"
+              className="group flex flex-col overflow-hidden rounded-2xl ring-1 ring-navy-900/10 transition-colors hover:bg-navy-50"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white">
-                <ModuleIcon slug={m.slug} size={20} />
-              </span>
-              <h3 className="mt-5 text-[19px] font-bold text-navy-900">{m.name}</h3>
+              <div className="relative">
+                <SiteImage
+                  slot={`module-${m.slug}` as SiteImageKey}
+                  alt={`${m.name} in AfterBI`}
+                  width={480}
+                  className="aspect-[16/10]"
+                  imgClassName="transition-transform duration-500 group-hover:scale-[1.04]"
+                  fallback={<ModuleMock slug={m.slug} />}
+                />
+                <IconBadge>
+                  <ModuleIcon slug={m.slug} size={17} />
+                </IconBadge>
+              </div>
+              <div className="flex flex-1 flex-col p-7">
+              <h3 className="text-[19px] font-bold text-navy-900">{m.name}</h3>
               <p className="mt-2 flex-1 text-[15.5px] leading-relaxed text-navy-700/80">{m.blurb}</p>
               <span className="mt-5 inline-flex items-center gap-1.5 text-[14.5px] font-bold text-brand-700">
                 Learn more <ArrowRight size={15} aria-hidden />
               </span>
+              </div>
             </Link>
           ))}
         </div>

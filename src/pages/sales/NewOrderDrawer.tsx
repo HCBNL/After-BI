@@ -87,6 +87,10 @@ export function NewOrderDrawer({
   );
   const [search, setSearch] = useState('');
   const [note, setNote] = useState(order?.note ?? '');
+  /* A word per line, for services: "Lagos to Kano". */
+  const seedNotes = (o?: Order | null): Record<string, string> =>
+    Object.fromEntries((o?.lines ?? []).filter((l) => l.note).map((l) => [l.productId, l.note!]));
+  const [lineNotes, setLineNotes] = useState<Record<string, string>>(() => seedNotes(order));
   /* Adjusted prices only: a product missing here is charged at its list price. */
   const seedPrices = (o?: Order | null): Record<string, number> =>
     Object.fromEntries(
@@ -107,6 +111,7 @@ export function NewOrderDrawer({
     setDistributorId(order?.distributorId ?? scoped ?? '');
     setLines(Object.fromEntries((order?.lines ?? []).map((l) => [l.productId, l.quantity])));
     setNote(order?.note ?? '');
+    setLineNotes(seedNotes(order));
     setPrices(seedPrices(order));
     setDiscountNote(order?.discountNote ?? '');
     setSearch('');
@@ -127,7 +132,8 @@ export function NewOrderDrawer({
     return products.filter(
       (product) =>
         product.status === 'active' &&
-        typeof product.pricing[distributor.category] === 'number' &&
+        /* A service (Logistics) is always orderable; its price is typed on the line. */
+        (product.service || typeof product.pricing[distributor.category] === 'number') &&
         (!needle ||
           product.name.toLowerCase().includes(needle) ||
           (product.sku ?? '').toLowerCase().includes(needle)),
@@ -204,8 +210,10 @@ export function NewOrderDrawer({
     let net = 0;
     let list = 0;
     for (const line of chosen) {
-      net += priceFor(line.product.id, line.product) * line.quantity;
-      list += listFor(line.product.id, line.product) * line.quantity;
+      const charged = priceFor(line.product.id, line.product);
+      net += charged * line.quantity;
+      /* A service is priced per order, so its price is never a discount. */
+      list += (line.product.service ? charged : listFor(line.product.id, line.product)) * line.quantity;
     }
     return { total: kobo(net), gross: kobo(list), discount: kobo(Math.max(0, list - net)) };
   }, [chosen, priceFor, listFor]);
@@ -236,9 +244,18 @@ export function NewOrderDrawer({
 
   const submit = async (send: boolean) => {
     if (!user || !distributor || !chosen.length) return;
+    const unpriced = chosen.find((line) => !(priceFor(line.product.id, line.product) > 0));
+    if (unpriced) {
+      toast.warning(`Put a price on ${unpriced.product.name}`, 'Type the price per unit on that line, then try again.');
+      return;
+    }
     setBusy(true);
     try {
-      const priced = chosen.map((line) => ({ ...line, unitPrice: priceFor(line.product.id, line.product) }));
+      const priced = chosen.map((line) => ({
+        ...line,
+        unitPrice: priceFor(line.product.id, line.product),
+        note: line.product.service ? lineNotes[line.product.id] : undefined,
+      }));
       const approvers = send && needsApproval ? pickApprovers(members, settings, user) : [];
       /*
        * Over the threshold with nobody able to sign: the database would refuse
@@ -376,8 +393,9 @@ export function NewOrderDrawer({
             <ul className="space-y-1.5">
               {chosen.map(({ product, quantity }) => {
                 const unitPrice = priceFor(product.id, product);
-                const listPrice = listFor(product.id, product);
+                const listPrice = product.service ? unitPrice : listFor(product.id, product);
                 const off = Math.max(0, listPrice - unitPrice) * quantity;
+                const showPrice = canPrice || (product.service && user?.role !== 'distributor');
                 const cost = unitCosts.get(product.id);
                 return (
                   <li
@@ -437,7 +455,21 @@ export function NewOrderDrawer({
                    </div>
 
                     {/* The price box: only for roles allowed to adjust prices. */}
-                    {canPrice && (
+                    {product.service && (
+                      <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-hairline pt-2">
+                        <Badge tone="info">Service, no stock</Badge>
+                        <input
+                          value={lineNotes[product.id] ?? ''}
+                          onChange={(e) => setLineNotes((n) => ({ ...n, [product.id]: e.target.value }))}
+                          placeholder="Where to? Lagos to Kano"
+                          aria-label={`Note for ${product.name}`}
+                          maxLength={80}
+                          className="h-8 min-w-0 flex-1 rounded-lg border border-hairline bg-transparent px-2.5 text-[13px] text-primary placeholder:text-muted"
+                        />
+                      </div>
+                    )}
+
+                    {showPrice && (
                       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-hairline pt-2">
                         <label className="flex items-center gap-2 text-[11.5px] font-semibold text-muted">
                           Price per unit
@@ -471,7 +503,7 @@ export function NewOrderDrawer({
                         {unitPrice > listPrice && (
                           <span className="text-[11.5px] text-muted">Above list price</span>
                         )}
-                        {prices[product.id] !== undefined && (
+                        {prices[product.id] !== undefined && !product.service && (
                           <button
                             type="button"
                             onClick={() => setPrice(product, '')}
@@ -560,8 +592,9 @@ export function NewOrderDrawer({
                             {product.name}
                           </p>
                           <p className="tabular text-[12px] text-muted">
-                            {naira(unitPrice)} · {product.unit}
-                            {product.moq > 1 ? ` · min ${product.moq}` : ''}
+                            {product.service
+                              ? `Service, no stock · ${unitPrice > 0 ? naira(unitPrice) : 'price it on the order'}`
+                              : `${naira(unitPrice)} · ${product.unit}${product.moq > 1 ? ` · min ${product.moq}` : ''}`}
                           </p>
                         </div>
                         {inBasket > 0 && <Badge tone="brand">{count(inBasket)}</Badge>}
@@ -585,7 +618,7 @@ export function NewOrderDrawer({
         </Field>
 
         {/* submit */}
-        <div className="sticky bottom-0 -mx-5 border-t border-hairline surface-card px-5 pb-safe-4 pt-3">
+        <div className="sticky -bottom-5 z-10 -mx-5 -mb-5 border-t border-hairline surface-card px-5 pb-safe-4 pt-3 shadow-[0_-10px_24px_-18px_rgba(0,0,0,0.35)]">
           {needsApproval && (
             <p className="mb-2 text-[12px] leading-snug text-muted">
               {threshold > 0 && total >= threshold

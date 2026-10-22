@@ -12,6 +12,7 @@ import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { cn } from '@/lib/cn';
 import { btn, container } from '@/components/marketing/tokens';
+import { PictureFallback, SiteImage } from '@/components/marketing/site-ui';
 import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/site';
 
 const EXPECT = [
@@ -69,10 +70,23 @@ function Body() {
         <Reveal delay={120}>
           <ul className="grid gap-4 sm:grid-cols-2">
             {EXPECT.map((item, index) => (
-              <li key={item.title} className="flex min-h-[10rem] flex-col rounded-2xl bg-white p-6 ring-1 ring-navy-900/10">
-                <span className="font-display text-[1.4rem] font-extrabold text-brand-600">0{index + 1}</span>
-                <h2 className="mt-auto pt-5 text-[18px] font-bold text-navy-900">{item.title}</h2>
-                <p className="mt-1.5 text-[15px] leading-relaxed text-navy-600">{item.body}</p>
+              <li key={item.title} className="flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-navy-900/10">
+                <div className="relative">
+                  <SiteImage
+                    slot={`demo-${index + 1}`}
+                    alt={item.title}
+                    width={420}
+                    className="aspect-[16/10]"
+                    fallback={<PictureFallback />}
+                  />
+                  <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 font-display text-[0.95rem] font-extrabold text-white ring-1 ring-white/25">
+                    0{index + 1}
+                  </span>
+                </div>
+                <div className="p-6">
+                  <h2 className="text-[18px] font-bold text-navy-900">{item.title}</h2>
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-navy-600">{item.body}</p>
+                </div>
               </li>
             ))}
           </ul>

@@ -484,7 +484,7 @@ function SaleModal({
           <Select value={productId} onChange={(e) => setProductId(e.target.value)}>
             <option value="">Choose…</option>
             {products
-              .filter((p) => p.status === 'active')
+              .filter((p) => p.status === 'active' && !p.service)
               .map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}

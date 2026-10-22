@@ -16,7 +16,7 @@
 import { useMemo, useState } from 'react';
 import { Package, Plus } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Badge, Button, DataTable, Field, Hint, Input, Modal, SearchInput, SegmentedControl, Select, Textarea, type Column, useToast } from '@/components/ui';
+import { Badge, Button, DataTable, Field, Hint, Input, Modal, SearchInput, SegmentedControl, Select, Switch, Textarea, type Column, useToast } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { PORTAL_ROOT } from '@/lib/tiles';
@@ -66,7 +66,10 @@ export default function ProductsPage() {
       sortValue: (row) => row.name,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-semibold text-primary">{row.name}</p>
+          <p className="flex items-center gap-2 truncate text-[13.5px] font-semibold text-primary">
+            <span className="truncate">{row.name}</span>
+            {row.service && <Badge tone="info">Service</Badge>}
+          </p>
           <p className="truncate text-[12px] text-muted">
             {row.category}
             {row.sku ? ` · ${row.sku}` : ''} · {row.unit}
@@ -262,7 +265,7 @@ function ProductModal({
               Work out prices
             </LinkButton>
           )}
-          {draft.id && draft.status === 'active' && root && (
+          {draft.id && draft.status === 'active' && root && !draft.service && (
             <LinkButton to={`${root}/stock?add=${draft.id}`} variant="outline">
               Add to a depot
             </LinkButton>
@@ -342,6 +345,20 @@ function ProductModal({
             ))}
           </div>
         </fieldset>
+
+        <div className="rounded-xl border border-hairline surface-sunken px-4 py-3">
+          <Switch
+            checked={Boolean(draft.service)}
+            onChange={(next) => set('service', next)}
+            label="Service, not stocked"
+            description={
+              draft.service
+                ? 'Like Logistics: no quantity, never in stock, always orderable.'
+                : 'Goods: counted in stock and checked when an order is fulfilled.'
+            }
+            hint="Turn this on for Logistics, delivery or any charge that is not goods. It never counts in inventory or stock value, is never checked or deducted when an order is fulfilled, and can always be added to an order. Whoever raises the order types its price and a note on the line (for example Lagos to Kano). Tier prices above are optional for a service: if set, they are the starting price."
+          />
+        </div>
 
         <Field label="Description" hint="Optional">
           <Textarea

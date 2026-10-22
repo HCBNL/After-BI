@@ -8,7 +8,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
-import { ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { IconBadge, ModuleIcon, PictureFallback, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { ModuleMock } from '@/components/marketing/mocks';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
@@ -62,6 +62,15 @@ function Body() {
               </a>
             ))}
           </nav>
+
+          <SiteImage
+            slot="features-hero"
+            alt="The AfterBI platform"
+            eager
+            width={1400}
+            className="mx-auto mt-12 aspect-[21/9] max-w-6xl rounded-[2rem] shadow-[0_30px_70px_-34px_rgba(15,31,54,0.45)]"
+            fallback={<PictureFallback tone="dark" />}
+          />
         </div>
       </section>
 
@@ -79,19 +88,19 @@ function Body() {
                     to={`/features/${slug}`}
                     className="group flex h-full scroll-mt-32 flex-col overflow-hidden rounded-[1.6rem] bg-white ring-1 ring-navy-900/10 transition-shadow hover:shadow-[0_24px_50px_-24px_rgba(15,31,54,0.35)]"
                   >
-                    <SiteImage
-                      slot={`module-${slug}` as SiteImageKey}
-                      alt={`${m.name} in AfterBI`}
-                      className="aspect-[16/10]"
-                      fallback={<ModuleMock slug={slug} />}
-                    />
+                    <div className="relative">
+                      <SiteImage
+                        slot={`module-${slug}` as SiteImageKey}
+                        alt={`${m.name} in AfterBI`}
+                        className="aspect-[16/10]"
+                        fallback={<ModuleMock slug={slug} />}
+                      />
+                      <IconBadge>
+                        <ModuleIcon slug={slug} size={17} />
+                      </IconBadge>
+                    </div>
                     <div className="flex flex-1 flex-col p-7">
-                      <span className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
-                          <ModuleIcon slug={slug} size={19} />
-                        </span>
-                        <h3 className="font-display text-[1.4rem] font-extrabold tracking-[-0.03em] text-navy-900">{m.name}</h3>
-                      </span>
+                      <h3 className="font-display text-[1.4rem] font-extrabold tracking-[-0.03em] text-navy-900">{m.name}</h3>
                       <p className="mt-3 flex-1 text-[16px] leading-relaxed text-navy-700/85">{m.blurb}</p>
                       <span className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-700">
                         Learn more <ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-1" />
@@ -109,10 +118,23 @@ function Body() {
         <SectionHead onDark align="center" kicker="How it works" title="Live in four steps" />
         <ol className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {MONTH_STEPS.map((step, index) => (
-            <li key={step.title} className="rounded-2xl bg-white/[0.06] p-7 ring-1 ring-inset ring-white/10">
-              <span className="font-display text-[2.4rem] font-extrabold leading-none text-brand-400">{index + 1}</span>
-              <h3 className="mt-4 text-[18px] font-bold">{step.title}</h3>
-              <p className="mt-2 text-[15.5px] leading-relaxed text-white/70">{step.body}</p>
+            <li key={step.title} className="overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-inset ring-white/10">
+              <div className="relative">
+                <SiteImage
+                  slot={`step-${index + 1}`}
+                  alt={step.title}
+                  width={480}
+                  className="aspect-[16/10]"
+                  fallback={<PictureFallback tone="dark" />}
+                />
+                <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 font-display text-[1.05rem] font-extrabold text-white ring-1 ring-white/25">
+                  {index + 1}
+                </span>
+              </div>
+              <div className="p-6">
+                <h3 className="text-[18px] font-bold">{step.title}</h3>
+                <p className="mt-2 text-[15.5px] leading-relaxed text-white/70">{step.body}</p>
+              </div>
             </li>
           ))}
         </ol>

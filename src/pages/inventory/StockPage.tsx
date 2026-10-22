@@ -421,7 +421,7 @@ function MovementModal({
           >
             <option value="">Choose a product…</option>
             {products
-              .filter((p) => p.status === 'active')
+              .filter((p) => p.status === 'active' && !p.service)
               .map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}

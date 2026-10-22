@@ -359,7 +359,9 @@ export function OrderDrawer({
                   <div className="min-w-0">
                     <p className="truncate text-[13.5px] font-semibold text-primary">
                       {line.productName}
+                      {line.service && <span className="ml-2 align-middle"><Badge tone="info">Service</Badge></span>}
                     </p>
+                    {line.note && <p className="mt-0.5 text-[12px] font-medium text-secondary">{line.note}</p>}
                     <p className="tabular mt-0.5 text-[12px] text-muted">
                       {count(line.quantity)} ×{' '}
                       {listPriceOf(line) > line.unitPrice && (

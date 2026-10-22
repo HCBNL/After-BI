@@ -51,6 +51,7 @@ import {
 import { SOCIAL_FIELDS } from '@/lib/social';
 import { VideoPicker } from './website/VideoPicker';
 import { CustomEditor } from './website/ProgrammeEditors';
+import { SiteImageSlots } from './website/SiteImageSlots';
 
 export default function WebsitePage() {
   const toast = useToast();
@@ -91,7 +92,7 @@ export default function WebsitePage() {
     <>
       <PageHeader
         title="Website"
-        description="Videos, follow links and the Custom offer. Pictures live in the website files (public/site)."
+        description="Every picture on the public website, the demo videos, follow links and the Custom offer."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -124,6 +125,14 @@ export default function WebsitePage() {
               These changes are only on this screen. Press Publish to put them on the landing page.
             </Alert>
           )}
+
+          <Card>
+            <CardHeader
+              title="Website pictures"
+              subtitle="One box for every picture on the site, grouped by page. Upload, then press Publish."
+            />
+            <SiteImageSlots images={home?.images ?? {}} onChange={(images) => seed({ images })} />
+          </Card>
 
           <Card>
             <CardHeader

@@ -16,7 +16,7 @@
 import { Link } from 'react-router-dom';
 import { Seo } from '@/components/Seo';
 import { PublicShell } from '@/components/marketing/kit';
-import { Accordion } from '@/components/marketing/site-ui';
+import { Accordion, PictureFallback, SiteImage } from '@/components/marketing/site-ui';
 import { btn } from '@/components/marketing/tokens';
 import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/site';
 
@@ -57,7 +57,8 @@ export default function SignInHelpPage() {
               <Accordion items={TROUBLE} className="border-y-0" />
             </div>
 
-            <div className="mt-12 rounded-2xl bg-navy-900 p-7 text-white sm:p-10">
+            <div className="mt-12 grid overflow-hidden rounded-2xl bg-navy-900 text-white sm:grid-cols-[1.3fr_1fr]">
+             <div className="p-7 sm:p-10">
               <h2 className="font-display text-[1.5rem] font-extrabold tracking-[-0.03em]">None of those?</h2>
               <p className="mt-2 text-[16px] leading-relaxed text-white/70">
                 Tell us the address you are trying and what the screen says. Nobody from AfterBI will ever ask for your password.
@@ -73,6 +74,14 @@ export default function SignInHelpPage() {
                   WhatsApp
                 </a>
               </div>
+             </div>
+              <SiteImage
+                slot="help-contact"
+                alt="AfterBI support"
+                width={480}
+                className="min-h-[14rem]"
+                fallback={<PictureFallback tone="dark" />}
+              />
             </div>
           </div>
         </section>

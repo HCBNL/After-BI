@@ -4,12 +4,11 @@
  *   Hero       deep navy, one line, one ask, a photograph with live cards on it
  *   Lifecycle  four tabs (Sales, Operations, Finance, Intelligence); one picture each
  *   Showcase   one picture, three lines
- *   Industries icons only
- *   Questions  five, closed
+ *   Industries a photo per category, with a small icon badge
+ *   Questions  five, closed, beside a picture
  *
- * Every picture is a file in public/site/ (see SITE_IMAGES in lib/site.ts),
- * served with the site itself, so nothing waits on a database read. Until a
- * file exists the slot draws its own stand-in.
+ * Every picture is uploaded in Platform, Website (see SITE_IMAGES in
+ * lib/site.ts). Until one is, the slot draws its own stand in.
  */
 
 import { useState } from 'react';
@@ -20,7 +19,7 @@ import { faqJsonLd, homeJsonLd } from '@/lib/siteJsonLd';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
-import { Accordion, IndustryIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { Accordion, IndustryCard, PictureFallback, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { ModuleMock, Phone, PortalScreen, Sparkline } from '@/components/marketing/mocks';
 import { VideoCard } from '@/components/marketing/VideoCard';
 import { homeVideos } from '@/lib/siteDoc';
@@ -309,17 +308,14 @@ function Industries() {
   return (
     <Section>
       <SectionHead align="center" title="Built for every consumer goods category" />
-      <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {INDUSTRIES.map((item) => (
           <Link
             key={item.name}
-            to="/solutions"
-            className="group flex flex-col items-center gap-4 rounded-2xl p-6 text-center ring-1 ring-navy-900/8 transition-all hover:-translate-y-1 hover:shadow-[0_18px_40px_-20px_rgba(15,31,54,0.35)]"
+            to="/solutions#industries"
+            className="block rounded-2xl transition-all hover:-translate-y-1 hover:shadow-[0_18px_40px_-20px_rgba(15,31,54,0.45)]"
           >
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-500 group-hover:text-white">
-              <IndustryIcon icon={item.icon} />
-            </span>
-            <span className="text-[15px] font-bold text-navy-900">{item.name}</span>
+            <IndustryCard icon={item.icon} name={item.name} />
           </Link>
         ))}
       </div>
@@ -350,9 +346,17 @@ function Videos() {
 function Questions() {
   return (
     <Section>
-      <div className="mx-auto max-w-3xl">
-        <SectionHead align="center" title="Frequently asked questions" />
-        <Accordion items={FAQ} className="mt-10" />
+      <div className="grid items-start gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+        <SiteImage
+          slot="home-faq"
+          alt="AfterBI support"
+          className="hidden aspect-[4/5] rounded-[2rem] lg:block"
+          fallback={<PictureFallback tone="dark" />}
+        />
+        <div>
+          <SectionHead title="Frequently asked questions" />
+          <Accordion items={FAQ} className="mt-10" />
+        </div>
       </div>
     </Section>
   );

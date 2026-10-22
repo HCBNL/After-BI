@@ -9,6 +9,7 @@
 
 import { useMemo, useState } from 'react';
 import { Pencil, Plus, Target as TargetIcon, Trash2 } from 'lucide-react';
+import { MonthSelect } from '@/components/MonthSelect';
 import { PageHeader } from '@/components/layout/PageHeader';
 import {
   Badge,
@@ -19,7 +20,6 @@ import {
   Input,
   Modal,
   ProgressBar,
-  SegmentedControl,
   Select,
   StatTile,
   useToast,
@@ -91,16 +91,6 @@ export default function TargetsPage() {
     [rows],
   );
 
-  /* The last six months, newest first. Anything older is a report, not a
-     screen you check. */
-  const periods = useMemo(() => {
-    const out: string[] = [];
-    const now = new Date();
-    for (let i = 0; i < 6; i += 1) {
-      out.push(monthKey(new Date(now.getFullYear(), now.getMonth() - i, 1)));
-    }
-    return out;
-  }, []);
 
   return (
     <div>
@@ -119,12 +109,7 @@ export default function TargetsPage() {
           )
         }
       >
-        <SegmentedControl
-          size="sm"
-          value={period}
-          onChange={setPeriod}
-          options={periods.slice(0, 4).map((p) => ({ value: p, label: p }))}
-        />
+        <MonthSelect value={period} onChange={setPeriod} ahead={12} className="w-full max-w-[15rem]" />
       </PageHeader>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
@@ -368,8 +353,8 @@ function TargetModal({
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Period" required hint="YYYY-MM">
-            <Input value={period} onChange={(e) => setPeriod(e.target.value)} placeholder="2026-09" />
+          <Field label="Month" required>
+            <MonthSelect value={period} onChange={setPeriod} ahead={12} back={12} className="w-full" />
           </Field>
           <Field label="Target" required>
             <Input

@@ -9,6 +9,7 @@
 
 import { useMemo, useState } from 'react';
 import { LineChart } from 'lucide-react';
+import { MonthSelect } from '@/components/MonthSelect';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge, DataTable, SegmentedControl, type Column } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
@@ -75,14 +76,6 @@ export default function ScorecardsPage() {
       .sort((a, b) => b.achieved - a.achieved);
   }, [data, dimension]);
 
-  const periods = useMemo(() => {
-    const out: string[] = [];
-    const now = new Date();
-    for (let i = 0; i < 4; i += 1) {
-      out.push(monthKey(new Date(now.getFullYear(), now.getMonth() - i, 1)));
-    }
-    return out;
-  }, []);
 
   const columns: Column<Row>[] = [
     {
@@ -158,12 +151,7 @@ export default function ScorecardsPage() {
               { value: 'rep', label: 'Reps' },
             ]}
           />
-          <SegmentedControl
-            size="sm"
-            value={period}
-            onChange={setPeriod}
-            options={periods.map((p) => ({ value: p, label: p }))}
-          />
+          <MonthSelect value={period} onChange={setPeriod} className="w-full max-w-[15rem]" />
         </div>
       </PageHeader>
 

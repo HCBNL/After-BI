@@ -571,7 +571,7 @@ function CostingDrawer({
         </Field>
 
         {/* actions */}
-        <div className="sticky bottom-0 -mx-5 border-t border-hairline surface-card px-5 pb-safe-4 pt-3">
+        <div className="sticky -bottom-5 z-10 -mx-5 -mb-5 border-t border-hairline surface-card px-5 pb-safe-4 pt-3 shadow-[0_-10px_24px_-18px_rgba(0,0,0,0.35)]">
           <div className="flex flex-wrap gap-2">
             <Button icon={<Save size={15} />} loading={busy} onClick={() => void save()}>
               Save costing
