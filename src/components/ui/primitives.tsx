@@ -678,7 +678,7 @@ export function StatTile({
   };
 
   return (
-    <div className={cn('surface-card rounded-2xl border border-hairline p-4 shadow-card sm:p-5', className)}>
+    <div className={cn('ab-kpi surface-card relative overflow-hidden rounded-2xl border border-hairline p-4 shadow-card sm:p-5', className)}>
       <div className="flex items-start justify-between gap-3">
         <p className="text-caption font-semibold uppercase tracking-wide text-muted">{label}</p>
         {icon && (

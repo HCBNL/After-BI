@@ -13,12 +13,13 @@ import { useMemo, useState } from 'react';
 import { NIGERIA_STATES_SVG, NIGERIA_VIEWBOX } from '@/data/nigeriaMap';
 import { cn } from '@/lib/cn';
 
+/* Five shades of the theme colour, light to full, so the map follows blue, green or yellow. */
 const STEPS = [
-  'var(--color-brand-100)',
-  'var(--color-brand-200)',
-  'var(--color-brand-400)',
-  'var(--color-brand-600)',
-  'var(--color-brand-800)',
+  'color-mix(in srgb, var(--swatch) 25%, var(--surface-card))',
+  'color-mix(in srgb, var(--swatch) 42%, var(--surface-card))',
+  'color-mix(in srgb, var(--swatch) 60%, var(--surface-card))',
+  'color-mix(in srgb, var(--swatch) 80%, var(--surface-card))',
+  'var(--swatch)',
 ];
 
 export default function NigeriaMap({
@@ -44,7 +45,7 @@ export default function NigeriaMap({
   }, [values]);
 
   const fillFor = (value: number) => {
-    if (!value) return 'var(--surface-sunken)';
+    if (!value) return 'color-mix(in srgb, var(--swatch) 9%, var(--surface-sunken))';
     let step = 0;
     while (step < breaks.length && value > breaks[step]) step += 1;
     return STEPS[Math.min(step, STEPS.length - 1)];
@@ -84,8 +85,8 @@ export default function NigeriaMap({
                 setHover({ state, x: event.clientX - box.left, y: event.clientY - box.top });
               }}
               fill={fillFor(value)}
-              stroke={active ? 'var(--text-primary)' : 'var(--surface-card)'}
-              strokeWidth={active ? 2.2 : 1}
+              stroke={active ? 'var(--text-primary)' : 'color-mix(in srgb, var(--swatch) 55%, var(--surface-card))'}
+              strokeWidth={active ? 2.2 : 1.1}
               className={cn(
                 'cursor-pointer outline-none transition-[fill,opacity] duration-150 focus-visible:stroke-[var(--text-primary)]',
                 selected && !active && 'opacity-45',
