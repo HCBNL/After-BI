@@ -145,7 +145,7 @@ export default function SettingsPage() {
       <div className="space-y-5">
         <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-[17px] font-bold text-primary">Your company</h2>
+            <h2 className="text-title font-semibold text-primary">Your company</h2>
             <Hint label="About your company details">
               This is what appears on invoices and statements, and at the top of the app.
             </Hint>
@@ -254,7 +254,7 @@ export default function SettingsPage() {
         {/* bank accounts */}
         <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-[17px] font-bold text-primary">Bank accounts and documents</h2>
+            <h2 className="text-title font-semibold text-primary">Bank accounts and documents</h2>
             <Hint label="About bank accounts">
               These are printed on every proforma, invoice and statement, under a line saying that
               money paid anywhere else is not recognised. Paying an account that turns out to belong
@@ -351,7 +351,7 @@ export default function SettingsPage() {
                 min={1}
                 value={draft.proformaValidityDays ?? 7}
                 onChange={(e) => set('proformaValidityDays', Number(e.target.value))}
-                trailing={<span className="text-[13px] text-muted">days</span>}
+                trailing={<span className="text-label text-muted">days</span>}
               />
             </Field>
             </div>
@@ -359,7 +359,7 @@ export default function SettingsPage() {
         </section>
 
         <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
-          <h2 className="text-[17px] font-bold text-primary">How orders flow</h2>
+          <h2 className="text-title font-semibold text-primary">How orders flow</h2>
 
           <div className="mt-5 space-y-5">
             <div className="grid gap-4 lg:grid-cols-2">
@@ -372,11 +372,11 @@ export default function SettingsPage() {
                 min={0}
                 value={draft.approvalThreshold ?? 0}
                 onChange={(e) => set('approvalThreshold', Number(e.target.value))}
-                leading={<span className="text-[13px]">₦</span>}
+                leading={<span className="text-label">₦</span>}
               />
               {/* The consequence of the figure currently typed: one line, and
                   it changes as you type, so it is feedback rather than prose. */}
-              <p className="mt-2 text-[12px] leading-snug text-muted">
+              <p className="mt-2 text-caption leading-snug text-muted">
                 {draft.approvalThreshold
                   ? `Over ${naira(draft.approvalThreshold)}, an order needs a signature.`
                   : 'Every order is approved the moment it is raised.'}
@@ -405,7 +405,7 @@ export default function SettingsPage() {
                 onChange={(next) => set('approverRoles', next as Role[])}
                 empty=""
               />
-              <p className="mt-2 text-[12px] leading-snug text-muted">
+              <p className="mt-2 text-caption leading-snug text-muted">
                 {draft.approverRoles?.length
                   ? 'Any one of them signs. If nobody holds those roles, your super admin does.'
                   : 'Your super admin signs every order over the threshold.'}
@@ -422,7 +422,7 @@ export default function SettingsPage() {
                 onChange={(next) => set('priceEditRoles', next as Role[])}
                 empty=""
               />
-              <p className="mt-2 text-[12px] leading-snug text-muted">
+              <p className="mt-2 text-caption leading-snug text-muted">
                 {(draft.priceEditRoles ?? ['admin']).length
                   ? 'Those roles and your super admin can set the price on an order.'
                   : 'Only your super admin can set the price on an order.'}
@@ -458,13 +458,13 @@ export default function SettingsPage() {
 
         <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-[17px] font-bold text-primary">Reminders</h2>
+            <h2 className="text-title font-semibold text-primary">Reminders</h2>
             <Hint label="About reminders">
               How long something may wait before the Reminders screen says so. Everyone sees only their own:
               signatures waiting on them, their accounts, their depots. Nothing is emailed to anybody.
             </Hint>
           </div>
-          <p className="mt-1 text-[13px] text-secondary">How long things may wait before they are flagged.</p>
+          <p className="mt-1 text-label text-secondary">How long things may wait before they are flagged.</p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {REMINDER_FIELDS.map((field) => (
               <Field key={field.key} label={field.label} hint={field.hint}>
@@ -486,28 +486,28 @@ export default function SettingsPage() {
         {user?.role === 'super_admin' && settings?.demo && settings.demoSeededAt && (
           <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
             <div className="flex items-center gap-1.5">
-              <h2 className="text-[17px] font-bold text-primary">Demonstration</h2>
+              <h2 className="text-title font-semibold text-primary">Demonstration</h2>
               <Hint label="About the demonstration">
                 Everything in it is live: raise an order, approve it, fulfil it from a depot, add a person. Rename the organisation above to the company you are presenting to and the whole app, and every printed document, follows.
               </Hint>
             </div>
             <>
-                <p className="mt-1.5 text-[13px] text-secondary">This organisation is filled with a working business.</p>
+                <p className="mt-1.5 text-label text-secondary">This organisation is filled with a working business.</p>
 
                 {settings.demoLogins?.length ? (
                   <div className="mt-4 rounded-2xl border border-hairline surface-sunken p-4">
-                    <p className="text-[13px] font-semibold text-primary">Sign-ins for the walkthrough</p>
-                    <p className="mt-0.5 text-[12px] text-muted">
+                    <p className="text-label font-semibold text-primary">Sign-ins for the walkthrough</p>
+                    <p className="mt-0.5 text-caption text-muted">
                       Password for all of them: <span className="font-semibold text-secondary">{DEMO_PASSWORD}</span>
                     </p>
                     <ul className="mt-2.5 space-y-1.5">
                       {settings.demoLogins.map((login) => (
                         <li key={login.email} className="flex flex-wrap items-baseline justify-between gap-2">
-                          <span className="text-[13px] font-semibold text-primary">
+                          <span className="text-label font-semibold text-primary">
                             {login.name}{' '}
                             <span className="font-normal text-muted">({ROLE_LABEL[login.role] ?? login.role})</span>
                           </span>
-                          <span className="tabular text-[12.5px] text-secondary">{login.email}</span>
+                          <span className="tabular text-label text-secondary">{login.email}</span>
                         </li>
                       ))}
                     </ul>
@@ -522,7 +522,7 @@ export default function SettingsPage() {
                         style={{ width: `${(demoStep.done / demoStep.total) * 100}%` }}
                       />
                     </div>
-                    <p className="mt-2 text-[12.5px] text-muted">{demoStep.label}</p>
+                    <p className="mt-2 text-label text-muted">{demoStep.label}</p>
                   </div>
                 )}
 

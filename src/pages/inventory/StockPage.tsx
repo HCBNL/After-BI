@@ -116,8 +116,8 @@ export default function StockPage() {
       sortValue: (row) => row.productName,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-semibold text-primary">{row.productName}</p>
-          <p className="text-[12px] text-muted sm:hidden">{row.unit}</p>
+          <p className="truncate text-body font-semibold text-primary">{row.productName}</p>
+          <p className="text-caption text-muted sm:hidden">{row.unit}</p>
         </div>
       ),
     },
@@ -125,7 +125,7 @@ export default function StockPage() {
       key: 'unit',
       header: 'Unit',
       hideOnMobile: true,
-      cell: (row) => <span className="text-[12.5px] text-muted">{row.unit}</span>,
+      cell: (row) => <span className="text-label text-muted">{row.unit}</span>,
     },
     {
       key: 'quantity',
@@ -138,8 +138,8 @@ export default function StockPage() {
           <span
             className={
               low
-                ? 'tabular text-[14px] font-extrabold text-status-warning'
-                : 'tabular text-[14px] font-bold text-primary'
+                ? 'tabular text-body font-bold text-status-warning'
+                : 'tabular text-body font-bold text-primary'
             }
           >
             {count(row.quantity)}
@@ -155,9 +155,9 @@ export default function StockPage() {
       sortValue: (row) => row.threshold,
       cell: (row) =>
         row.threshold > 0 ? (
-          <span className="tabular text-[13px] text-muted">{count(row.threshold)}</span>
+          <span className="tabular text-label text-muted">{count(row.threshold)}</span>
         ) : (
-          <span className="text-[12px] text-muted">not tracked</span>
+          <span className="text-caption text-muted">not tracked</span>
         ),
     },
     {
@@ -176,7 +176,7 @@ export default function StockPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.updatedAt ?? '',
-      cell: (row) => <span className="text-[12px] text-muted">{formatDate(row.updatedAt)}</span>,
+      cell: (row) => <span className="text-caption text-muted">{formatDate(row.updatedAt)}</span>,
     },
   ];
 
@@ -239,8 +239,8 @@ export default function StockPage() {
 
       {allowed && allowed.length === 0 ? (
         <div className="rounded-2xl border border-hairline surface-card p-8 text-center shadow-card">
-          <p className="text-[15px] font-bold text-primary">You are not on a depot yet</p>
-          <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
+          <p className="text-lead font-semibold text-primary">You are not on a depot yet</p>
+          <p className="mx-auto mt-2 max-w-sm text-body leading-relaxed text-muted">
             An administrator has to assign you one before you can see or move stock. Until then this
             screen has nothing to show you, which is not the same as the depots being empty.
           </p>

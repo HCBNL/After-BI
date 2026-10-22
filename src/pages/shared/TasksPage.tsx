@@ -100,7 +100,7 @@ export default function TasksPage() {
         data-tour="task-add"
         className="mb-5 rounded-2xl border border-hairline surface-card p-4 shadow-card"
       >
-        <label htmlFor="task-title" className="text-[13px] font-semibold text-primary">
+        <label htmlFor="task-title" className="text-label font-semibold text-primary">
           Add a task
         </label>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -127,7 +127,7 @@ export default function TasksPage() {
                 onClick={() => setDue(value)}
                 aria-pressed={active}
                 className={cn(
-                  'h-8 rounded-full px-3 text-[12.5px] font-semibold transition-colors',
+                  'h-8 rounded-full px-3 text-label font-semibold transition-colors',
                   active
                     ? 'bg-brand-600 text-white dark:bg-brand-500 dark:text-brand-950'
                     : 'surface-sunken text-secondary hover:text-primary',
@@ -137,14 +137,14 @@ export default function TasksPage() {
               </button>
             );
           })}
-          <label className="flex h-8 items-center gap-1.5 rounded-full surface-sunken px-3 text-[12.5px] text-secondary">
+          <label className="flex h-8 items-center gap-1.5 rounded-full surface-sunken px-3 text-label text-secondary">
             <CalendarDays size={14} aria-hidden />
             <input
               type="date"
               value={due}
               onChange={(event) => setDue(event.target.value)}
               aria-label="Due date"
-              className="bg-transparent text-[16px] text-primary outline-none sm:text-[12.5px]"
+              className="bg-transparent text-title text-primary outline-none sm:text-label"
             />
           </label>
           <button
@@ -152,7 +152,7 @@ export default function TasksPage() {
             onClick={() => setPriority(priority === 'high' ? 'normal' : 'high')}
             aria-pressed={priority === 'high'}
             className={cn(
-              'flex h-8 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-semibold transition-colors',
+              'flex h-8 items-center gap-1.5 rounded-full px-3 text-label font-semibold transition-colors',
               priority === 'high' ? 'bg-status-critical text-white' : 'surface-sunken text-secondary hover:text-primary',
             )}
           >
@@ -193,11 +193,11 @@ export default function TasksPage() {
       {/* ----------------------------------------------------- suggestions */}
       {view === 'open' && suggestions.length > 0 && (
         <section className="mt-8">
-          <h2 className="flex items-center gap-1.5 text-[15px] font-bold text-primary">
+          <h2 className="flex items-center gap-1.5 text-lead font-semibold text-primary">
             <Sparkles size={16} className="text-brand-600 dark:text-brand-400" aria-hidden />
             Suggested from your records
           </h2>
-          <p className="mt-0.5 text-[12.5px] text-muted">
+          <p className="mt-0.5 text-label text-muted">
             Worked out from your orders, invoices and stock. Keep one as a task to give it a date.
           </p>
           <ul className="mt-3 space-y-2">
@@ -207,10 +207,10 @@ export default function TasksPage() {
                 className="flex items-start gap-3 rounded-2xl border border-hairline surface-card p-3.5 shadow-card"
               >
                 <div className="min-w-0 flex-1">
-                  <Link to={reminder.to} className="text-[14px] font-semibold text-primary hover:underline">
+                  <Link to={reminder.to} className="text-body font-semibold text-primary hover:underline">
                     {reminder.title}
                   </Link>
-                  <p className="mt-0.5 text-[12.5px] leading-snug text-secondary">{reminder.detail}</p>
+                  <p className="mt-0.5 text-label leading-snug text-secondary">{reminder.detail}</p>
                 </div>
                 <Button
                   size="sm"
@@ -264,7 +264,7 @@ function TaskRow({
       </button>
 
       <div className="min-w-0 flex-1">
-        <p className={cn('text-[14px] font-semibold leading-snug', task.done ? 'text-muted line-through' : 'text-primary')}>
+        <p className={cn('text-body font-semibold leading-snug', task.done ? 'text-muted line-through' : 'text-primary')}>
           {task.to && !task.done ? (
             <Link to={task.to} className="hover:underline">
               {task.title}
@@ -273,8 +273,8 @@ function TaskRow({
             task.title
           )}
         </p>
-        {task.note && <p className="mt-0.5 text-[12.5px] leading-snug text-secondary">{task.note}</p>}
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]">
+        {task.note && <p className="mt-0.5 text-label leading-snug text-secondary">{task.note}</p>}
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption">
           {!task.done && (
             <span className={cn('font-semibold', TIMING_TONE[timing])}>{dueLabel(task.due)}</span>
           )}

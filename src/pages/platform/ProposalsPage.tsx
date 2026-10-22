@@ -150,10 +150,10 @@ function Business({ tabs, home }: { tabs: React.ReactNode; home: SiteHome | unde
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <button type="button" onClick={() => setEditing(p)} className="min-w-0 flex-1 text-left">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-[15px] font-bold text-primary">{p.company || 'Untitled'}</h3>
+                      <h3 className="text-lead font-bold text-primary">{p.company || 'Untitled'}</h3>
                       <Badge tone={STATUS_TONE[p.status]}>{STATUS_LABEL[p.status]}</Badge>
                     </div>
-                    <p className="mt-1 text-[12.5px] text-secondary">
+                    <p className="mt-1 text-label text-secondary">
                       {proposalNumber(p)} · {p.plan} · {naira(figures(p).monthlyTotal)} a month
                     </p>
                   </button>
@@ -258,7 +258,7 @@ function Editor({
                 { value: 'value', label: 'Value first' },
               ]}
             />
-            <p className="mt-2 text-[12.5px] text-muted">
+            <p className="mt-2 text-label text-muted">
               {(p.edition ?? 'price') === 'price'
                 ? 'Leads with the numbers, including the first year in full. For a buyer who asked for a quote.'
                 : 'Leads with what changes for them. The price is one short table at the end, with no yearly total.'}
@@ -404,7 +404,7 @@ function Editor({
 
         {/* The exact page that prints. */}
         <div className="xl:sticky xl:top-4 xl:self-start">
-          <p className="mb-2 text-[12.5px] font-semibold text-muted">Preview: this is what prints</p>
+          <p className="mb-2 text-label font-semibold text-muted">Preview: this is what prints</p>
           <iframe
             title="Proposal preview"
             srcDoc={doc.html}
@@ -423,7 +423,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'h-9 rounded-full px-3.5 text-[13px] font-semibold transition-colors',
+        'h-9 rounded-full px-3.5 text-label font-semibold transition-colors',
         active ? 'bg-brand-600 text-white dark:bg-brand-500 dark:text-brand-950' : 'surface-sunken text-secondary hover:text-primary',
       )}
     >

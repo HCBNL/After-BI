@@ -184,7 +184,7 @@ export default function ReportsPage() {
         </div>
 
         {dataset === 'stock' && (
-          <p className="mt-3 flex items-center gap-1.5 text-[12.5px] text-muted">
+          <p className="mt-3 flex items-center gap-1.5 text-label text-muted">
             Stock on hand is as of right now.
             <Hint label="About the stock export">
               It is a snapshot, so it has no date range. For stock movement over a period, export the ledger

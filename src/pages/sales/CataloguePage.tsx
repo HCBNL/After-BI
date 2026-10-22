@@ -77,7 +77,7 @@ export default function CataloguePage() {
         actions={
           <Link
             to={`${root}/orders?new=1`}
-            className="inline-flex h-9 items-center gap-2 rounded-xl bg-brand-900 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800 dark:bg-brand-500 dark:text-brand-950 dark:hover:bg-brand-400"
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-brand-900 px-3 text-label font-semibold text-white transition-colors hover:bg-brand-800 dark:bg-brand-500 dark:text-brand-950 dark:hover:bg-brand-400"
           >
             <ShoppingCart size={15} />
             New order
@@ -123,7 +123,7 @@ export default function CataloguePage() {
         <div className="space-y-6">
           {byCategory.map(([category, items]) => (
             <section key={category}>
-              <h2 className="mb-2.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted">
+              <h2 className="mb-2.5 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
                 {category} · {count(items.length)}
               </h2>
 
@@ -141,16 +141,16 @@ export default function CataloguePage() {
                     key={product.id}
                     className="surface-card rounded-2xl border border-hairline p-4 shadow-card"
                   >
-                    <p className="text-[14px] font-bold leading-tight text-primary">{product.name}</p>
-                    <p className="mt-0.5 text-[12px] text-muted">
+                    <p className="text-body font-semibold leading-tight text-primary">{product.name}</p>
+                    <p className="mt-0.5 text-caption text-muted">
                       {product.unit}
                       {product.sku ? ` · ${product.sku}` : ''}
                     </p>
-                    <p className="tabular mt-3 text-[20px] font-extrabold text-primary">
+                    <p className="tabular mt-3 text-heading font-bold text-primary">
                       {naira(product.pricing[shown]!)}
                     </p>
                     {product.moq > 1 && (
-                      <p className="mt-1 text-[11.5px] text-muted">
+                      <p className="mt-1 text-caption text-muted">
                         Minimum order {count(product.moq)}
                       </p>
                     )}

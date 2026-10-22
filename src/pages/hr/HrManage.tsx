@@ -240,7 +240,7 @@ export default function HrManage() {
         today={today}
         saturday={rules.saturday}
         footer={
-          <p className="text-[13px] text-white/65">
+          <p className="text-label text-white/65">
             {current.label} payroll so far: <b className="text-white">{offset === 0 ? naira(totalNet) : 'open this month in Payroll'}</b>, {clockedToday.size} of{' '}
             {people.filter((p) => !p.suspended).length} clocked in today
             {(pending.data?.length ?? 0) > 0 && (
@@ -274,7 +274,7 @@ export default function HrManage() {
               <ChevronLeft size={16} />
             </Button>
             <div className="min-w-[10rem] text-center">
-              <p className="text-[16px] font-bold text-primary">{period.label}</p>
+              <p className="text-title font-semibold text-primary">{period.label}</p>
               <PeriodNote period={period} />
             </div>
             <Button variant="outline" size="sm" aria-label="Next month" onClick={() => setOffset((n) => n + 1)} disabled={offset >= 1}>
@@ -323,7 +323,7 @@ export default function HrManage() {
             </Card>
           ) : (
             <div className="overflow-hidden rounded-2xl border border-hairline surface-card shadow-card">
-              <div className="hidden grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1.1fr] gap-3 border-b border-hairline surface-sunken px-4 py-2.5 text-[11.5px] font-bold uppercase tracking-wide text-muted md:grid">
+              <div className="hidden grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1.1fr] gap-3 border-b border-hairline surface-sunken px-4 py-2.5 text-caption font-bold uppercase tracking-wide text-muted md:grid">
                 <span>Staff</span>
                 <span>Salary</span>
                 <span>Days worked</span>
@@ -337,16 +337,16 @@ export default function HrManage() {
                     <button
                       type="button"
                       onClick={() => setOpen(p)}
-                      className="grid w-full grid-cols-2 gap-x-3 gap-y-1 px-4 py-3.5 text-left text-[13.5px] hover:bg-[var(--surface-sunken)] md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1.1fr] md:items-center"
+                      className="grid w-full grid-cols-2 gap-x-3 gap-y-1 px-4 py-3.5 text-left text-body hover:bg-[var(--surface-sunken)] md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1.1fr] md:items-center"
                     >
                       <span className="min-w-0">
                         <span className="block truncate font-bold text-primary">{p.name}</span>
-                        <span className="block truncate text-[11.5px] text-muted">
+                        <span className="block truncate text-caption text-muted">
                           {p.hr!.position || ROLE_LABEL[p.role]}
                           {r.missed > 0 && <span className="ml-1.5 font-semibold text-status-critical">{r.missed} missed</span>}
                         </span>
                       </span>
-                      <span className="text-right font-display text-[16px] font-extrabold text-primary md:order-last">{naira(net)}</span>
+                      <span className="text-right font-display text-title font-bold text-primary md:order-last">{naira(net)}</span>
                       <span className="text-secondary">
                         <span className="md:hidden">Salary </span>
                         {naira(p.hr!.salary)}
@@ -359,9 +359,9 @@ export default function HrManage() {
                       <span className="text-secondary">
                         <span className="md:hidden">Earned </span>
                         {naira(r.pay)}
-                        <span className="block text-[11px] text-muted">{nairaPrecise(r.daily)} a day</span>
+                        <span className="block text-micro text-muted">{nairaPrecise(r.daily)} a day</span>
                       </span>
-                      <span className="text-[12.5px]">
+                      <span className="text-label">
                         {bonus > 0 && <span className="block font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">+ {naira(bonus)}</span>}
                         {deduction > 0 && <span className="block font-semibold text-status-critical">minus {naira(deduction)}</span>}
                         {!bonus && !deduction && <span className="text-muted">None</span>}
@@ -371,14 +371,14 @@ export default function HrManage() {
                 ))}
               </ul>
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline bg-night px-4 py-4 text-white">
-                <span className="text-[13px] font-semibold text-white/70">Net total, paid {prettyIso(period.payDay, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-                <span className="font-display text-[1.5rem] font-extrabold tracking-[-0.03em]">
+                <span className="text-label font-semibold text-white/70">Net total, paid {prettyIso(period.payDay, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                <span className="font-display text-headline font-bold tracking-[-0.03em]">
                   <CountUp value={totalNet} format={naira} />
                 </span>
               </div>
             </div>
           )}
-          <p className="text-[12px] text-muted">Tap a name to see their days and mark a day present or absent by hand.</p>
+          <p className="text-caption text-muted">Tap a name to see their days and mark a day present or absent by hand.</p>
         </section>
       )}
 
@@ -387,7 +387,7 @@ export default function HrManage() {
       {tab === 'today' && (
         <section className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-[13px] text-secondary">{prettyIso(today, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+            <p className="text-label text-secondary">{prettyIso(today, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
             {!isOffDay(today, rules.saturday) && (
               <Button size="sm" variant="outline" icon={<CheckCheck size={15} />} loading={bulk} onClick={() => void markEveryone()}>
                 Mark everyone present
@@ -402,8 +402,8 @@ export default function HrManage() {
                 return (
                   <li key={p.uid} className="flex items-center justify-between gap-3 rounded-2xl border border-hairline surface-card p-4 shadow-card">
                     <div className="min-w-0">
-                      <p className="truncate text-[14.5px] font-bold text-primary">{p.name}</p>
-                      <p className="text-[12.5px] text-muted">
+                      <p className="truncate text-body font-semibold text-primary">{p.name}</p>
+                      <p className="text-label text-muted">
                         {a
                           ? a.absent
                             ? 'Marked absent'
@@ -423,7 +423,7 @@ export default function HrManage() {
                         {a && !a.absent ? (a.outAt ? 'Done' : 'On duty') : 'Absent'}
                       </Badge>
                       {p.hr && (
-                        <button type="button" onClick={() => setOpen(p)} className="text-[12px] font-bold text-brand-700 hover:underline dark:text-brand-300">
+                        <button type="button" onClick={() => setOpen(p)} className="text-caption font-semibold text-brand-700 hover:underline dark:text-brand-300">
                           {a ? 'Correct' : 'Mark or correct'}
                         </button>
                       )}
@@ -549,7 +549,7 @@ function PersonDays({
             onToggle={(d, present) => void toggle(d, present)}
           />
         </div>
-        <p className="text-[12.5px] text-muted">
+        <p className="text-label text-muted">
           <b className="text-primary">Tap any day to change it.</b> A green or blue day becomes <b className="text-[#a52929] dark:text-[#f08080]">marked absent</b> (not
           paid, even if they clocked in). Tap it again to make it present. To fix clock in times instead, use Edit below.
         </p>
@@ -566,7 +566,7 @@ function PersonDays({
           }}
         />
         {records.length > 0 && (
-          <ul className="divide-y divide-[var(--border-hairline)] rounded-2xl border border-hairline text-[13px]">
+          <ul className="divide-y divide-[var(--border-hairline)] rounded-2xl border border-hairline text-label">
             {[...records]
               .sort((a, b) => b.day - a.day)
               .map((a) => (
@@ -576,7 +576,7 @@ function PersonDays({
                     <span>
                       {a.absent ? 'Marked absent' : a.reissue ? 'Reissued' : a.manual ? 'Marked present' : `${timeOf(a.inAt)} to ${timeOf(a.outAt)}`}
                       {a.outAt && <span className="text-muted">, {hoursBetween(a.inAt, a.outAt)}</span>}
-                      {a.edited && <span className="ml-1.5 text-[11px] font-semibold text-[#8a6100] dark:text-gold-300">corrected</span>}
+                      {a.edited && <span className="ml-1.5 text-micro font-semibold text-[#8a6100] dark:text-gold-300">corrected</span>}
                     </span>
                     <Button size="sm" variant="ghost" icon={<Pencil size={13} />} onClick={() => setEditing(a)}>
                       Edit
@@ -630,7 +630,7 @@ function TimeEditor({
   };
   return (
     <form onSubmit={(e) => void save(e)} className={cn('rounded-2xl border p-4', record ? 'border-brand-500/40' : 'border-hairline')}>
-      <p className="mb-3 text-[13.5px] font-bold text-primary">{record ? `Correct ${prettyIso(record.date)}` : 'Correct times'}</p>
+      <p className="mb-3 text-body font-semibold text-primary">{record ? `Correct ${prettyIso(record.date)}` : 'Correct times'}</p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-[1.3fr_1fr_1fr_auto] sm:items-end">
         <Field label="Day" className="col-span-2 sm:col-span-1">
           <Input type="date" value={date} min={period.start} max={today < period.end ? today : period.end} onChange={(e) => setDate(e.target.value)} required />
@@ -652,8 +652,8 @@ function TimeEditor({
 function Mini({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className={cn('rounded-2xl px-3 py-2.5', strong ? 'bg-night text-white' : 'surface-sunken')}>
-      <p className={cn('text-[10.5px] font-bold uppercase tracking-wide', strong ? 'text-white/60' : 'text-muted')}>{label}</p>
-      <p className={cn('mt-0.5 text-[16px] font-extrabold tabular', strong ? 'text-white' : 'text-primary')}>{value}</p>
+      <p className={cn('text-micro font-semibold uppercase tracking-wide', strong ? 'text-white/60' : 'text-muted')}>{label}</p>
+      <p className={cn('mt-0.5 text-title font-bold tabular', strong ? 'text-white' : 'text-primary')}>{value}</p>
     </div>
   );
 }
@@ -693,12 +693,12 @@ function Reissues({ list, onChanged }: { list: Reissue[] | undefined; onChanged:
         <li key={r.id} className="flex flex-col rounded-2xl border border-[#fab219]/50 surface-card p-4 shadow-card sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate text-[15px] font-bold text-primary">{r.name}</p>
-              <p className="text-[13px] text-secondary">{prettyIso(r.date, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+              <p className="truncate text-lead font-semibold text-primary">{r.name}</p>
+              <p className="text-label text-secondary">{prettyIso(r.date, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
             </div>
             <Badge tone="warning">Waiting</Badge>
           </div>
-          <p className={cn('mt-3 rounded-xl surface-sunken px-3 py-2.5 text-[13.5px] leading-relaxed', r.reason ? 'text-primary' : 'italic text-muted')}>
+          <p className={cn('mt-3 rounded-xl surface-sunken px-3 py-2.5 text-body leading-relaxed', r.reason ? 'text-primary' : 'italic text-muted')}>
             {r.reason || 'No comment left.'}
           </p>
           <div className="mt-3 flex gap-2">
@@ -765,14 +765,14 @@ function StaffRow({ person, onSaved }: { person: Person; onSaved: () => void }) 
     <form onSubmit={(e) => void save(e)} className="rounded-2xl border border-hairline surface-card p-4 shadow-card sm:p-5">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-[15px] font-bold text-primary">{person.name}</p>
-          <p className="truncate text-[12px] text-muted">{ROLE_LABEL[person.role]}</p>
+          <p className="truncate text-lead font-semibold text-primary">{person.name}</p>
+          <p className="truncate text-caption text-muted">{ROLE_LABEL[person.role]}</p>
         </div>
         {person.suspended ? <Badge tone="critical">Suspended</Badge> : !person.hr ? <Badge tone="warning">Not set</Badge> : <Badge tone="good">On payroll</Badge>}
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Monthly salary (₦)" required>
-          <Input inputMode="numeric" value={salary} onChange={(e) => setSalary(e.target.value)} placeholder="150000" leading={<span className="text-[13px] font-bold">₦</span>} />
+          <Input inputMode="numeric" value={salary} onChange={(e) => setSalary(e.target.value)} placeholder="150000" leading={<span className="text-label font-semibold">₦</span>} />
         </Field>
         <Field label="Resumption date" required hint="The day they started. Days before it are not paid.">
           <Input type="date" value={resumption} onChange={(e) => setResumption(e.target.value)} required />
@@ -843,7 +843,7 @@ function Bonuses({ period, people, list, onChanged }: { period: PayPeriod; peopl
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
       <Card>
         <form onSubmit={(e) => void add(e)} className="space-y-4">
-          <p className="text-[15px] font-bold text-primary">Add to {period.label}</p>
+          <p className="text-lead font-semibold text-primary">Add to {period.label}</p>
           <Field label="Person" required>
             <Select value={uid} onChange={(e) => setUid(e.target.value)}>
               <option value="">Choose…</option>
@@ -862,7 +862,7 @@ function Bonuses({ period, people, list, onChanged }: { period: PayPeriod; peopl
                 onClick={() => setKind(k)}
                 aria-pressed={kind === k}
                 className={cn(
-                  'flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-[13.5px] font-semibold',
+                  'flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-body font-semibold',
                   kind === k ? 'border-brand-600 bg-brand-50 text-brand-900 dark:bg-brand-500/15 dark:text-brand-100' : 'border-hairline text-secondary',
                 )}
               >
@@ -892,11 +892,11 @@ function Bonuses({ period, people, list, onChanged }: { period: PayPeriod; peopl
             {list.map((a) => (
               <li key={a.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-bold text-primary">{a.name}</p>
-                  <p className="truncate text-[12.5px] text-muted">{a.note || (a.kind === 'bonus' ? 'Bonus' : 'Deduction')}</p>
+                  <p className="truncate text-body font-semibold text-primary">{a.name}</p>
+                  <p className="truncate text-label text-muted">{a.note || (a.kind === 'bonus' ? 'Bonus' : 'Deduction')}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className={cn('text-[14px] font-bold tabular', a.kind === 'bonus' ? 'text-[#0a7a0a] dark:text-[#4ec54e]' : 'text-status-critical')}>
+                  <span className={cn('text-body font-bold tabular', a.kind === 'bonus' ? 'text-[#0a7a0a] dark:text-[#4ec54e]' : 'text-status-critical')}>
                     {a.kind === 'bonus' ? '+' : 'minus'} {naira(a.amount)}
                   </span>
                   <Button size="sm" variant="ghost" aria-label="Remove" onClick={() => void remove(a)}>
@@ -964,7 +964,7 @@ function Costs({ period, all, onChanged }: { period: PayPeriod; all: Cost[]; onC
       <div className="space-y-5">
         <Card>
           <form onSubmit={(e) => void add(e)} className="space-y-4">
-            <p className="text-[15px] font-bold text-primary">Add a running cost</p>
+            <p className="text-lead font-semibold text-primary">Add a running cost</p>
             <Field label="What it is" required>
               <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Office rent" />
             </Field>
@@ -995,11 +995,11 @@ function Costs({ period, all, onChanged }: { period: PayPeriod; all: Cost[]; onC
         </Card>
         {byCategory.length > 0 && (
           <Card>
-            <p className="mb-3 text-[15px] font-bold text-primary">By category, {period.label}</p>
+            <p className="mb-3 text-lead font-semibold text-primary">By category, {period.label}</p>
             <ul className="space-y-2.5">
               {byCategory.map(([cat, amt]) => (
                 <li key={cat}>
-                  <div className="flex items-center justify-between text-[13px]">
+                  <div className="flex items-center justify-between text-label">
                     <span className="text-secondary">{cat}</span>
                     <span className="font-bold tabular text-primary">{naira(amt)}</span>
                   </div>
@@ -1014,8 +1014,8 @@ function Costs({ period, all, onChanged }: { period: PayPeriod; all: Cost[]; onC
       </div>
       <Card padded={false}>
         <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3">
-          <p className="text-[14px] font-bold text-primary">{period.label}</p>
-          <p className="text-[15px] font-extrabold tabular text-primary">{naira(total)}</p>
+          <p className="text-body font-semibold text-primary">{period.label}</p>
+          <p className="text-lead font-bold tabular text-primary">{naira(total)}</p>
         </div>
         {month.length === 0 ? (
           <EmptyState icon={<Receipt size={22} />} title="No running costs this month" description="Rent, diesel, internet, vehicle repairs: anything the business pays besides salaries. The Payroll tab adds them to the month's total cost." />
@@ -1024,13 +1024,13 @@ function Costs({ period, all, onChanged }: { period: PayPeriod; all: Cost[]; onC
             {month.map((c) => (
               <li key={c.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-bold text-primary">{c.name}</p>
-                  <p className="truncate text-[12.5px] text-muted">
+                  <p className="truncate text-body font-semibold text-primary">{c.name}</p>
+                  <p className="truncate text-label text-muted">
                     {c.category}, {c.frequency === 'monthly' ? 'every month' : 'once'}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-[14px] font-bold tabular text-primary">{naira(c.amount)}</span>
+                  <span className="text-body font-bold tabular text-primary">{naira(c.amount)}</span>
                   <Button size="sm" variant="ghost" aria-label={c.frequency === 'monthly' ? 'Stop this cost' : 'Remove'} title={c.frequency === 'monthly' ? 'Stop from this month' : 'Remove'} onClick={() => void stop(c)}>
                     <Trash2 size={15} />
                   </Button>
@@ -1134,7 +1134,7 @@ function Holidays({ holidays, today, saturday, onChanged }: { holidays: { id: st
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
       <Card>
         <form onSubmit={(e) => void add(e)} className="space-y-4">
-          <p className="text-[15px] font-bold text-primary">Add a holiday</p>
+          <p className="text-lead font-semibold text-primary">Add a holiday</p>
           <Field label="Date" required>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
           </Field>
@@ -1146,7 +1146,7 @@ function Holidays({ holidays, today, saturday, onChanged }: { holidays: { id: st
           </Button>
         </form>
         <div className="mt-5 border-t border-hairline pt-4">
-          <p className="mb-2 text-[13px] text-secondary">Add Nigeria&rsquo;s fixed public holidays (and Easter) in one go:</p>
+          <p className="mb-2 text-label text-secondary">Add Nigeria&rsquo;s fixed public holidays (and Easter) in one go:</p>
           <div className="flex flex-wrap gap-2">
             {[year, year + 1].map((y) => (
               <Button key={y} type="button" size="sm" variant="outline" icon={<Wand2 size={14} />} onClick={() => void addCommon(y)} disabled={busy}>
@@ -1164,8 +1164,8 @@ function Holidays({ holidays, today, saturday, onChanged }: { holidays: { id: st
             {holidays.map((h) => (
               <li key={h.id} className={cn('flex items-center justify-between gap-3 px-4 py-3', h.id < today && 'opacity-55')}>
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-bold text-primary">{h.name}</p>
-                  <p className="text-[12.5px] text-muted">
+                  <p className="truncate text-body font-semibold text-primary">{h.name}</p>
+                  <p className="text-label text-muted">
                     {prettyIso(h.id, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                     {isOffDay(h.id, saturday) && ', a day off anyway'}
                   </p>
@@ -1232,7 +1232,7 @@ function PaySettings({ value, onSaved }: { value: HrSettings; onSaved: () => voi
             <Input type="number" min={1} max={28} value={cycleStart} onChange={(e) => setCycleStart(e.target.value)} />
           </Field>
         </div>
-        <p className="rounded-2xl surface-sunken px-4 py-3 text-[13px] text-secondary">
+        <p className="rounded-2xl surface-sunken px-4 py-3 text-label text-secondary">
           A month&rsquo;s salary covers <b className="text-primary">{cycleWords(c)}</b>, paid on the <b className="text-primary">{ordinal(Number(payDay) || 25)}</b>.
         </p>
 
@@ -1251,7 +1251,7 @@ function PaySettings({ value, onSaved }: { value: HrSettings; onSaved: () => voi
         </Field>
 
         <div>
-          <p className="mb-1.5 text-[13px] font-semibold text-secondary">One off salary days</p>
+          <p className="mb-1.5 text-label font-semibold text-secondary">One off salary days</p>
           <div className="flex gap-2">
             <Input type="date" value={oneOff} onChange={(e) => setOneOff(e.target.value)} aria-label="One off salary day" />
             <Button type="button" variant="outline" onClick={addOneOff} icon={<CalendarPlus size={15} />}>
@@ -1263,7 +1263,7 @@ function PaySettings({ value, onSaved }: { value: HrSettings; onSaved: () => voi
               {Object.entries(overrides)
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([month, date]) => (
-                  <li key={month} className="inline-flex items-center gap-1.5 rounded-full bg-gold-400/20 py-1 pl-3 pr-1 text-[12.5px] font-semibold text-[#8a6100] dark:text-gold-300">
+                  <li key={month} className="inline-flex items-center gap-1.5 rounded-full bg-gold-400/20 py-1 pl-3 pr-1 text-label font-semibold text-[#8a6100] dark:text-gold-300">
                     {prettyIso(date, { month: 'long', year: 'numeric' })} salary on {prettyIso(date, { weekday: 'short', day: 'numeric', month: 'short' })}
                     <button
                       type="button"

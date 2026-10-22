@@ -131,13 +131,13 @@ export default function OrdersPage() {
       sortValue: (row) => row.orderNumber,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="tabular truncate text-[13.5px] font-bold text-primary">{row.orderNumber}</p>
+          <p className="tabular truncate text-body font-bold text-primary">{row.orderNumber}</p>
           {/*
             The distributor's name repeats here on a phone only, because the
             column that carries it is hidden below sm. Without it the mobile
             list is a column of order numbers, which nobody recognises.
           */}
-          <p className="truncate text-[12px] text-muted sm:hidden">{row.distributorName}</p>
+          <p className="truncate text-caption text-muted sm:hidden">{row.distributorName}</p>
         </div>
       ),
     },
@@ -146,7 +146,7 @@ export default function OrdersPage() {
       header: 'Distributor',
       hideOnMobile: true,
       sortValue: (row) => row.distributorName,
-      cell: (row) => <span className="truncate text-[13px]">{row.distributorName}</span>,
+      cell: (row) => <span className="truncate text-label">{row.distributorName}</span>,
     },
     {
       key: 'lines',
@@ -154,7 +154,7 @@ export default function OrdersPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.lines.length,
-      cell: (row) => <span className="tabular text-[13px]">{count(row.lines.length)}</span>,
+      cell: (row) => <span className="tabular text-label">{count(row.lines.length)}</span>,
     },
     {
       key: 'total',
@@ -162,7 +162,7 @@ export default function OrdersPage() {
       align: 'right',
       sortValue: (row) => row.total,
       cell: (row) => (
-        <span className="tabular text-[13.5px] font-bold text-primary">{naira(row.total)}</span>
+        <span className="tabular text-body font-bold text-primary">{naira(row.total)}</span>
       ),
     },
     {
@@ -177,7 +177,7 @@ export default function OrdersPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.createdAt,
-      cell: (row) => <span className="text-[12.5px] text-muted">{formatDate(row.createdAt)}</span>,
+      cell: (row) => <span className="text-label text-muted">{formatDate(row.createdAt)}</span>,
     },
   ];
 

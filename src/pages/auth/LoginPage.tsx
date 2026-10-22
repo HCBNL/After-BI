@@ -58,11 +58,11 @@ function ProblemBox({ problem, onSignOut }: { problem: AuthProblem; onSignOut: (
 
   return (
     <div className="rounded-xl border border-gold-400/40 bg-gold-400/10 p-4">
-      <p className="text-[14px] font-bold text-primary">{title}</p>
-      <p className="mt-1 text-[13px] leading-relaxed text-secondary">{body}</p>
+      <p className="text-body font-semibold text-primary">{title}</p>
+      <p className="mt-1 text-label leading-relaxed text-secondary">{body}</p>
       {uid && (
         <div className="mt-3 flex items-center gap-2">
-          <code className="min-w-0 flex-1 break-all rounded-lg surface-sunken px-2.5 py-1.5 font-mono text-[12.5px] text-primary">
+          <code className="min-w-0 flex-1 break-all rounded-lg surface-sunken px-2.5 py-1.5 font-mono text-label text-primary">
             {uid}
           </code>
           <button
@@ -84,7 +84,7 @@ function ProblemBox({ problem, onSignOut }: { problem: AuthProblem; onSignOut: (
         <button
           type="button"
           onClick={onSignOut}
-          className="mt-3 text-[12.5px] font-bold text-secondary underline underline-offset-4 transition-colors hover:text-primary"
+          className="mt-3 text-label font-semibold text-secondary underline underline-offset-4 transition-colors hover:text-primary"
         >
           Use a different account
         </button>
@@ -133,7 +133,7 @@ export default function LoginPage() {
   };
 
   const field =
-    'h-14 w-full rounded-xl border bg-[var(--surface-card)] pl-11 pr-4 text-[16px] text-primary shadow-card outline-none transition-colors placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
+    'h-14 w-full rounded-xl border bg-[var(--surface-card)] pl-11 pr-4 text-title text-primary shadow-card outline-none transition-colors placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
   const year = new Date().getFullYear();
 
   return (
@@ -151,14 +151,14 @@ export default function LoginPage() {
           <BrandBars className="brand-bars pointer-events-none absolute -bottom-32 -left-24 -z-10 h-[26rem] w-[26rem] -rotate-12" />
 
           <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="w-fit">
-            <Wordmark onInk className="text-[1.6rem]" />
+            <Wordmark onInk className="text-headline" />
           </Link>
 
           <div className="pb-10">
-            <h2 className="font-display text-[3.4rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white xl:text-[3.9rem]">
+            <h2 className="font-display text-jumbo font-bold leading-[1.02] tracking-[-0.045em] text-white xl:text-jumbo">
               Welcome back<span className="text-brand-500">.</span>
             </h2>
-            <p className="mt-4 max-w-sm text-[16px] leading-relaxed text-white/60">
+            <p className="mt-4 max-w-sm text-title leading-relaxed text-white/60">
               Orders, stock, invoices and sell-out, exactly where you left them.
             </p>
           </div>
@@ -174,7 +174,7 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between px-5 pt-4 sm:px-8 lg:justify-end">
             <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="lg:hidden">
-              <Wordmark className="text-[1.45rem] text-primary" />
+              <Wordmark className="text-headline text-primary" />
             </Link>
             <div className="flex items-center gap-1">
               <LanguageSwitch />
@@ -184,10 +184,10 @@ export default function LoginPage() {
 
           <div className="flex flex-1 items-center justify-center px-5 py-8 sm:px-8">
             <div className="w-full max-w-[25rem]">
-              <h1 className="text-center font-display text-[1.9rem] font-extrabold leading-[1.1] tracking-[-0.04em] text-primary sm:text-[2.1rem]">
+              <h1 className="text-center font-display text-display font-bold leading-[1.1] tracking-[-0.04em] text-primary sm:text-display">
                 Sign in to your portal
               </h1>
-              <p className="mt-2 text-center text-[14px] text-secondary">
+              <p className="mt-2 text-center text-body text-secondary">
                 No account yet?{' '}
                 <Link to="/demo" className="font-bold text-brand-700 hover:underline dark:text-brand-400">
                   Book a demo
@@ -260,7 +260,7 @@ export default function LoginPage() {
                   <Link
                     to="/forgot-password"
                     state={{ email }}
-                    className="text-[14px] font-bold text-brand-700 hover:underline dark:text-brand-400"
+                    className="text-body font-semibold text-brand-700 hover:underline dark:text-brand-400"
                   >
                     Forgot password?
                   </Link>
@@ -269,14 +269,14 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={busy}
-                  className="tap inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-[16px] font-bold text-white shadow-card transition-all hover:bg-brand-700 active:scale-[0.99] disabled:opacity-60"
+                  className="tap inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-title font-semibold text-white shadow-card transition-all hover:bg-brand-700 active:scale-[0.99] disabled:opacity-60"
                 >
                   {busy ? 'Signing in' : 'Sign in'}
                   {!busy && <ArrowRight size={18} aria-hidden />}
                 </button>
               </form>
 
-              <p className="mt-6 text-center text-[14px] text-secondary">
+              <p className="mt-6 text-center text-body text-secondary">
                 Can’t sign in?{' '}
                 <Link
                   to="/help/sign-in"
@@ -288,7 +288,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <footer className="px-5 pb-5 text-center text-[12.5px] text-muted sm:px-8">
+          <footer className="px-5 pb-5 text-center text-label text-muted sm:px-8">
             <nav aria-label={BRAND} className="flex items-center justify-center gap-5 font-semibold">
               <Link to="/" className="transition-colors hover:text-primary">
                 Home

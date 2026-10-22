@@ -64,8 +64,8 @@ export default function CreditPage() {
       sortValue: (row) => row.company,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-semibold text-primary">{row.company}</p>
-          <p className="truncate text-[12px] text-muted">{row.location ?? row.category}</p>
+          <p className="truncate text-body font-semibold text-primary">{row.company}</p>
+          <p className="truncate text-caption text-muted">{row.location ?? row.category}</p>
         </div>
       ),
     },
@@ -77,9 +77,9 @@ export default function CreditPage() {
       sortValue: (row) => row.creditLimit ?? 0,
       cell: (row) =>
         row.creditLimit !== undefined ? (
-          <span className="tabular text-[13px] text-secondary">{naira(row.creditLimit)}</span>
+          <span className="tabular text-label text-secondary">{naira(row.creditLimit)}</span>
         ) : (
-          <span className="text-[11.5px] text-muted">not set</span>
+          <span className="text-caption text-muted">not set</span>
         ),
     },
     {
@@ -89,9 +89,9 @@ export default function CreditPage() {
       sortValue: (row) => row.outstanding,
       cell: (row) => (
         <div>
-          <p className="tabular text-[13.5px] font-bold text-primary">{naira(row.outstanding)}</p>
+          <p className="tabular text-body font-bold text-primary">{naira(row.outstanding)}</p>
           {row.overdue > 0 && (
-            <p className="tabular text-[11.5px] font-semibold text-status-critical">
+            <p className="tabular text-caption font-semibold text-status-critical">
               {naira(row.overdue)} late
             </p>
           )}
@@ -112,7 +112,7 @@ export default function CreditPage() {
               value={Math.min(100, row.used)}
               tone={row.used >= 100 ? 'critical' : row.used >= 80 ? 'gold' : 'good'}
             />
-            <p className="tabular mt-1 text-[11.5px] text-muted">{percent(row.used)}</p>
+            <p className="tabular mt-1 text-caption text-muted">{percent(row.used)}</p>
           </div>
         ),
     },

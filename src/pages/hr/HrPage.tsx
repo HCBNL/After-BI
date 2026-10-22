@@ -115,8 +115,8 @@ export default function HrPage() {
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
         {me?.autoPresent ? (
           <section className="rounded-[24px] border border-hairline surface-card p-5 shadow-card sm:p-6">
-            <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-muted">Attendance</p>
-            <p className="mt-3 text-[14px] leading-relaxed text-secondary">
+            <p className="text-caption font-semibold uppercase tracking-[0.1em] text-muted">Attendance</p>
+            <p className="mt-3 text-body leading-relaxed text-secondary">
               You do not need to clock in. Every working day from your resumption date counts as present unless HR marks a day absent.
             </p>
           </section>
@@ -125,7 +125,7 @@ export default function HrPage() {
         )}
 
         <section className="rounded-[24px] border border-hairline surface-card p-5 shadow-card sm:p-6">
-          <p className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.1em] text-muted">
+          <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-[0.1em] text-muted">
             <Banknote size={14} aria-hidden /> Earned so far, {period.label}
           </p>
           {!me ? (
@@ -134,10 +134,10 @@ export default function HrPage() {
             </Alert>
           ) : (
             <>
-              <p className="mt-3 font-display text-[2.6rem] font-extrabold leading-none tracking-[-0.045em] text-primary tabular sm:text-[3.2rem]">
+              <p className="mt-3 font-display text-jumbo font-bold leading-none tracking-[-0.045em] text-primary tabular sm:text-jumbo">
                 <CountUp value={net} format={naira} />
               </p>
-              <p className="mt-1.5 text-[13px] text-secondary">
+              <p className="mt-1.5 text-label text-secondary">
                 of {naira(me.salary)} monthly, {pay!.worked} of {pay!.eligible} working days
               </p>
               <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[var(--surface-sunken)]">
@@ -152,7 +152,7 @@ export default function HrPage() {
                 <Stat label="Missed" value={String(pay!.missed)} tone={pay!.missed ? 'bad' : undefined} />
               </div>
               {(bonus > 0 || deduction > 0) && (
-                <div className="mt-4 space-y-1.5 rounded-2xl surface-sunken px-3.5 py-3 text-[13px]">
+                <div className="mt-4 space-y-1.5 rounded-2xl surface-sunken px-3.5 py-3 text-label">
                   <Line label="From days worked" value={naira(pay!.pay)} />
                   {bonus > 0 && <Line label="Bonuses" value={`+ ${naira(bonus)}`} good />}
                   {deduction > 0 && <Line label="Deductions" value={`minus ${naira(deduction)}`} bad />}
@@ -162,7 +162,7 @@ export default function HrPage() {
                 </div>
               )}
               {ahead > 0 && (
-                <p className="mt-4 flex items-start gap-2 rounded-2xl bg-[#0ca30c]/[0.08] px-3.5 py-3 text-[13px] text-secondary">
+                <p className="mt-4 flex items-start gap-2 rounded-2xl bg-[#0ca30c]/[0.08] px-3.5 py-3 text-label text-secondary">
                   <TrendingUp size={16} className="mt-0.5 shrink-0 text-[#0a7a0a] dark:text-[#4ec54e]" aria-hidden />
                   <span>
                     Clock in on the {ahead} working {ahead === 1 ? 'day' : 'days'} left and this month pays{' '}
@@ -177,7 +177,7 @@ export default function HrPage() {
 
       {(adjustments.data ?? []).length > 0 && (
         <Card>
-          <p className="mb-3 text-[15px] font-bold text-primary">Bonuses and deductions this month</p>
+          <p className="mb-3 text-lead font-semibold text-primary">Bonuses and deductions this month</p>
           <ul className="space-y-2">
             {(adjustments.data ?? []).map((a) => (
               <li key={a.id} className="flex items-center justify-between gap-3 rounded-2xl surface-sunken px-3.5 py-2.5">
@@ -187,9 +187,9 @@ export default function HrPage() {
                   ) : (
                     <MinusCircle size={16} className="shrink-0 text-status-critical" aria-hidden />
                   )}
-                  <span className="truncate text-[13.5px] text-primary">{a.note || (a.kind === 'bonus' ? 'Bonus' : 'Deduction')}</span>
+                  <span className="truncate text-body text-primary">{a.note || (a.kind === 'bonus' ? 'Bonus' : 'Deduction')}</span>
                 </span>
-                <span className={`shrink-0 text-[14px] font-bold tabular ${a.kind === 'bonus' ? 'text-[#0a7a0a] dark:text-[#4ec54e]' : 'text-status-critical'}`}>
+                <span className={`shrink-0 text-body font-bold tabular ${a.kind === 'bonus' ? 'text-[#0a7a0a] dark:text-[#4ec54e]' : 'text-status-critical'}`}>
                   {a.kind === 'bonus' ? '+' : 'minus'} {naira(a.amount)}
                 </span>
               </li>
@@ -200,7 +200,7 @@ export default function HrPage() {
 
       <Card>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <p className="flex items-center gap-1.5 text-[15px] font-bold text-primary">
+          <p className="flex items-center gap-1.5 text-lead font-semibold text-primary">
             <CalendarCheck2 size={17} aria-hidden /> This pay period
           </p>
           <PeriodNote period={period} />
@@ -225,15 +225,15 @@ export default function HrPage() {
         )}
         {(reissues.data ?? []).length > 0 && (
           <div className="mt-5 border-t border-hairline pt-4">
-            <p className="mb-2 text-[12px] font-bold uppercase tracking-[0.08em] text-muted">Your reissue requests</p>
+            <p className="mb-2 text-caption font-semibold uppercase tracking-[0.08em] text-muted">Your reissue requests</p>
             <ul className="space-y-2">
               {[...(reissues.data ?? [])]
                 .sort((a, b) => b.day - a.day)
                 .map((r) => (
                   <li key={r.id} className="flex items-start justify-between gap-3 rounded-2xl surface-sunken px-3.5 py-2.5">
                     <div className="min-w-0">
-                      <p className="text-[13.5px] font-bold text-primary">{prettyIso(r.date, { weekday: 'long', day: 'numeric', month: 'short' })}</p>
-                      {r.reason && <p className="mt-0.5 text-[12.5px] text-secondary">{r.reason}</p>}
+                      <p className="text-body font-semibold text-primary">{prettyIso(r.date, { weekday: 'long', day: 'numeric', month: 'short' })}</p>
+                      {r.reason && <p className="mt-0.5 text-label text-secondary">{r.reason}</p>}
                     </div>
                     <Badge
                       tone={r.status === 'approved' ? 'info' : r.status === 'declined' ? 'critical' : 'warning'}
@@ -248,10 +248,10 @@ export default function HrPage() {
         )}
         {upcomingHolidays.length > 0 && (
           <div className="mt-5 border-t border-hairline pt-4">
-            <p className="mb-2 text-[12px] font-bold uppercase tracking-[0.08em] text-muted">Coming holidays</p>
+            <p className="mb-2 text-caption font-semibold uppercase tracking-[0.08em] text-muted">Coming holidays</p>
             <ul className="flex flex-wrap gap-2">
               {upcomingHolidays.map((h) => (
-                <li key={h.id} className="rounded-full bg-gold-400/20 px-3 py-1 text-[12.5px] font-semibold text-[#8a6100] dark:text-gold-300">
+                <li key={h.id} className="rounded-full bg-gold-400/20 px-3 py-1 text-label font-semibold text-[#8a6100] dark:text-gold-300">
                   {h.name}, {prettyIso(h.id)}
                 </li>
               ))}
@@ -326,7 +326,7 @@ function ReissueDialog({
       }
     >
       <div className="space-y-3">
-        <p className="text-[13.5px] leading-relaxed text-secondary">
+        <p className="text-body leading-relaxed text-secondary">
           Worked this day but it shows as absent? Ask for it to be counted. Once HR approves, the day turns blue with the reissue mark and is paid.
         </p>
         {declined && <Alert tone="warning">Your last request for this day was declined. You can ask again.</Alert>}
@@ -341,8 +341,8 @@ function ReissueDialog({
 function Stat({ label, value, tone }: { label: string; value: string; tone?: 'bad' }) {
   return (
     <div className="rounded-2xl surface-sunken px-3 py-2.5">
-      <p className="text-[10.5px] font-bold uppercase tracking-wide text-muted">{label}</p>
-      <p className={`mt-0.5 whitespace-nowrap text-[13px] font-bold tabular sm:text-[15px] ${tone === 'bad' ? 'text-status-critical' : 'text-primary'}`}>{value}</p>
+      <p className="text-micro font-semibold uppercase tracking-wide text-muted">{label}</p>
+      <p className={`mt-0.5 whitespace-nowrap text-label font-bold tabular sm:text-lead ${tone === 'bad' ? 'text-status-critical' : 'text-primary'}`}>{value}</p>
     </div>
   );
 }
@@ -352,7 +352,7 @@ function Line({ label, value, good, bad, strong }: { label: string; value: strin
     <p className="flex items-center justify-between gap-3">
       <span className={strong ? 'font-bold text-primary' : 'text-secondary'}>{label}</span>
       <span
-        className={`tabular font-bold ${good ? 'text-[#0a7a0a] dark:text-[#4ec54e]' : bad ? 'text-status-critical' : 'text-primary'} ${strong ? 'text-[15px]' : ''}`}
+        className={`tabular font-bold ${good ? 'text-[#0a7a0a] dark:text-[#4ec54e]' : bad ? 'text-status-critical' : 'text-primary'} ${strong ? 'text-lead' : ''}`}
       >
         {value}
       </span>

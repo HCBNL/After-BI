@@ -100,10 +100,10 @@ export default function ApprovalsPage() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-x-2">
-                    <p className="tabular text-[14px] font-bold text-primary">{order.orderNumber}</p>
-                    <p className="truncate text-[13px] text-secondary">{order.distributorName}</p>
+                    <p className="tabular text-body font-bold text-primary">{order.orderNumber}</p>
+                    <p className="truncate text-label text-secondary">{order.distributorName}</p>
                   </div>
-                  <p className="mt-0.5 text-[12.5px] text-muted">
+                  <p className="mt-0.5 text-label text-muted">
                     {count(order.lines.length)} line{order.lines.length === 1 ? '' : 's'} · raised by{' '}
                     {order.createdByName} on {formatDate(order.createdAt)}
                   </p>
@@ -117,16 +117,16 @@ export default function ApprovalsPage() {
                     after lunch.
                   */}
                   {order.approvers.length > 1 && (
-                    <p className="mt-1 text-[11.5px] text-muted">
+                    <p className="mt-1 text-caption text-muted">
                       Any one of the {order.approvers.length} named can sign
                     </p>
                   )}
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="tabular text-[15px] font-extrabold text-primary">{naira(order.total)}</p>
+                  <p className="tabular text-lead font-bold text-primary">{naira(order.total)}</p>
                   {summarise(order.lines ?? []).discount > 0 && (
-                    <p className="tabular mt-0.5 text-[11.5px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+                    <p className="tabular mt-0.5 text-caption font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
                       {naira(summarise(order.lines).discount)} discount
                     </p>
                   )}

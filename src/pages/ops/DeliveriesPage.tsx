@@ -72,10 +72,10 @@ export default function DeliveriesPage() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-x-2">
-                    <p className="tabular text-[14px] font-bold text-primary">{order.orderNumber}</p>
-                    <p className="truncate text-[13px] text-secondary">{order.distributorName}</p>
+                    <p className="tabular text-body font-bold text-primary">{order.orderNumber}</p>
+                    <p className="truncate text-label text-secondary">{order.distributorName}</p>
                   </div>
-                  <p className="mt-0.5 text-[12.5px] text-muted">
+                  <p className="mt-0.5 text-label text-muted">
                     {count(order.lines.length)} line{order.lines.length === 1 ? '' : 's'} · sent{' '}
                     {formatDate(order.fulfilledAt)}
                   </p>
@@ -83,13 +83,13 @@ export default function DeliveriesPage() {
                     {order.lines.slice(0, 4).map((line, i) => (
                       <li
                         key={i}
-                        className="tabular rounded-lg bg-[var(--surface-sunken)] px-2 py-0.5 text-[11.5px] text-secondary"
+                        className="tabular rounded-lg bg-[var(--surface-sunken)] px-2 py-0.5 text-caption text-secondary"
                       >
                         {line.productName} × {count(line.quantity)}
                       </li>
                     ))}
                     {order.lines.length > 4 && (
-                      <li className="rounded-lg bg-[var(--surface-sunken)] px-2 py-0.5 text-[11.5px] text-muted">
+                      <li className="rounded-lg bg-[var(--surface-sunken)] px-2 py-0.5 text-caption text-muted">
                         +{order.lines.length - 4} more
                       </li>
                     )}
@@ -97,7 +97,7 @@ export default function DeliveriesPage() {
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="tabular text-[15px] font-extrabold text-primary">{naira(order.total)}</p>
+                  <p className="tabular text-lead font-bold text-primary">{naira(order.total)}</p>
                   <Badge tone="good" className="mt-1">
                     Sent
                   </Badge>

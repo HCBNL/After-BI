@@ -158,8 +158,8 @@ export default function TargetsPage() {
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-bold text-primary">{row.ownerName}</p>
-                  <p className="text-[12px] capitalize text-muted">{row.ownerType}</p>
+                  <p className="truncate text-body font-semibold text-primary">{row.ownerName}</p>
+                  <p className="text-caption capitalize text-muted">{row.ownerType}</p>
                 </div>
                 <Badge
                   tone={row.progress >= 100 ? 'good' : row.progress >= 75 ? 'gold' : 'critical'}
@@ -175,7 +175,7 @@ export default function TargetsPage() {
               />
 
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <p className="tabular text-[12.5px] text-muted">
+                <p className="tabular text-label text-muted">
                   {naira(row.achieved)} of {naira(row.value)}
                 </p>
 
@@ -362,7 +362,7 @@ function TargetModal({
               min={0}
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              leading={<span className="text-[13px]">₦</span>}
+              leading={<span className="text-label">₦</span>}
             />
           </Field>
         </div>

@@ -88,7 +88,7 @@ export default function SellOutPage() {
       key: 'date',
       header: 'Date',
       sortValue: (row) => row.saleDate,
-      cell: (row) => <span className="text-[12.5px] text-secondary">{formatDate(row.saleDate)}</span>,
+      cell: (row) => <span className="text-label text-secondary">{formatDate(row.saleDate)}</span>,
     },
     {
       key: 'product',
@@ -96,8 +96,8 @@ export default function SellOutPage() {
       sortValue: (row) => row.productName,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-semibold text-primary">{row.productName}</p>
-          <p className="truncate text-[12px] text-muted">{row.outlet ?? 'No outlet named'}</p>
+          <p className="truncate text-body font-semibold text-primary">{row.productName}</p>
+          <p className="truncate text-caption text-muted">{row.outlet ?? 'No outlet named'}</p>
         </div>
       ),
     },
@@ -106,14 +106,14 @@ export default function SellOutPage() {
       header: 'Distributor',
       hideOnMobile: true,
       sortValue: (row) => row.distributorName,
-      cell: (row) => <span className="text-[13px]">{row.distributorName}</span>,
+      cell: (row) => <span className="text-label">{row.distributorName}</span>,
     },
     {
       key: 'quantity',
       header: 'Qty',
       align: 'right',
       sortValue: (row) => row.quantity,
-      cell: (row) => <span className="tabular text-[13px]">{count(row.quantity)}</span>,
+      cell: (row) => <span className="tabular text-label">{count(row.quantity)}</span>,
     },
     {
       key: 'total',
@@ -121,7 +121,7 @@ export default function SellOutPage() {
       align: 'right',
       sortValue: (row) => row.total,
       cell: (row) => (
-        <span className="tabular text-[13.5px] font-bold text-primary">{naira(row.total)}</span>
+        <span className="tabular text-body font-bold text-primary">{naira(row.total)}</span>
       ),
     },
     {
@@ -130,7 +130,7 @@ export default function SellOutPage() {
       hideOnMobile: true,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[12px] text-muted">{row.capturedByName}</p>
+          <p className="truncate text-caption text-muted">{row.capturedByName}</p>
           {row.amendedAt && (
             <Badge tone="warning" className="mt-0.5">
               Amended
@@ -380,10 +380,10 @@ function EditSaleModal({
           is fixed on the distributor's record, not here.
         */}
         <div className="flex items-center justify-between rounded-xl border border-hairline surface-sunken px-4 py-3">
-          <span className="text-[12.5px] text-muted">
+          <span className="text-label text-muted">
             {count(qty)} × {naira(sale.unitPrice)}
           </span>
-          <span className="tabular text-[16px] font-extrabold text-primary">
+          <span className="tabular text-title font-bold text-primary">
             {naira(qty * sale.unitPrice)}
           </span>
         </div>
@@ -524,10 +524,10 @@ function SaleModal({
 
         {product && distributor && qty > 0 && (
           <div className="flex items-center justify-between rounded-xl border border-hairline surface-sunken px-4 py-3">
-            <span className="text-[12.5px] text-muted">
+            <span className="text-label text-muted">
               {count(qty)} × {naira(unitPrice)}
             </span>
-            <span className="tabular text-[16px] font-extrabold text-primary">
+            <span className="tabular text-title font-bold text-primary">
               {naira(qty * unitPrice)}
             </span>
           </div>

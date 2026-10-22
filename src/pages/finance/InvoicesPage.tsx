@@ -145,8 +145,8 @@ export default function InvoicesPage() {
       sortValue: (row) => row.invoiceNumber,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="tabular truncate text-[13.5px] font-bold text-primary">{row.invoiceNumber}</p>
-          <p className="truncate text-[12px] text-muted">{row.distributorName}</p>
+          <p className="tabular truncate text-body font-bold text-primary">{row.invoiceNumber}</p>
+          <p className="truncate text-caption text-muted">{row.distributorName}</p>
         </div>
       ),
     },
@@ -155,7 +155,7 @@ export default function InvoicesPage() {
       header: 'Issued',
       hideOnMobile: true,
       sortValue: (row) => row.issuedOn,
-      cell: (row) => <span className="text-[12.5px] text-muted">{formatDate(row.issuedOn)}</span>,
+      cell: (row) => <span className="text-label text-muted">{formatDate(row.issuedOn)}</span>,
     },
     {
       key: 'due',
@@ -166,9 +166,9 @@ export default function InvoicesPage() {
         const open = isOpen(row);
         return (
           <div>
-            <p className="text-[12.5px] text-secondary">{formatDate(row.dueOn)}</p>
+            <p className="text-label text-secondary">{formatDate(row.dueOn)}</p>
             {open && late > 0 && (
-              <p className="text-[11.5px] font-bold text-status-critical">{late} days late</p>
+              <p className="text-caption font-semibold text-status-critical">{late} days late</p>
             )}
           </div>
         );
@@ -180,7 +180,7 @@ export default function InvoicesPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.total,
-      cell: (row) => <span className="tabular text-[13px] text-secondary">{naira(row.total)}</span>,
+      cell: (row) => <span className="tabular text-label text-secondary">{naira(row.total)}</span>,
     },
     {
       key: 'owing',
@@ -188,7 +188,7 @@ export default function InvoicesPage() {
       align: 'right',
       sortValue: (row) => row.total - (row.amountPaid ?? 0),
       cell: (row) => (
-        <span className="tabular text-[13.5px] font-bold text-primary">
+        <span className="tabular text-body font-bold text-primary">
           {naira(row.total - (row.amountPaid ?? 0))}
         </span>
       ),
@@ -461,7 +461,7 @@ function RaiseInvoiceModal({
         </Field>
 
         {distributor && (
-          <p className="text-[12px] leading-snug text-muted">
+          <p className="text-caption leading-snug text-muted">
             Due {terms} days after the issue date, from {distributor.company}'s payment terms. Change
             the terms on the distributor record rather than here, so every future invoice follows.
           </p>
@@ -469,10 +469,10 @@ function RaiseInvoiceModal({
 
         {order && (
           <div className="flex items-center justify-between rounded-xl border border-hairline surface-sunken px-4 py-3">
-            <span className="text-[12.5px] text-muted">
+            <span className="text-label text-muted">
               {order.lines.length} line{order.lines.length === 1 ? '' : 's'}
             </span>
-            <span className="tabular text-[16px] font-extrabold text-primary">{naira(order.total)}</span>
+            <span className="tabular text-title font-bold text-primary">{naira(order.total)}</span>
           </div>
         )}
       </div>
@@ -646,7 +646,7 @@ function PaymentModal({
           <button
             type="button"
             onClick={() => setEditingDates(true)}
-            className="flex w-full items-center gap-2 rounded-xl border border-hairline px-3.5 py-2.5 text-left text-[12.5px] font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)]"
+            className="flex w-full items-center gap-2 rounded-xl border border-hairline px-3.5 py-2.5 text-left text-label font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)]"
           >
             <CalendarDays size={15} />
             Correct the issue or due date
@@ -702,7 +702,7 @@ function PaymentModal({
             min={0}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            leading={<span className="text-[13px]">₦</span>}
+            leading={<span className="text-label">₦</span>}
             placeholder={String(owing)}
           />
         </Field>
@@ -750,21 +750,21 @@ function PaymentModal({
         */}
         {paid.length > 0 && (
           <div>
-            <h3 className="mb-2 text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted">
+            <h3 className="mb-2 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
               {paid.length} payment{paid.length === 1 ? '' : 's'} received
             </h3>
             <ul className="surface-card divide-y divide-[var(--border-hairline)] overflow-hidden rounded-xl border border-hairline">
               {paid.map((payment) => (
                 <li key={payment.id} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
                   <div className="min-w-0">
-                    <p className="text-[12.5px] font-semibold text-primary">
+                    <p className="text-label font-semibold text-primary">
                       {formatDate(payment.paidOn)} · {METHOD_LABEL[payment.method]}
                     </p>
                     {payment.reference && (
-                      <p className="truncate text-[11.5px] text-muted">{payment.reference}</p>
+                      <p className="truncate text-caption text-muted">{payment.reference}</p>
                     )}
                   </div>
-                  <p className="tabular shrink-0 text-[13px] font-bold text-primary">
+                  <p className="tabular shrink-0 text-label font-bold text-primary">
                     {naira(payment.amount)}
                   </p>
                 </li>

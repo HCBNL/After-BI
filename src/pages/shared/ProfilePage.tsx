@@ -85,11 +85,11 @@ export default function ProfilePage() {
         <div className="flex items-center gap-4">
           <Avatar name={`${user.firstName} ${user.lastName}`} src={user.photoURL} size="lg" />
           <div className="min-w-0">
-            <p className="flex items-center gap-1.5 text-[17px] font-bold text-primary">
+            <p className="flex items-center gap-1.5 text-title font-semibold text-primary">
               <span className="truncate">{fullName(user)}</span>
               <OrgPlanBadge size={19} />
             </p>
-            <p className="truncate text-[13px] text-muted">{user.email}</p>
+            <p className="truncate text-label text-muted">{user.email}</p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               <Badge tone="brand">{ROLE_LABEL[user.role]}</Badge>
               {distributor && <Badge tone="neutral">{distributor.company}</Badge>}
@@ -132,7 +132,7 @@ export default function ProfilePage() {
       <div className="space-y-5">
       <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
         <div className="flex items-center gap-1.5">
-          <h2 className="text-[15px] font-bold text-primary">Set by your administrator</h2>
+          <h2 className="text-lead font-semibold text-primary">Set by your administrator</h2>
           <Hint label="About these details">
             If any of this is wrong, ask them to change it. It decides what you can see.
           </Hint>
@@ -142,7 +142,7 @@ export default function ProfilePage() {
           <Row label="Organisation" value={brand.name} />
           {plan && (
             <div className="flex items-center justify-between gap-4 border-b border-hairline pb-2.5">
-              <dt className="text-[12.5px] text-muted">Plan</dt>
+              <dt className="text-label text-muted">Plan</dt>
               <dd>
                 <PlanPill plan={plan} />
               </dd>
@@ -162,8 +162,8 @@ export default function ProfilePage() {
       <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-[15px] font-bold text-primary">Appearance</h2>
-            <p className="mt-0.5 text-[12.5px] text-muted">
+            <h2 className="text-lead font-semibold text-primary">Appearance</h2>
+            <p className="mt-0.5 text-label text-muted">
               Follows your device unless you choose otherwise.
             </p>
           </div>
@@ -171,15 +171,15 @@ export default function ProfilePage() {
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
           <div>
-            <h2 className="text-[15px] font-bold text-primary">Language</h2>
-            <p className="mt-0.5 text-[12.5px] text-muted">The whole app changes, including menus and messages.</p>
+            <h2 className="text-lead font-semibold text-primary">Language</h2>
+            <p className="mt-0.5 text-label text-muted">The whole app changes, including menus and messages.</p>
           </div>
           <LanguageSwitch full />
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
           <div>
-            <p className="text-[14px] font-semibold text-primary">Colour</p>
-            <p className="mt-0.5 text-[12.5px] text-muted">From the logo. Buttons stay green.</p>
+            <p className="text-body font-semibold text-primary">Colour</p>
+            <p className="mt-0.5 text-label text-muted">From the logo. Buttons stay green.</p>
           </div>
           <AccentPicker />
         </div>
@@ -191,9 +191,9 @@ export default function ProfilePage() {
 
           <div>
 
-            <h2 className="text-[15px] font-bold text-primary">Home screen</h2>
+            <h2 className="text-lead font-semibold text-primary">Home screen</h2>
 
-            <p className="mt-0.5 text-[12.5px] text-muted">Tiles or cards: what you see first on this device.</p>
+            <p className="mt-0.5 text-label text-muted">Tiles or cards: what you see first on this device.</p>
 
           </div>
 
@@ -229,8 +229,8 @@ export default function ProfilePage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-hairline pb-2.5 last:border-0">
-      <dt className="text-[12.5px] text-muted">{label}</dt>
-      <dd className="text-[13px] font-semibold text-primary">{value}</dd>
+      <dt className="text-label text-muted">{label}</dt>
+      <dd className="text-label font-semibold text-primary">{value}</dd>
     </div>
   );
 }

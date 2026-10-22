@@ -65,10 +65,10 @@ function useWide(): boolean {
 }
 
 function Growth({ value }: { value: number | null }) {
-  if (value === null) return <span className="text-[12px] text-muted">New</span>;
+  if (value === null) return <span className="text-caption text-muted">New</span>;
   const up = value >= 0;
   return (
-    <span className={cn('tabular text-[12.5px] font-semibold', up ? 'text-status-good' : 'text-status-critical')}>
+    <span className={cn('tabular text-label font-semibold', up ? 'text-status-good' : 'text-status-critical')}>
       {up ? '+' : ''}
       {value.toFixed(1)}%
     </span>
@@ -79,7 +79,7 @@ function Panel({ title, action, children, className }: { title: string; action?:
   return (
     <section className={cn('rounded-2xl border border-hairline surface-card p-5 shadow-card', className)}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-[15px] font-bold text-primary">{title}</h2>
+        <h2 className="text-lead font-semibold text-primary">{title}</h2>
         {action}
       </div>
       {children}
@@ -90,7 +90,7 @@ function Panel({ title, action, children, className }: { title: string; action?:
 function Bars({ rows: all, onPick, empty }: { rows: Row[]; onPick?: (key: string) => void; empty: string }) {
   /* Only what sold in this period; the table below shows what stopped. */
   const rows = all.filter((row) => row.revenue > 0);
-  if (!rows.length) return <p className="text-[13px] text-muted">{empty}</p>;
+  if (!rows.length) return <p className="text-label text-muted">{empty}</p>;
   const max = rows[0]?.revenue || 1;
   return (
     <ul className="space-y-3">
@@ -103,8 +103,8 @@ function Bars({ rows: all, onPick, empty }: { rows: Row[]; onPick?: (key: string
             className="w-full text-left disabled:cursor-default"
           >
             <span className="flex items-baseline justify-between gap-3">
-              <span className="min-w-0 truncate text-[13px] font-semibold text-primary">{row.key}</span>
-              <span className="tabular shrink-0 text-[12.5px] text-secondary">
+              <span className="min-w-0 truncate text-label font-semibold text-primary">{row.key}</span>
+              <span className="tabular shrink-0 text-label text-secondary">
                 {nairaShort(row.revenue)} <span className="text-muted">· {row.share.toFixed(0)}%</span>
               </span>
             </span>
@@ -249,7 +249,7 @@ export default function AnalyticsPage() {
       </div>
 
       {error ? (
-        <p className="rounded-2xl border border-hairline surface-card p-6 text-[13.5px] text-secondary shadow-card">
+        <p className="rounded-2xl border border-hairline surface-card p-6 text-body text-secondary shadow-card">
           The figures could not be read. Check the connection and reload.
         </p>
       ) : loading && !data ? (
@@ -292,7 +292,7 @@ export default function AnalyticsPage() {
                     {filters.state}
                   </Button>
                 ) : (
-                  <span className="text-[12px] text-muted">Click a state to focus the report on it</span>
+                  <span className="text-caption text-muted">Click a state to focus the report on it</span>
                 )
               }
             >
@@ -302,7 +302,7 @@ export default function AnalyticsPage() {
                 </Suspense>
               ) : (
                 <>
-                  <p className="mb-4 flex items-start gap-2 rounded-xl surface-sunken p-3 text-[12.5px] leading-snug text-secondary">
+                  <p className="mb-4 flex items-start gap-2 rounded-xl surface-sunken p-3 text-label leading-snug text-secondary">
                     <MapPin size={15} className="mt-0.5 shrink-0" aria-hidden />
                     The map of Nigeria opens on a laptop or desktop. Here, the states are ranked; tap one to focus on it.
                   </p>
@@ -314,26 +314,26 @@ export default function AnalyticsPage() {
             <Panel title={filters.state ? filters.state : 'All of Nigeria'} className="lg:col-span-5">
               <dl className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl surface-sunken p-3">
-                  <dt className="text-[11.5px] text-muted">Revenue</dt>
-                  <dd className="tabular mt-0.5 text-[17px] font-bold text-primary">{nairaShort(summary.revenue)}</dd>
+                  <dt className="text-caption text-muted">Revenue</dt>
+                  <dd className="tabular mt-0.5 text-title font-bold text-primary">{nairaShort(summary.revenue)}</dd>
                   <dd className="mt-0.5">
                     <Growth value={summary.growth} />
                   </dd>
                 </div>
                 <div className="rounded-xl surface-sunken p-3">
-                  <dt className="text-[11.5px] text-muted">Customers buying</dt>
-                  <dd className="tabular mt-0.5 text-[17px] font-bold text-primary">
+                  <dt className="text-caption text-muted">Customers buying</dt>
+                  <dd className="tabular mt-0.5 text-title font-bold text-primary">
                     {summary.buying}
-                    <span className="text-[13px] font-semibold text-muted"> / {summary.accounts}</span>
+                    <span className="text-label font-semibold text-muted"> / {summary.accounts}</span>
                   </dd>
                 </div>
               </dl>
-              <h3 className="mb-2 mt-5 text-[12px] font-bold uppercase tracking-[0.08em] text-muted">Top customers</h3>
+              <h3 className="mb-2 mt-5 text-caption font-semibold uppercase tracking-[0.08em] text-muted">Top customers</h3>
               <Bars rows={breakdown(now, before, 'customer').slice(0, 5)} empty="No customer bought in this period." />
-              <h3 className="mb-2 mt-5 text-[12px] font-bold uppercase tracking-[0.08em] text-muted">Salespeople</h3>
+              <h3 className="mb-2 mt-5 text-caption font-semibold uppercase tracking-[0.08em] text-muted">Salespeople</h3>
               <Bars rows={breakdown(now, before, 'rep').slice(0, 5)} onPick={pick('rep')} empty="Nobody sold in this period." />
               {coverage && (
-                <div className="mt-5 rounded-xl surface-sunken p-3 text-[12.5px] leading-relaxed text-secondary">
+                <div className="mt-5 rounded-xl surface-sunken p-3 text-label leading-relaxed text-secondary">
                   <p>
                     <span className="font-semibold text-primary">Covering reps: </span>
                     {coverage.reps.length ? coverage.reps.join(', ') : 'nobody is assigned to this state (set it in People).'}
@@ -376,12 +376,12 @@ export default function AnalyticsPage() {
               />
             </div>
             {rows.length === 0 ? (
-              <p className="text-[13px] text-muted">No {sourceLabel} in this period{active.length ? ' for these filters' : ''}.</p>
+              <p className="text-label text-muted">No {sourceLabel} in this period{active.length ? ' for these filters' : ''}.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[34rem] text-left">
                   <thead>
-                    <tr className="border-b border-hairline text-[11.5px] uppercase tracking-[0.06em] text-muted">
+                    <tr className="border-b border-hairline text-caption uppercase tracking-[0.06em] text-muted">
                       <th className="py-2 pr-3 font-semibold">{DIMENSION_LABEL[tab]}</th>
                       <th className="py-2 pr-3 text-right font-semibold">Revenue</th>
                       <th className="w-[28%] py-2 pr-3 font-semibold">Share</th>
@@ -396,27 +396,27 @@ export default function AnalyticsPage() {
                         <tr key={row.key} className="border-b border-hairline last:border-0">
                           <td className="max-w-[16rem] py-2.5 pr-3">
                             {onPick ? (
-                              <button type="button" onClick={() => onPick(row.key)} className="truncate text-[13.5px] font-semibold text-primary hover:underline">
+                              <button type="button" onClick={() => onPick(row.key)} className="truncate text-body font-semibold text-primary hover:underline">
                                 {row.key}
                               </button>
                             ) : (
-                              <span className="block truncate text-[13.5px] font-semibold text-primary">{row.key}</span>
+                              <span className="block truncate text-body font-semibold text-primary">{row.key}</span>
                             )}
                           </td>
-                          <td className="tabular py-2.5 pr-3 text-right text-[13px] text-primary">{naira(Math.round(row.revenue))}</td>
+                          <td className="tabular py-2.5 pr-3 text-right text-label text-primary">{naira(Math.round(row.revenue))}</td>
                           <td className="py-2.5 pr-3">
                             <span className="flex items-center gap-2">
                               <span className="h-2 flex-1 overflow-hidden rounded-full surface-sunken">
                                 <span className="block h-full rounded-full bg-brand-600 dark:bg-brand-500" style={{ width: `${row.share}%` }} />
                               </span>
-                              <span className="tabular w-14 shrink-0 text-right text-[12px] text-secondary">{row.share.toFixed(1)}%</span>
+                              <span className="tabular w-14 shrink-0 text-right text-caption text-secondary">{row.share.toFixed(1)}%</span>
                             </span>
                           </td>
                           <td className="py-2.5 pr-3 text-right">
                             <Growth value={row.growth} />
                           </td>
                           {tab !== 'customer' && tab !== 'product' && (
-                            <td className="tabular py-2.5 text-right text-[13px] text-secondary">{row.customers}</td>
+                            <td className="tabular py-2.5 text-right text-label text-secondary">{row.customers}</td>
                           )}
                         </tr>
                       );
@@ -441,13 +441,13 @@ export default function AnalyticsPage() {
             </Panel>
             <Panel title="Customers to win back">
               {toCall.length === 0 ? (
-                <p className="text-[13px] text-muted">Everybody who bought last period has bought again.</p>
+                <p className="text-label text-muted">Everybody who bought last period has bought again.</p>
               ) : (
                 <ul className="space-y-2.5">
                   {toCall.map((c) => (
                     <li key={c.customer} className="flex items-baseline justify-between gap-3">
-                      <span className="min-w-0 truncate text-[13px] font-semibold text-primary">{c.customer}</span>
-                      <span className="tabular shrink-0 text-[12px] text-muted">{nairaShort(c.previous)} last period</span>
+                      <span className="min-w-0 truncate text-label font-semibold text-primary">{c.customer}</span>
+                      <span className="tabular shrink-0 text-caption text-muted">{nairaShort(c.previous)} last period</span>
                     </li>
                   ))}
                 </ul>

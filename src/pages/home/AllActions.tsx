@@ -35,7 +35,7 @@ export default function AllActions() {
           const GroupIcon = GROUP_ICON[group];
           return (
             <section key={group}>
-              <h2 className="mb-2.5 flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted">
+              <h2 className="mb-2.5 flex items-center gap-2 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
                 <GroupIcon size={13} aria-hidden />
                 {group}
               </h2>
@@ -62,14 +62,14 @@ export default function AllActions() {
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2">
-                            <span className="text-[14px] font-semibold text-primary">{action.label}</span>
+                            <span className="text-body font-semibold text-primary">{action.label}</span>
                             {action.soon && (
-                              <span className="rounded bg-gold-100 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-gold-800 dark:bg-gold-900/40 dark:text-gold-300">
+                              <span className="rounded bg-gold-100 px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-gold-800 dark:bg-gold-900/40 dark:text-gold-300">
                                 Soon
                               </span>
                             )}
                           </span>
-                          <span className="mt-0.5 block text-[12.5px] leading-snug text-muted">
+                          <span className="mt-0.5 block text-label leading-snug text-muted">
                             {action.description}
                           </span>
                         </span>

@@ -54,7 +54,7 @@ export default function BanksPage() {
 
       {loading && !data ? (
         <Card>
-          <p className="text-[13px] text-muted">Loading…</p>
+          <p className="text-label text-muted">Loading…</p>
         </Card>
       ) : banks.length === 0 ? (
         <Card>
@@ -70,8 +70,8 @@ export default function BanksPage() {
             <li key={b.id} className="flex items-center gap-3 rounded-2xl border border-hairline surface-card p-4 shadow-card">
               <BankLogo bank={b} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14.5px] font-bold text-primary">{b.name}</p>
-                <p className="text-[12px] text-muted">{b.logoUrl ? 'Logo set' : 'No logo yet'}</p>
+                <p className="truncate text-body font-semibold text-primary">{b.name}</p>
+                <p className="text-caption text-muted">{b.logoUrl ? 'Logo set' : 'No logo yet'}</p>
               </div>
               {!b.active && <Badge tone="neutral">Hidden</Badge>}
               <Button size="sm" variant="ghost" aria-label={`Edit ${b.name}`} onClick={() => setEditing(b)}>
@@ -165,7 +165,7 @@ function BankModal({ bank, onClose, onSaved }: { bank: Partial<BankProfile>; onC
         <Switch checked={active} onChange={setActive} label="Show to organisations" description={active ? 'They can pick it' : 'Hidden from the list'} />
         <div className="flex items-center gap-3 rounded-xl surface-sunken p-3">
           <BankLogo bank={{ name: name || 'Bank', logoUrl, color }} />
-          <span className="text-[13px] text-secondary">How it will look</span>
+          <span className="text-label text-secondary">How it will look</span>
         </div>
       </div>
     </Modal>

@@ -87,11 +87,11 @@ export default function OrganisationsPage() {
       sortValue: (row) => row.name,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="flex items-center gap-1.5 text-[13.5px] font-semibold text-primary">
+          <p className="flex items-center gap-1.5 text-body font-semibold text-primary">
             <span className="truncate">{row.name}</span>
             {planOf(row.planId) && <PlanBadge plan={planOf(row.planId)!} size={16} />}
           </p>
-          <p className="truncate text-[12px] text-muted">
+          <p className="truncate text-caption text-muted">
             {row.id}
             {planOf(row.planId) ? `, ${PLANS[planOf(row.planId)!].label}` : ', no plan'}
             {(row.locked?.length ?? 0) > 0 ? `, ${row.locked!.length} locked` : ''}
@@ -111,7 +111,7 @@ export default function OrganisationsPage() {
       align: 'right',
       sortValue: (row) => row.subscriptionFee ?? 0,
       cell: (row) => (
-        <span className="text-[13px] font-semibold text-primary tabular">
+        <span className="text-label font-semibold text-primary tabular">
           {row.subscriptionFee ? naira(row.subscriptionFee) : 'Not set'}
         </span>
       ),
@@ -122,7 +122,7 @@ export default function OrganisationsPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.createdAt ?? '',
-      cell: (row) => <span className="text-[12px] text-muted">{formatDate(row.createdAt)}</span>,
+      cell: (row) => <span className="text-caption text-muted">{formatDate(row.createdAt)}</span>,
     },
   ];
 
@@ -293,7 +293,7 @@ function NewOrgModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           <PlanPicker value={plan} onChange={setPlan} disabled={orgMade} />
         </Field>
 
-        <label className="flex items-start gap-2.5 rounded-xl border border-hairline px-3 py-2.5 text-[13px] text-primary">
+        <label className="flex items-start gap-2.5 rounded-xl border border-hairline px-3 py-2.5 text-label text-primary">
           <input
             type="checkbox"
             checked={demo}
@@ -313,8 +313,8 @@ function NewOrgModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
         </label>
 
         <div className="border-t border-hairline pt-4">
-          <p className="text-[14px] font-bold text-primary">First administrator</p>
-          <p className="mt-0.5 text-[12.5px] text-muted">A super admin. They add everyone else.</p>
+          <p className="text-body font-semibold text-primary">First administrator</p>
+          <p className="mt-0.5 text-label text-muted">A super admin. They add everyone else.</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="First name" required>
@@ -440,7 +440,7 @@ function TenantModal({
 
         <div className="border-t border-hairline pt-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[14px] font-bold text-primary">People</p>
+            <p className="text-body font-semibold text-primary">People</p>
             {!adding && (
               <Button variant="outline" size="sm" icon={<UserPlus size={15} />} onClick={() => setAdding(true)}>
                 Add an administrator
@@ -460,23 +460,23 @@ function TenantModal({
 
           <ul className="mt-3 divide-y divide-[var(--border-hairline)]">
             {peopleLoading && !people ? (
-              <li className="py-3 text-[13px] text-muted">Loading…</li>
+              <li className="py-3 text-label text-muted">Loading…</li>
             ) : people?.length ? (
               people.map((p) => (
                 <li key={p.id} className="flex items-center gap-2.5 py-2.5">
                   <Avatar name={`${p.firstName} ${p.lastName}`} src={p.photoURL} size="xs" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-semibold text-primary">{fullName(p)}</p>
-                    <p className="truncate text-[12px] text-muted">{p.email}</p>
+                    <p className="truncate text-label font-semibold text-primary">{fullName(p)}</p>
+                    <p className="truncate text-caption text-muted">{p.email}</p>
                   </div>
-                  <span className="shrink-0 text-[12px] text-secondary">
+                  <span className="shrink-0 text-caption text-secondary">
                     {ROLE_LABEL[p.role] ?? p.role}
                     {p.active === false ? ', suspended' : ''}
                   </span>
                 </li>
               ))
             ) : (
-              <li className="py-3 text-[13px] text-muted">Nobody yet. Add its first administrator.</li>
+              <li className="py-3 text-label text-muted">Nobody yet. Add its first administrator.</li>
             )}
           </ul>
         </div>
@@ -585,7 +585,7 @@ function PlanPicker({
           onClick={() => onChange(id)}
           aria-pressed={value === id}
           className={cn(
-            'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-[13px] font-semibold transition-colors disabled:opacity-60',
+            'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-label font-semibold transition-colors disabled:opacity-60',
             value === id ? 'border-brand-600 bg-brand-50 text-brand-900 dark:bg-brand-500/15 dark:text-brand-100' : 'border-hairline text-primary hover:bg-[var(--surface-sunken)]',
           )}
         >
@@ -593,7 +593,7 @@ function PlanPicker({
           {PLANS[id].label}
         </button>
       ))}
-      {allowNone && !value && <p className="col-span-full text-[12px] text-muted">No plan set: no badge is shown.</p>}
+      {allowNone && !value && <p className="col-span-full text-caption text-muted">No plan set: no badge is shown.</p>}
     </div>
   );
 }
@@ -604,10 +604,10 @@ function FeatureLocks({ locked, onChange }: { locked: FeatureKey[]; onChange: (n
   return (
     <div className="rounded-2xl border border-hairline p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[14px] font-bold text-primary">Features</p>
-        <span className="text-[12px] text-muted">{locked.length ? `${locked.length} locked` : 'Everything open'}</span>
+        <p className="text-body font-semibold text-primary">Features</p>
+        <span className="text-caption text-muted">{locked.length ? `${locked.length} locked` : 'Everything open'}</span>
       </div>
-      <p className="mt-0.5 text-[12.5px] text-muted">Untick a feature to lock it. Locked features disappear from every menu in this organisation.</p>
+      <p className="mt-0.5 text-label text-muted">Untick a feature to lock it. Locked features disappear from every menu in this organisation.</p>
       <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
         {FEATURES.map((f) => {
           const open = !set.has(f.key);
@@ -616,11 +616,11 @@ function FeatureLocks({ locked, onChange }: { locked: FeatureKey[]; onChange: (n
               <label className={cn('flex cursor-pointer items-start gap-2.5 rounded-xl px-2.5 py-2 hover:bg-[var(--surface-sunken)]', !open && 'opacity-70')}>
                 <input type="checkbox" checked={open} onChange={() => toggle(f.key)} className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-600)]" />
                 <span className="min-w-0">
-                  <span className="block text-[13px] font-semibold text-primary">
+                  <span className="block text-label font-semibold text-primary">
                     {f.label}
-                    {!open && <span className="ml-1.5 text-[11px] font-bold uppercase text-status-critical">Locked</span>}
+                    {!open && <span className="ml-1.5 text-micro font-semibold uppercase text-status-critical">Locked</span>}
                   </span>
-                  <span className="block text-[11.5px] leading-snug text-muted">{f.description}</span>
+                  <span className="block text-caption leading-snug text-muted">{f.description}</span>
                 </span>
               </label>
             </li>

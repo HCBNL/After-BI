@@ -192,41 +192,41 @@ export default function StatementPage() {
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-[15px] font-extrabold text-primary">{brand.name}</p>
-                <p className="text-[12px] text-muted">Statement of account</p>
+                <p className="text-lead font-bold text-primary">{brand.name}</p>
+                <p className="text-caption text-muted">Statement of account</p>
               </div>
               <div className="text-right">
-                <p className="text-[13px] font-bold text-primary">{distributor?.company}</p>
-                <p className="text-[12px] text-muted">As at {formatDate(todayISO())}</p>
+                <p className="text-label font-bold text-primary">{distributor?.company}</p>
+                <p className="text-caption text-muted">As at {formatDate(todayISO())}</p>
               </div>
             </div>
           </div>
 
           <div className="scrollbar-thin overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
+            <table className="w-full border-collapse text-body">
               <thead>
                 <tr className="border-b border-hairline surface-sunken">
-                  <th className="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-muted">Date</th>
-                  <th className="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-muted">Reference</th>
-                  <th className="hidden px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-muted sm:table-cell">Description</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-muted">Debit</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-muted">Credit</th>
-                  <th className="px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-muted">Balance</th>
+                  <th className="px-4 py-2.5 text-left text-micro font-bold uppercase tracking-wide text-muted">Date</th>
+                  <th className="px-4 py-2.5 text-left text-micro font-bold uppercase tracking-wide text-muted">Reference</th>
+                  <th className="hidden px-4 py-2.5 text-left text-micro font-bold uppercase tracking-wide text-muted sm:table-cell">Description</th>
+                  <th className="px-4 py-2.5 text-right text-micro font-bold uppercase tracking-wide text-muted">Debit</th>
+                  <th className="px-4 py-2.5 text-right text-micro font-bold uppercase tracking-wide text-muted">Credit</th>
+                  <th className="px-4 py-2.5 text-right text-micro font-bold uppercase tracking-wide text-muted">Balance</th>
                 </tr>
               </thead>
               <tbody>
                 {lines.map((line) => (
                   <tr key={line.id} className="border-b border-hairline last:border-0">
-                    <td className="px-4 py-2.5 text-[12.5px] text-muted">{formatDate(line.date)}</td>
-                    <td className="tabular px-4 py-2.5 text-[12.5px] font-semibold text-primary">{line.reference}</td>
-                    <td className="hidden px-4 py-2.5 text-[12.5px] text-secondary sm:table-cell">{line.description}</td>
-                    <td className="tabular px-4 py-2.5 text-right text-[12.5px] text-secondary">
+                    <td className="px-4 py-2.5 text-label text-muted">{formatDate(line.date)}</td>
+                    <td className="tabular px-4 py-2.5 text-label font-semibold text-primary">{line.reference}</td>
+                    <td className="hidden px-4 py-2.5 text-label text-secondary sm:table-cell">{line.description}</td>
+                    <td className="tabular px-4 py-2.5 text-right text-label text-secondary">
                       {line.debit ? naira(line.debit, true) : ''}
                     </td>
-                    <td className="tabular px-4 py-2.5 text-right text-[12.5px] text-status-good">
+                    <td className="tabular px-4 py-2.5 text-right text-label text-status-good">
                       {line.credit ? naira(line.credit, true) : ''}
                     </td>
-                    <td className="tabular px-4 py-2.5 text-right text-[12.5px] font-bold text-primary">
+                    <td className="tabular px-4 py-2.5 text-right text-label font-bold text-primary">
                       {naira(line.balance, true)}
                     </td>
                   </tr>
@@ -234,10 +234,10 @@ export default function StatementPage() {
               </tbody>
               <tfoot>
                 <tr className="surface-sunken">
-                  <td colSpan={5} className="px-4 py-3 text-right text-[12px] font-bold uppercase tracking-wide text-muted">
+                  <td colSpan={5} className="px-4 py-3 text-right text-caption font-semibold uppercase tracking-wide text-muted">
                     Balance carried forward
                   </td>
-                  <td className="tabular px-4 py-3 text-right text-[15px] font-extrabold text-primary">
+                  <td className="tabular px-4 py-3 text-right text-lead font-bold text-primary">
                     {naira(closing, true)}
                   </td>
                 </tr>

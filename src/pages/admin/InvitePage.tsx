@@ -127,8 +127,8 @@ export default function InvitePage() {
       <div>
         {made ? (
           <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
-            <h2 className="text-[16px] font-bold text-primary">{made.name} can sign in now</h2>
-            <p className="mt-1 text-[13px] leading-relaxed text-muted">
+            <h2 className="text-title font-semibold text-primary">{made.name} can sign in now</h2>
+            <p className="mt-1 text-label leading-relaxed text-muted">
               Hand these over yourself. The password is not shown again once you leave this screen.
             </p>
             <div className="mt-4">
@@ -193,8 +193,8 @@ export default function InvitePage() {
 
             {needsAccounts && (
               <fieldset>
-                <legend className="mb-1 text-[13px] font-semibold text-primary">Distributors they manage</legend>
-                <p className="mb-2 text-[12px] leading-snug text-muted">
+                <legend className="mb-1 text-label font-semibold text-primary">Distributors they manage</legend>
+                <p className="mb-2 text-caption leading-snug text-muted">
                   Optional, and changeable later. A distributor can have several reps.
                 </p>
                 <Checklist
@@ -208,13 +208,13 @@ export default function InvitePage() {
 
             {needsDepots && (
               <fieldset>
-                <legend className="mb-2 text-[13px] font-semibold text-primary">Depots they manage</legend>
+                <legend className="mb-2 text-label font-semibold text-primary">Depots they manage</legend>
                 {warehouses.length ? (
                   <div className="grid gap-2 sm:grid-cols-2">
                     {warehouses.map((w) => (
                       <label
                         key={w.id}
-                        className="flex items-center gap-2.5 rounded-xl border border-hairline px-3 py-2.5 text-[13.5px] text-primary"
+                        className="flex items-center gap-2.5 rounded-xl border border-hairline px-3 py-2.5 text-body text-primary"
                       >
                         <input
                           type="checkbox"
@@ -231,7 +231,7 @@ export default function InvitePage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[13px] text-muted">No depots yet. Add them under Warehouses first.</p>
+                  <p className="text-label text-muted">No depots yet. Add them under Warehouses first.</p>
                 )}
               </fieldset>
             )}

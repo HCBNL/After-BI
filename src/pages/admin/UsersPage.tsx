@@ -77,8 +77,8 @@ export default function UsersPage() {
         <div className="flex min-w-0 items-center gap-2.5">
           <Avatar name={`${row.firstName} ${row.lastName}`} src={row.photoURL} size="sm" />
           <div className="min-w-0">
-            <p className="truncate text-[13.5px] font-semibold text-primary">{fullName(row)}</p>
-            <p className="truncate text-[12px] text-muted">{row.email}</p>
+            <p className="truncate text-body font-semibold text-primary">{fullName(row)}</p>
+            <p className="truncate text-caption text-muted">{row.email}</p>
           </div>
         </div>
       ),
@@ -96,7 +96,7 @@ export default function UsersPage() {
       cell: (row) => {
         const names = accountsOf(row).map((id) => distributors.find((d) => d.id === id)?.company).filter(Boolean);
         return (
-          <span className="text-[12.5px] text-muted">{names.length ? names.join(', ') : 'None'}</span>
+          <span className="text-label text-muted">{names.length ? names.join(', ') : 'None'}</span>
         );
       },
     },
@@ -106,7 +106,7 @@ export default function UsersPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.createdAt ?? '',
-      cell: (row) => <span className="text-[12px] text-muted">{formatDate(row.createdAt)}</span>,
+      cell: (row) => <span className="text-caption text-muted">{formatDate(row.createdAt)}</span>,
     },
     {
       key: 'status',
@@ -273,8 +273,8 @@ function MemberModal({
 
         {role === 'sales_rep' && (
           <fieldset>
-            <legend className="mb-1 text-[13px] font-semibold text-primary">Distributors they manage</legend>
-            <p className="mb-2 text-[12px] leading-snug text-muted">
+            <legend className="mb-1 text-label font-semibold text-primary">Distributors they manage</legend>
+            <p className="mb-2 text-caption leading-snug text-muted">
               A distributor can have several reps. Untick an account to hand it to someone else.
             </p>
             <Checklist
@@ -289,7 +289,7 @@ function MemberModal({
 
         {role === 'warehouse_manager' && (
           <fieldset>
-            <legend className="mb-1 text-[13px] font-semibold text-primary">Depots they manage</legend>
+            <legend className="mb-1 text-label font-semibold text-primary">Depots they manage</legend>
             <Checklist
               items={warehouses.map((w) => ({ id: w.id, label: w.name }))}
               value={warehouseIds}
@@ -302,8 +302,8 @@ function MemberModal({
 
         {role === 'sales_rep' && (
           <fieldset>
-            <legend className="mb-1 text-[13px] font-semibold text-primary">States they cover</legend>
-            <p className="mb-2 text-[12px] leading-snug text-muted">
+            <legend className="mb-1 text-label font-semibold text-primary">States they cover</legend>
+            <p className="mb-2 text-caption leading-snug text-muted">
               Drawn on the coverage map in Analytics. Leave it empty for the whole country.
             </p>
             <div className="scrollbar-thin max-h-56 overflow-y-auto rounded-xl border border-hairline p-2">
@@ -319,7 +319,7 @@ function MemberModal({
         )}
 
         {!canTouch && (
-          <p className="text-[12px] leading-snug text-muted">
+          <p className="text-caption leading-snug text-muted">
             Only a super admin can change another super admin.
           </p>
         )}
@@ -347,7 +347,7 @@ function MemberModal({
           and a manual Firestore edit.
  */}
         {self && (
-          <p className="text-[12px] leading-snug text-muted">
+          <p className="text-caption leading-snug text-muted">
             This is your own account. You cannot change your own role or suspend yourself. Ask
             another administrator.
           </p>

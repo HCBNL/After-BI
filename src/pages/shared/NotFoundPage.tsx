@@ -25,15 +25,15 @@ export default function NotFoundPage({ inPortal }: { inPortal?: boolean }) {
       <span className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-sunken)] text-muted">
         <Compass size={24} aria-hidden />
       </span>
-      <h1 className="text-[18px] font-bold text-primary">That page is not here</h1>
-      <p className="mt-2 text-sm leading-relaxed text-muted">
+      <h1 className="text-heading font-bold text-primary">That page is not here</h1>
+      <p className="mt-2 text-body leading-relaxed text-muted">
         {inPortal
           ? 'The link may be from an older version of the app, or the screen may not be one your account can open.'
           : 'Check the address, or go back to the start.'}
       </p>
       <Link
         to={inPortal ? home : '/'}
-        className="mt-6 inline-flex h-11 items-center rounded-xl bg-brand-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-800 dark:bg-brand-500 dark:text-brand-950 dark:hover:bg-brand-400"
+        className="mt-6 inline-flex h-11 items-center rounded-xl bg-brand-900 px-5 text-body font-semibold text-white transition-colors hover:bg-brand-800 dark:bg-brand-500 dark:text-brand-950 dark:hover:bg-brand-400"
       >
         {inPortal ? 'Back to home' : 'Go to sign in'}
       </Link>

@@ -65,10 +65,10 @@ function Unit({ value, label }: { value: string; label: string }) {
   return (
     <div className="relative flex min-w-0 flex-1 flex-col items-center rounded-2xl border border-white/10 bg-white/[0.06] px-1 pb-2.5 pt-3 backdrop-blur-sm sm:pb-3 sm:pt-4">
       <span aria-hidden className="absolute inset-x-3 top-1/2 h-px bg-white/[0.07]" />
-      <span className="font-display text-[1.75rem] font-extrabold leading-none tracking-[-0.04em] text-white sm:text-[2.6rem]">
+      <span className="font-display text-display font-bold leading-none tracking-[-0.04em] text-white sm:text-jumbo">
         <Digits value={value} />
       </span>
-      <span className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 sm:text-[11px]">{label}</span>
+      <span className="mt-1.5 text-micro font-bold uppercase tracking-[0.14em] text-white/45 sm:text-micro">{label}</span>
     </div>
   );
 }
@@ -166,11 +166,11 @@ export function PayCountdown({
 
       <div className="grid items-center gap-6 md:grid-cols-[1fr_auto] md:gap-10">
         <div className="hr-rise min-w-0">
-          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-gold-300">
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 text-micro font-semibold uppercase tracking-[0.14em] text-gold-300">
             {isPayday ? <PartyPopper size={13} aria-hidden /> : <Sparkles size={13} aria-hidden />}
             {isPayday ? 'Salary day' : 'Next salary'}
           </p>
-          <h2 className="mt-3 font-display text-[1.7rem] font-extrabold leading-[1.05] tracking-[-0.04em] sm:text-[2.4rem]">
+          <h2 className="mt-3 font-display text-display font-bold leading-[1.05] tracking-[-0.04em] sm:text-jumbo">
             {isPayday ? (
               <>
                 It&rsquo;s salary day<span className="text-gold-400">!</span>
@@ -182,7 +182,7 @@ export function PayCountdown({
               </>
             )}
           </h2>
-          <p className="mt-1.5 text-[13.5px] text-white/60">
+          <p className="mt-1.5 text-body text-white/60">
             {period.label} salary, covers {prettyIso(period.start, { day: 'numeric', month: 'short' })} to{' '}
             {prettyIso(period.end, { day: 'numeric', month: 'short' })}
           </p>
@@ -206,7 +206,7 @@ export function PayCountdown({
                 <span className="hr-sheen absolute inset-0 rounded-full" />
               </div>
             </div>
-            <div className="mt-2 flex justify-between gap-2 text-[11.5px] font-semibold text-white/50">
+            <div className="mt-2 flex justify-between gap-2 text-caption font-semibold text-white/50">
               <span>{prettyIso(period.start, { day: 'numeric', month: 'short' })}</span>
               <span className="text-white/75">
                 Working day {Math.min(done, wd.length)} of {wd.length}
@@ -253,13 +253,13 @@ export function PayCountdown({
               <PartyPopper size={48} className="text-gold-300" aria-hidden />
             ) : (
               <>
-                <span className="font-display text-[3.4rem] font-extrabold leading-none tracking-[-0.05em]">
+                <span className="font-display text-jumbo font-bold leading-none tracking-[-0.05em]">
                   <Digits value={String(d)} />
                 </span>
-                <span className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white/50">{d === 1 ? 'day to go' : 'days to go'}</span>
+                <span className="mt-1 text-micro font-bold uppercase tracking-[0.14em] text-white/50">{d === 1 ? 'day to go' : 'days to go'}</span>
               </>
             )}
-            <span className="mt-2 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-bold tabular text-white/70">{Math.round(pct * 100)}% of the month</span>
+            <span className="mt-2 rounded-full bg-white/10 px-2 py-0.5 text-micro font-bold tabular text-white/70">{Math.round(pct * 100)}% of the month</span>
           </div>
         </div>
       </div>
@@ -328,14 +328,14 @@ export function ClockCard({
     <section className="relative overflow-hidden rounded-[24px] border border-hairline surface-card p-5 shadow-card sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-[0.1em] text-muted">
+          <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-[0.1em] text-muted">
             <Clock3 size={14} aria-hidden /> Attendance
           </p>
-          <p className="mt-0.5 text-[13px] text-secondary">{prettyIso(today, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+          <p className="mt-0.5 text-label text-secondary">{prettyIso(today, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         </div>
         <span
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide',
+            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-micro font-bold uppercase tracking-wide',
             state === 'in'
               ? 'bg-[#0ca30c]/12 text-[#0a7a0a] dark:text-[#4ec54e]'
               : state === 'done'
@@ -348,21 +348,21 @@ export function ClockCard({
         </span>
       </div>
 
-      <p className="mt-4 font-display text-[3rem] font-extrabold leading-none tracking-[-0.05em] text-primary tabular sm:text-[3.6rem]">
+      <p className="mt-4 font-display text-jumbo font-bold leading-none tracking-[-0.05em] text-primary tabular sm:text-jumbo">
         {hh}
         <span className="hr-blink text-brand-600">:</span>
         {mm}
-        <span className="ml-1 text-[1.3rem] font-bold text-muted sm:text-[1.6rem]">{ss}</span>
+        <span className="ml-1 text-headline font-bold text-muted sm:text-headline">{ss}</span>
       </p>
 
       <div className="mt-5 grid grid-cols-2 gap-2.5">
         <div className="rounded-2xl surface-sunken px-3.5 py-3">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-muted">In</p>
-          <p className="mt-0.5 text-[17px] font-bold text-primary tabular">{record?.absent ? 'Absent' : record?.manual && !record.inAt ? 'Marked' : timeOf(record?.inAt)}</p>
+          <p className="text-micro font-bold uppercase tracking-wide text-muted">In</p>
+          <p className="mt-0.5 text-title font-bold text-primary tabular">{record?.absent ? 'Absent' : record?.manual && !record.inAt ? 'Marked' : timeOf(record?.inAt)}</p>
         </div>
         <div className="rounded-2xl surface-sunken px-3.5 py-3">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Out</p>
-          <p className="mt-0.5 text-[17px] font-bold text-primary tabular">{timeOf(record?.outAt)}</p>
+          <p className="text-micro font-bold uppercase tracking-wide text-muted">Out</p>
+          <p className="mt-0.5 text-title font-bold text-primary tabular">{timeOf(record?.outAt)}</p>
         </div>
       </div>
 
@@ -372,7 +372,7 @@ export function ClockCard({
             Checking…
           </Button>
         ) : offDay && state === 'out' ? (
-          <p className="rounded-2xl border border-dashed border-hairline px-4 py-3.5 text-center text-[13.5px] text-secondary">
+          <p className="rounded-2xl border border-dashed border-hairline px-4 py-3.5 text-center text-body text-secondary">
             {holidayName ? `${holidayName} (a holiday).` : 'Day off.'} No clock in needed today.
           </p>
         ) : state === 'out' ? (
@@ -384,11 +384,11 @@ export function ClockCard({
             Clock out
           </Button>
         ) : state === 'absent' ? (
-          <p className="rounded-2xl bg-[#d03b3b]/10 px-4 py-3.5 text-center text-[14px] font-semibold text-[#a52929] dark:text-[#f08080]">
+          <p className="rounded-2xl bg-[#d03b3b]/10 px-4 py-3.5 text-center text-body font-semibold text-[#a52929] dark:text-[#f08080]">
             HR has marked you absent today. This day is not paid.
           </p>
         ) : (
-          <p className="rounded-2xl bg-[#0ca30c]/10 px-4 py-3.5 text-center text-[14px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+          <p className="rounded-2xl bg-[#0ca30c]/10 px-4 py-3.5 text-center text-body font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
             {record?.manual ? 'Marked present for today.' : `You worked ${hoursBetween(record?.inAt, record?.outAt)} today. Well done.`}
           </p>
         )}
@@ -517,7 +517,7 @@ export function AttendanceStrip({
     <div className="max-w-[460px]">
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((w, i) => (
-          <span key={i} className="text-center text-[10.5px] font-bold uppercase text-muted">
+          <span key={i} className="text-center text-micro font-semibold uppercase text-muted">
             {w}
           </span>
         ))}
@@ -543,7 +543,7 @@ export function AttendanceStrip({
               title={`${prettyIso(date)}: ${LABEL[st]}${asks ? ', tap to request a reissue' : ''}`}
               style={{ animationDelay: `${i * 18}ms` }}
               className={cn(
-                'hr-rise relative flex aspect-square flex-col items-center justify-center rounded-xl border text-[12.5px] font-bold leading-none tabular transition-transform',
+                'hr-rise relative flex aspect-square flex-col items-center justify-center rounded-xl border text-label font-bold leading-none tabular transition-transform',
                 CELL[st],
                 clickable ? 'cursor-pointer hover:scale-105' : 'cursor-default',
                 asks && 'hover:border-[#d03b3b] hover:bg-[#d03b3b]/10',
@@ -555,7 +555,7 @@ export function AttendanceStrip({
           );
         })}
       </div>
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[11.5px] text-muted">
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-caption text-muted">
         <Legend className="bg-[#0ca30c]">Present</Legend>
         {any('auto') && <Legend className="bg-[#0ca30c]/75">Counted present</Legend>}
         {any('reissued') && <Legend className="bg-[#2a78d6]">Reissued</Legend>}
@@ -567,7 +567,7 @@ export function AttendanceStrip({
         {resumption && any('before') && <Legend className="border border-dashed border-hairline">Before resumption</Legend>}
       </div>
       {onRequest && any('missed') && (
-        <p className="mt-2.5 text-[12px] text-secondary">Missed a day you worked? Tap the red day to request a reissue.</p>
+        <p className="mt-2.5 text-caption text-secondary">Missed a day you worked? Tap the red day to request a reissue.</p>
       )}
     </div>
   );
@@ -584,7 +584,7 @@ function Legend({ className, children }: { className: string; children: ReactNod
 
 export function PeriodNote({ period }: { period: PayPeriod }) {
   return (
-    <p className="flex items-center gap-1.5 text-[12.5px] text-muted">
+    <p className="flex items-center gap-1.5 text-label text-muted">
       <CalendarDays size={13} aria-hidden />
       {prettyIso(period.start, { day: 'numeric', month: 'short' })} to {prettyIso(period.end, { day: 'numeric', month: 'short', year: 'numeric' })}
     </p>

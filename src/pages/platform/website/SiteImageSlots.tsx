@@ -45,7 +45,7 @@ export function SiteImageSlots({
       </div>
 
       {!cloudinaryConfigured && (
-        <p className="rounded-xl border border-hairline surface-sunken px-4 py-3 text-[13px] text-secondary">
+        <p className="rounded-xl border border-hairline surface-sunken px-4 py-3 text-label text-secondary">
           Picture uploads are not set up on this deployment. Add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET
           in Vercel, then redeploy.
         </p>
@@ -58,8 +58,8 @@ export function SiteImageSlots({
         return (
           <section key={group}>
             <div className="mb-3 flex items-center justify-between gap-3 border-b border-hairline pb-2">
-              <h3 className="text-[14px] font-bold text-primary">{group}</h3>
-              <span className="text-[12px] font-semibold text-muted">
+              <h3 className="text-body font-semibold text-primary">{group}</h3>
+              <span className="text-caption font-semibold text-muted">
                 {filled} of {slots.length}
               </span>
             </div>
@@ -107,7 +107,7 @@ function SlotTile({
   return (
     <div className="flex flex-col rounded-2xl border border-hairline surface-card p-3 shadow-card">
       <div className="mb-2 flex items-center gap-1.5">
-        <p className="min-w-0 flex-1 truncate text-[13px] font-semibold text-primary">{slot.label}</p>
+        <p className="min-w-0 flex-1 truncate text-label font-semibold text-primary">{slot.label}</p>
         <Hint label={`About ${slot.label}`} align="right">
           {slot.what} Export at {slot.size} pixels. Slot name: {slotKey}.
         </Hint>
@@ -129,7 +129,7 @@ function SlotTile({
         ) : (
           <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-muted">
             <ImagePlus size={22} aria-hidden />
-            <span className="text-[11.5px] font-semibold">{slot.size}</span>
+            <span className="text-caption font-semibold">{slot.size}</span>
           </span>
         )}
         {busy && (
@@ -144,7 +144,7 @@ function SlotTile({
           type="button"
           disabled={!cloudinaryConfigured || busy}
           onClick={() => input.current?.click()}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-hairline px-2.5 text-[12.5px] font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary disabled:opacity-50"
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-hairline px-2.5 text-label font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary disabled:opacity-50"
         >
           <Upload size={13} aria-hidden />
           {value ? 'Change' : 'Upload'}
@@ -154,7 +154,7 @@ function SlotTile({
             type="button"
             disabled={busy}
             onClick={() => onChange('')}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] font-semibold text-muted transition-colors hover:text-status-critical disabled:opacity-50"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-label font-semibold text-muted transition-colors hover:text-status-critical disabled:opacity-50"
           >
             <Trash2 size={13} aria-hidden />
             Remove

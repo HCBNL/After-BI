@@ -51,6 +51,43 @@
   --font-display: 'Sora', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
 
+  /*
+   * THE TYPE SCALE (docs/TYPOGRAPHY.md is the brand manual).
+   *
+   * Ten steps, each with its own line height and tracking, and nothing in the
+   * app sits between them. Inter does the work (labels, tables, forms, body);
+   * Sora is the voice (page titles, big figures). Weight carries rank:
+   * 400 reading, 500 controls and navigation, 600 titles, 700 only for page
+   * titles and money.
+   */
+  --text-micro: 11px;
+  --text-micro--line-height: 14px;
+  --text-micro--letter-spacing: 0.01em;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-label: 13px;
+  --text-label--line-height: 18px;
+  --text-body: 14px;
+  --text-body--line-height: 21px;
+  --text-lead: 15px;
+  --text-lead--line-height: 22px;
+  --text-lead--letter-spacing: -0.005em;
+  --text-title: 17px;
+  --text-title--line-height: 24px;
+  --text-title--letter-spacing: -0.01em;
+  --text-heading: 20px;
+  --text-heading--line-height: 26px;
+  --text-heading--letter-spacing: -0.015em;
+  --text-headline: 24px;
+  --text-headline--line-height: 30px;
+  --text-headline--letter-spacing: -0.02em;
+  --text-display: 30px;
+  --text-display--line-height: 36px;
+  --text-display--letter-spacing: -0.025em;
+  --text-jumbo: 40px;
+  --text-jumbo--line-height: 44px;
+  --text-jumbo--letter-spacing: -0.03em;
+
   /* brand: AfterBI green */
   /*
    * The product's own colour, and the only accent in the app. It is used
@@ -494,6 +531,11 @@
     background-color: var(--surface-page);
     color: var(--text-primary);
     font-family: var(--font-sans);
+    /* The reading size and rhythm everything else is measured from. */
+    font-size: 14px;
+    line-height: 1.5;
+    /* Inter's rounder digits and a true capital I; numbers line up in columns. */
+    font-feature-settings: 'cv05', 'cv08', 'tnum' 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -1241,9 +1283,14 @@
   --ground-a: #0a7a52;
   --ground-b: #065f46;
   --ground-c: #022c22;
+  /* The theme colour itself and the ink on it: "done" marks on the panels. */
+  --swatch: #10b981;
+  --swatch-ink: #ffffff;
 }
 
 [data-accent='blue'] {
+  --swatch: #29aeff;
+  --swatch-ink: #ffffff;
   --hero: #0a4f8c;
   --hero-glow: rgba(41, 174, 255, 0.22);
   --ground-a: #1a6bb5;
@@ -1251,15 +1298,9 @@
   --ground-c: #082a4d;
 }
 
-[data-accent='orange'] {
-  --hero: #93300f;
-  --hero-glow: rgba(232, 68, 26, 0.3);
-  --ground-a: #c2410c;
-  --ground-b: #9a3412;
-  --ground-c: #5c1d08;
-}
-
 [data-accent='gold'] {
+  --swatch: #f5c518;
+  --swatch-ink: #3f2d03;
   --hero: #6e4f06;
   --hero-glow: rgba(245, 197, 24, 0.18);
   --ground-a: #946a06;
@@ -1269,6 +1310,8 @@
 
 /* Any colour from the palette: the variables are worked out in lib/theme.ts. */
 [data-accent='custom'] {
+  --swatch: var(--c-swatch);
+  --swatch-ink: var(--c-swatch-ink);
   --hero: var(--c-hero);
   --hero-glow: var(--c-glow);
   --ground-a: var(--c-ground-a);
@@ -1285,12 +1328,7 @@
   --hero-glow: rgba(41, 174, 255, 0.18);
 }
 
-[data-theme='dark'][data-accent='orange'] {
-  --hero: #24110b;
-  --hero-glow: rgba(232, 68, 26, 0.2);
-}
-
-[data-theme='dark'][data-accent='gold'] {
+[data-theme='dark'][data-theme='dark'][data-accent='gold'] {
   --hero: #211a09;
   --hero-glow: rgba(245, 197, 24, 0.16);
 }
@@ -1500,28 +1538,41 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 @keyframes ab-quiet-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .ab-quiet { animation: none; } }
 
-/* Order trail (BriefCard.tsx): clear stops calm, pending stops red like a
-   notification. Shades shift with light and dark so they read on either panel. */
+/* Order trail (BriefCard.tsx). Clear stops wear the theme colour itself (blue,
+   yellow, green or the custom one), pending stops are red like a notification,
+   and a stop not reached yet is a solid grey cut from the panel colour, so the
+   line never shows through it. Red is never a theme colour. */
 :root {
-  --trail-clear: #3b9bff;
   --trail-active: #f2332b;
   --trail-line: rgba(255, 120, 110, 0.85);
 }
 :root[data-theme='dark'] {
-  --trail-clear: #4aa3ff;
   --trail-active: #ff4d43;
   --trail-line: rgba(255, 110, 100, 0.8);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --trail-clear: #4aa3ff;
     --trail-active: #ff4d43;
     --trail-line: rgba(255, 110, 100, 0.8);
   }
 }
-.ab-trail-clear { background: var(--trail-clear); box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--trail-clear) 80%, transparent); }
+.ab-trail-clear { background: var(--swatch); color: var(--swatch-ink); box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--swatch) 80%, transparent); }
 .ab-trail-active { background: var(--trail-active); box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--trail-active) 75%, transparent); }
 .ab-trail-line-on { background: var(--trail-line); }
+.ab-trail-pending { background: color-mix(in srgb, var(--hero) 55%, #8f98a3); }
 .ab-trail-ping { background: color-mix(in srgb, var(--trail-active) 35%, transparent); animation: ab-trail-ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite; }
 @keyframes ab-trail-ping { 75%, 100% { transform: scale(1.5); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .ab-trail-ping { animation: none; opacity: .5; } }
+
+/*
+ * Wrapping rows stay readable on phones.
+ *
+ * A `flex-1` child starts at zero width, so in a wrapping row it never pushes
+ * its neighbours onto the next line: it just gets squeezed, and the text in it
+ * breaks a letter at a time (a reminder title reading "Charl ie Jorda n").
+ * Giving it a real starting width means the buttons beside it wrap underneath
+ * instead, everywhere in the app at once.
+ */
+.flex-wrap > .flex-1 {
+  flex-basis: 12rem;
+}

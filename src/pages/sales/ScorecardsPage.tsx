@@ -83,14 +83,14 @@ export default function ScorecardsPage() {
       header: '#',
       width: '48px',
       cell: (_row, index) => (
-        <span className="tabular text-[13px] font-bold text-muted">{index + 1}</span>
+        <span className="tabular text-label font-bold text-muted">{index + 1}</span>
       ),
     },
     {
       key: 'name',
       header: dimension === 'distributor' ? 'Distributor' : 'Rep',
       sortValue: (row) => row.name,
-      cell: (row) => <span className="text-[13.5px] font-semibold text-primary">{row.name}</span>,
+      cell: (row) => <span className="text-body font-semibold text-primary">{row.name}</span>,
     },
     {
       key: 'achieved',
@@ -98,7 +98,7 @@ export default function ScorecardsPage() {
       align: 'right',
       sortValue: (row) => row.achieved,
       cell: (row) => (
-        <span className="tabular text-[13.5px] font-bold text-primary">{naira(row.achieved)}</span>
+        <span className="tabular text-body font-bold text-primary">{naira(row.achieved)}</span>
       ),
     },
     {
@@ -108,7 +108,7 @@ export default function ScorecardsPage() {
       hideOnMobile: true,
       sortValue: (row) => row.target,
       cell: (row) => (
-        <span className="tabular text-[13px] text-muted">{row.target ? naira(row.target) : 'No target'}</span>
+        <span className="tabular text-label text-muted">{row.target ? naira(row.target) : 'No target'}</span>
       ),
     },
     {
@@ -122,7 +122,7 @@ export default function ScorecardsPage() {
             {percent(row.progress)}
           </Badge>
         ) : (
-          <span className="text-[11.5px] text-muted">no target</span>
+          <span className="text-caption text-muted">no target</span>
         ),
     },
     {
@@ -131,7 +131,7 @@ export default function ScorecardsPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.orders,
-      cell: (row) => <span className="tabular text-[13px] text-muted">{count(row.orders)}</span>,
+      cell: (row) => <span className="tabular text-label text-muted">{count(row.orders)}</span>,
     },
   ];
 

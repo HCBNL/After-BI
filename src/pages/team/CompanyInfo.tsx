@@ -89,8 +89,8 @@ export default function CompanyInfo() {
                   <Landmark size={20} aria-hidden />
                 </span>
                 <div>
-                  <p className="text-[15px] font-bold text-primary">No bank account added yet</p>
-                  <p className="mt-1 text-[13px] text-muted">
+                  <p className="text-lead font-semibold text-primary">No bank account added yet</p>
+                  <p className="mt-1 text-label text-muted">
                     {isAdmin ? (
                       <>
                         Add the company&rsquo;s accounts in{' '}
@@ -132,11 +132,11 @@ export default function CompanyInfo() {
               </span>
             )}
             <div className="min-w-0">
-              <p className="flex items-center gap-1.5 text-[16px] font-bold text-primary">
+              <p className="flex items-center gap-1.5 text-title font-semibold text-primary">
                 <span className="truncate">{name}</span>
                 <OrgPlanBadge size={18} />
               </p>
-              {settings?.rcNumber && <p className="text-[12.5px] font-semibold text-muted">{settings.rcNumber}</p>}
+              {settings?.rcNumber && <p className="text-label font-semibold text-muted">{settings.rcNumber}</p>}
               {plan && <PlanPill plan={plan} className="mt-1" />}
             </div>
           </div>
@@ -149,10 +149,10 @@ export default function CompanyInfo() {
             {settings?.taxId && <Row icon={<FileBadge size={15} />} label="Tax ID" value={settings.taxId} done={done === 'tax'} onCopy={() => void copy('tax', settings.taxId!, 'Tax ID')} />}
           </ul>
           {!settings?.address && !settings?.phone && !settings?.email && (
-            <p className="mt-3 text-[13px] text-muted">{isAdmin ? 'Add the address, phone and email in Settings.' : 'No contact details added yet.'}</p>
+            <p className="mt-3 text-label text-muted">{isAdmin ? 'Add the address, phone and email in Settings.' : 'No contact details added yet.'}</p>
           )}
           {wa && (
-            <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#128C7E] hover:underline">
+            <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-label font-semibold text-[#128C7E] hover:underline">
               <MessageCircle size={15} aria-hidden /> Message {name} on WhatsApp
             </a>
           )}
@@ -207,7 +207,7 @@ function BankCarousel({ count, children }: { count: number; children: ReactNode[
               className={cn('h-2 rounded-full transition-all', i === index ? 'w-6 bg-brand-600' : 'w-2 bg-[var(--border-strong)] hover:bg-[var(--text-muted)]')}
             />
           ))}
-          <span className="ml-2 text-[12px] font-semibold text-muted tabular">
+          <span className="ml-2 text-caption font-semibold text-muted tabular">
             {index + 1} of {count}
           </span>
         </div>
@@ -276,7 +276,7 @@ function BankCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5 rounded-2xl bg-white py-1.5 pl-1.5 pr-3.5 text-night shadow-card">
           <BankLogo size={40} bank={{ name: bank.bankName, logoUrl: profile?.logoUrl || bank.logoUrl, color: profile?.color }} />
-          <span className="truncate text-[14px] font-extrabold uppercase tracking-wide">{profile?.name || bank.bankName}</span>
+          <span className="truncate text-body font-semibold uppercase tracking-wide">{profile?.name || bank.bankName}</span>
         </div>
         <span aria-hidden className="relative mt-1 h-9 w-12 shrink-0 overflow-hidden rounded-md bg-gradient-to-br from-gold-200 via-gold-400 to-gold-600 shadow-inner">
           <span className="absolute inset-x-0 top-1/2 h-px bg-gold-800/40" />
@@ -285,14 +285,14 @@ function BankCard({
         </span>
       </div>
 
-      <p className="mt-7 text-[11px] font-bold uppercase tracking-[0.16em] text-white/50">Account number</p>
+      <p className="mt-7 text-micro font-semibold uppercase tracking-[0.16em] text-white/50">Account number</p>
       <button
         type="button"
         onClick={() => void copy(k('number'), bank.accountNumber, 'Account number')}
         className="group mt-1 flex w-full items-center justify-between gap-3 rounded-2xl text-left"
         aria-label={`Copy account number ${bank.accountNumber}`}
       >
-        <span className="font-display text-[2.1rem] font-extrabold leading-none tracking-[0.04em] tabular sm:text-[2.8rem]">{spaced(bank.accountNumber)}</span>
+        <span className="font-display text-display font-bold leading-none tracking-[0.04em] tabular sm:text-jumbo">{spaced(bank.accountNumber)}</span>
         <CopyMark done={done === k('number')} dark />
       </button>
 
@@ -305,7 +305,7 @@ function BankCard({
         <button
           type="button"
           onClick={() => void copy(k('all'), all, 'Account details')}
-          className="tap inline-flex items-center gap-2 rounded-xl bg-white px-4 text-[13.5px] font-bold text-night transition-transform hover:-translate-y-0.5"
+          className="tap inline-flex items-center gap-2 rounded-xl bg-white px-4 text-body font-semibold text-night transition-transform hover:-translate-y-0.5"
         >
           {done === k('all') ? <Check size={16} aria-hidden /> : <Copy size={16} aria-hidden />}
           {done === k('all') ? 'Copied' : 'Copy all details'}
@@ -314,7 +314,7 @@ function BankCard({
           href={`https://wa.me/?text=${encodeURIComponent(`${company} payment details\n\n${all}`)}`}
           target="_blank"
           rel="noreferrer"
-          className="tap inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 text-[13.5px] font-bold text-white transition-transform hover:-translate-y-0.5"
+          className="tap inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 text-body font-semibold text-white transition-transform hover:-translate-y-0.5"
         >
           <Share2 size={16} aria-hidden /> Share on WhatsApp
         </a>
@@ -322,7 +322,7 @@ function BankCard({
           type="button"
           onClick={() => void downloadImage()}
           disabled={saving}
-          className="tap inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 text-[13.5px] font-bold text-white ring-1 ring-inset ring-white/20 transition-transform hover:-translate-y-0.5 hover:bg-white/15 disabled:opacity-60"
+          className="tap inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 text-body font-semibold text-white ring-1 ring-inset ring-white/20 transition-transform hover:-translate-y-0.5 hover:bg-white/15 disabled:opacity-60"
         >
           <Download size={16} aria-hidden /> {saving ? 'Making image…' : 'Download image'}
         </button>
@@ -350,8 +350,8 @@ function CardLine({ label, value, done, onCopy }: { label: string; value: string
   return (
     <button type="button" onClick={onCopy} className="group flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3.5 py-3 text-left backdrop-blur-sm">
       <span className="min-w-0">
-        <span className="block text-[10.5px] font-bold uppercase tracking-[0.14em] text-white/50">{label}</span>
-        <span className="mt-0.5 block truncate text-[14.5px] font-bold">{value}</span>
+        <span className="block text-micro font-semibold uppercase tracking-[0.14em] text-white/50">{label}</span>
+        <span className="mt-0.5 block truncate text-body font-semibold">{value}</span>
       </span>
       <CopyMark done={done} dark />
     </button>
@@ -364,8 +364,8 @@ function Row({ icon, label, value, done, onCopy }: { icon: ReactNode; label: str
       <button type="button" onClick={onCopy} className="group flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left hover:bg-[var(--surface-sunken)]">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">{icon}</span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[11px] font-bold uppercase tracking-wide text-muted">{label}</span>
-          <span className="block truncate text-[14px] font-semibold text-primary">{value}</span>
+          <span className="block text-micro font-semibold uppercase tracking-wide text-muted">{label}</span>
+          <span className="block truncate text-body font-semibold text-primary">{value}</span>
         </span>
         <CopyMark done={done} />
       </button>

@@ -91,7 +91,7 @@ export default function SetupPage() {
             >
               <span
                 className={cn(
-                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-extrabold',
+                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-label font-semibold',
                   step.done
                     ? 'bg-brand-600 text-white dark:bg-brand-400 dark:text-brand-950'
                     : 'border border-[var(--border-strong)] text-muted',
@@ -102,10 +102,10 @@ export default function SetupPage() {
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-[15px] font-bold text-primary">{step.title}</h2>
+                  <h2 className="text-lead font-semibold text-primary">{step.title}</h2>
                   <Badge tone={step.done ? 'good' : 'neutral'}>{step.state}</Badge>
                 </div>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-secondary">{step.body}</p>
+                <p className="mt-1.5 text-label leading-relaxed text-secondary">{step.body}</p>
               </div>
 
               <ArrowRight size={17} className="mt-1 shrink-0 text-muted" aria-hidden />

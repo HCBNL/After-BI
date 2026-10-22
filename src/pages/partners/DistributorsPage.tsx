@@ -104,8 +104,8 @@ export default function DistributorsPage() {
       sortValue: (row) => row.company,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-semibold text-primary">{row.company}</p>
-          <p className="truncate text-[12px] text-muted">
+          <p className="truncate text-body font-semibold text-primary">{row.company}</p>
+          <p className="truncate text-caption text-muted">
             {row.contactName}
             {row.location ? ` · ${row.location}` : ''}
           </p>
@@ -125,7 +125,7 @@ export default function DistributorsPage() {
       cell: (row) => {
         const reps = repsByAccount.get(row.id) ?? [];
         return (
-          <span className="text-[12.5px] text-muted">{reps.length ? reps.map((r) => r.firstName).join(', ') : 'None'}</span>
+          <span className="text-label text-muted">{reps.length ? reps.map((r) => r.firstName).join(', ') : 'None'}</span>
         );
       },
     },
@@ -140,11 +140,11 @@ export default function DistributorsPage() {
         if (!position) return <span className="skeleton inline-block h-4 w-16 rounded" />;
         return (
           <div>
-            <p className="tabular text-[13px] font-bold text-primary">
+            <p className="tabular text-label font-bold text-primary">
               {naira(position.outstanding)}
             </p>
             {position.overdue > 0 && (
-              <p className="tabular text-[11.5px] font-semibold text-status-critical">
+              <p className="tabular text-caption font-semibold text-status-critical">
                 {naira(position.overdue)} overdue
               </p>
             )}
@@ -161,13 +161,13 @@ export default function DistributorsPage() {
         const position = balances?.[row.id];
         if (!position) return null;
         if (position.headroom === null)
-          return <span className="text-[11.5px] text-muted">no limit</span>;
+          return <span className="text-caption text-muted">no limit</span>;
         return (
           <span
             className={
               position.headroom <= 0
-                ? 'tabular text-[13px] font-bold text-status-critical'
-                : 'tabular text-[13px] text-secondary'
+                ? 'tabular text-label font-bold text-status-critical'
+                : 'tabular text-label text-secondary'
             }
           >
             {naira(position.headroom)}
@@ -417,7 +417,7 @@ function DistributorModal({
               onChange={(e) =>
                 set('creditLimit', e.target.value === '' ? (undefined as never) : Number(e.target.value))
               }
-              leading={<span className="text-[13px]">₦</span>}
+              leading={<span className="text-label">₦</span>}
               placeholder="No limit"
             />
           </Field>
@@ -444,8 +444,8 @@ function DistributorModal({
           </Select>
         </Field>
         <fieldset>
-          <legend className="mb-1 text-[13px] font-semibold text-primary">Sales reps</legend>
-          <p className="mb-2 text-[12px] leading-snug text-muted">
+          <legend className="mb-1 text-label font-semibold text-primary">Sales reps</legend>
+          <p className="mb-2 text-caption leading-snug text-muted">
             {canAssign
               ? 'Tick everyone who manages this account. Several is fine, one per branch say. Untick to hand it to someone else.'
               : 'An administrator chooses who manages this account.'}

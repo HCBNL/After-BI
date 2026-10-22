@@ -56,8 +56,8 @@ export default function MovementsPage() {
       sortValue: (row) => row.createdAt,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="text-[12.5px] font-semibold text-primary">{formatDateTime(row.createdAt)}</p>
-          <p className="truncate text-[11.5px] text-muted">{row.createdByName}</p>
+          <p className="text-label font-semibold text-primary">{formatDateTime(row.createdAt)}</p>
+          <p className="truncate text-caption text-muted">{row.createdByName}</p>
         </div>
       ),
     },
@@ -66,7 +66,7 @@ export default function MovementsPage() {
       header: 'Product',
       sortValue: (row) => row.productName,
       cell: (row) => (
-        <span className="truncate text-[13px] font-semibold text-primary">{row.productName}</span>
+        <span className="truncate text-label font-semibold text-primary">{row.productName}</span>
       ),
     },
     {
@@ -92,8 +92,8 @@ export default function MovementsPage() {
         <span
           className={
             row.direction === 'in'
-              ? 'tabular text-[13.5px] font-bold text-status-good'
-              : 'tabular text-[13.5px] font-bold text-secondary'
+              ? 'tabular text-body font-bold text-status-good'
+              : 'tabular text-body font-bold text-secondary'
           }
         >
           {row.direction === 'in' ? '+' : '−'}
@@ -106,13 +106,13 @@ export default function MovementsPage() {
       header: 'Balance after',
       align: 'right',
       hideOnMobile: true,
-      cell: (row) => <span className="tabular text-[13px] text-muted">{count(row.balanceAfter)}</span>,
+      cell: (row) => <span className="tabular text-label text-muted">{count(row.balanceAfter)}</span>,
     },
     {
       key: 'note',
       header: 'Note',
       hideOnMobile: true,
-      cell: (row) => <span className="text-[12px] text-muted">{row.note ?? ''}</span>,
+      cell: (row) => <span className="text-caption text-muted">{row.note ?? ''}</span>,
     },
   ];
 

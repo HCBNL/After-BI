@@ -389,7 +389,7 @@ export function NewOrderDrawer({
         {/* the basket */}
         {chosen.length > 0 && (
           <section className="rounded-2xl border border-hairline surface-sunken p-3">
-            <h3 className="mb-2 px-1 text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted">
+            <h3 className="mb-2 px-1 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
               {count(chosen.length)} line{chosen.length === 1 ? '' : 's'}
             </h3>
 
@@ -407,8 +407,8 @@ export function NewOrderDrawer({
                   >
                    <div className="flex items-center gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-semibold text-primary">{product.name}</p>
-                      <p className="tabular text-[11.5px] text-muted">
+                      <p className="truncate text-label font-semibold text-primary">{product.name}</p>
+                      <p className="tabular text-caption text-muted">
                         {unitPrice !== listPrice ? (
                           <>
                             <span className="line-through">{naira(listPrice, true)}</span>{' '}
@@ -436,7 +436,7 @@ export function NewOrderDrawer({
                         value={quantity}
                         aria-label={`Quantity of ${product.name}`}
                         onChange={(e) => setQuantity(product, Number(e.target.value))}
-                        className="tabular h-8 w-14 rounded-lg border border-hairline bg-transparent text-center text-[13px] font-bold text-primary"
+                        className="tabular h-8 w-14 rounded-lg border border-hairline bg-transparent text-center text-label font-bold text-primary"
                       />
                       <button
                         type="button"
@@ -467,17 +467,17 @@ export function NewOrderDrawer({
                           placeholder="Where to? Lagos to Kano"
                           aria-label={`Note for ${product.name}`}
                           maxLength={80}
-                          className="h-8 min-w-0 flex-1 rounded-lg border border-hairline bg-transparent px-2.5 text-[13px] text-primary placeholder:text-muted"
+                          className="h-8 min-w-0 flex-1 rounded-lg border border-hairline bg-transparent px-2.5 text-label text-primary placeholder:text-muted"
                         />
                       </div>
                     )}
 
                     {showPrice && (
                       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-hairline pt-2">
-                        <label className="flex items-center gap-2 text-[11.5px] font-semibold text-muted">
+                        <label className="flex items-center gap-2 text-caption font-semibold text-muted">
                           Price per unit
                           <span className="relative">
-                            <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[12px] text-muted">₦</span>
+                            <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-caption text-muted">₦</span>
                             <input
                               type="number"
                               inputMode="decimal"
@@ -494,29 +494,29 @@ export function NewOrderDrawer({
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                               }}
-                              className="tabular h-8 w-28 rounded-lg border border-hairline bg-transparent pl-6 pr-2 text-[13px] font-bold text-primary"
+                              className="tabular h-8 w-28 rounded-lg border border-hairline bg-transparent pl-6 pr-2 text-label font-bold text-primary"
                             />
                           </span>
                         </label>
                         {off > 0 && (
-                          <span className="tabular text-[11.5px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+                          <span className="tabular text-caption font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
                             {naira(off, true)} off
                           </span>
                         )}
                         {unitPrice > listPrice && (
-                          <span className="text-[11.5px] text-muted">Above list price</span>
+                          <span className="text-caption text-muted">Above list price</span>
                         )}
                         {prices[product.id] !== undefined && !product.service && (
                           <button
                             type="button"
                             onClick={() => setPrice(product, '')}
-                            className="text-[11.5px] font-semibold text-brand-700 underline dark:text-brand-300"
+                            className="text-caption font-semibold text-brand-700 underline dark:text-brand-300"
                           >
                             Back to {naira(listPrice, true)}
                           </button>
                         )}
                         {cost !== undefined && unitPrice < cost && (
-                          <span className="tabular w-full text-[11.5px] font-semibold text-status-critical">
+                          <span className="tabular w-full text-caption font-semibold text-status-critical">
                             Below landed cost of {naira(cost, true)} per unit
                           </span>
                         )}
@@ -530,19 +530,19 @@ export function NewOrderDrawer({
             <div className="mt-3 space-y-1 px-1">
               {discount > 0 && (
                 <>
-                  <div className="flex items-center justify-between text-[12.5px] text-muted">
+                  <div className="flex items-center justify-between text-label text-muted">
                     <span>Normal price</span>
                     <span className="tabular">{naira(gross, true)}</span>
                   </div>
-                  <div className="flex items-center justify-between text-[12.5px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+                  <div className="flex items-center justify-between text-label font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
                     <span>Discount</span>
                     <span className="tabular">({naira(discount, true)})</span>
                   </div>
                 </>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-[12px] font-bold uppercase tracking-wide text-muted">Total</span>
-                <span className="tabular text-[17px] font-extrabold text-primary">{naira(total, true)}</span>
+                <span className="text-caption font-semibold uppercase tracking-wide text-muted">Total</span>
+                <span className="tabular text-title font-bold text-primary">{naira(total, true)}</span>
               </div>
             </div>
 
@@ -591,10 +591,10 @@ export function NewOrderDrawer({
                         className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[var(--surface-sunken)]"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13.5px] font-semibold text-primary">
+                          <p className="truncate text-body font-semibold text-primary">
                             {product.name}
                           </p>
-                          <p className="tabular text-[12px] text-muted">
+                          <p className="tabular text-caption text-muted">
                             {product.service
                               ? `Service, no stock · ${unitPrice > 0 ? naira(unitPrice) : 'price it on the order'}`
                               : `${naira(unitPrice)} · ${product.unit}${product.moq > 1 ? ` · min ${product.moq}` : ''}`}
@@ -623,7 +623,7 @@ export function NewOrderDrawer({
         {/* submit */}
         <div className="sticky -bottom-5 z-10 -mx-5 -mb-5 border-t border-hairline surface-card px-5 pb-safe-4 pt-3 shadow-[0_-10px_24px_-18px_rgba(0,0,0,0.35)]">
           {needsApproval && (
-            <p className="mb-2 text-[12px] leading-snug text-muted">
+            <p className="mb-2 text-caption leading-snug text-muted">
               {threshold > 0 && total >= threshold
                 ? `Over ${naira(threshold)}, so this needs a signature before it can be fulfilled.`
                 : 'It carries a discount, so this needs a signature before it can be fulfilled.'}

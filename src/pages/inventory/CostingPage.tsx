@@ -93,8 +93,8 @@ export default function CostingPage() {
       sortValue: (row) => row.name,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-semibold text-primary">{row.name}</p>
-          <p className="truncate text-[12px] text-muted">
+          <p className="truncate text-body font-semibold text-primary">{row.name}</p>
+          <p className="truncate text-caption text-muted">
             {row.productName && row.productName !== row.name ? `${row.productName} · ` : ''}
             {count(row.quantity)} {row.unit ? row.unit.replace(/^per\s+/i, '') + 's' : 'units'}
           </p>
@@ -107,7 +107,7 @@ export default function CostingPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.landedTotal ?? 0,
-      cell: (row) => <span className="tabular text-[13px] text-secondary">{naira(row.landedTotal ?? 0)}</span>,
+      cell: (row) => <span className="tabular text-label text-secondary">{naira(row.landedTotal ?? 0)}</span>,
     },
     {
       key: 'unit',
@@ -115,7 +115,7 @@ export default function CostingPage() {
       align: 'right',
       sortValue: (row) => row.unitCost ?? 0,
       cell: (row) => (
-        <span className="tabular text-[13.5px] font-bold text-primary">{naira(row.unitCost ?? 0, true)}</span>
+        <span className="tabular text-body font-bold text-primary">{naira(row.unitCost ?? 0, true)}</span>
       ),
     },
     {
@@ -124,7 +124,7 @@ export default function CostingPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.updatedAt ?? '',
-      cell: (row) => <span className="text-[12.5px] text-muted">{formatDate(row.updatedAt)}</span>,
+      cell: (row) => <span className="text-label text-muted">{formatDate(row.updatedAt)}</span>,
     },
   ];
 
@@ -315,7 +315,7 @@ function CostingDrawer({
 
         {/* the costs */}
         <section>
-          <h3 className="mb-2 text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted">Costs</h3>
+          <h3 className="mb-2 text-micro font-semibold uppercase tracking-[0.12em] text-muted">Costs</h3>
           <ul className="space-y-2">
             {draft.costs.map((line) => (
               <li key={line.id} className="rounded-xl border border-hairline surface-card p-3">
@@ -344,7 +344,7 @@ function CostingDrawer({
                     onChange={(e) => setCost(line.id, { amount: Number(e.target.value) })}
                     placeholder="0"
                     aria-label={`${line.label} amount`}
-                    leading={<span className="text-[13px]">{CURRENCY_SIGN[line.currency]}</span>}
+                    leading={<span className="text-label">{CURRENCY_SIGN[line.currency]}</span>}
                   />
                   <Select
                     value={line.currency}
@@ -369,7 +369,7 @@ function CostingDrawer({
                   </Select>
                 </div>
                 {(line.currency !== 'NGN' || line.per === 'unit') && (
-                  <p className="tabular mt-1.5 text-right text-[12px] text-muted">
+                  <p className="tabular mt-1.5 text-right text-caption text-muted">
                     {naira(costInNaira(line, draft), true)} in all
                   </p>
                 )}
@@ -400,7 +400,7 @@ function CostingDrawer({
                     value={draft.rates[c] || ''}
                     onChange={(e) => patch({ rates: { ...draft.rates, [c]: Number(e.target.value) } })}
                     placeholder="0"
-                    leading={<span className="text-[13px]">₦</span>}
+                    leading={<span className="text-label">₦</span>}
                   />
                 </Field>
               ))}
@@ -411,16 +411,16 @@ function CostingDrawer({
         {/* the answer */}
         <section className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-hairline surface-sunken p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Total landed cost</p>
-            <p className="tabular mt-1 text-[22px] font-extrabold text-primary">{naira(total, true)}</p>
+            <p className="text-micro font-bold uppercase tracking-wide text-muted">Total landed cost</p>
+            <p className="tabular mt-1 text-headline font-bold text-primary">{naira(total, true)}</p>
           </div>
           <div className="rounded-2xl border border-brand-500/40 bg-brand-50/60 p-4 dark:bg-brand-500/10">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Landed cost per {unitWord}</p>
-            <p className="tabular mt-1 text-[22px] font-extrabold text-primary">
+            <p className="text-micro font-bold uppercase tracking-wide text-muted">Landed cost per {unitWord}</p>
+            <p className="tabular mt-1 text-headline font-bold text-primary">
               {quantity > 0 ? naira(perUnit, true) : 'Add a quantity'}
             </p>
             {quantity > 0 && (
-              <p className="tabular mt-0.5 text-[12px] text-muted">
+              <p className="tabular mt-0.5 text-caption text-muted">
                 {naira(total, true)} ÷ {count(quantity)}
               </p>
             )}
@@ -437,7 +437,7 @@ function CostingDrawer({
         {/* selling prices */}
         <section>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted">Selling prices</h3>
+            <h3 className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">Selling prices</h3>
             <div className="flex flex-wrap items-center gap-2">
               <SegmentedControl
                 size="sm"
@@ -452,7 +452,7 @@ function CostingDrawer({
                 value={String(draft.roundTo)}
                 aria-label="Round prices up"
                 onChange={(e) => patch({ roundTo: Number(e.target.value) })}
-                className="h-9 w-[150px] text-[13px]"
+                className="h-9 w-[150px] text-label"
               >
                 {ROUNDING.map((r) => (
                   <option key={r} value={r}>
@@ -462,7 +462,7 @@ function CostingDrawer({
               </Select>
             </div>
           </div>
-          <p className="mb-3 text-[12px] leading-snug text-muted">
+          <p className="mb-3 text-caption leading-snug text-muted">
             {draft.basis === 'markup'
               ? 'Markup adds the percent to your cost: 50% on ₦1,000 sells at ₦1,500.'
               : 'Margin is the share of the selling price that is profit: 50% on ₦1,000 sells at ₦2,000.'}
@@ -480,28 +480,28 @@ function CostingDrawer({
                     value={Number.isFinite(row.percent) ? row.percent : ''}
                     onChange={(e) => setMargin(row.id, { percent: Number(e.target.value) })}
                     aria-label="Percent"
-                    trailing={<span className="text-[13px] text-muted">%</span>}
+                    trailing={<span className="text-label text-muted">%</span>}
                   />
                 </div>
                 <div className="min-w-[120px] flex-1">
-                  <p className="tabular text-[16px] font-extrabold text-primary">
+                  <p className="tabular text-title font-bold text-primary">
                     {row.price > 0 ? naira(row.price, true) : 'None'}
                   </p>
                   {row.price > 0 && (
-                    <p className="tabular text-[11.5px] text-muted">
+                    <p className="tabular text-caption text-muted">
                       {naira(row.price - perUnit, true)} profit per {unitWord}
                       {quantity > 0 ? ` · ${naira((row.price - perUnit) * quantity)} on all ${count(quantity)}` : ''}
                     </p>
                   )}
                   {draft.basis === 'margin' && row.percent >= 100 && (
-                    <p className="text-[11.5px] text-status-critical">A margin must be under 100%.</p>
+                    <p className="text-caption text-status-critical">A margin must be under 100%.</p>
                   )}
                 </div>
                 <Select
                   value={row.tier ?? ''}
                   aria-label="Use for tier"
                   onChange={(e) => setMargin(row.id, { tier: (e.target.value || undefined) as PriceTier | undefined })}
-                  className="h-9 w-[150px] text-[13px]"
+                  className="h-9 w-[150px] text-label"
                   disabled={!draft.productId}
                 >
                   <option value="">Not for a tier</option>
@@ -534,7 +534,7 @@ function CostingDrawer({
         {/* the product's prices today, against this cost */}
         {product && perUnit > 0 && (
           <section>
-            <h3 className="mb-2 text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted">
+            <h3 className="mb-2 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
               {product.name}: prices today
             </h3>
             <div className="grid gap-2 sm:grid-cols-3">
@@ -544,20 +544,20 @@ function CostingDrawer({
                 const below = typeof price === 'number' && price < perUnit;
                 return (
                   <div key={tier} className="rounded-xl border border-hairline px-3 py-2.5">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-muted">
+                    <p className="text-micro font-semibold uppercase tracking-wide text-muted">
                       {tier} ({TIER_LABEL[tier]})
                     </p>
                     {typeof price === 'number' ? (
                       <>
-                        <p className="tabular mt-0.5 text-[15px] font-bold text-primary">{naira(price, true)}</p>
-                        <p className={`tabular text-[11.5px] ${below ? 'font-semibold text-status-critical' : 'text-muted'}`}>
+                        <p className="tabular mt-0.5 text-lead font-bold text-primary">{naira(price, true)}</p>
+                        <p className={`tabular text-caption ${below ? 'font-semibold text-status-critical' : 'text-muted'}`}>
                           {below
                             ? `Below cost by ${naira(perUnit - price, true)}`
                             : `${e.markup.toFixed(1)}% markup · ${e.margin.toFixed(1)}% margin`}
                         </p>
                       </>
                     ) : (
-                      <p className="mt-0.5 text-[12px] text-muted">Not priced</p>
+                      <p className="mt-0.5 text-caption text-muted">Not priced</p>
                     )}
                   </div>
                 );
@@ -593,7 +593,7 @@ function CostingDrawer({
             )}
           </div>
           {product && toApply.length === 0 && (
-            <p className="mt-2 text-[12px] leading-snug text-muted">
+            <p className="mt-2 text-caption leading-snug text-muted">
               To write prices onto {product.name}, pick a tier beside a margin (Use for OT, MT or SA).
             </p>
           )}
@@ -616,7 +616,7 @@ function CostingDrawer({
                 <strong>{naira(row.price, true)}</strong>
               </span>
             ))}
-            <span className="block pt-1 text-[12.5px] text-muted">
+            <span className="block pt-1 text-label text-muted">
               New orders use these prices. Orders already raised keep the price they were raised at.
             </span>
           </span>

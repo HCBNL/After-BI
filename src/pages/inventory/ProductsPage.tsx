@@ -66,11 +66,11 @@ export default function ProductsPage() {
       sortValue: (row) => row.name,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="flex items-center gap-2 truncate text-[13.5px] font-semibold text-primary">
+          <p className="flex items-center gap-2 truncate text-body font-semibold text-primary">
             <span className="truncate">{row.name}</span>
             {row.service && <Badge tone="info">Service</Badge>}
           </p>
-          <p className="truncate text-[12px] text-muted">
+          <p className="truncate text-caption text-muted">
             {row.category}
             {row.sku ? ` · ${row.sku}` : ''} · {row.unit}
           </p>
@@ -85,7 +85,7 @@ export default function ProductsPage() {
       sortValue: (row) => row.pricing[tier] ?? -1,
       cell: (row) =>
         typeof row.pricing[tier] === 'number' ? (
-          <span className="tabular text-[13px] text-primary">{naira(row.pricing[tier]!)}</span>
+          <span className="tabular text-label text-primary">{naira(row.pricing[tier]!)}</span>
         ) : (
           /*
             An unpriced tier is stated, not left blank.
@@ -94,7 +94,7 @@ export default function ProductsPage() {
             honest version and it is also the actionable one: that tier cannot
             order this product at all until somebody fills it in.
           */
-          <span className="text-[11.5px] text-muted">not priced</span>
+          <span className="text-caption text-muted">not priced</span>
         ),
     })),
     {
@@ -103,7 +103,7 @@ export default function ProductsPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.moq,
-      cell: (row) => <span className="tabular text-[13px] text-muted">{count(row.moq)}</span>,
+      cell: (row) => <span className="tabular text-label text-muted">{count(row.moq)}</span>,
     },
     {
       key: 'status',
@@ -321,7 +321,7 @@ function ProductModal({
             price: and `NewOrderDrawer` will then correctly refuse to sell it
             to an OT distributor rather than selling it at zero.
  */}
-          <legend className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-secondary">
+          <legend className="mb-2 flex items-center gap-1.5 text-label font-semibold text-secondary">
             Price by tier
             <Hint label="About tier pricing">
               Leave a tier blank and that tier cannot order this product at all. That is usually what
@@ -339,7 +339,7 @@ function ProductModal({
                   value={draft.pricing?.[tier] ?? ''}
                   onChange={(e) => setPrice(tier, e.target.value)}
                   placeholder="0"
-                  leading={<span className="text-[13px]">₦</span>}
+                  leading={<span className="text-label">₦</span>}
                 />
               </Field>
             ))}

@@ -92,8 +92,8 @@ export default function ReturnsPage() {
       sortValue: (row) => row.returnNumber,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="tabular truncate text-[13.5px] font-bold text-primary">{row.returnNumber}</p>
-          <p className="truncate text-[12px] text-muted">{row.distributorName}</p>
+          <p className="tabular truncate text-body font-bold text-primary">{row.returnNumber}</p>
+          <p className="truncate text-caption text-muted">{row.distributorName}</p>
         </div>
       ),
     },
@@ -103,8 +103,8 @@ export default function ReturnsPage() {
       sortValue: (row) => row.productName,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[13px] font-semibold text-primary">{row.productName}</p>
-          <p className="tabular text-[12px] text-muted">{count(row.quantity)}</p>
+          <p className="truncate text-label font-semibold text-primary">{row.productName}</p>
+          <p className="tabular text-caption text-muted">{count(row.quantity)}</p>
         </div>
       ),
     },
@@ -112,7 +112,7 @@ export default function ReturnsPage() {
       key: 'reason',
       header: 'Reason',
       hideOnMobile: true,
-      cell: (row) => <span className="text-[12.5px] text-secondary">{row.reason}</span>,
+      cell: (row) => <span className="text-label text-secondary">{row.reason}</span>,
     },
     {
       key: 'credit',
@@ -120,7 +120,7 @@ export default function ReturnsPage() {
       align: 'right',
       sortValue: (row) => row.creditValue ?? 0,
       cell: (row) => (
-        <span className="tabular text-[13.5px] font-bold text-primary">
+        <span className="tabular text-body font-bold text-primary">
           {row.creditValue ? naira(row.creditValue) : 'None'}
         </span>
       ),
@@ -131,7 +131,7 @@ export default function ReturnsPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.createdAt,
-      cell: (row) => <span className="text-[12px] text-muted">{formatDate(row.createdAt)}</span>,
+      cell: (row) => <span className="text-caption text-muted">{formatDate(row.createdAt)}</span>,
     },
     {
       key: 'status',
@@ -253,8 +253,8 @@ function ReturnDrawer({
       <div className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[15px] font-bold text-primary">{record.distributorName}</p>
-            <p className="mt-0.5 text-[12.5px] text-muted">
+            <p className="text-lead font-semibold text-primary">{record.distributorName}</p>
+            <p className="mt-0.5 text-label text-muted">
               Raised by {record.requestedByName} · {formatDate(record.createdAt)}
             </p>
           </div>
@@ -262,15 +262,15 @@ function ReturnDrawer({
         </div>
 
         <div className="rounded-2xl border border-hairline surface-sunken p-4">
-          <p className="text-[14px] font-bold text-primary">{record.productName}</p>
-          <p className="tabular mt-0.5 text-[13px] text-muted">{count(record.quantity)} coming back</p>
-          <p className="mt-2 text-[13px] leading-relaxed text-secondary">{record.reason}</p>
+          <p className="text-body font-semibold text-primary">{record.productName}</p>
+          <p className="tabular mt-0.5 text-label text-muted">{count(record.quantity)} coming back</p>
+          <p className="mt-2 text-label leading-relaxed text-secondary">{record.reason}</p>
           {record.creditValue ? (
             <>
-              <p className="tabular mt-3 text-[15px] font-extrabold text-primary">
+              <p className="tabular mt-3 text-lead font-bold text-primary">
                 {naira(record.creditValue)} credit
               </p>
-              <p className="mt-0.5 text-[12.5px] text-muted">
+              <p className="mt-0.5 text-label text-muted">
                 {unapplied <= 0
                   ? 'Applied to the account\u2019s invoices.'
                   : (record.creditApplied ?? 0) > 0
@@ -304,7 +304,7 @@ function ReturnDrawer({
                 min={0}
                 value={credit}
                 onChange={(e) => setCredit(e.target.value)}
-                leading={<span className="text-[13px]">₦</span>}
+                leading={<span className="text-label">₦</span>}
               />
             </Field>
             <div className="flex flex-wrap gap-2">
@@ -339,8 +339,8 @@ function ReturnDrawer({
 
         {canDecide && record.status === 'approved' && (
           <div className="space-y-3 rounded-2xl border border-hairline surface-sunken p-4">
-            <p className="text-[13.5px] font-bold text-primary">Receive it back into stock</p>
-            <p className="text-[12.5px] leading-snug text-muted">
+            <p className="text-body font-semibold text-primary">Receive it back into stock</p>
+            <p className="text-label leading-snug text-muted">
               This adds {count(record.quantity)} of {record.productName} to the depot you pick and
               writes it to the ledger. Only do it once the goods are physically counted in.
             </p>
@@ -365,7 +365,7 @@ function ReturnDrawer({
         )}
 
         {!canDecide && amend.reason && (
-          <p className="rounded-xl border border-hairline surface-sunken px-3.5 py-2.5 text-[12.5px] leading-snug text-muted">
+          <p className="rounded-xl border border-hairline surface-sunken px-3.5 py-2.5 text-label leading-snug text-muted">
             {amend.reason}
           </p>
         )}

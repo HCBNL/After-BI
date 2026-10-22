@@ -112,7 +112,7 @@ export default function StaffPage() {
 
       {made && (
         <Alert tone="good" className="mb-4" title={`${made.name} can sign in now`}>
-          <pre className="mt-2 whitespace-pre-wrap rounded-lg bg-black/5 p-3 font-mono text-[12.5px] dark:bg-white/5">{loginNote}</pre>
+          <pre className="mt-2 whitespace-pre-wrap rounded-lg bg-black/5 p-3 font-mono text-label dark:bg-white/5">{loginNote}</pre>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
               size="sm"
@@ -127,7 +127,7 @@ export default function StaffPage() {
                 href={whatsappLink(whatsappNumber(made.phone), loginNote)}
                 target="_blank"
                 rel="noreferrer"
-                className="tap inline-flex items-center rounded-lg bg-[#25D366] px-3 text-[13px] font-bold text-white"
+                className="tap inline-flex items-center rounded-lg bg-[#25D366] px-3 text-label font-semibold text-white"
               >
                 Send on WhatsApp
               </a>
@@ -141,7 +141,7 @@ export default function StaffPage() {
 
       {open ? (
         <Card className="mb-5">
-          <h2 className="text-[15px] font-bold text-primary">New staff member</h2>
+          <h2 className="text-lead font-semibold text-primary">New staff member</h2>
           <form onSubmit={(e) => void create(e)} className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field label="First name" required>
               <Input name="firstName" required maxLength={40} />
@@ -208,17 +208,17 @@ export default function StaffPage() {
             <Card key={person.id} className="p-4 sm:p-5">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate text-[15px] font-bold text-primary">
+                  <p className="truncate text-lead font-semibold text-primary">
                     {person.firstName} {person.lastName}
                   </p>
-                  <p className="truncate text-[12.5px] text-muted">{person.email}</p>
-                  <p className="text-[12px] font-semibold text-muted">{staffNumber(person.id)}</p>
+                  <p className="truncate text-label text-muted">{person.email}</p>
+                  <p className="text-caption font-semibold text-muted">{staffNumber(person.id)}</p>
                 </div>
                 <Badge tone={person.active === false ? 'critical' : 'good'}>
                   {person.active === false ? 'Suspended' : 'Active'}
                 </Badge>
               </div>
-              <div className="mt-2 space-y-0.5 text-[13px] text-secondary">
+              <div className="mt-2 space-y-0.5 text-label text-secondary">
                 {person.position && <p className="font-semibold text-primary">{person.position}</p>}
                 {person.location && (
                   <p className="flex items-center gap-1">

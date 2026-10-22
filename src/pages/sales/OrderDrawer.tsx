@@ -175,8 +175,8 @@ export function OrderDrawer({
           {/* the header */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[15px] font-bold text-primary">{order.distributorName}</p>
-              <p className="mt-0.5 text-[12.5px] text-muted">
+              <p className="text-lead font-semibold text-primary">{order.distributorName}</p>
+              <p className="mt-0.5 text-label text-muted">
                 Raised by {order.createdByName} · {formatDateTime(order.createdAt)}
                 {order.deliveryNumber ? ` · Delivery note ${order.deliveryNumber}` : ''}
               </p>
@@ -360,12 +360,12 @@ export function OrderDrawer({
             naming the stage and who can act.
           */}
           {!amend.canEdit && !amend.canRecall && !amend.canCancel && amend.reason && (
-            <div className="rounded-xl border border-hairline surface-sunken px-3.5 py-2.5 text-[12.5px] leading-snug text-muted">
+            <div className="rounded-xl border border-hairline surface-sunken px-3.5 py-2.5 text-label leading-snug text-muted">
               <p>{amend.reason}</p>
               {order.status === 'fulfilled' && root && user?.role !== 'sales_rep' && (
                 <Link
                   to={`${root}/returns?new=1&account=${order.distributorId}`}
-                  className="mt-2 inline-flex items-center gap-1 text-[12.5px] font-bold text-brand-700 hover:underline dark:text-brand-300"
+                  className="mt-2 inline-flex items-center gap-1 text-label font-semibold text-brand-700 hover:underline dark:text-brand-300"
                 >
                   <Undo2 size={13} aria-hidden /> Raise a return for {order.distributorName}
                 </Link>
@@ -374,11 +374,11 @@ export function OrderDrawer({
           )}
 
           {amend.canRecall && !amend.canEdit && amend.reason && (
-            <p className="text-[12px] leading-snug text-muted">{amend.reason}</p>
+            <p className="text-caption leading-snug text-muted">{amend.reason}</p>
           )}
 
           {amend.byOverride && (amend.canEdit || amend.canCancel) && (
-            <p className="text-[12px] leading-snug text-muted">
+            <p className="text-caption leading-snug text-muted">
               You can change this because you are an administrator. The change is recorded against
               your name and shown on the order.
             </p>
@@ -404,7 +404,7 @@ export function OrderDrawer({
               total: it is asked once and then never again. See the snapshot
               note at the top of `types/index.ts`.
             */}
-            <h3 className="mb-2 flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted">
+            <h3 className="mb-2 flex items-center gap-1.5 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
               {count(order.lines.length)} line{order.lines.length === 1 ? '' : 's'}
               <Hint label="About these prices">
                 Prices are as they were when this order was raised, not today's. Every line carries
@@ -419,12 +419,12 @@ export function OrderDrawer({
                   className="flex items-start justify-between gap-3 border-b border-hairline px-4 py-3 last:border-0"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-[13.5px] font-semibold text-primary">
+                    <p className="truncate text-body font-semibold text-primary">
                       {line.productName}
                       {line.service && <span className="ml-2 align-middle"><Badge tone="info">Service</Badge></span>}
                     </p>
-                    {line.note && <p className="mt-0.5 text-[12px] font-medium text-secondary">{line.note}</p>}
-                    <p className="tabular mt-0.5 text-[12px] text-muted">
+                    {line.note && <p className="mt-0.5 text-caption font-medium text-secondary">{line.note}</p>}
+                    <p className="tabular mt-0.5 text-caption text-muted">
                       {count(line.quantity)} ×{' '}
                       {listPriceOf(line) > line.unitPrice && (
                         <span className="line-through">{naira(listPriceOf(line), true)}</span>
@@ -432,20 +432,20 @@ export function OrderDrawer({
                       {naira(line.unitPrice, true)} · {line.unit}
                     </p>
                     {listPriceOf(line) > line.unitPrice && (
-                      <p className="tabular mt-0.5 text-[11.5px] font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
+                      <p className="tabular mt-0.5 text-caption font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
                         {naira((listPriceOf(line) - line.unitPrice) * line.quantity, true)} off (
                         {naira(listPriceOf(line) - line.unitPrice, true)} per unit)
                       </p>
                     )}
                   </div>
-                  <p className="tabular shrink-0 text-[13.5px] font-bold text-primary">
+                  <p className="tabular shrink-0 text-body font-bold text-primary">
                     {naira(line.lineTotal, true)}
                   </p>
                 </div>
               ))}
 
               {priced.discount > 0 && (
-                <div className="space-y-1 border-b border-hairline px-4 py-3 text-[12.5px]">
+                <div className="space-y-1 border-b border-hairline px-4 py-3 text-label">
                   <div className="flex items-center justify-between text-muted">
                     <span>Normal price</span>
                     <span className="tabular">{naira(priced.gross, true)}</span>
@@ -458,8 +458,8 @@ export function OrderDrawer({
               )}
 
               <div className="flex items-center justify-between gap-3 surface-sunken px-4 py-3">
-                <p className="text-[12px] font-bold uppercase tracking-wide text-muted">Total</p>
-                <p className="tabular text-[16px] font-extrabold text-primary">{naira(order.total, true)}</p>
+                <p className="text-caption font-semibold uppercase tracking-wide text-muted">Total</p>
+                <p className="tabular text-title font-bold text-primary">{naira(order.total, true)}</p>
               </div>
             </div>
 
@@ -478,14 +478,14 @@ export function OrderDrawer({
                       className="flex items-start justify-between gap-3 rounded-xl border border-hairline px-3.5 py-2.5"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold text-primary">
+                        <p className="truncate text-label font-semibold text-primary">
                           {order.approverNames?.[uid] ?? 'Approver'}
                         </p>
                         {decision?.note && (
-                          <p className="mt-0.5 text-[12px] leading-snug text-muted">{decision.note}</p>
+                          <p className="mt-0.5 text-caption leading-snug text-muted">{decision.note}</p>
                         )}
                         {decision && (
-                          <p className="mt-0.5 text-[11.5px] text-muted">
+                          <p className="mt-0.5 text-caption text-muted">
                             {formatDateTime(decision.decidedAt)}
                           </p>
                         )}
@@ -510,9 +510,9 @@ export function OrderDrawer({
                       className="flex items-start justify-between gap-3 rounded-xl border border-hairline px-3.5 py-2.5"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold text-primary">{decision.name}</p>
-                        {decision.note && <p className="mt-0.5 text-[12px] leading-snug text-muted">{decision.note}</p>}
-                        <p className="mt-0.5 text-[11.5px] text-muted">{formatDateTime(decision.decidedAt)}</p>
+                        <p className="truncate text-label font-semibold text-primary">{decision.name}</p>
+                        {decision.note && <p className="mt-0.5 text-caption leading-snug text-muted">{decision.note}</p>}
+                        <p className="mt-0.5 text-caption text-muted">{formatDateTime(decision.decidedAt)}</p>
                       </div>
                       <Badge tone={decision.decision === 'approved' ? 'good' : 'critical'}>
                         {decision.decision === 'approved' ? 'Signed' : 'Rejected'}
@@ -527,7 +527,7 @@ export function OrderDrawer({
           {canDecide && !alreadyDecided && (
             <section className="rounded-2xl border border-hairline surface-sunken p-4">
               <div className="flex items-center gap-1.5">
-                <h3 className="text-[13.5px] font-bold text-primary">Your signature</h3>
+                <h3 className="text-body font-semibold text-primary">Your signature</h3>
                 <Hint label="About your signature">
                   This order cannot move until you decide. A rejection needs a reason; it is what
                   the person who raised it will read.
@@ -573,8 +573,8 @@ export function OrderDrawer({
 
           {canFulfil && (
             <section className="rounded-2xl border border-hairline surface-sunken p-4">
-              <h3 className="text-[13.5px] font-bold text-primary">Fulfil from a depot</h3>
-              <p className="mt-1 text-[12.5px] leading-snug text-muted">
+              <h3 className="text-body font-semibold text-primary">Fulfil from a depot</h3>
+              <p className="mt-1 text-label leading-snug text-muted">
                 This deducts every line from the depot you pick and writes the ledger. If any line is
                 short, nothing is deducted at all.
               </p>

@@ -45,7 +45,7 @@ export function VideoPicker({
 
   return (
     <div style={{ width: Math.max(width, 210) }}>
-      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-secondary">{label}</p>
+      <p className="text-micro font-semibold uppercase tracking-[0.08em] text-secondary">{label}</p>
       <div
         className="mt-2 overflow-hidden rounded-xl bg-[#0a0c10] ring-1 ring-[var(--border-hairline)]"
         style={{ width, height }}
@@ -53,11 +53,11 @@ export function VideoPicker({
         {value && isFileVideo(value) ? (
           <video key={value} src={videoUrl(value, 640)} muted loop autoPlay playsInline className="h-full w-full object-cover" />
         ) : value ? (
-          <span className="flex h-full items-center justify-center px-2 text-center text-[12px] font-semibold text-white/70">
+          <span className="flex h-full items-center justify-center px-2 text-center text-caption font-semibold text-white/70">
             Linked video
           </span>
         ) : (
-          <span className="flex h-full items-center justify-center px-2 text-center text-[12px] text-white/55">
+          <span className="flex h-full items-center justify-center px-2 text-center text-caption text-white/55">
             No video
           </span>
         )}
@@ -83,9 +83,9 @@ export function VideoPicker({
         value={value}
         onChange={(event) => onChange(event.target.value.trim())}
         placeholder="or paste a YouTube, Vimeo or .mp4 link"
-        className="mt-2 font-mono text-[12px]"
+        className="mt-2 font-mono text-caption"
       />
-      {hint && <p className="mt-1.5 text-[12px] leading-snug text-muted">{hint}</p>}
+      {hint && <p className="mt-1.5 text-caption leading-snug text-muted">{hint}</p>}
     </div>
   );
 }

@@ -24,11 +24,11 @@ export default function StaffHome() {
     <div className="space-y-6">
       <section className="relative overflow-hidden rounded-[24px] bg-[#0f1f36] p-6 text-white sm:p-8">
         <div aria-hidden className="absolute -right-10 -top-10 h-56 w-56 rounded-full bg-[#ee6a00]/30 blur-3xl" />
-        <p className="text-[13px] font-semibold text-white/60">{greet},</p>
-        <h1 className="mt-1 font-display text-[2rem] font-extrabold leading-tight tracking-[-0.04em] sm:text-[2.4rem]">
+        <p className="text-label font-semibold text-white/60">{greet},</p>
+        <h1 className="mt-1 font-display text-display font-bold leading-tight tracking-[-0.04em] sm:text-jumbo">
           {user?.firstName ?? 'Welcome'}
         </h1>
-        <p className="mt-2 max-w-xl text-[14.5px] leading-relaxed text-white/70">
+        <p className="mt-2 max-w-xl text-body leading-relaxed text-white/70">
           AfterBI staff{user ? ` · ${staffNumber(user.id)}` : ''}. Everything you need to present AfterBI to a prospect is
           here. You cannot see any customer&rsquo;s records.
         </p>
@@ -44,9 +44,9 @@ export default function StaffHome() {
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff6ed] text-[#c95600]">
               <Icon size={20} aria-hidden />
             </span>
-            <span className="mt-3 text-[16px] font-bold text-primary">{label}</span>
-            <span className="mt-1 flex-1 text-[13.5px] leading-relaxed text-secondary">{text}</span>
-            <span className="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-[#c95600]">
+            <span className="mt-3 text-title font-semibold text-primary">{label}</span>
+            <span className="mt-1 flex-1 text-body leading-relaxed text-secondary">{text}</span>
+            <span className="mt-3 inline-flex items-center gap-1 text-label font-semibold text-[#c95600]">
               Open <ArrowRight size={14} aria-hidden />
             </span>
           </Link>

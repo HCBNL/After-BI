@@ -58,8 +58,8 @@ export default function WarehousesPage() {
       sortValue: (row) => row.name,
       cell: (row) => (
         <div className="min-w-0">
-          <p className="truncate text-[13.5px] font-semibold text-primary">{row.name}</p>
-          <p className="truncate text-[12px] text-muted">{row.location ?? 'No location'}</p>
+          <p className="truncate text-body font-semibold text-primary">{row.name}</p>
+          <p className="truncate text-caption text-muted">{row.location ?? 'No location'}</p>
         </div>
       ),
     },

@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
   };
 
   const field =
-    'h-14 w-full rounded-xl border bg-[var(--surface-card)] pl-11 pr-4 text-[16px] text-primary shadow-card outline-none transition-colors placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
+    'h-14 w-full rounded-xl border bg-[var(--surface-card)] pl-11 pr-4 text-title text-primary shadow-card outline-none transition-colors placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
   const year = new Date().getFullYear();
 
   return (
@@ -104,14 +104,14 @@ export default function ForgotPasswordPage() {
           <BrandBars className="brand-bars pointer-events-none absolute -bottom-32 -left-24 -z-10 h-[26rem] w-[26rem] -rotate-12" />
 
           <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="w-fit">
-            <Wordmark onInk className="text-[1.6rem]" />
+            <Wordmark onInk className="text-headline" />
           </Link>
 
           <div className="pb-10">
-            <h2 className="font-display text-[3.4rem] font-extrabold leading-[1.02] tracking-[-0.045em] text-white xl:text-[3.9rem]">
+            <h2 className="font-display text-jumbo font-bold leading-[1.02] tracking-[-0.045em] text-white xl:text-jumbo">
               It happens<span className="text-brand-500">.</span>
             </h2>
-            <p className="mt-4 max-w-sm text-[16px] leading-relaxed text-white/60">
+            <p className="mt-4 max-w-sm text-title leading-relaxed text-white/60">
               One email, one link, a new password. Your orders and statements are exactly where you left them.
             </p>
           </div>
@@ -126,7 +126,7 @@ export default function ForgotPasswordPage() {
 
           <div className="flex items-center justify-between px-5 pt-4 sm:px-8 lg:justify-end">
             <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="lg:hidden">
-              <Wordmark className="text-[1.45rem] text-primary" />
+              <Wordmark className="text-headline text-primary" />
             </Link>
             <div className="flex items-center gap-1">
               <LanguageSwitch />
@@ -141,22 +141,22 @@ export default function ForgotPasswordPage() {
                   <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                     <MailCheck size={26} aria-hidden />
                   </span>
-                  <h1 className="mt-6 text-center font-display text-[1.9rem] font-extrabold leading-[1.1] tracking-[-0.04em] text-primary sm:text-[2.1rem]">
+                  <h1 className="mt-6 text-center font-display text-display font-bold leading-[1.1] tracking-[-0.04em] text-primary sm:text-display">
                     Check your email
                   </h1>
-                  <p className="mt-4 text-center text-[15px] leading-relaxed text-secondary">
+                  <p className="mt-4 text-center text-lead leading-relaxed text-secondary">
                     If there is an AfterBI account for{' '}
                     <strong className="font-semibold text-primary">{email.trim()}</strong>, a link to set a new
                     password is on its way. It expires in an hour.
                   </p>
-                  <p className="mt-4 text-center text-[13.5px] leading-relaxed text-muted">
+                  <p className="mt-4 text-center text-body leading-relaxed text-muted">
                     We say “if” on purpose: this screen never confirms which addresses have accounts. If nothing
                     arrives within ten minutes, check spam, then check you used the address your invitation came to.
                   </p>
 
                   <Link
                     to="/login"
-                    className="tap mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-[16px] font-bold text-white shadow-card transition-all hover:bg-brand-700 active:scale-[0.99]"
+                    className="tap mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-title font-semibold text-white shadow-card transition-all hover:bg-brand-700 active:scale-[0.99]"
                   >
                     Back to sign in
                     <ArrowRight size={18} aria-hidden />
@@ -165,17 +165,17 @@ export default function ForgotPasswordPage() {
                   <button
                     type="button"
                     onClick={() => setSent(false)}
-                    className="mt-5 w-full text-center text-[14px] font-bold text-secondary underline underline-offset-4 transition-colors hover:text-primary"
+                    className="mt-5 w-full text-center text-body font-semibold text-secondary underline underline-offset-4 transition-colors hover:text-primary"
                   >
                     Try a different address
                   </button>
                 </>
               ) : (
                 <>
-                  <h1 className="text-center font-display text-[1.9rem] font-extrabold leading-[1.1] tracking-[-0.04em] text-primary sm:text-[2.1rem]">
+                  <h1 className="text-center font-display text-display font-bold leading-[1.1] tracking-[-0.04em] text-primary sm:text-display">
                     Reset your password
                   </h1>
-                  <p className="mt-2 text-center text-[14px] text-secondary">
+                  <p className="mt-2 text-center text-body text-secondary">
                     Type the address your invitation came to and we will send you a link.
                   </p>
 
@@ -211,14 +211,14 @@ export default function ForgotPasswordPage() {
                     <button
                       type="submit"
                       disabled={busy}
-                      className="tap inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-[16px] font-bold text-white shadow-card transition-all hover:bg-brand-700 active:scale-[0.99] disabled:opacity-60"
+                      className="tap inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-title font-semibold text-white shadow-card transition-all hover:bg-brand-700 active:scale-[0.99] disabled:opacity-60"
                     >
                       {busy ? 'Sending' : 'Send the link'}
                       {!busy && <ArrowRight size={18} aria-hidden />}
                     </button>
                   </form>
 
-                  <p className="mt-6 text-center text-[14px] text-secondary">
+                  <p className="mt-6 text-center text-body text-secondary">
                     <Link
                       to="/login"
                       className="inline-flex items-center gap-1.5 font-bold text-primary underline decoration-brand-500 decoration-2 underline-offset-4"
@@ -232,7 +232,7 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
 
-          <footer className="px-5 pb-5 text-center text-[12.5px] text-muted sm:px-8">
+          <footer className="px-5 pb-5 text-center text-label text-muted sm:px-8">
             <nav aria-label={BRAND} className="flex items-center justify-center gap-5 font-semibold">
               <Link to="/" className="transition-colors hover:text-primary">
                 Home

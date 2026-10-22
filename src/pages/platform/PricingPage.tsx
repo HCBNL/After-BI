@@ -42,7 +42,7 @@ export default function PricingPage() {
       key: 'name',
       header: 'Organisation',
       sortValue: (row) => row.name,
-      cell: (row) => <span className="text-[13.5px] font-semibold text-primary">{row.name}</span>,
+      cell: (row) => <span className="text-body font-semibold text-primary">{row.name}</span>,
     },
     {
       key: 'plan',
@@ -51,12 +51,12 @@ export default function PricingPage() {
       cell: (row) => {
         const plan = planOf(row.planId);
         return plan ? (
-          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary">
+          <span className="inline-flex items-center gap-1.5 text-label font-semibold text-primary">
             <PlanBadge plan={plan} size={16} />
             {PLANS[plan].label}
           </span>
         ) : (
-          <span className="text-[11.5px] text-muted">Not set</span>
+          <span className="text-caption text-muted">Not set</span>
         );
       },
     },
@@ -66,7 +66,7 @@ export default function PricingPage() {
       align: 'right',
       hideOnMobile: true,
       sortValue: (row) => row.seats ?? 0,
-      cell: (row) => <span className="tabular text-[13px]">{row.seats ?? 0}</span>,
+      cell: (row) => <span className="tabular text-label">{row.seats ?? 0}</span>,
     },
     {
       key: 'fee',
@@ -75,7 +75,7 @@ export default function PricingPage() {
       sortValue: (row) => row.subscriptionFee ?? 0,
       cell: (row) =>
         row.subscriptionFee ? (
-          <span className="tabular text-[13.5px] font-bold text-primary">
+          <span className="tabular text-body font-bold text-primary">
             {naira(row.subscriptionFee)}
           </span>
         ) : (
@@ -90,11 +90,11 @@ export default function PricingPage() {
       sortValue: (row) => (row.seats ? (row.subscriptionFee ?? 0) / row.seats : 0),
       cell: (row) =>
         row.seats && row.subscriptionFee ? (
-          <span className="tabular text-[13px] text-muted">
+          <span className="tabular text-label text-muted">
             {naira(row.subscriptionFee / row.seats)}
           </span>
         ) : (
-          <span className="text-[11.5px] text-muted">Not set</span>
+          <span className="text-caption text-muted">Not set</span>
         ),
     },
     {

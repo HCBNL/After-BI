@@ -90,10 +90,10 @@ export default function LeadsPage() {
               <section key={stage} className="w-[260px] shrink-0 lg:w-auto">
                 <header className="mb-2 flex items-center gap-2">
                   <span className={`h-2 w-2 rounded-full ${STAGE_ACCENT[stage]}`} aria-hidden />
-                  <h2 className="text-[11.5px] font-bold uppercase tracking-wide text-secondary">
+                  <h2 className="text-caption font-semibold uppercase tracking-wide text-secondary">
                     {LEAD_STAGE_LABEL[stage]}
                   </h2>
-                  <span className="tabular ml-auto text-[11.5px] font-bold text-muted">
+                  <span className="tabular ml-auto text-caption font-bold text-muted">
                     {items.length}
                   </span>
                 </header>
@@ -106,14 +106,14 @@ export default function LeadsPage() {
                         onClick={() => setEditing(lead)}
                         className="w-full rounded-xl border border-hairline surface-card p-3 text-left shadow-card transition-colors hover:bg-[var(--surface-sunken)]"
                       >
-                        <p className="truncate text-[13px] font-bold text-primary">{lead.company}</p>
-                        <p className="truncate text-[12px] text-muted">{lead.contactName}</p>
+                        <p className="truncate text-label font-semibold text-primary">{lead.company}</p>
+                        <p className="truncate text-caption text-muted">{lead.contactName}</p>
                         {lead.estimatedValue ? (
-                          <p className="tabular mt-1.5 text-[13px] font-bold text-primary">
+                          <p className="tabular mt-1.5 text-label font-bold text-primary">
                             {naira(lead.estimatedValue)}
                           </p>
                         ) : null}
-                        <p className="mt-1 text-[11px] text-muted">
+                        <p className="mt-1 text-micro text-muted">
                           {lead.location ?? 'No location'} · {formatDate(lead.updatedAt ?? lead.createdAt)}
                         </p>
                       </button>
@@ -121,7 +121,7 @@ export default function LeadsPage() {
                   ))}
 
                   {items.length === 0 && (
-                    <li className="rounded-xl border border-dashed border-[var(--border-hairline)] px-3 py-5 text-center text-[11.5px] text-muted">
+                    <li className="rounded-xl border border-dashed border-[var(--border-hairline)] px-3 py-5 text-center text-caption text-muted">
                       Nothing here
                     </li>
                   )}
@@ -247,7 +247,7 @@ function LeadModal({
               onChange={(e) =>
                 set('estimatedValue', e.target.value === '' ? (undefined as never) : Number(e.target.value))
               }
-              leading={<span className="text-[13px]">₦</span>}
+              leading={<span className="text-label">₦</span>}
             />
           </Field>
         </div>

@@ -57,7 +57,7 @@ export default function GuidePage() {
 
       {/* ----------------------------------------------------------- ask */}
       <section className="rounded-2xl border border-hairline surface-card p-4 shadow-card sm:p-5">
-        <label htmlFor="guide-q" className="text-[15px] font-bold text-primary">
+        <label htmlFor="guide-q" className="text-lead font-semibold text-primary">
           What do you want to do?
         </label>
         <div className="relative mt-2">
@@ -69,7 +69,7 @@ export default function GuidePage() {
             onChange={(event) => setQuestion(event.target.value)}
             placeholder="For example: how do I record a payment"
             autoComplete="off"
-            className="h-12 w-full rounded-xl border border-hairline surface-sunken pl-10 pr-4 text-[16px] text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-500"
+            className="h-12 w-full rounded-xl border border-hairline surface-sunken pl-10 pr-4 text-title text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-500"
           />
         </div>
         {!asking && (
@@ -79,7 +79,7 @@ export default function GuidePage() {
                 key={starter}
                 type="button"
                 onClick={() => setQuestion(starter)}
-                className="h-8 rounded-full surface-sunken px-3 text-[12.5px] font-semibold text-secondary transition-colors hover:text-primary"
+                className="h-8 rounded-full surface-sunken px-3 text-label font-semibold text-secondary transition-colors hover:text-primary"
               >
                 {starter}
               </button>
@@ -90,13 +90,13 @@ export default function GuidePage() {
         {asking && (
           <div className="mt-4">
             {results.length === 0 ? (
-              <p className="text-[13.5px] leading-relaxed text-secondary">
+              <p className="text-body leading-relaxed text-secondary">
                 No guide matches that yet. Try other words, such as the name of the screen (Orders, Invoices,
                 Stock), or browse the guides below.
               </p>
             ) : (
               <div className="space-y-3">
-                <p className="text-[12.5px] text-muted">
+                <p className="text-label text-muted">
                   {results.length === 1 ? 'This should help:' : `${results.length} guides match, best first:`}
                 </p>
                 {results.map((guide, index) => (
@@ -111,7 +111,7 @@ export default function GuidePage() {
       {/* -------------------------------------------------------- guides */}
       {!asking && (
         <section className="mt-6">
-          <h2 className="flex items-center gap-2 text-[16px] font-bold text-primary">
+          <h2 className="flex items-center gap-2 text-title font-semibold text-primary">
             <Lightbulb size={17} className="text-brand-600 dark:text-brand-400" aria-hidden />
             Guides for {ROLE_LABEL[role].toLowerCase()}
           </h2>
@@ -126,17 +126,17 @@ export default function GuidePage() {
       {/* --------------------------------------------------------- roles */}
       {role !== 'owner' && (
         <section className="mt-8">
-          <h2 className="flex items-center gap-2 text-[16px] font-bold text-primary">
+          <h2 className="flex items-center gap-2 text-title font-semibold text-primary">
             <Users size={17} className="text-brand-600 dark:text-brand-400" aria-hidden />
             What every role does
           </h2>
-          <p className="mt-0.5 text-[12.5px] text-muted">Yours is first and open. AfterBI shows each person only what their role needs.</p>
+          <p className="mt-0.5 text-label text-muted">Yours is first and open. AfterBI shows each person only what their role needs.</p>
           <RoleCards mine={role} className="mt-3" />
         </section>
       )}
       {role === 'owner' && (
         <section className="mt-8">
-          <h2 className="flex items-center gap-2 text-[16px] font-bold text-primary">
+          <h2 className="flex items-center gap-2 text-title font-semibold text-primary">
             <Users size={17} className="text-brand-600 dark:text-brand-400" aria-hidden />
             The roles your customers use
           </h2>
@@ -168,8 +168,8 @@ function GuideCard({ guide, role, open: startOpen = false }: { guide: HowTo; rol
         aria-expanded={open}
         className="flex w-full items-center gap-3 p-4 text-left"
       >
-        <span className="min-w-0 flex-1 text-[14.5px] font-semibold text-primary">{guide.title}</span>
-        <span className="shrink-0 text-[12px] text-muted">{guide.steps.length} steps</span>
+        <span className="min-w-0 flex-1 text-body font-semibold text-primary">{guide.title}</span>
+        <span className="shrink-0 text-caption text-muted">{guide.steps.length} steps</span>
         <ChevronDown size={17} aria-hidden className={cn('shrink-0 text-muted transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
@@ -179,15 +179,15 @@ function GuideCard({ guide, role, open: startOpen = false }: { guide: HowTo; rol
               const href = linkFor(step.to);
               return (
                 <li key={index} className="flex gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-600 text-[12px] font-bold text-white dark:bg-brand-500 dark:text-brand-950">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-600 text-caption font-semibold text-white dark:bg-brand-500 dark:text-brand-950">
                     {index + 1}
                   </span>
                   <div className="min-w-0 flex-1 pt-0.5">
-                    <p className="text-[13.5px] leading-relaxed text-secondary">{step.text}</p>
+                    <p className="text-body leading-relaxed text-secondary">{step.text}</p>
                     {href && (
                       <Link
                         to={href}
-                        className="mt-1 inline-flex items-center gap-1 text-[12.5px] font-semibold text-brand-700 hover:underline dark:text-brand-400"
+                        className="mt-1 inline-flex items-center gap-1 text-label font-semibold text-brand-700 hover:underline dark:text-brand-400"
                       >
                         Take me there <ArrowRight size={13} aria-hidden />
                       </Link>
@@ -200,7 +200,7 @@ function GuideCard({ guide, role, open: startOpen = false }: { guide: HowTo; rol
           {guide.tips && guide.tips.length > 0 && (
             <ul className="mt-4 space-y-1.5 rounded-xl surface-sunken p-3">
               {guide.tips.map((tip, index) => (
-                <li key={index} className="flex gap-2 text-[12.5px] leading-snug text-secondary">
+                <li key={index} className="flex gap-2 text-label leading-snug text-secondary">
                   <Lightbulb size={14} className="mt-0.5 shrink-0 text-gold-500" aria-hidden />
                   {tip}
                 </li>
