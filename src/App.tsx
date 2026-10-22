@@ -105,6 +105,7 @@ const SolutionsPage = lazy(() => import('@/pages/public/SolutionsPage'));
 const CardPage = lazy(() => import('@/pages/public/CardPage'));
 const LegalPage = lazy(() => import('@/pages/public/LegalPage'));
 const VerifyStaffPage = lazy(() => import('@/pages/public/VerifyStaffPage'));
+const VerifyIdPage = lazy(() => import('@/pages/public/VerifyIdPage'));
 const StaffPage = lazy(() => import('@/pages/platform/StaffPage'));
 const StaffHome = lazy(() => import('@/pages/staff/StaffHome'));
 const StaffIdCard = lazy(() => import('@/pages/staff/StaffIdCard'));
@@ -276,6 +277,7 @@ export default function App() {
           <Route path="/terms" element={<LegalPage kind="terms" />} />
           <Route path="/privacy" element={<LegalPage kind="privacy" />} />
           <Route path="/verify/staff/:staffNo" element={<VerifyStaffPage />} />
+          <Route path="/verify/id/:uid" element={<VerifyIdPage />} />
           <Route path="/pricing" element={<PublicPricingPage />} />
           <Route path="/partners" element={<Navigate to="/" replace />} />
           {/* Retired with the 2026 rebrand: old links land on the front page. */}

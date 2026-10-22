@@ -1499,3 +1499,29 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 .ab-quiet { animation: ab-quiet-in 0.3s ease-out 0.18s both; }
 @keyframes ab-quiet-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .ab-quiet { animation: none; } }
+
+/* Order trail (BriefCard.tsx): clear stops calm, pending stops red like a
+   notification. Shades shift with light and dark so they read on either panel. */
+:root {
+  --trail-clear: #3b9bff;
+  --trail-active: #f2332b;
+  --trail-line: rgba(255, 120, 110, 0.85);
+}
+:root[data-theme='dark'] {
+  --trail-clear: #4aa3ff;
+  --trail-active: #ff4d43;
+  --trail-line: rgba(255, 110, 100, 0.8);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --trail-clear: #4aa3ff;
+    --trail-active: #ff4d43;
+    --trail-line: rgba(255, 110, 100, 0.8);
+  }
+}
+.ab-trail-clear { background: var(--trail-clear); box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--trail-clear) 80%, transparent); }
+.ab-trail-active { background: var(--trail-active); box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--trail-active) 75%, transparent); }
+.ab-trail-line-on { background: var(--trail-line); }
+.ab-trail-ping { background: color-mix(in srgb, var(--trail-active) 35%, transparent); animation: ab-trail-ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+@keyframes ab-trail-ping { 75%, 100% { transform: scale(1.5); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ab-trail-ping { animation: none; opacity: .5; } }
