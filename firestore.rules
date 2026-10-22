@@ -627,6 +627,16 @@ service cloud.firestore {
       allow read, write: if hrManager(orgId);
     }
 
+    /* Costing */
+    /*
+     * Landed cost sheets (see src/lib/costing.ts). In their own subtree,
+     * costing/{orgId}, NOT under orgs/{orgId}: insiders read everything there,
+     * and what a unit cost to land is for the super admin and admins only.
+     */
+    match /costing/{orgId}/sheets/{sheetId} {
+      allow read, write: if admin(orgId);
+    }
+
     /* Deny everything else, on purpose. */
     match /{document=**} {
       allow read, write: if false;
