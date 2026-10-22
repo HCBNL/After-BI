@@ -110,9 +110,11 @@ function orderStage(status: OrderStatus): Stage {
  */
     case 'approved':
     case 'rejected':
-    case 'fulfilled':
     case 'cancelled':
       return 'settled';
+    /* Goods have left with a delivery note: nobody edits it, not even the super admin. */
+    case 'fulfilled':
+      return 'locked';
   }
 }
 
@@ -300,7 +302,13 @@ export function orderAmendment(user: UserProfile | null, order: Order | null): V
    * prevent, so the order-specific knowledge is applied here rather than left
    * to each screen to remember.
  */
-  if (order.status === 'fulfilled' || order.status === 'cancelled') {
+  if (order.status === 'fulfilled') {
+    return NO(
+      'locked',
+      'This order has been fulfilled and its goods have left with a delivery note, so nobody can edit or cancel it, including the super admin. To reverse any of it, raise a return on the customer\'s account.',
+    );
+  }
+  if (order.status === 'cancelled') {
     return { ...verdict, canCancel: false };
   }
 

@@ -1209,7 +1209,7 @@ export async function updateOrder(
     if (!snap.exists()) throw new Error('That order no longer exists.');
     const order = snap.data() as Order;
 
-    if (order.status === 'fulfilled' && patch.lines) {
+    if (order.status === 'fulfilled') {
       /*
        * Lines are frozen once stock has left the building.
        *
@@ -1221,7 +1221,7 @@ export async function updateOrder(
        * credit note, which is what those are for.
  */
       throw new Error(
-        'This order has already been fulfilled, so its lines cannot change. Correct the stock with an adjustment and raise a credit note.',
+        'This order has been fulfilled, so it can no longer be edited. To reverse any of it, raise a return on the customer\'s account.',
       );
     }
 

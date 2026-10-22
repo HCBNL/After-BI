@@ -136,10 +136,15 @@ const BASE_CSS = (brand: string) => `
   /* The watermark is fixed rather than absolute so that it repeats on every
      printed page instead of only the first. It is very light on purpose: it
      has to survive a photocopy without obscuring a figure. */
+  /* One watermark per page, centred and very faint: the company's own logo,
+     or its short name when there is no logo. Fixed, so it repeats on every
+     printed page; one image, already loaded for the header, so it costs nothing. */
   .wm{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
-      display:flex;flex-direction:column;justify-content:space-between;padding:10px 0}
-  .wm-row{white-space:nowrap;font-size:26px;font-weight:900;letter-spacing:.35em;
-      color:${brand}0a;text-align:center;transform:translateX(-4%)}
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+  .wm img{width:58%;max-height:46%;object-fit:contain;opacity:.045;filter:grayscale(1)}
+  .wm .wm-text{font-size:96px;font-weight:900;letter-spacing:-.02em;color:#1a1d21;opacity:.045;
+      transform:rotate(-24deg);white-space:nowrap}
+  .wm .wm-copy{margin-top:70px;font-size:13px;font-weight:800;letter-spacing:.5em;color:#1a1d21;opacity:.12}
   .page{position:relative;z-index:1}
 
   .head{display:flex;align-items:flex-start;justify-content:space-between;
@@ -167,7 +172,7 @@ const BASE_CSS = (brand: string) => `
   th{background:#f2f4f5;padding:8px 10px;text-align:left;font-size:10px;font-weight:800;
      letter-spacing:.03em;border:1px solid #d7dbdf;white-space:nowrap;line-height:1.25}
   td{padding:7px 10px;border:1px solid #e3e6e9;vertical-align:top;font-size:11px;
-     background:rgba(255,255,255,.75);line-height:1.45}
+     background:rgba(255,255,255,.5);line-height:1.45}
   td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 
   .totals,.bank,.sig,.balance{page-break-inside:avoid;break-inside:avoid}
@@ -175,21 +180,21 @@ const BASE_CSS = (brand: string) => `
   .t-row{display:flex;justify-content:space-between;gap:24px;padding:4px 0;font-size:12px}
   .t-final{font-weight:900;font-size:14px;border-top:2px solid #1a1d21;padding-top:6px;margin-top:4px}
   /* Print friendly: white boxes, hairline borders, the brand colour as the only accent. */
-  .balance{margin-top:12px;background:#fff;border:1px solid #d7dbdf;border-left:4px solid ${brand};border-radius:6px;
+  .balance{margin-top:12px;background:rgba(255,255,255,.5);border:1px solid #d7dbdf;border-left:4px solid ${brand};border-radius:6px;
            padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:16px}
   .balance .lab{font-size:12.5px;font-weight:800;color:${brand};letter-spacing:.03em}
   .balance .sub{font-size:10px;color:#5b6167;margin-top:2px}
   .balance .val{font-size:18px;font-weight:900;color:#1a1d21;white-space:nowrap}
 
   .bank{margin-top:16px;padding:10px 12px;border:1px solid #d7dbdf;border-radius:6px;
-        background:rgba(255,255,255,.85)}
+        background:rgba(255,255,255,.5)}
   .bank h4{font-weight:800;margin-bottom:6px;font-size:10.5px;letter-spacing:.04em}
   .bank .accts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;font-size:11px}
   .bank .warn{margin-top:8px;font-size:9.5px;color:#5b6167;font-style:italic;line-height:1.5}
   .bank .none{font-size:11px;color:#8a9097;font-style:italic}
 
   .notes{margin-top:10px;font-size:11px;color:#41474d;line-height:1.55}
-  .goodwill{margin-top:10px;background:#fff;border:1px solid #d7dbdf;border-left:4px solid ${brand};border-radius:6px;
+  .goodwill{margin-top:10px;background:rgba(255,255,255,.5);border:1px solid #d7dbdf;border-left:4px solid ${brand};border-radius:6px;
             padding:8px 12px;font-size:11px;color:#1a1d21;line-height:1.5;page-break-inside:avoid;break-inside:avoid}
   .sig{display:grid;grid-template-columns:1fr 1fr;gap:44px;margin-top:34px}
   .sig-img{height:52px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:2px}
@@ -197,11 +202,11 @@ const BASE_CSS = (brand: string) => `
   .sig-line{border-top:1px solid #1a1d21;padding-top:6px;font-size:11px;text-align:center;font-weight:700}
   .sig-sub{font-size:9.5px;color:#7a8087;text-align:center;margin-top:2px}
 
-  .foot{margin-top:26px;text-align:center;border-top:1px solid #e3e6e9;padding-top:12px}
-  .foot .mark{font-size:14px;font-weight:900;letter-spacing:-0.02em;color:#1a1d21}
+  .foot{margin-top:26px;text-align:center;border-top:1px solid #eef0f2;padding-top:6px}
+  .foot .mark{font-size:9px;font-weight:600;letter-spacing:.02em;color:#8a9097}
   .foot .mark .dot{display:inline-block;width:.26em;height:.26em;border-radius:50%;
                    background:${brand};vertical-align:baseline;margin-left:.08em}
-  .foot .sub{font-size:9px;color:#8a9097;margin-top:3px;line-height:1.5}
+  .foot .sub{font-size:8.5px;color:#8a9097;line-height:1.5}
 
   .status{display:inline-block;margin-top:5px;padding:3px 9px;border-radius:999px;font-size:9.5px;font-weight:800;letter-spacing:.08em;
           background:#fff;color:${brand};border:1px solid ${brand}}
@@ -210,9 +215,11 @@ const BASE_CSS = (brand: string) => `
     .foot{position:fixed;left:0;right:0;bottom:0;margin:0;padding:6px 0 2px;background:#fff}}
 `;
 
-function watermark(mark: string): string {
-  const row = Array(6).fill(esc(mark)).join('&ensp;&ensp;&ensp;');
-  return `<div class="wm">${Array(18).fill(`<div class="wm-row">${row}</div>`).join('')}</div>`;
+function watermark(settings: OrgSettings): string {
+  const mark = settings.logoUrl
+    ? `<img src="${esc(settings.logoUrl)}" alt="" />`
+    : `<div class="wm-text">${esc(settings.shortName || settings.name)}</div>`;
+  return `<div class="wm">${mark}<div class="wm-copy">ORIGINAL COPY</div></div>`;
 }
 
 function header(settings: OrgSettings, title: string, meta: string): string {
@@ -413,13 +420,9 @@ function signatures(
   </div>`;
 }
 
-/** The AfterBI four bar mark, small, for the footer. */
-const AFTERBI_MARK = `<svg viewBox="0 0 130 120" width="15" height="14" style="vertical-align:-1px;margin-right:5px" aria-hidden="true"><g transform="skewX(-9) translate(14 0)"><rect x="3" y="78" width="25" height="36" rx="12.5" fill="#f2332b"/><rect x="35" y="55" width="25" height="59" rx="12.5" fill="#f5a400"/><rect x="67" y="37" width="25" height="77" rx="12.5" fill="#02a05c"/><rect x="99" y="20" width="25" height="94" rx="12.5" fill="#0e6dfd"/></g></svg>`;
-
 function footer(_settings: OrgSettings, note: string): string {
   return `<div class="foot">
-    <div class="mark">${AFTERBI_MARK}Generated with AfterBI</div>
-    <div class="sub">${esc(note)} · Printed ${new Date().toLocaleString('en-NG')} (WAT)</div>
+    <div class="sub">${esc(note)} · Printed ${new Date().toLocaleString('en-NG')} (WAT) · Generated with AfterBI</div>
   </div>`;
 }
 
@@ -801,7 +804,7 @@ function build(job: PrintJob): { title: string; html: string } {
     title: doc.title,
     html: `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />
       <title>${esc(doc.title)}</title><style>${BASE_CSS(brand)}</style></head>
-      <body>${watermark('AfterBI')}<div class="page">${doc.body}</div></body></html>`,
+      <body>${watermark(settings)}<div class="page">${doc.body}</div></body></html>`,
   };
 }
 
@@ -823,7 +826,27 @@ export function printDocument(job: PrintJob): void {
 }
 
 /** Any finished HTML document to the print dialog. Must be called from a click. */
+/**
+ * The saved PDF's file name: the document's own number, nothing else, so a
+ * proforma saves as `PI202610002.pdf` and a delivery note as `DN202610001.pdf`.
+ * Dashes and spaces are dropped; anything a file name cannot hold goes too.
+ */
+export function pdfName(title: string): string {
+  const clean = title.replace(/[\\/:*?"<>|]/g, '').trim();
+  return /^[A-Z]{2,4}[-\s]?\d/.test(clean) ? clean.replace(/[-\s]/g, '') : clean;
+}
+
 export function printHtml(title: string, html: string): void {
+  const fileName = pdfName(title);
+  /*
+   * Browsers name a saved PDF after the PAGE's title, not the iframe's, so the
+   * page takes the document's number for the length of the print dialog.
+   */
+  const pageTitle = document.title;
+  const restore = () => {
+    document.title = pageTitle;
+  };
+  html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(fileName)}</title>`);
 
   const frame = document.createElement('iframe');
   frame.setAttribute('aria-hidden', 'true');
@@ -842,12 +865,16 @@ export function printHtml(title: string, html: string): void {
   win.document.close();
 
   const go = () => {
+    document.title = fileName;
     try {
       win.focus();
       win.print();
     } catch {
-      fallbackWindow(title, html);
+      fallbackWindow(fileName, html);
     }
+    /* `print()` blocks until the dialog closes on desktop; on phones it returns at once, so the timer is the backstop. */
+    win.addEventListener('afterprint', restore, { once: true });
+    window.setTimeout(restore, 10_000);
     window.setTimeout(() => frame.remove(), 10_000);
   };
 
