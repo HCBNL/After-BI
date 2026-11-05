@@ -28,7 +28,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { getOrgSettings, getTenant, listDistributors, listDistributorsById, listProducts, listWarehouses } from '@/lib/db';
+import { getOrgSettings, getTenant, listDistributors, listDistributorsById, listProducts, listWarehouses, syncOrderCredits } from '@/lib/db';
 import { partnerScope } from '@/lib/roles';
 import { getActiveOrg, type OrgTenant } from '@/lib/tenant';
 import { setEntitlements } from '@/lib/plans';
@@ -112,6 +112,32 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       live = false;
     };
   }, [user?.id, user?.orgId, nonce, scope]);
+
+  /*
+   * Once per organisation per device, for the roles that can write it: copy
+   * any credit note issued before orders carried their adjustments onto its
+   * order. New credit notes write to the order themselves, so this only ever
+   * has old ones to catch. Silent and in the background.
+   */
+  useEffect(() => {
+    const org = getActiveOrg();
+    if (loading || !org || !user || !['super_admin', 'admin', 'finance_manager'].includes(user.role)) return;
+    const flag = `afterbi.creditsync.v1.${org}`;
+    try {
+      if (localStorage.getItem(flag)) return;
+    } catch {
+      return;
+    }
+    void syncOrderCredits()
+      .then(() => {
+        try {
+          localStorage.setItem(flag, new Date().toISOString());
+        } catch {
+          /* storage blocked: it runs again next time, which is harmless */
+        }
+      })
+      .catch(() => undefined);
+  }, [loading, user?.id, user?.role]);
 
   const value = useMemo<OrgValue>(() => {
     const productMap = new Map(products.map((p) => [p.id, p]));

@@ -54,6 +54,7 @@ import type {
   Invoice,
   Lead,
   Order,
+  OrderCredit,
   OrderLine,
   OrderStatus,
   OrgSettings,
@@ -1071,6 +1072,46 @@ export async function listCreditNotes(filter: { invoiceId?: string; orderId?: st
 }
 
 /**
+ * Bring every order in line with its credit notes.
+ *
+ * Credit notes issued before orders carried their adjustments (or written by
+ * an older version of the app) are copied onto their orders here. Cheap: one
+ * read of the credit notes, and a write only for an order that is out of step.
+ * Run once per organisation per device by `useCreditSync`; safe to run again.
+ */
+export async function syncOrderCredits(): Promise<number> {
+  const notes = await list<CreditNote>('creditNotes', fsLimit(2000));
+  const byOrder = new Map<string, CreditNote[]>();
+  for (const n of notes) if (n.orderId) byOrder.set(n.orderId, [...(byOrder.get(n.orderId) ?? []), n]);
+  let fixed = 0;
+  for (const [orderId, group] of byOrder) {
+    const order = await one<Order>('orders', orderId).catch(() => null);
+    if (!order) continue;
+    const have = new Set((order.credits ?? []).map((c) => c.id));
+    if (group.every((n) => have.has(n.id)) && have.size === group.length) continue;
+    const credits: OrderCredit[] = group
+      .sort((a, b) => String(a.createdAt ?? '').localeCompare(String(b.createdAt ?? '')))
+      .map((n) => ({
+        id: n.id,
+        creditNumber: n.creditNumber,
+        issuedOn: n.issuedOn,
+        reason: n.reason,
+        total: n.total,
+        lines: n.lines.map((l) => ({ productId: l.productId, quantity: l.quantity, toPrice: l.toPrice, amount: l.amount })),
+      }));
+    const creditTotal = kobo(credits.reduce((sum, c) => sum + c.total, 0));
+    await updateDoc(doc(db, orgPath('orders'), orderId), {
+      credits,
+      creditTotal,
+      netTotal: kobo(order.total - creditTotal),
+      updatedAt: serverTimestamp(),
+    });
+    fixed += 1;
+  }
+  return fixed;
+}
+
+/**
  * Lower the price on an unpaid invoice, with a numbered credit note.
  *
  * ONE TRANSACTION: the note, its number, the credit against the invoice and
@@ -1111,9 +1152,30 @@ export async function issueCreditNote(input: {
       throw new Error(`Only ${naira(owed, true)} is still owed on ${invoice.invoiceNumber}, so the credit cannot be ${naira(total, true)}.`);
     }
     const counter = await tx.get(counterRef);
+    /* The order it came from carries the adjustment too, so analytics, the
+       order list and the proforma all show what was really sold. */
+    const orderRef = invoice.orderId ? doc(db, orgPath('orders'), invoice.orderId) : null;
+    const orderSnap = orderRef ? await tx.get(orderRef) : null;
     const seq = (counter.exists() ? (counter.data().value as number) : 0) + 1;
     const number = MONTHLY.CN(ym, seq);
     const paidAfter = kobo((invoice.amountPaid ?? 0) + total);
+
+    if (orderRef && orderSnap?.exists()) {
+      const order = orderSnap.data() as Order;
+      const credits: OrderCredit[] = [
+        ...(order.credits ?? []),
+        {
+          id: noteRef.id,
+          creditNumber: number,
+          issuedOn: todayISO(),
+          reason: input.reason.trim(),
+          total,
+          lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity, toPrice: l.toPrice, amount: l.amount })),
+        },
+      ];
+      const creditTotal = kobo(credits.reduce((sum, c) => sum + c.total, 0));
+      tx.update(orderRef, { credits, creditTotal, netTotal: kobo(order.total - creditTotal), updatedAt: serverTimestamp() });
+    }
 
     tx.set(counterRef, { value: seq, updatedAt: serverTimestamp() }, { merge: true });
     tx.set(noteRef, {

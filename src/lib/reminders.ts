@@ -11,6 +11,7 @@
  */
 import { isAdmin } from './roles';
 import { count, naira } from './format';
+import { orderNet } from './pricing';
 import type { Distributor, Invoice, Order, ReturnRecord, Role, Sale, StockPosition } from '@/types';
 import type { Task } from './tasks';
 
@@ -134,11 +135,11 @@ export function buildReminders(input: ReminderInput): Reminder[] {
       key: 'approval-waiting',
       severity: hours >= t.approvalHours * 3 ? 'critical' : 'warning',
       title: `${order.orderNumber} is waiting for your signature`,
-      detail: `${order.distributorName}, ${naira(order.total)}, raised ${ageLabel(order.createdAt)}.`,
+      detail: `${order.distributorName}, ${naira(orderNet(order))}, raised ${ageLabel(order.createdAt)}.`,
       to: `${root}/approvals`,
       since: order.createdAt,
       days: Math.floor(hours / 24),
-      amount: order.total,
+      amount: orderNet(order),
     });
   }
 
@@ -153,11 +154,11 @@ export function buildReminders(input: ReminderInput): Reminder[] {
         key: 'order-unfulfilled',
         severity: days >= t.fulfilDays * 3 ? 'critical' : 'warning',
         title: `${order.orderNumber} is approved but not fulfilled`,
-        detail: `${order.distributorName}, ${naira(order.total)}, approved ${ageLabel(order.approvedAt ?? order.createdAt)}.`,
+        detail: `${order.distributorName}, ${naira(orderNet(order))}, approved ${ageLabel(order.approvedAt ?? order.createdAt)}.`,
         to: `${root}/orders`,
         since: order.approvedAt ?? order.createdAt,
         days,
-        amount: order.total,
+        amount: orderNet(order),
       });
     }
   }
@@ -174,11 +175,11 @@ export function buildReminders(input: ReminderInput): Reminder[] {
         key: 'order-uninvoiced',
         severity: days >= t.invoiceDays * 4 ? 'critical' : 'warning',
         title: `${order.orderNumber} was delivered but never invoiced`,
-        detail: `${order.distributorName}, ${naira(order.total)}, fulfilled ${ageLabel(order.fulfilledAt)}.`,
+        detail: `${order.distributorName}, ${naira(orderNet(order))}, fulfilled ${ageLabel(order.fulfilledAt)}.`,
         to: `${root}/invoices`,
         since: order.fulfilledAt,
         days,
-        amount: order.total,
+        amount: orderNet(order),
       });
     }
   }
@@ -277,11 +278,11 @@ export function buildReminders(input: ReminderInput): Reminder[] {
       key: 'draft-idle',
       severity: 'later',
       title: `${order.orderNumber} is still a draft`,
-      detail: `${order.distributorName}, ${naira(order.total)}, started ${ageLabel(order.createdAt)}.`,
+      detail: `${order.distributorName}, ${naira(orderNet(order))}, started ${ageLabel(order.createdAt)}.`,
       to: `${root}/orders`,
       since: order.createdAt,
       days,
-      amount: order.total,
+      amount: orderNet(order),
     });
   }
 

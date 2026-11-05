@@ -37,7 +37,7 @@
  * the fallback for the one case the iframe cannot serve.
  */
 
-import { listPriceOf, summarise } from './pricing';
+import { applyCredits, listPriceOf, orderNet, summarise } from './pricing';
 import type { CreditNote, Distributor, Invoice, Order, OrderLine, OrgSettings, Payment } from '@/types';
 
 /* escaping */
@@ -446,14 +446,15 @@ interface PayState {
 }
 
 /** Where the money stands on an invoice, in the words a customer reads. */
-function payState(invoice: Pick<Invoice, 'status' | 'total' | 'amountPaid' | 'dueOn'> | null | undefined): PayState {
+function payState(invoice: Pick<Invoice, 'status' | 'total' | 'amountPaid' | 'dueOn'> | null | undefined, credited = 0): PayState {
   if (!invoice) return { tone: 'pending', label: 'PAYMENT PENDING' };
   if (invoice.status === 'void') return { tone: 'void', label: 'VOID' };
   const owing = Math.max(0, invoice.total - (invoice.amountPaid ?? 0));
   if (owing <= 0.009) return { tone: 'paid', label: 'PAID' };
   const today = new Date().toISOString().slice(0, 10);
   if (invoice.dueOn && invoice.dueOn < today) return { tone: 'late', label: 'OVERDUE' };
-  if ((invoice.amountPaid ?? 0) > 0) return { tone: 'part', label: 'PART PAID' };
+  /* A credit note lowers what is owed; it is not money received. */
+  if ((invoice.amountPaid ?? 0) - credited > 0.009) return { tone: 'part', label: 'PART PAID' };
   return { tone: 'pending', label: 'PAYMENT PENDING' };
 }
 
@@ -547,7 +548,15 @@ function proformaDoc(job: Extract<PrintJob, { kind: 'proforma' }>): { title: str
   const bill = billingBlock(distributor, order.distributorName);
 
   const live = job.invoice && job.invoice.status !== 'void' ? job.invoice : null;
-  const state = payState(live);
+  const state = payState(live, order.creditTotal ?? 0);
+  /* After a credit note the proforma shows the order as it now stands: each
+     line at its new price (old price struck), the total after credit, and the
+     cash still to come. Sales and finance then print the same figure. */
+  const credits = order.credits ?? [];
+  const credited = order.creditTotal ?? 0;
+  const lines = credited > 0 ? applyCredits(order.lines, credits) : order.lines;
+  const net = orderNet(order);
+  const cashPaid = Math.max(0, (live?.amountPaid ?? 0) - credited);
   const meta = `<div><strong>No.: ${esc(order.orderNumber)}</strong></div>
     <div style="font-size:10px;color:#5b6167">Valid ${validity} days from issue</div>
     ${order.status === 'cancelled' || order.status === 'rejected' ? statusPill({ tone: 'void', label: order.status.toUpperCase() }) : statusPill(state)}`;
@@ -572,23 +581,36 @@ function proformaDoc(job: Extract<PrintJob, { kind: 'proforma' }>): { title: str
         </div>
       </div>
 
-      ${lineTable(order.lines)}
+      ${lineTable(lines)}
 
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px">
         <div style="font-size:11px;color:#5b6167">Total units:
           <strong>${order.lines.reduce((s, l) => s + l.quantity, 0).toLocaleString('en-NG')}</strong></div>
         <div class="totals">
           ${discountRows(order.lines, order.discountNote)}
-          <div class="t-row t-final"><span>TOTAL</span><span>${money(order.total)}</span></div>
+          ${
+            credited > 0
+              ? `<div class="t-row"><span>Order total</span><span>${money(order.total)}</span></div>
+                 ${credits.map((c) => `<div class="t-row"><span>Less: credit note ${esc(c.creditNumber)}</span><span>(${money(c.total)})</span></div>`).join('')}
+                 <div class="t-row t-final"><span>TOTAL AFTER CREDIT</span><span>${money(net)}</span></div>`
+              : `<div class="t-row t-final"><span>TOTAL</span><span>${money(order.total)}</span></div>`
+          }
         </div>
       </div>
       ${goodwill(order.lines, order.discountNote)}
       ${
+        credited > 0
+          ? `<div class="notes"><strong>Price adjusted:</strong> ${credits
+              .map((c) => `${esc(c.creditNumber)} on ${printDate(c.issuedOn)} (${money(c.total)}, ${esc(c.reason)})`)
+              .join('; ')}.</div>`
+          : ''
+      }
+      ${
         order.status === 'cancelled' || order.status === 'rejected'
           ? ''
           : balanceBand(
-              order.total,
-              live?.amountPaid ?? 0,
+              net,
+              cashPaid,
               state,
               live ? `Invoice ${esc(live.invoiceNumber)}, due ${printDate(live.dueOn)}.` : `Pay into the account below, quoting ${esc(order.orderNumber)}.`,
             )
@@ -675,10 +697,10 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
   const { invoice, distributor, company } = job;
   const settings = company.settings;
   const bill = billingBlock(distributor, invoice.distributorName);
-  const state = invoice.status === 'draft' ? { tone: 'void' as const, label: 'DRAFT' } : payState(invoice);
   /* Credit notes come off the total; money received is shown on its own. */
   const credits = job.credits ?? [];
   const credited = credits.reduce((sum, c) => sum + c.total, 0);
+  const state = invoice.status === 'draft' ? { tone: 'void' as const, label: 'DRAFT' } : payState(invoice, credited);
   const cash = Math.max(0, (invoice.amountPaid ?? 0) - credited);
   const meta = `<div><strong>No.: ${esc(invoice.invoiceNumber)}</strong></div>
     ${statusPill(state)}`;
@@ -728,7 +750,7 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
               .join('; ')}.</div>`
           : ''
       }
-      ${invoice.status === 'void' ? '' : balanceBand(invoice.total - credited, cash, payState(invoice), `Payment due ${printDate(invoice.dueOn)}.`)}
+      ${invoice.status === 'void' ? '' : balanceBand(invoice.total - credited, cash, payState(invoice, credited), `Payment due ${printDate(invoice.dueOn)}.`)}
 
       ${settings.invoiceFooter ? `<div class="notes">${esc(settings.invoiceFooter)}</div>` : ''}
       ${bankBlock(settings)}

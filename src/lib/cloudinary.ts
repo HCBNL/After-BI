@@ -42,7 +42,7 @@ const MAX_UPLOAD_BYTES = 2_000_000;
 const MAX_VIDEO_BYTES = 100_000_000;
 
 /** Where in the account a file lands. Grouped so they are easy to find and purge. */
-export type UploadKind = 'cover' | 'logo' | 'product' | 'site';
+export type UploadKind = 'cover' | 'logo' | 'product' | 'site' | 'avatar';
 
 interface CloudinaryResponse {
   secure_url?: string;
@@ -191,4 +191,37 @@ export function videoStill(url: string | undefined, width: number): string {
   return url
     .replace('/video/upload/', `/video/upload/so_0,q_auto,w_${width},c_limit/`)
     .replace(/\.[a-z0-9]+(\?.*)?$/i, '.jpg');
+}
+
+/**
+ * A photo straight off a phone camera is 3 to 8 MB, far over the upload cap.
+ * This redraws it no wider or taller than `max` pixels as a JPEG in the
+ * browser, so any photo can be used; a small file is returned untouched.
+ */
+export async function shrinkImage(file: File, max = 640, quality = 0.86): Promise<File> {
+  if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') return file;
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error('That image could not be opened. Try a JPG or PNG.'));
+      el.src = url;
+    });
+    const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    if (scale === 1 && file.size <= MAX_UPLOAD_BYTES) return file;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return file;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+    if (!blob) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }

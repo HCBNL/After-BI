@@ -28,6 +28,7 @@
 import { ZONE_OF } from '@/data/states';
 import { NIGERIAN_STATES } from '@/data/states';
 import { TIER_LABEL, type Distributor, type Order, type Product, type Sale, type UserProfile } from '@/types';
+import { effectiveLines } from './pricing';
 
 export type Source = 'sell-in' | 'sell-out';
 
@@ -205,7 +206,7 @@ export function factsFrom(source: Source, orders: Order[], sales: Sale[], ctx: C
     const date = (order.createdAt ?? '').slice(0, 10);
     /* One fact per line, so category and product are exact; every other
        breakdown adds the lines back up to the order. */
-    for (const line of order.lines ?? []) {
+    for (const line of effectiveLines(order)) {
       out.push({
         date,
         value: line.lineTotal,

@@ -12,7 +12,7 @@
  * in Settings may set a price; the super admin always may, a distributor never.
  */
 
-import type { OrderLine, OrgSettings, PriceTier, Role } from '@/types';
+import type { Order, OrderCredit, OrderLine, OrgSettings, PriceTier, Role } from '@/types';
 
 /* discounts */
 
@@ -56,6 +56,62 @@ export function mayAdjustPrice(role: Role | undefined, settings: Pick<OrgSetting
 /** Two decimal places, the way money is stored. */
 export function kobo(value: number): number {
   return Math.round((Number(value) || 0) * 100) / 100;
+}
+
+/* credit notes: what an order is really worth */
+
+/**
+ * Lines at their price after every credit note.
+ *
+ * A credit line names a product; when the product sits on more than one line,
+ * its credit is shared between them by quantity. The original price becomes
+ * the line's `listPrice` when it had none, so every screen and print that
+ * already shows "Normal price / Discounted price" shows the adjustment too,
+ * with no special case. Used for orders and invoices alike.
+ */
+export function applyCredits<L extends { productId: string; quantity: number; unitPrice: number; lineTotal: number; listPrice?: number }>(
+  lines: L[],
+  credits: { lines: { productId: string; amount: number }[] }[] | undefined,
+): (L & { creditAmount: number; priceBeforeCredit: number })[] {
+  const byProduct = new Map<string, number>();
+  for (const note of credits ?? []) for (const l of note.lines ?? []) byProduct.set(l.productId, (byProduct.get(l.productId) ?? 0) + (Number(l.amount) || 0));
+  const units = new Map<string, number>();
+  for (const l of lines) units.set(l.productId, (units.get(l.productId) ?? 0) + (Number(l.quantity) || 0));
+  return lines.map((line) => {
+    const pool = byProduct.get(line.productId) ?? 0;
+    const qty = Number(line.quantity) || 0;
+    const share = pool > 0 && qty > 0 ? Math.min(line.lineTotal, (pool * qty) / (units.get(line.productId) || qty)) : 0;
+    if (share <= 0) return { ...line, creditAmount: 0, priceBeforeCredit: line.unitPrice };
+    return {
+      ...line,
+      listPrice: listPriceOf(line),
+      unitPrice: kobo(line.unitPrice - share / qty),
+      lineTotal: kobo(line.lineTotal - share),
+      creditAmount: kobo(share),
+      priceBeforeCredit: line.unitPrice,
+    };
+  });
+}
+
+/** The order's value after credit notes: what was actually sold. */
+export function orderNet(order: Pick<Order, 'total' | 'netTotal' | 'creditTotal'>): number {
+  if (typeof order.netTotal === 'number') return order.netTotal;
+  return kobo((order.total ?? 0) - (order.creditTotal ?? 0));
+}
+
+export function effectiveLines(order: Pick<Order, 'lines' | 'credits'>) {
+  return applyCredits(order.lines ?? [], order.credits);
+}
+
+/** The order as it now stands: lines repriced, total net. For prints and analytics. */
+export function effectiveOrder<O extends Order>(order: O): O {
+  if (!(order.creditTotal ?? 0) && !(order.credits ?? []).length) return order;
+  return { ...order, lines: effectiveLines(order), total: orderNet(order) };
+}
+
+/** The credit notes on an order, as the order keeps them. */
+export function orderCredits(order: Pick<Order, 'credits'>): OrderCredit[] {
+  return order.credits ?? [];
 }
 
 /* landed cost */

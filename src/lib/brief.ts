@@ -27,6 +27,7 @@ import { count, naira, nairaShort, todayISO } from './format';
 import type { Reminder, ReminderThresholds, Severity } from './reminders';
 import type { Task } from './tasks';
 import type { Invoice, Order, Role } from '@/types';
+import { orderNet } from './pricing';
 
 export interface FocusItem {
   id: string;
@@ -181,14 +182,14 @@ function pipelineFrom(input: BriefInput, now: number): Stage[] {
     stage(
       'draft',
       'Draft',
-      byStatus('draft').map((o) => ({ value: o.total, since: o.updatedAt ?? o.createdAt })),
+      byStatus('draft').map((o) => ({ value: orderNet(o), since: o.updatedAt ?? o.createdAt })),
       t.draftDays,
       `${root}/orders`,
     ),
     stage(
       'signature',
       'Awaiting signature',
-      byStatus('pending_approval').map((o) => ({ value: o.total, since: o.createdAt })),
+      byStatus('pending_approval').map((o) => ({ value: orderNet(o), since: o.createdAt })),
       Math.max(1, Math.ceil(t.approvalHours / 24)),
       /* Reps and distributors have no Approvals screen; their orders list shows the same. */
       input.role === 'sales_rep' || input.role === 'distributor' ? `${root}/orders` : `${root}/approvals`,
@@ -196,7 +197,7 @@ function pipelineFrom(input: BriefInput, now: number): Stage[] {
     stage(
       'fulfil',
       'Approved, not delivered',
-      byStatus('approved').map((o) => ({ value: o.total, since: o.approvedAt ?? o.createdAt })),
+      byStatus('approved').map((o) => ({ value: orderNet(o), since: o.approvedAt ?? o.createdAt })),
       t.fulfilDays,
       `${root}/orders`,
     ),
@@ -205,7 +206,7 @@ function pipelineFrom(input: BriefInput, now: number): Stage[] {
       'Delivered, not invoiced',
       byStatus('fulfilled')
         .filter((o) => !invoiced.has(o.id))
-        .map((o) => ({ value: o.total, since: o.fulfilledAt ?? o.updatedAt ?? o.createdAt })),
+        .map((o) => ({ value: orderNet(o), since: o.fulfilledAt ?? o.updatedAt ?? o.createdAt })),
       t.invoiceDays,
       `${root}/invoices`,
     ),
@@ -323,9 +324,9 @@ function insightsFrom(input: BriefInput, now: number): Insight[] {
     const byAccount = new Map<string, { name: string; value: number }>();
     let sum = 0;
     for (const order of live) {
-      sum += order.total;
+      sum += orderNet(order);
       const held = byAccount.get(order.distributorId) ?? { name: order.distributorName, value: 0 };
-      held.value += order.total;
+      held.value += orderNet(order);
       byAccount.set(order.distributorId, held);
     }
     const ranked = [...byAccount.values()].sort((a, b) => b.value - a.value);
@@ -349,7 +350,7 @@ function insightsFrom(input: BriefInput, now: number): Insight[] {
     out.push({
       id: 'abandoned',
       tone: 'warning',
-      text: `${plural(abandoned.length, 'order')} worth ${nairaShort(abandoned.reduce((a, o) => a + o.total, 0))} were started this month and never submitted.`,
+      text: `${plural(abandoned.length, 'order')} worth ${nairaShort(abandoned.reduce((a, o) => a + orderNet(o), 0))} were started this month and never submitted.`,
       to: `${root}/orders`,
     });
   }
@@ -389,7 +390,7 @@ function todayLine(orders: Order[], now: number): string {
     (o) => (o.status === 'approved' || o.status === 'fulfilled') && (o.createdAt ?? '').slice(0, 10) === today,
   );
   if (!booked.length) return 'No orders were booked today.';
-  return `Today: ${plural(booked.length, 'order')} booked, worth ${nairaShort(booked.reduce((a, o) => a + o.total, 0))}.`;
+  return `Today: ${plural(booked.length, 'order')} booked, worth ${nairaShort(booked.reduce((a, o) => a + orderNet(o), 0))}.`;
 }
 
 function summaryFrom(focus: FocusItem[], reminders: Reminder[], bottleneck: Stage | null, tasksToday: number): string {
