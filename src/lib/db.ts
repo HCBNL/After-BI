@@ -48,6 +48,8 @@ import { orgPath, requireOrg, TENANTS, type CollectionKey } from './tenant';
 import { naira, todayISO } from './format';
 import { kobo, summarise } from './pricing';
 import type {
+  CreditNote,
+  CreditNoteLine,
   Distributor,
   Invoice,
   Lead,
@@ -159,6 +161,7 @@ function yearMonth(when = new Date()): string {
 const MONTHLY = {
   PI: (ym: string, seq: number) => `PI-${ym}${String(seq).padStart(3, '0')}`,
   DN: (ym: string, seq: number) => `DN${ym}${String(seq).padStart(3, '0')}`,
+  CN: (ym: string, seq: number) => `CN${ym}${String(seq).padStart(3, '0')}`,
 } as const;
 
 async function nextMonthly(prefix: keyof typeof MONTHLY): Promise<string> {
@@ -1051,6 +1054,105 @@ export async function recordPayment(input: {
       updatedAt: serverTimestamp(),
     });
   });
+}
+
+/* credit notes */
+
+/** Credit notes on one invoice, oldest first. */
+export async function listCreditNotes(filter: { invoiceId?: string; orderId?: string; distributorId: string }): Promise<CreditNote[]> {
+  const rows = await list<CreditNote>(
+    'creditNotes',
+    where('distributorId', '==', filter.distributorId),
+    ...(filter.invoiceId ? [where('invoiceId', '==', filter.invoiceId)] : []),
+    ...(filter.orderId ? [where('orderId', '==', filter.orderId)] : []),
+    fsLimit(100),
+  ).catch(() => [] as CreditNote[]);
+  return rows.sort((a, b) => String(a.createdAt ?? '').localeCompare(String(b.createdAt ?? '')));
+}
+
+/**
+ * Lower the price on an unpaid invoice, with a numbered credit note.
+ *
+ * ONE TRANSACTION: the note, its number, the credit against the invoice and
+ * the invoice's new paid amount and status, together. The value can never be
+ * more than is still owed, so a credit note cannot put an account in credit.
+ * The invoice and the order stay exactly as issued: the note is the record of
+ * what changed, from what price to what price, why, and by whom.
+ */
+export async function issueCreditNote(input: {
+  invoice: Pick<Invoice, 'id'>;
+  lines: CreditNoteLine[];
+  reason: string;
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName'>;
+}): Promise<{ id: string; creditNumber: string }> {
+  const lines = input.lines
+    .map((l) => ({ ...l, fromPrice: kobo(l.fromPrice), toPrice: kobo(l.toPrice), amount: kobo((l.fromPrice - l.toPrice) * l.quantity) }))
+    .filter((l) => l.amount > 0);
+  if (!lines.length) throw new Error('Lower at least one price to raise a credit note.');
+  if (lines.some((l) => l.toPrice < 0)) throw new Error('A price cannot go below zero.');
+  if (!input.reason.trim()) throw new Error('Say why the price changed. It is printed on the credit note.');
+  const total = kobo(lines.reduce((sum, l) => sum + l.amount, 0));
+
+  const invoiceRef = doc(db, orgPath('invoices'), input.invoice.id);
+  const noteRef = doc(collection(db, orgPath('creditNotes')));
+  const paymentRef = doc(collection(db, orgPath('payments')));
+  const ym = yearMonth();
+  const counterRef = doc(db, orgPath('counters'), `CN-${ym}`);
+  const actorName = `${input.actor.firstName} ${input.actor.lastName}`;
+
+  const creditNumber = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(invoiceRef);
+    if (!snap.exists()) throw new Error('That invoice no longer exists.');
+    const invoice = snap.data() as Invoice;
+    if (invoice.status === 'void') throw new Error('That invoice has been voided.');
+    const owed = kobo(invoice.total - (invoice.amountPaid ?? 0));
+    if (owed <= 0) throw new Error('That invoice is already settled, so its price can no longer change.');
+    if (total > owed + 0.009) {
+      throw new Error(`Only ${naira(owed, true)} is still owed on ${invoice.invoiceNumber}, so the credit cannot be ${naira(total, true)}.`);
+    }
+    const counter = await tx.get(counterRef);
+    const seq = (counter.exists() ? (counter.data().value as number) : 0) + 1;
+    const number = MONTHLY.CN(ym, seq);
+    const paidAfter = kobo((invoice.amountPaid ?? 0) + total);
+
+    tx.set(counterRef, { value: seq, updatedAt: serverTimestamp() }, { merge: true });
+    tx.set(noteRef, {
+      creditNumber: number,
+      invoiceId: input.invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+      orderId: invoice.orderId ?? null,
+      orderNumber: invoice.orderNumber ?? null,
+      distributorId: invoice.distributorId,
+      distributorName: invoice.distributorName,
+      lines,
+      total,
+      reason: input.reason.trim(),
+      issuedOn: todayISO(),
+      createdBy: input.actor.id,
+      createdByName: actorName,
+      createdAt: serverTimestamp(),
+    });
+    tx.set(paymentRef, {
+      invoiceId: input.invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+      distributorId: invoice.distributorId,
+      amount: total,
+      method: 'credit',
+      reference: number,
+      paidOn: todayISO(),
+      recordedBy: input.actor.id,
+      recordedByName: actorName,
+      createdAt: serverTimestamp(),
+    });
+    tx.update(invoiceRef, {
+      amountPaid: paidAfter,
+      status: paidAfter >= invoice.total - 0.009 ? 'paid' : 'part_paid',
+      updatedAt: serverTimestamp(),
+    });
+    return number;
+  });
+
+  return { id: noteRef.id, creditNumber };
 }
 
 /**

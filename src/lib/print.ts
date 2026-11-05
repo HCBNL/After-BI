@@ -38,7 +38,7 @@
  */
 
 import { listPriceOf, summarise } from './pricing';
-import type { Distributor, Invoice, Order, OrderLine, OrgSettings, Payment } from '@/types';
+import type { CreditNote, Distributor, Invoice, Order, OrderLine, OrgSettings, Payment } from '@/types';
 
 /* escaping */
 
@@ -111,8 +111,18 @@ export type PrintJob =
       company: PrintCompany;
     }
   | {
+      kind: 'credit';
+      note: CreditNote;
+      /** The invoice it adjusts, as it stands now, for the balance after. */
+      invoice?: Invoice | null;
+      distributor?: Distributor | null;
+      company: PrintCompany;
+    }
+  | {
       kind: 'invoice';
       invoice: Invoice;
+      /** Price adjustments raised against it, printed under the total. */
+      credits?: CreditNote[];
       distributor?: Distributor | null;
       company: PrintCompany;
     }
@@ -666,6 +676,10 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
   const settings = company.settings;
   const bill = billingBlock(distributor, invoice.distributorName);
   const state = invoice.status === 'draft' ? { tone: 'void' as const, label: 'DRAFT' } : payState(invoice);
+  /* Credit notes come off the total; money received is shown on its own. */
+  const credits = job.credits ?? [];
+  const credited = credits.reduce((sum, c) => sum + c.total, 0);
+  const cash = Math.max(0, (invoice.amountPaid ?? 0) - credited);
   const meta = `<div><strong>No.: ${esc(invoice.invoiceNumber)}</strong></div>
     ${statusPill(state)}`;
 
@@ -697,18 +711,104 @@ function invoiceDoc(job: Extract<PrintJob, { kind: 'invoice' }>): { title: strin
           <strong>${invoice.lines.reduce((s, l) => s + l.quantity, 0).toLocaleString('en-NG')}</strong></div>
         <div class="totals">
           ${discountRows(invoice.lines, invoice.discountNote)}
-          <div class="t-row t-final"><span>TOTAL</span><span>${money(invoice.total)}</span></div>
-          ${invoice.amountPaid > 0 ? `<div class="t-row" style="margin-top:5px"><span>Paid to date</span><span>${money(invoice.amountPaid)}</span></div>` : ''}
+          <div class="t-row${credits.length ? '' : ' t-final'}"${credits.length ? ' style="font-weight:700"' : ''}><span>${credits.length ? 'Invoice total' : 'TOTAL'}</span><span>${money(invoice.total)}</span></div>
+          ${credits
+            .map((c) => `<div class="t-row" style="font-weight:600"><span>Less: credit note ${esc(c.creditNumber)}</span><span>(${money(c.total)})</span></div>`)
+            .join('')}
+          ${credits.length ? `<div class="t-row t-final"><span>TOTAL AFTER CREDIT</span><span>${money(invoice.total - credited)}</span></div>` : ''}
+          ${cash > 0 ? `<div class="t-row" style="margin-top:5px"><span>Paid to date</span><span>${money(cash)}</span></div>` : ''}
         </div>
       </div>
 
       ${goodwill(invoice.lines, invoice.discountNote)}
-      ${invoice.status === 'void' ? '' : balanceBand(invoice.total, invoice.amountPaid ?? 0, payState(invoice), `Payment due ${printDate(invoice.dueOn)}.`)}
+      ${
+        credits.length
+          ? `<div class="goodwill"><strong>Price adjusted:</strong> ${credits
+              .map((c) => `${esc(c.creditNumber)} (${money(c.total)}, ${esc(c.reason)})`)
+              .join('; ')}.</div>`
+          : ''
+      }
+      ${invoice.status === 'void' ? '' : balanceBand(invoice.total - credited, cash, payState(invoice), `Payment due ${printDate(invoice.dueOn)}.`)}
 
       ${settings.invoiceFooter ? `<div class="notes">${esc(settings.invoiceFooter)}</div>` : ''}
       ${bankBlock(settings)}
       ${signatures(settings, company, bill.name, bill.address, invoiceSigner(invoice, settings))}
       ${footer(settings, 'Invoice')}
+    `,
+  };
+}
+
+/**
+ * A credit note: which lines got a lower price, from what to what, why, and
+ * what the customer owes after it. Printed in the same frame as the invoice.
+ */
+function creditDoc(job: Extract<PrintJob, { kind: 'credit' }>): { title: string; body: string } {
+  const { note, invoice, distributor, company } = job;
+  const settings = company.settings;
+  const bill = billingBlock(distributor, note.distributorName);
+  const meta = `<div><strong>No.: ${esc(note.creditNumber)}</strong></div>
+    <div style="font-size:10px;color:#5b6167">Against invoice ${esc(note.invoiceNumber)}</div>`;
+  const rows = note.lines
+    .map(
+      (l, i) => `<tr>
+        <td class="num">${i + 1}</td>
+        <td>${esc(l.productName)}</td>
+        <td>${esc(l.unit)}</td>
+        <td class="num">${l.quantity.toLocaleString('en-NG')}</td>
+        <td class="num" style="color:#8a9097;text-decoration:line-through">${amount(l.fromPrice)}</td>
+        <td class="num" style="font-weight:700">${amount(l.toPrice)}</td>
+        <td class="num" style="font-weight:700">${amount(l.amount)}</td>
+      </tr>`,
+    )
+    .join('');
+  const owing = invoice ? Math.max(0, invoice.total - (invoice.amountPaid ?? 0)) : null;
+
+  return {
+    title: note.creditNumber,
+    body: `
+      ${header(settings, 'CREDIT NOTE', meta)}
+      <div class="grid">
+        <div>
+          <div class="row"><span class="k">Credit to:</span><strong>${esc(bill.name)}</strong></div>
+          ${bill.registered ? `<div class="row"><span class="k">Reg. name:</span><span>${esc(bill.registered)}</span></div>` : ''}
+          ${bill.cac ? `<div class="row"><span class="k">CAC no.:</span><span>${esc(bill.cac)}</span></div>` : ''}
+          ${bill.address ? `<div class="row"><span class="k">Address:</span><span>${esc(bill.address)}</span></div>` : ''}
+        </div>
+        <div style="text-align:right">
+          <div class="row" style="justify-content:flex-end"><span class="k">Date:</span><span>${printDate(note.issuedOn)}</span></div>
+          <div class="row" style="justify-content:flex-end"><span class="k">Invoice:</span><span>${esc(note.invoiceNumber)}</span></div>
+          ${note.orderNumber ? `<div class="row" style="justify-content:flex-end"><span class="k">Order:</span><span>${esc(note.orderNumber)}</span></div>` : ''}
+        </div>
+      </div>
+
+      <table class="items">
+        <colgroup><col style="width:30px"/><col/><col style="width:76px"/>
+          <col style="width:52px"/><col style="width:96px"/><col style="width:96px"/><col style="width:110px"/></colgroup>
+        <thead><tr>
+          <th>NO.</th><th>ITEM</th><th>UNIT</th><th class="num">QTY</th>
+          <th class="num" style="white-space:normal">OLD PRICE (₦)</th><th class="num" style="white-space:normal">NEW PRICE (₦)</th><th class="num">CREDIT (₦)</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+
+      <div class="totals">
+        <div class="t-row t-final"><span>TOTAL CREDIT</span><span>${money(note.total)}</span></div>
+      </div>
+      <div class="goodwill"><strong>Reason:</strong> ${esc(note.reason)}</div>
+      ${
+        invoice
+          ? `<div class="balance"><div><div class="lab">${owing && owing > 0 ? 'NEW BALANCE ON THE INVOICE' : 'INVOICE SETTLED'}</div>
+              <div class="sub">Invoice ${esc(invoice.invoiceNumber)} total ${money(invoice.total)}, credits and payments ${money(invoice.amountPaid ?? 0)}.</div></div>
+              <div class="val">${money(owing ?? 0)}</div></div>`
+          : ''
+      }
+      ${signatures(settings, company, bill.name, bill.address, {
+        image: settings.signatureUrl || undefined,
+        name: settings.signatoryName || note.createdByName,
+        title: settings.signatoryTitle,
+        note: `Issued ${printDate(note.issuedOn)}`,
+      })}
+      ${footer(settings, `Credit note ${note.creditNumber} · invoice ${note.invoiceNumber}`)}
     `,
   };
 }
@@ -734,7 +834,12 @@ function statementDoc(job: Extract<PrintJob, { kind: 'statement' }>): { title: s
     ...payments.map((p) => ({
       on: p.paidOn,
       ref: p.reference || p.invoiceNumber,
-      what: p.method === 'credit' ? `Credit for a return (${p.reference ?? ''})` : `Payment received (${p.method})`,
+      what:
+        p.method === 'credit'
+          ? /^CN/.test(p.reference ?? '')
+            ? `Price adjustment, credit note ${p.reference}`
+            : `Credit for a return (${p.reference ?? ''})`
+          : `Payment received (${p.method})`,
       debit: 0,
       credit: p.amount,
     })),
@@ -809,6 +914,8 @@ function build(job: PrintJob): { title: string; html: string } {
       ? proformaDoc(job)
       : job.kind === 'delivery'
         ? deliveryDoc(job)
+        : job.kind === 'credit'
+          ? creditDoc(job)
         : job.kind === 'invoice'
           ? invoiceDoc(job)
           : statementDoc(job);

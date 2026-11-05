@@ -164,6 +164,7 @@ export const COLLECTIONS = {
   invoices: 'invoices',
   payments: 'payments',
   returns: 'returns',
+  creditNotes: 'creditNotes',
   targets: 'targets',
   counters: 'counters',
   settings: 'settings',
