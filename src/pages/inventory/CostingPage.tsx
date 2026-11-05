@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Calculator, Plus, Save, Trash2, Upload } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { ImportCalculator } from './ImportCalculator';
 import {
   Alert,
   Badge,
@@ -62,6 +63,7 @@ export default function CostingPage() {
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Draft | null>(null);
+  const [section, setSection] = useState<'sheets' | 'import'>(() => (params.get('tab') === 'import' ? 'import' : 'sheets'));
 
   const { data, loading, reload } = useAsync(() => listCostSheets(), [], { handleError: true });
 
@@ -134,13 +136,31 @@ export default function CostingPage() {
         title="Costing"
         description="Landed cost per unit from product, freight, clearance and delivery, then your selling price at any margin."
         actions={
-          <Button size="sm" icon={<Plus size={16} />} onClick={() => setEditing(blankSheet())}>
-            New costing
-          </Button>
+          section === 'sheets' ? (
+            <Button size="sm" icon={<Plus size={16} />} onClick={() => setEditing(blankSheet())}>
+              New costing
+            </Button>
+          ) : undefined
         }
       >
-        <SearchInput value={search} onChange={setSearch} placeholder="Costing or product…" className="max-w-xs" />
+        <div className="flex flex-wrap items-center gap-3">
+          <SegmentedControl
+            value={section}
+            onChange={setSection}
+            options={[
+              { value: 'sheets', label: 'Landed costings' },
+              { value: 'import', label: 'Import calculator' },
+            ]}
+          />
+          {section === 'sheets' && (
+            <SearchInput value={search} onChange={setSearch} placeholder="Costing or product…" className="max-w-xs" />
+          )}
+        </div>
       </PageHeader>
+
+      {section === 'import' ? (
+        <ImportCalculator />
+      ) : (
 
       <DataTable
         rows={rows}
@@ -156,6 +176,7 @@ export default function CostingPage() {
             : 'Press New costing, put in what the shipment cost you and how many units it holds, and see your price at any margin.'
         }
       />
+      )}
 
       <CostingDrawer
         sheet={editing}

@@ -42,6 +42,7 @@ import { useOrg } from '@/context/OrgContext';
 import { listOrders } from '@/lib/db';
 import { isSelling, partnerScope } from '@/lib/roles';
 import { formatDate, naira, count } from '@/lib/format';
+import { orderNet } from '@/lib/pricing';
 import { ORDER_STATUS_LABEL, type Order, type OrderStatus } from '@/types';
 
 /**
@@ -160,10 +161,18 @@ export default function OrdersPage() {
       key: 'total',
       header: 'Value',
       align: 'right',
-      sortValue: (row) => row.total,
-      cell: (row) => (
-        <span className="tabular text-body font-bold text-primary">{naira(row.total)}</span>
-      ),
+      sortValue: (row) => orderNet(row),
+      cell: (row) =>
+        (row.creditTotal ?? 0) > 0 ? (
+          <span className="inline-flex flex-col items-end leading-tight">
+            <span className="tabular text-body font-bold text-primary">{naira(orderNet(row))}</span>
+            <span className="tabular text-caption text-muted">
+              <s>{naira(row.total)}</s> · credit note
+            </span>
+          </span>
+        ) : (
+          <span className="tabular text-body font-bold text-primary">{naira(row.total)}</span>
+        ),
     },
     {
       key: 'status',

@@ -18,7 +18,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
 import { createInvoice, invoiceForOrder, issueCreditNote, listCreditNotes } from '@/lib/db';
 import { printDocument } from '@/lib/print';
-import { kobo } from '@/lib/pricing';
+import { applyCredits, kobo } from '@/lib/pricing';
 import { naira } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import type { CreditNote, CreditNoteLine, Invoice, Order } from '@/types';
@@ -74,12 +74,10 @@ export function AdjustPriceModal({
 
   const rows = useMemo(() => {
     if (!invoice) return [];
+    /* Same sharing rule as the order and the proforma: see `applyCredits`. */
+    const applied = applyCredits(invoice.lines, earlier);
     return invoice.lines.map((line, index) => {
-      const credited = earlier
-        .flatMap((n) => n.lines)
-        .filter((l) => l.productId === line.productId)
-        .reduce((sum, l) => sum + l.amount, 0);
-      const current = kobo(line.unitPrice - (line.quantity ? credited / line.quantity : 0));
+      const current = applied[index].unitPrice;
       const key = `${line.productId}-${index}`;
       const typed = prices[key];
       const next = typed === undefined || typed.trim() === '' ? current : kobo(Number(typed));

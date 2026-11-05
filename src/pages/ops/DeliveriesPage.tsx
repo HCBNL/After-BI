@@ -24,6 +24,7 @@ import { useAuth } from '@/context/AuthContext';
 import { listOrders } from '@/lib/db';
 import { partnerScope } from '@/lib/roles';
 import { formatDate, naira, count } from '@/lib/format';
+import { orderNet } from '@/lib/pricing';
 import { PORTAL_ROOT } from '@/lib/tiles';
 
 export default function DeliveriesPage() {
@@ -97,7 +98,7 @@ export default function DeliveriesPage() {
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="tabular text-lead font-bold text-primary">{naira(order.total)}</p>
+                  <p className="tabular text-lead font-bold text-primary">{naira(orderNet(order))}</p>
                   <Badge tone="good" className="mt-1">
                     Sent
                   </Badge>

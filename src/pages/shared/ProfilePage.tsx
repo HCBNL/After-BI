@@ -7,18 +7,19 @@
  * are on before they can say so.
  */
 
-import { useEffect, useState } from 'react';
-import { LogOut, Save } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Camera, LogOut, Save, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useShell } from '@/components/layout/ShellContext';
-import { Avatar, Badge, Button, Divider, Field, Hint, Input, useToast } from '@/components/ui';
+import { Avatar, Badge, Button, Divider, Field, Hint, Input, Spinner, useToast } from '@/components/ui';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { AccentPicker } from '@/components/AccentPicker';
 import { useAuth } from '@/context/AuthContext';
 import { useOptionalOrg } from '@/context/OrgContext';
 import { updateProfile } from '@/lib/db';
+import { cloudinaryConfigured, imageUrl, shrinkImage, uploadImage } from '@/lib/cloudinary';
 import { useBrand } from '@/lib/brand';
 import { fullName, partnerScope } from '@/lib/roles';
 import { formatDate } from '@/lib/format';
@@ -42,6 +43,8 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [title, setTitle] = useState(user?.title ?? '');
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const photoInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -56,6 +59,34 @@ export default function ProfilePage() {
   const distributor =
     user.role === 'distributor' && user.distributorId ? org?.distributorById(user.distributorId) : undefined;
   const managed = user.role === 'sales_rep' ? (partnerScope(user) ?? []).length : 0;
+
+  /* Tap the picture: choose a photo, it is shrunk, uploaded and saved at once. */
+  const changePhoto = async (file: File | undefined) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImage(await shrinkImage(file, 640), 'avatar');
+      await updateProfile(user.id, { photoURL: url });
+      toast.success('Picture updated');
+    } catch (err) {
+      toast.error('Picture not updated', err instanceof Error ? err.message : undefined);
+    } finally {
+      setUploading(false);
+      if (photoInput.current) photoInput.current.value = '';
+    }
+  };
+
+  const removePhoto = async () => {
+    setUploading(true);
+    try {
+      await updateProfile(user.id, { photoURL: '' });
+      toast.success('Picture removed');
+    } catch (err) {
+      toast.error('Not removed', err instanceof Error ? err.message : undefined);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const save = async () => {
     setBusy(true);
@@ -83,7 +114,35 @@ export default function ProfilePage() {
 
       <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
         <div className="flex items-center gap-4">
-          <Avatar name={`${user.firstName} ${user.lastName}`} src={user.photoURL} size="lg" />
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              disabled={uploading || !cloudinaryConfigured}
+              onClick={() => photoInput.current?.click()}
+              aria-label="Change your picture"
+              title={cloudinaryConfigured ? 'Change your picture' : 'Picture uploads are not set up on this deployment'}
+              className="group relative block rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            >
+              <Avatar
+                name={`${user.firstName} ${user.lastName}`}
+                src={user.photoURL ? imageUrl(user.photoURL, { width: 160 }) : undefined}
+                size="lg"
+              />
+              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                {uploading ? <Spinner size={18} /> : <Camera size={18} aria-hidden />}
+              </span>
+              <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface-card)] bg-brand-600 text-white">
+                {uploading ? <Spinner size={11} /> : <Camera size={12} aria-hidden />}
+              </span>
+            </button>
+            <input
+              ref={photoInput}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => void changePhoto(e.target.files?.[0])}
+            />
+          </div>
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 text-title font-semibold text-primary">
               <span className="truncate">{fullName(user)}</span>
@@ -93,6 +152,16 @@ export default function ProfilePage() {
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               <Badge tone="brand">{ROLE_LABEL[user.role]}</Badge>
               {distributor && <Badge tone="neutral">{distributor.company}</Badge>}
+              {user.photoURL && (
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => void removePhoto()}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-caption font-medium text-muted transition-colors hover:text-primary"
+                >
+                  <Trash2 size={12} aria-hidden /> Remove picture
+                </button>
+              )}
               {managed > 0 && (
                 <Badge tone="neutral">
                   {managed} distributor{managed === 1 ? '' : 's'}

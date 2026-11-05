@@ -41,7 +41,7 @@ import { formatDateTime, naira, count } from '@/lib/format';
 import { printDocument } from '@/lib/print';
 import { PORTAL_ROOT } from '@/lib/tiles';
 import { Link } from 'react-router-dom';
-import { listPriceOf, summarise } from '@/lib/pricing';
+import { effectiveLines, listPriceOf, orderNet, summarise } from '@/lib/pricing';
 import { ORDER_STATUS_LABEL, ROLE_LABEL, type Order } from '@/types';
 
 export function OrderDrawer({
@@ -425,7 +425,7 @@ export function OrderDrawer({
             </h3>
 
             <div className="surface-card overflow-hidden rounded-2xl border border-hairline">
-              {order.lines.map((line, index) => (
+              {effectiveLines(order).map((line, index) => (
                 <div
                   key={`${line.productId}-${index}`}
                   className="flex items-start justify-between gap-3 border-b border-hairline px-4 py-3 last:border-0"
@@ -447,6 +447,7 @@ export function OrderDrawer({
                       <p className="tabular mt-0.5 text-caption font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
                         {naira((listPriceOf(line) - line.unitPrice) * line.quantity, true)} off (
                         {naira(listPriceOf(line) - line.unitPrice, true)} per unit)
+                        {line.creditAmount > 0 && ` · was ${naira(line.priceBeforeCredit, true)} until the credit note`}
                       </p>
                     )}
                   </div>
@@ -469,9 +470,29 @@ export function OrderDrawer({
                 </div>
               )}
 
+              {(order.creditTotal ?? 0) > 0 && (
+                <div className="space-y-1 border-b border-hairline px-4 py-3 text-label">
+                  <div className="flex items-center justify-between text-muted">
+                    <span>Order total as approved</span>
+                    <span className="tabular">{naira(order.total, true)}</span>
+                  </div>
+                  {(order.credits ?? []).map((c) => (
+                    <div key={c.id} className="flex items-center justify-between gap-3 font-semibold text-primary">
+                      <span className="min-w-0 truncate">
+                        Credit note {c.creditNumber}
+                        <span className="font-normal text-muted"> · {c.reason}</span>
+                      </span>
+                      <span className="tabular shrink-0">({naira(c.total, true)})</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="flex items-center justify-between gap-3 surface-sunken px-4 py-3">
-                <p className="text-caption font-semibold uppercase tracking-wide text-muted">Total</p>
-                <p className="tabular text-title font-bold text-primary">{naira(order.total, true)}</p>
+                <p className="text-caption font-semibold uppercase tracking-wide text-muted">
+                  {(order.creditTotal ?? 0) > 0 ? 'Total after credit' : 'Total'}
+                </p>
+                <p className="tabular text-title font-bold text-primary">{naira(orderNet(order), true)}</p>
               </div>
             </div>
 
@@ -632,6 +653,7 @@ export function OrderDrawer({
         order={order ?? null}
         onClose={() => setAdjusting(false)}
         onDone={() => {
+          reload();
           reloadInvoice();
           onChanged();
         }}

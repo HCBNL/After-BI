@@ -315,6 +315,18 @@ export interface Order extends AmendmentTrail {
   discountNote?: string;
   /** Who last set an adjusted price on this order. */
   priceAdjustedBy?: string;
+  /**
+   * Price adjustments after the order went out: one entry per credit note,
+   * written in the same transaction that issues the note (see
+   * `issueCreditNote`). `lines` and `total` stay exactly as approved; what the
+   * order is really worth is `netTotal`, and `effectiveLines()` gives each
+   * line at its adjusted price. Analytics, lists and the proforma read these.
+   */
+  credits?: OrderCredit[];
+  /** Sum of `credits`. */
+  creditTotal?: number;
+  /** `total` minus `creditTotal`: the value actually sold. */
+  netTotal?: number;
   status: OrderStatus;
 
   /** UIDs required to sign off, fixed at submission. */
@@ -523,6 +535,16 @@ export interface Invoice extends AmendmentTrail {
  * comes off what the customer owes as a `credit` payment, so balances,
  * statements and credit limits follow on their own.
  */
+/** A credit note as remembered on its order: just enough to reprice the lines. */
+export interface OrderCredit {
+  id: string;
+  creditNumber: string;
+  issuedOn: string;
+  reason: string;
+  total: number;
+  lines: { productId: string; quantity: number; toPrice: number; amount: number }[];
+}
+
 export interface CreditNoteLine {
   productId: string;
   productName: string;

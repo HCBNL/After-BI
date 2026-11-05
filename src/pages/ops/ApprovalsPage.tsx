@@ -23,7 +23,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { listOrders } from '@/lib/db';
 import { formatDate, naira, count } from '@/lib/format';
-import { summarise } from '@/lib/pricing';
+import { orderNet, summarise } from '@/lib/pricing';
 import { PORTAL_ROOT } from '@/lib/tiles';
 
 export default function ApprovalsPage() {
@@ -124,7 +124,7 @@ export default function ApprovalsPage() {
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="tabular text-lead font-bold text-primary">{naira(order.total)}</p>
+                  <p className="tabular text-lead font-bold text-primary">{naira(orderNet(order))}</p>
                   {summarise(order.lines ?? []).discount > 0 && (
                     <p className="tabular mt-0.5 text-caption font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
                       {naira(summarise(order.lines).discount)} discount

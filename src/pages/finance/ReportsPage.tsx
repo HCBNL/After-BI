@@ -23,6 +23,7 @@ import { useAuth } from '@/context/AuthContext';
 import { listInvoices, listOrders, listSales, listStock } from '@/lib/db';
 import { partnerScope } from '@/lib/roles';
 import { todayISO } from '@/lib/format';
+import { orderNet } from '@/lib/pricing';
 
 type Dataset = 'sales' | 'orders' | 'invoices' | 'stock';
 
@@ -91,7 +92,10 @@ export default function ReportsPage() {
             Distributor: o.distributorName,
             Status: o.status,
             Lines: o.lines.length,
-            Total: o.total,
+            'Order value': o.total,
+            'Credit notes': o.creditTotal ?? 0,
+            'Net value': orderNet(o),
+            'Credit note numbers': (o.credits ?? []).map((c) => c.creditNumber).join(' '),
             'Raised by': o.createdByName,
             Raised: o.createdAt,
             Fulfilled: o.fulfilledAt ?? '',
