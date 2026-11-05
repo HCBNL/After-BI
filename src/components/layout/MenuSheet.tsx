@@ -11,9 +11,6 @@ import {
   GROUP_ICON,
   GROUP_ORDER,
 } from '@/lib/tiles';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { LanguageSwitch } from '@/components/LanguageSwitch';
-import { AccentPicker } from '@/components/AccentPicker';
 import { Avatar } from '@/components/ui';
 import { BrandBars } from '@/components/home/HomeArt';
 import { ROLE_LABEL, type Role } from '@/types';
@@ -260,7 +257,8 @@ export function MenuSheet({
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-7 rounded-t-[28px] surface-card" />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
+        {/* Colour, light/dark and language live on Profile: the list gets the room, at least three results in view. */}
+        <div className="min-h-[15rem] flex-1 overflow-y-auto pb-safe-4 scrollbar-thin">
           {needle ? (
             matches.length ? (
               <ul className="py-1">
@@ -298,14 +296,6 @@ export function MenuSheet({
           )}
         </div>
 
-        <div className="shrink-0 space-y-3 border-t border-hairline px-4 py-3 pb-safe-4">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-label font-semibold text-secondary">Colour</span>
-            <AccentPicker size={30} />
-          </div>
-          <ThemeToggle full />
-          <LanguageSwitch full className="w-full justify-center" />
-        </div>
       </div>
     </div>
   );
