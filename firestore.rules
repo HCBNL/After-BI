@@ -256,6 +256,22 @@ service cloud.firestore {
       position, location and whether they are current. Nothing else. Written by
       the owner; a staff member may refresh only their own position and location.
     */
+    /* An organisation's staff ID card check (src/lib/idCards.ts). Public read,
+       so the QR on a card works for anyone; written only by the holder, for
+       their own organisation; suspended by that organisation's admins. */
+    match /idCards/{uid} {
+      allow read: if true;
+      allow create, update: if activeProfile()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.orgId == profile().get('orgId', '')
+        && request.resource.data.active == true
+        && request.resource.data.keys().hasOnly(['uid', 'orgId', 'name', 'position', 'company', 'logo', 'phone', 'email', 'website', 'location', 'staffNo', 'active', 'updatedAt']);
+      allow update: if admin(resource.data.orgId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active', 'updatedAt']);
+      allow delete: if request.auth.uid == uid || admin(resource.data.orgId);
+    }
+
     match /staffCards/{staffNo} {
       allow read: if true;
       allow write: if owner();
@@ -451,6 +467,16 @@ service cloud.firestore {
       allow update: if hasRole(orgId, ['super_admin', 'admin', 'finance_manager'])
         && request.resource.data.total >= resource.data.amountPaid;
       allow delete: if immutable();
+    }
+
+    /* Credit notes: a price adjustment on an unpaid invoice. Never edited or
+       deleted; a mistake is corrected by a further note. */
+    match /orgs/{orgId}/creditNotes/{noteId} {
+      allow read: if partnerOf(orgId, resource.data.distributorId);
+      allow create: if hasRole(orgId, ['super_admin', 'admin', 'finance_manager'])
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.total > 0;
+      allow update, delete: if immutable();
     }
 
     /* Append-only, like the stock ledger. */
