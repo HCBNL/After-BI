@@ -146,14 +146,13 @@ const BASE_CSS = (brand: string) => `
   /* The watermark is fixed rather than absolute so that it repeats on every
      printed page instead of only the first. It is very light on purpose: it
      has to survive a photocopy without obscuring a figure. */
-  /* One watermark per page, centred and very faint: the company's own logo,
-     or its short name when there is no logo. Fixed, so it repeats on every
-     printed page; one image, already loaded for the header, so it costs nothing. */
+  /* One watermark per page, centred and very faint: the company's own logo
+     image. With no logo uploaded the page stays neutral (no name, no mark),
+     only the ORIGINAL COPY line. Fixed, so it repeats on every printed page;
+     the same image the header already loads, so it costs nothing. */
   .wm{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
-  .wm img{width:58%;max-height:46%;object-fit:contain;opacity:.045;filter:grayscale(1)}
-  .wm .wm-text{font-size:96px;font-weight:900;letter-spacing:-.02em;color:#1a1d21;opacity:.045;
-      transform:rotate(-24deg);white-space:nowrap}
+  .wm img{width:56%;max-height:44%;object-fit:contain;opacity:.06;filter:grayscale(1)}
   .wm .wm-copy{margin-top:70px;font-size:13px;font-weight:800;letter-spacing:.5em;color:#1a1d21;opacity:.12}
   .page{position:relative;z-index:1}
 
@@ -226,9 +225,7 @@ const BASE_CSS = (brand: string) => `
 `;
 
 function watermark(settings: OrgSettings): string {
-  const mark = settings.logoUrl
-    ? `<img src="${esc(settings.logoUrl)}" alt="" />`
-    : `<div class="wm-text">${esc(settings.shortName || settings.name)}</div>`;
+  const mark = settings.logoUrl?.trim() ? `<img src="${esc(settings.logoUrl.trim())}" alt="" />` : '';
   return `<div class="wm">${mark}<div class="wm-copy">ORIGINAL COPY</div></div>`;
 }
 
