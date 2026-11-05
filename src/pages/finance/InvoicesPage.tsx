@@ -15,7 +15,8 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Ban, CalendarDays, Plus, Printer, Receipt } from 'lucide-react';
+import { Ban, CalendarDays, Plus, Printer, Receipt, ReceiptText } from 'lucide-react';
+import { AdjustPriceModal } from './AdjustPriceModal';
 import { PageHeader } from '@/components/layout/PageHeader';
 import {
   Alert,
@@ -37,6 +38,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import {
   createInvoice,
+  listCreditNotes,
   listInvoices,
   listOrders,
   listPayments,
@@ -73,6 +75,7 @@ export default function InvoicesPage() {
   const [paying, setPaying] = useState<Invoice | null>(null);
   const [raising, setRaising] = useState(false);
   const [voiding, setVoiding] = useState<Invoice | null>(null);
+  const [adjusting, setAdjusting] = useState<Invoice | null>(null);
 
   const { data, loading, reload } = useAsync(
     () => listInvoices({ distributorId: scope, max: 400 }),
@@ -286,12 +289,18 @@ export default function InvoicesPage() {
         }
       />
 
+      <AdjustPriceModal open={!!adjusting} invoice={adjusting} onClose={() => setAdjusting(null)} onDone={reload} />
+
       <PaymentModal
         invoice={paying}
         onClose={() => setPaying(null)}
         onVoid={(invoice) => {
           setPaying(null);
           setVoiding(invoice);
+        }}
+        onAdjust={(invoice) => {
+          setPaying(null);
+          setAdjusting(invoice);
         }}
         onSaved={() => {
           setPaying(null);
@@ -485,11 +494,13 @@ function PaymentModal({
   onClose,
   onSaved,
   onVoid,
+  onAdjust,
 }: {
   invoice: Invoice | null;
   onClose: () => void;
   onSaved: () => void;
   onVoid: (invoice: Invoice) => void;
+  onAdjust: (invoice: Invoice) => void;
 }) {
   const { user } = useAuth();
   const { settings, distributorById } = useOrg();
@@ -516,6 +527,10 @@ function PaymentModal({
  */
   const { data: payments } = useAsync(
     async () => (invoice ? listPayments(invoice.id, invoice.distributorId) : []),
+    [invoice?.id, invoice?.amountPaid],
+  );
+  const { data: credits } = useAsync(
+    async () => (invoice ? listCreditNotes({ invoiceId: invoice.id, distributorId: invoice.distributorId }) : []),
     [invoice?.id, invoice?.amountPaid],
   );
 
@@ -600,6 +615,7 @@ function PaymentModal({
                   printDocument({
                     kind: 'invoice',
                     invoice,
+                    credits: credits ?? [],
                     distributor: distributorById(invoice.distributorId) ?? null,
                     company: { settings, preparedBy: settings.name },
                   });
@@ -651,6 +667,54 @@ function PaymentModal({
             <CalendarDays size={15} />
             Correct the issue or due date
           </button>
+        )}
+
+        {/*
+          Price adjustment: the invoice stays as issued; the new, lower price
+          goes on a numbered credit note that comes off what is owed.
+ */}
+        {invoice.status !== 'void' && owing > 0 && (
+          <button
+            type="button"
+            onClick={() => onAdjust(invoice)}
+            className="flex w-full items-center gap-2 rounded-xl border border-hairline px-3.5 py-2.5 text-left text-label font-semibold text-secondary transition-colors hover:bg-[var(--surface-sunken)]"
+          >
+            <ReceiptText size={15} />
+            Adjust price (issue a credit note)
+          </button>
+        )}
+
+        {(credits ?? []).length > 0 && (
+          <div className="rounded-xl border border-hairline px-3.5 py-2.5">
+            <p className="text-micro font-semibold uppercase tracking-[0.08em] text-muted">Credit notes</p>
+            <ul className="mt-1.5 space-y-1">
+              {(credits ?? []).map((note) => (
+                <li key={note.id} className="flex items-center gap-2 text-label">
+                  <span className="font-semibold text-primary">{note.creditNumber}</span>
+                  <span className="min-w-0 flex-1 truncate text-muted">{note.reason}</span>
+                  <span className="tabular font-semibold text-primary">({naira(note.total)})</span>
+                  {settings && (
+                    <button
+                      type="button"
+                      aria-label={`Print ${note.creditNumber}`}
+                      className="rounded-lg p-1 text-muted transition-colors hover:text-primary"
+                      onClick={() =>
+                        printDocument({
+                          kind: 'credit',
+                          note,
+                          invoice,
+                          distributor: distributorById(invoice.distributorId) ?? null,
+                          company: { settings },
+                        })
+                      }
+                    >
+                      <Printer size={14} />
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         {editingDates && (

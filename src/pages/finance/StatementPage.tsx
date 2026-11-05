@@ -99,7 +99,12 @@ export default function StatementPage() {
         id: `pay-${p.id}`,
         date: p.paidOn,
         reference: p.reference || p.invoiceNumber,
-        description: p.method === 'credit' ? `Credit for a return (${p.reference ?? ''})` : `Payment received (${p.method})`,
+        description:
+          p.method === 'credit'
+            ? /^CN/.test(p.reference ?? '')
+              ? `Price adjustment, credit note ${p.reference}`
+              : `Credit for a return (${p.reference ?? ''})`
+            : `Payment received (${p.method})`,
         debit: 0,
         credit: p.amount,
       })),

@@ -513,6 +513,48 @@ export interface Invoice extends AmendmentTrail {
   voidedBy?: string;
 }
 
+/**
+ * A credit note: a price adjustment on an invoice that is not yet fully paid.
+ *
+ * How a customer is given a lower price after the goods have gone (a market
+ * drop, a negotiated discount) instead of a return. The order and invoice are
+ * never rewritten: the credit note is its own numbered document (CN202611001)
+ * saying which lines, from what price to what price, and why, and its value
+ * comes off what the customer owes as a `credit` payment, so balances,
+ * statements and credit limits follow on their own.
+ */
+export interface CreditNoteLine {
+  productId: string;
+  productName: string;
+  unit: string;
+  quantity: number;
+  /** The price per unit before this note (after any earlier notes). */
+  fromPrice: number;
+  /** The new agreed price per unit. */
+  toPrice: number;
+  /** `(fromPrice - toPrice) × quantity`. */
+  amount: number;
+}
+
+export interface CreditNote {
+  id: string;
+  creditNumber: string;
+  invoiceId: string;
+  invoiceNumber: string;
+  orderId?: string;
+  orderNumber?: string;
+  distributorId: string;
+  distributorName: string;
+  lines: CreditNoteLine[];
+  total: number;
+  reason: string;
+  /** `YYYY-MM-DD`. */
+  issuedOn: string;
+  createdBy: string;
+  createdByName: string;
+  createdAt: string;
+}
+
 export interface Payment {
   id: string;
   invoiceId: string;

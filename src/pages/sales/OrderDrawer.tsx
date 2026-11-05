@@ -27,13 +27,14 @@
  */
 
 import { useState } from 'react';
-import { Ban, Check, PackageCheck, Pencil, Printer, Send, Truck, Undo2, X } from 'lucide-react';
+import { Ban, Check, PackageCheck, Pencil, Printer, ReceiptText, Send, Truck, Undo2, X } from 'lucide-react';
+import { AdjustPriceModal } from '@/pages/finance/AdjustPriceModal';
 import { Alert, Badge, Button, ConfirmDialog, Divider, Drawer, Field, Hint, Select, Textarea, useToast } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
 import { cancelOrder, decideOrder, ensureDeliveryNumber, fulfilOrder, getOrder, invoiceForOrder, listApproverPool, recallOrder, submitOrder } from '@/lib/db';
-import { isOperations } from '@/lib/roles';
+import { isFinance, isOperations } from '@/lib/roles';
 import { pickApprovers } from '@/lib/approvals';
 import { orderAmendment } from '@/lib/amend';
 import { formatDateTime, naira, count } from '@/lib/format';
@@ -103,10 +104,11 @@ export function OrderDrawer({
   const { data: members } = useAsync(() => listApproverPool(), []);
 
   /* The invoice raised from this order, if any: the proforma prints its payment status. */
-  const { data: orderInvoice } = useAsync(
+  const { data: orderInvoice, reload: reloadInvoice } = useAsync(
     () => (order ? invoiceForOrder(order) : Promise.resolve(null)),
     [order?.id, order?.status],
   );
+  const [adjusting, setAdjusting] = useState(false);
 
   if (!orderId) return null;
 
@@ -297,6 +299,16 @@ export function OrderDrawer({
                 Delivery note
               </Button>
             )}
+
+            {/* A lower price after delivery: a credit note against the unpaid invoice. */}
+            {user &&
+              isFinance(user.role) &&
+              (order.status === 'approved' || order.status === 'fulfilled') &&
+              (!orderInvoice || (orderInvoice.status !== 'void' && orderInvoice.total - (orderInvoice.amountPaid ?? 0) > 0)) && (
+                <Button size="sm" variant="outline" icon={<ReceiptText size={15} />} disabled={busy} onClick={() => setAdjusting(true)}>
+                  Adjust price
+                </Button>
+              )}
 
             {amend.canEdit && (
               <Button
@@ -613,6 +625,17 @@ export function OrderDrawer({
           )}
         </div>
       )}
+
+      <AdjustPriceModal
+        open={adjusting}
+        invoice={orderInvoice ?? null}
+        order={order ?? null}
+        onClose={() => setAdjusting(false)}
+        onDone={() => {
+          reloadInvoice();
+          onChanged();
+        }}
+      />
 
       <ConfirmDialog
         open={confirm === 'recall'}
