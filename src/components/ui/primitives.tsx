@@ -651,6 +651,26 @@ export function ProgressBar({
 
 /* Stat tile */
 
+/**
+ * A figure card in the app's own colour.
+ *
+ * The card is filled with the theme's deep shade (`--hero`, the same colour
+ * as the page header), worked out from whatever colour the organisation
+ * picked, so it is always dark enough for white figures in light and dark
+ * mode alike. Behind the figure sit the AfterBI bars, the product's
+ * signature, faint enough never to compete with the number.
+ */
+function TileBars() {
+  return (
+    <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden focusable="false" className="ab-stat-bars">
+      <rect x="2" y="18" width="5.5" height="12" rx="2" />
+      <rect x="10" y="13" width="5.5" height="17" rx="2" />
+      <rect x="18" y="8" width="5.5" height="22" rx="2" />
+      <rect x="26" y="2" width="4" height="28" rx="2" opacity="0.5" />
+    </svg>
+  );
+}
+
 export function StatTile({
   label,
   value,
@@ -668,40 +688,43 @@ export function StatTile({
   tone?: 'brand' | 'gold' | 'good' | 'warning' | 'critical' | 'info';
   className?: string;
 }) {
-  const iconTone = {
-    brand: 'bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300',
-    gold: 'bg-gold-50 text-gold-700 dark:bg-gold-900/30 dark:text-gold-300',
-    good: 'bg-[#0ca30c]/10 text-[#0a7a0a] dark:text-[#4ec54e]',
-    warning: 'bg-[#fab219]/12 text-[#8a6100] dark:text-[#fab219]',
-    critical: 'bg-[#d03b3b]/10 text-[#a52929] dark:text-[#f08080]',
-    info: 'bg-[#2a78d6]/10 text-[#1c5cab] dark:text-[#7cb1f0]',
+  /* On the coloured card the tone is a small lamp on the icon, not a fill. */
+  const lamp = {
+    brand: 'bg-white/70',
+    gold: 'bg-[#f5c518]',
+    good: 'bg-[#5fdc7a]',
+    warning: 'bg-[#fab219]',
+    critical: 'bg-[#ff8a8a]',
+    info: 'bg-[#7cc4ff]',
   };
 
   return (
-    <div className={cn('ab-kpi surface-card relative overflow-hidden rounded-2xl border border-hairline p-4 shadow-card sm:p-5', className)}>
+    <div className={cn('ab-stat relative isolate overflow-hidden rounded-2xl p-4 text-white sm:p-5', className)}>
+      <TileBars />
       <div className="flex items-start justify-between gap-3">
-        <p className="text-caption font-semibold uppercase tracking-wide text-muted">{label}</p>
+        <p className="text-micro font-semibold uppercase tracking-[0.08em] text-white/75">{label}</p>
         {icon && (
-          <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', iconTone[tone])}>
+          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/12 text-white ring-1 ring-inset ring-white/15 backdrop-blur-sm">
             {icon}
+            {tone !== 'brand' && <span aria-hidden className={cn('absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full ring-2 ring-[var(--hero)]', lamp[tone])} />}
           </span>
         )}
       </div>
-      <p className="tabular mt-2 font-display text-headline font-bold leading-none text-primary sm:text-display">{value}</p>
+      <p className="tabular mt-3 font-display text-headline font-bold leading-none text-white sm:text-display">{value}</p>
       {(hint || delta !== undefined) && (
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2.5 flex items-center gap-2">
           {delta !== undefined && (
             <span
               className={cn(
-                'inline-flex items-center gap-0.5 text-caption font-bold tabular',
-                delta >= 0 ? 'text-[#006300] dark:text-[#0ca30c]' : 'text-status-critical',
+                'inline-flex items-center gap-0.5 rounded-full bg-white/12 px-1.5 py-0.5 text-caption font-semibold tabular',
+                delta >= 0 ? 'text-[#8af0a0]' : 'text-[#ffb0b0]',
               )}
             >
               <span aria-hidden="true">{delta >= 0 ? '▲' : '▼'}</span>
               {Math.abs(delta)}%
             </span>
           )}
-          {hint && <span className="text-caption text-muted">{hint}</span>}
+          {hint && <span className="text-caption text-white/70">{hint}</span>}
         </div>
       )}
     </div>

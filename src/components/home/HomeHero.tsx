@@ -9,6 +9,7 @@
  * It ends in the page rising over it on a curve, and it runs to the top of the
  * glass: `useBrowserChrome` paints the browser's own bar the same colour.
  */
+import { HeroLanguageButton } from '@/components/HeroLanguageButton';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Menu, PanelsTopLeft, Search } from 'lucide-react';
@@ -122,6 +123,7 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
           <p className="mt-1.5 truncate text-label text-white/55">{orgName}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2.5">
+          <HeroLanguageButton />
           <LayoutButton />
           <ProfilePhoto user={user} size="md" />
         </div>
@@ -188,6 +190,7 @@ function CardsPanel({
           </HeroButton>
         </div>
         <div className="flex items-center gap-2 pr-2">
+          <HeroLanguageButton />
           <LayoutButton />
           <ProfilePhoto user={user} />
         </div>

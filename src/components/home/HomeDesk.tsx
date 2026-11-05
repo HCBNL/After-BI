@@ -17,6 +17,7 @@ import type { Kpi } from './HomeSlides';
 import { KpiGlassGrid } from './HomeSlides';
 import { BrandBars } from './HomeArt';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
+import { HeroLanguageButton } from '@/components/HeroLanguageButton';
 import { displayName, greeting, LayoutButton, ProfilePhoto } from './HomeHero';
 
 const HERO_ICON =
@@ -160,6 +161,7 @@ export function DeskHero({
         <div className="flex items-center justify-between gap-4">
           <p className="text-body font-medium text-white/65">{today}</p>
           <div className="flex items-center gap-2">
+            <HeroLanguageButton />
             <HeroThemeButton />
             <LayoutButton />
           </div>

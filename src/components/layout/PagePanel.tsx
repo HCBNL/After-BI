@@ -13,6 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useBrowserChrome } from '@/hooks/useBrowserChrome';
 import { BrandBars } from '@/components/home/HomeArt';
 import { HeroThemeButton } from '@/components/home/HomeDesk';
+import { HeroLanguageButton } from '@/components/HeroLanguageButton';
 import { ProfilePhoto } from '@/components/home/HomeHero';
 import { cn } from '@/lib/cn';
 import { usePageHeading } from './PageHeading';
@@ -64,6 +65,7 @@ export function PagePanel({
         <div className="hidden items-center justify-between gap-4 lg:flex">
           <h1 className="truncate font-display text-display font-bold leading-tight tracking-[-0.025em]">{title}</h1>
           <div className="flex shrink-0 items-center gap-2">
+            <HeroLanguageButton />
             <HeroThemeButton />
             {user && <ProfilePhoto user={user} />}
           </div>
