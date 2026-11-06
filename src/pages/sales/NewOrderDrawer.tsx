@@ -49,6 +49,7 @@ import {
   Textarea,
   useToast,
 } from '@/components/ui';
+import { ProductShot } from '@/components/catalogue/ProductShot';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
@@ -406,6 +407,21 @@ export function NewOrderDrawer({
                     className="rounded-xl surface-card px-3 py-2"
                   >
                    <div className="flex items-center gap-2">
+                    {/* Smaller than the one in the pick list: this row already
+                        carries a stepper and a price box, and the basket is
+                        checked rather than searched. */}
+                    {product.service ? (
+                      <span className="h-9 w-9 shrink-0" aria-hidden />
+                    ) : (
+                      <ProductShot
+                        src={product.imageUrl}
+                        alt=""
+                        width={36}
+                        className="h-9 w-9 shrink-0 border border-hairline"
+                        rounded="rounded-lg"
+                        imgClassName="p-0.5"
+                      />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-label font-semibold text-primary">{product.name}</p>
                       <p className="tabular text-caption text-muted">
@@ -590,6 +606,25 @@ export function NewOrderDrawer({
                         onClick={() => setQuantity(product, inBasket + (product.moq ?? 1))}
                         className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[var(--surface-sunken)]"
                       >
+                        {/*
+                          Picking the wrong SKU off a list of names that differ
+                          by three characters — MF080GO against MF100RT — is
+                          the expensive mistake this screen makes, and the one
+                          a picture prevents outright. A service keeps the
+                          space but not the frame, so the names stay in a line.
+ */}
+                        {product.service ? (
+                          <span className="h-10 w-10 shrink-0" aria-hidden />
+                        ) : (
+                          <ProductShot
+                            src={product.imageUrl}
+                            alt=""
+                            width={40}
+                            className="h-10 w-10 shrink-0 border border-hairline"
+                            rounded="rounded-lg"
+                            imgClassName="p-0.5"
+                          />
+                        )}
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-body font-semibold text-primary">
                             {product.name}

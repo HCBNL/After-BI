@@ -24,6 +24,10 @@ import { LinkButton } from '@/components/ui';
 import { useOrg } from '@/context/OrgContext';
 import { listProducts, retireProduct, saveProduct } from '@/lib/db';
 import { naira, count } from '@/lib/format';
+import { cloudinaryConfigured } from '@/lib/cloudinary';
+import { ImagePicker } from '@/components/ImagePicker';
+import { GalleryManager } from '@/components/GalleryManager';
+import { ProductShot } from '@/components/catalogue/ProductShot';
 import { PRICE_TIERS, TIER_LABEL, type PriceTier, type Product } from '@/types';
 
 const BLANK: Partial<Product> = {
@@ -64,16 +68,40 @@ export default function ProductsPage() {
       key: 'name',
       header: 'Product',
       sortValue: (row) => row.name,
+      /*
+         The thumbnail is here as much for what is MISSING as for what is
+         there. An administrator maintaining the catalogue needs to see at a
+         glance which lines a rep cannot show a customer, and a column of
+         pictures with three grey gaps in it says that faster than any status
+         badge would. Services get no frame: there is nothing to photograph.
+ */
       cell: (row) => (
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 truncate text-body font-semibold text-primary">
-            <span className="truncate">{row.name}</span>
-            {row.service && <Badge tone="info">Service</Badge>}
-          </p>
-          <p className="truncate text-caption text-muted">
-            {row.category}
-            {row.sku ? ` · ${row.sku}` : ''} · {row.unit}
-          </p>
+        <div className="flex min-w-0 items-center gap-3">
+          {/* A service keeps the space but not the frame. Dropping the column
+              entirely slid its name left and broke the one alignment that
+              makes a column of thumbnails readable as a column. */}
+          {row.service ? (
+            <span className="h-10 w-10 shrink-0" aria-hidden />
+          ) : (
+            <ProductShot
+              src={row.imageUrl}
+              alt=""
+              width={40}
+              className="h-10 w-10 shrink-0 border border-hairline"
+              rounded="rounded-lg"
+              imgClassName="p-0.5"
+            />
+          )}
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 truncate text-body font-semibold text-primary">
+              <span className="truncate">{row.name}</span>
+              {row.service && <Badge tone="info">Service</Badge>}
+            </p>
+            <p className="truncate text-caption text-muted">
+              {row.category}
+              {row.sku ? ` · ${row.sku}` : ''} · {row.unit}
+            </p>
+          </div>
         </div>
       ),
     },
@@ -367,6 +395,72 @@ function ProductModal({
             onChange={(e) => set('description', e.target.value)}
           />
         </Field>
+
+        {/*
+          PICTURES ARE A SALES TOOL, NOT DECORATION.
+
+          Before this, a rep standing in front of a customer who asked "what
+          does it look like" reached for their own phone and a photograph
+          taken in somebody's shop two months ago. The cover set here is what
+          the catalogue card shows and what gets shown across a desk; the rest
+          are the angles that answer the second question.
+
+          A service has nothing to photograph, so the whole section folds away
+          rather than offering a frame that will stay empty forever.
+ */}
+        {!draft.service && (
+          <fieldset className="rounded-xl border border-hairline surface-sunken px-4 py-3.5">
+            <legend className="flex items-center gap-1.5 px-1 text-label font-semibold text-secondary">
+              Pictures
+              <Hint label="About product pictures">
+                The cover is the one the catalogue shows, so make it the clearest shot of the
+                product on its own. The others are opened from the product sheet, which is what a
+                member of staff turns round to show a customer: use them for the back of the pack,
+                the colourways, or the item in use. Photographs are resized on delivery, so a
+                customer on a phone never downloads the full file.
+              </Hint>
+            </legend>
+
+            <div className="mt-3 grid gap-4 sm:grid-cols-[150px_minmax(0,1fr)]">
+              <ImagePicker
+                value={draft.imageUrl}
+                onChange={(url) => set('imageUrl', url)}
+                kind="product"
+                label="Cover"
+                size={150}
+                height={118}
+                fill
+                quiet
+                placeholder="Cover shot"
+              />
+
+              <div>
+                <p className="mb-2 text-micro font-semibold uppercase tracking-[0.1em] text-muted">
+                  More shots
+                </p>
+                <GalleryManager
+                  value={draft.images ?? []}
+                  onChange={(urls) => set('images', urls)}
+                  kind="product"
+                  noun="product"
+                  aspect="4 / 3"
+                  quiet
+                />
+              </div>
+            </div>
+
+            {/* Said once for the whole section, not once per control: it is a
+                fact about the deployment, not about either box. */}
+            {!cloudinaryConfigured && (
+              <p className="mt-3 text-caption leading-relaxed text-muted">
+                Picture uploads are not set up on this deployment yet. Add{' '}
+                <code className="break-all font-mono text-micro">VITE_CLOUDINARY_CLOUD_NAME</code> and{' '}
+                <code className="break-all font-mono text-micro">VITE_CLOUDINARY_UPLOAD_PRESET</code>, then
+                redeploy. Pictures already saved still show everywhere.
+              </p>
+            )}
+          </fieldset>
+        )}
 
         {draft.id && (
           <Field label="Status">

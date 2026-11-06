@@ -206,10 +206,35 @@ export interface Product {
    * fulfilled, and always orderable. Its price is set on each order line.
    */
   service?: boolean;
+  /**
+   * The cover shot: the one picture that represents this product everywhere it
+   * is listed, on a catalogue card, in a row, beside an order line.
+   */
   imageUrl?: string;
+  /**
+   * The rest of the shots, in the order they should be flicked through: the
+   * back of the box, the colourways, the thing in somebody's hand. Only the
+   * product sheet shows these; a listing never does, because a grid where one
+   * product takes four tiles is not a grid.
+   */
+  images?: string[];
   status: 'active' | 'inactive';
   createdAt?: string;
   updatedAt?: string;
+}
+
+/**
+ * Every picture of a product, cover first, blanks dropped.
+ *
+ * Records written before the gallery existed carry only `imageUrl`, and one
+ * written by an administrator who filled the gallery but never set a cover
+ * carries only `images`. Both are ordinary, so neither is a special case
+ * anywhere else: this is the only place that knows the difference.
+ */
+export function productShots(product: Pick<Product, 'imageUrl' | 'images'>): string[] {
+  const shots = [product.imageUrl ?? '', ...(product.images ?? [])].filter(Boolean);
+  /* The same URL set as cover and left in the gallery would show twice. */
+  return [...new Set(shots)];
 }
 
 /* partners */
