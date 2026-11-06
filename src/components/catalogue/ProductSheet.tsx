@@ -1,0 +1,209 @@
+/**
+ * One product, big enough to turn the laptop round.
+ *
+ * THE JOB THIS DOES
+ *
+ * A customer is standing at the desk, or on the other end of a WhatsApp call,
+ * and asks what the thing looks like. Until now that meant a member of staff
+ * photographing a carton in the store with their own phone. This is the
+ * answer: the product at a size somebody can see from across a desk, with the
+ * one price that customer is entitled to and nothing else that would be
+ * awkward if they were looking at the screen.
+ *
+ * WHAT IS DELIBERATELY NOT ON IT
+ *
+ *   - The other two tiers. The whole reason the catalogue takes its tier from
+ *     the account rather than a control is that showing a distributor what a
+ *     supermarket chain pays is the one disclosure that ends relationships.
+ *     A sheet built to be shown to a customer must not undo that.
+ *   - Stock. "We have 4 left" invites a negotiation the rep did not plan, and
+ *     the number is a depot number anyway, not a promise.
+ *
+ * SCREENSHOT AS A FIRST-CLASS OUTPUT
+ *
+ * Staff will screenshot this far more often than they will press anything on
+ * it, so the layout is built to survive being cropped: the name, the price and
+ * the picture sit together in the top block with no control cutting through
+ * them, and the buttons are kept to the footer where a crop loses nothing.
+ */
+
+import { useState } from 'react';
+import { Download, ShoppingCart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Badge, Button, Modal, useToast } from '@/components/ui';
+import { ProductShot } from './ProductShot';
+import { saveFile } from '@/lib/download';
+import { naira, count } from '@/lib/format';
+import { cn } from '@/lib/cn';
+import { productShots, type PriceTier, type Product } from '@/types';
+
+export function ProductSheet({
+  product,
+  tier,
+  orderHref,
+  onClose,
+}: {
+  product: Product | null;
+  tier: PriceTier;
+  /** Where "Order this" goes. Omitted for anyone who cannot raise an order. */
+  orderHref?: string;
+  onClose: () => void;
+}) {
+  const toast = useToast();
+  const [shown, setShown] = useState(0);
+  const [saving, setSaving] = useState(false);
+
+  /* Re-seed when a different product is opened, or the second product opened
+     starts on the first one's fourth photograph. */
+  const [seed, setSeed] = useState(product?.id);
+  if (product && product.id !== seed) {
+    setSeed(product.id);
+    setShown(0);
+  }
+
+  if (!product) return null;
+
+  const shots = productShots(product);
+  const active = shots[Math.min(shown, shots.length - 1)];
+  const price = product.pricing[tier];
+
+  /*
+   * "Save picture" rather than "right click, save as".
+   *
+   * Half the people doing this are on a phone, where there is no right click,
+   * and the picture they want is the supplier's full-resolution original
+   * rather than the thumbnail the browser actually has in hand. Fetching it
+   * also keeps the Cloudinary URL out of the customer's view, which a
+   * long-press "copy image address" would not.
+   */
+  const savePicture = async () => {
+    if (!active) return;
+    setSaving(true);
+    try {
+      const response = await fetch(active);
+      if (!response.ok) throw new Error(`The picture could not be fetched (${response.status}).`);
+      const blob = await response.blob();
+      const extension = (blob.type.split('/')[1] ?? 'jpg').replace('jpeg', 'jpg');
+      const base = product.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const outcome = await saveFile(`${base || 'product'}.${extension}`, blob);
+      if (outcome.status === 'saved') toast.success('Picture saved');
+      else if (outcome.status === 'unsupported') toast.warning('Could not save it here', outcome.reason);
+    } catch (error) {
+      toast.error(
+        'Could not save the picture',
+        error instanceof Error ? error.message : 'Check the connection and try again.',
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      /*
+         Wider than a form dialog, because the picture is the content. At `lg`
+         the product came out about 370px across, which is a thumbnail with a
+         frame round it: fine for confirming which SKU you clicked, useless
+         for the thing this sheet exists to do, which is being turned round
+         and looked at by somebody on the other side of a desk.
+ */
+      size="xl"
+      title={product.name}
+      description={`${product.category} · ${product.unit}${product.sku ? ` · ${product.sku}` : ''}`}
+      footer={
+        <>
+          {active && (
+            <Button
+              variant="outline"
+              className="mr-auto"
+              icon={<Download size={15} />}
+              loading={saving}
+              onClick={() => void savePicture()}
+            >
+              Save picture
+            </Button>
+          )}
+          <Button variant="ghost" onClick={onClose}>
+            Close
+          </Button>
+          {orderHref && (
+            <Link
+              to={orderHref}
+              className="tap inline-flex items-center gap-2 rounded-xl bg-brand-900 px-3.5 text-label font-semibold text-white transition-colors hover:bg-brand-800 dark:bg-brand-500 dark:text-brand-950 dark:hover:bg-brand-400"
+            >
+              <ShoppingCart size={15} />
+              Order this
+            </Link>
+          )}
+        </>
+      }
+    >
+      <div className="grid gap-5 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        {/* ------------------------------------------------------- pictures */}
+        <div>
+          <ProductShot
+            src={active}
+            alt={product.name}
+            width={820}
+            className="aspect-[4/3] w-full border border-hairline"
+            rounded="rounded-2xl"
+            imgClassName="p-5"
+          />
+
+          {/* One shot is not a gallery, so it gets no strip to choose from. */}
+          {shots.length > 1 && (
+            <div className="scrollbar-thin mt-2.5 flex gap-2 overflow-x-auto pb-1">
+              {shots.map((url, index) => (
+                <button
+                  key={`${url}-${index}`}
+                  type="button"
+                  onClick={() => setShown(index)}
+                  aria-label={`Picture ${index + 1} of ${shots.length}`}
+                  aria-current={index === shown}
+                  className={cn(
+                    'h-14 w-14 shrink-0 overflow-hidden rounded-lg border transition-colors',
+                    index === shown
+                      ? 'border-brand-600 ring-2 ring-brand-500/25 dark:border-brand-400'
+                      : 'border-hairline hover:border-[var(--border-strong)]',
+                  )}
+                >
+                  <ProductShot src={url} alt="" width={56} className="h-full w-full" rounded="rounded-none" imgClassName="p-1" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ---------------------------------------------------------- facts */}
+        <div className="flex flex-col">
+          <div className="rounded-2xl border border-hairline surface-sunken px-4 py-3.5">
+            <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">
+              Your price
+            </p>
+            <p className="tabular mt-1 text-display font-bold leading-none text-primary">
+              {typeof price === 'number' ? naira(price) : '—'}
+            </p>
+            <p className="mt-1.5 text-caption text-muted">
+              {product.unit}
+              {product.moq > 1 ? ` · minimum ${count(product.moq)}` : ''}
+            </p>
+          </div>
+
+          {product.service && (
+            <div className="mt-3">
+              <Badge tone="info">Service · priced on the order</Badge>
+            </div>
+          )}
+
+          {product.description && (
+            <p className="mt-3.5 whitespace-pre-line text-body leading-relaxed text-secondary">
+              {product.description}
+            </p>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+}

@@ -16,14 +16,31 @@
 import { useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, ImagePlus, Trash2 } from 'lucide-react';
 import { Spinner, useToast } from '@/components/ui';
-import { cloudinaryConfigured, imageUrl, uploadImage } from '@/lib/cloudinary';
+import { cloudinaryConfigured, imageUrl, uploadImage, type UploadKind } from '@/lib/cloudinary';
 
 export function GalleryManager({
   value,
   onChange,
+  /*
+   * Which folder the files land in, and what the toast calls the thing that
+   * still needs saving. Both default to the article this was written for, so
+   * the blog keeps working untouched, and the product sheet passes 'product'
+   * and 'product' so a catalogue photograph does not land in afterbi/site
+   * next to the landing page's banners.
+   */
+  kind = 'site',
+  noun = 'article',
+  /** The shape each tile is drawn in. Products are squarer than article covers. */
+  aspect = '16 / 9',
+  /** Leave the "uploads are not set up" note to the panel around this one. */
+  quiet = false,
 }: {
   value: string[];
   onChange: (urls: string[]) => void;
+  kind?: UploadKind;
+  noun?: string;
+  aspect?: string;
+  quiet?: boolean;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const toast = useToast();
@@ -36,12 +53,12 @@ export function GalleryManager({
     try {
       // One at a time, on purpose, see the note at the top.
       for (const file of Array.from(files)) {
-        added.push(await uploadImage(file, 'site'));
+        added.push(await uploadImage(file, kind));
       }
       onChange([...value, ...added]);
       toast.success(
         added.length > 1 ? `${added.length} pictures added` : 'Picture added',
-        'Remember to save the article.',
+        `Remember to save the ${noun}.`,
       );
     } catch (error) {
       // Keep whatever did upload before the failure.
@@ -65,6 +82,10 @@ export function GalleryManager({
     onChange(next);
   };
 
+  if (!cloudinaryConfigured && quiet) {
+    return <p className="text-caption text-muted">No pictures can be added until uploads are set up.</p>;
+  }
+
   if (!cloudinaryConfigured) {
     return (
       <p className="text-label leading-relaxed text-muted">
@@ -83,12 +104,12 @@ export function GalleryManager({
             <div
               key={`${url}-${index}`}
               className="group relative overflow-hidden rounded-xl border border-hairline surface-sunken"
-              style={{ aspectRatio: '16 / 9' }}
+              style={{ aspectRatio: aspect }}
             >
               <img
                 src={imageUrl(url, { width: 320 })}
                 alt=""
-                className="h-full w-full object-cover"
+                className={kind === 'product' ? 'h-full w-full object-contain p-2' : 'h-full w-full object-cover'}
                 loading="lazy"
               />
               <span className="absolute left-1.5 top-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-micro font-semibold text-white">

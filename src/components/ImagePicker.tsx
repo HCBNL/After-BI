@@ -43,6 +43,15 @@ interface Props {
   disabled?: boolean;
   /** Stretch to the column's width (height from `height`/`size`), so pickers side by side match. */
   fill?: boolean;
+  /**
+   * Drop the "uploads are not set up" note under this control.
+   *
+   * For a panel holding several picture controls at once: the note is about
+   * the deployment, not about this box, so printing it under each one says
+   * the same paragraph three times and makes a section that is merely
+   * unconfigured look broken. The panel prints it once instead.
+   */
+  quiet?: boolean;
 }
 
 export function ImagePicker({
@@ -57,6 +66,7 @@ export function ImagePicker({
   placeholder,
   disabled = false,
   fill = false,
+  quiet = false,
 }: Props) {
   const boxHeight = height ?? size;
   const input = useRef<HTMLInputElement>(null);
@@ -148,7 +158,7 @@ export function ImagePicker({
         )}
       </div>
 
-      {!cloudinaryConfigured && (
+      {!cloudinaryConfigured && !quiet && (
         <p className="mt-2 text-caption leading-relaxed text-muted">
           Picture uploads are not set up on this deployment yet. Add{' '}
           <code className="break-all font-mono text-micro">VITE_CLOUDINARY_CLOUD_NAME</code> and{' '}
