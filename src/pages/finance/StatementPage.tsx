@@ -14,9 +14,13 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { FileText, Printer } from 'lucide-react';
+import { FileText, Printer, Receipt, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Button, EmptyState, Select, StatTile, useToast } from '@/components/ui';
+import { Button, EmptyState, useToast } from '@/components/ui';
+import { AccountPicker } from '@/components/finance/AccountPicker';
+import { AccentBadge, AccentCard, AccentTile, Pill, QuietCard } from '@/components/finance/FinanceCards';
+import { PORTAL_ROOT } from '@/lib/tiles';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
@@ -45,7 +49,18 @@ export default function StatementPage() {
   const scope = partnerScope(user);
   const scoped = scope && scope.length === 1 ? scope[0] : null;
   const choices = scope ? distributors.filter((d) => scope.includes(d.id)) : distributors;
-  const [distributorId, setDistributorId] = useState(scoped ?? '');
+  /* `?account=` opens a given account (the finance dashboard links here). */
+  const [params, setParams] = useSearchParams();
+  const asked = params.get('account') ?? '';
+  const [distributorId, setDistributorId] = useState(scoped ?? asked);
+  const choose = (id: string) => {
+    setDistributorId(id);
+    setParams((p) => {
+      const next = new URLSearchParams(p);
+      next.set('account', id);
+      return next;
+    }, { replace: true });
+  };
 
   /*
    * `distributors` is empty on the first render, OrgContext loads it, so
@@ -119,6 +134,26 @@ export default function StatementPage() {
 
   const closing = lines.length ? lines[lines.length - 1].balance : 0;
 
+  /* The account in four figures: billed, paid in cash, credited, owed. */
+  const sums = useMemo(() => {
+    const live = (data?.invoices ?? []).filter((i) => i.status !== 'draft' && i.status !== 'void');
+    const pays = data?.payments ?? [];
+    const cash = pays.filter((p) => p.method !== 'credit');
+    const credit = pays.filter((p) => p.method === 'credit');
+    const last = [...cash].sort((a, b) => b.paidOn.localeCompare(a.paidOn))[0];
+    return {
+      invoiced: live.reduce((t, i) => t + i.total, 0),
+      invoices: live.length,
+      cash: cash.reduce((t, p) => t + p.amount, 0),
+      payments: cash.length,
+      credited: credit.reduce((t, p) => t + p.amount, 0),
+      credits: credit.length,
+      lastPaid: last ? `${naira(last.amount)} on ${formatDate(last.paidOn)}` : 'No payment yet',
+    };
+  }, [data]);
+  const paidShare = sums.invoiced > 0 ? Math.min(100, Math.round(((sums.cash + sums.credited) / sums.invoiced) * 100)) : 0;
+  const root = user ? PORTAL_ROOT[user.role] : '';
+
   return (
     <div>
       <PageHeader
@@ -158,25 +193,54 @@ export default function StatementPage() {
         }
       >
         {!scoped && (
-          <Select
+          <AccountPicker
             value={distributorId}
-            onChange={(e) => setDistributorId(e.target.value)}
-            className="max-w-sm"
-            aria-label="Distributor"
-          >
-            {choices.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.company}
-              </option>
-            ))}
-          </Select>
+            onChange={choose}
+            className="max-w-md"
+            options={choices.map((d) => ({ id: d.id, name: d.company, detail: d.location }))}
+          />
         )}
       </PageHeader>
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-3 no-print">
-        <StatTile label="Balance" value={naira(closing)} icon={<FileText size={16} />} tone={closing > 0 ? 'warning' : 'good'} />
-        <StatTile label="Invoices" value={String(data?.invoices.length ?? 0)} />
-        <StatTile label="Payments" value={String(data?.payments.length ?? 0)} tone="good" />
+      {/* The account at a glance: the quiet card holds the balance, the one
+          bright card holds what has come in. */}
+      <div className="no-print mb-5 grid gap-4 lg:grid-cols-12">
+        <QuietCard className="lg:col-span-7">
+          <div className="flex flex-wrap items-center gap-2">
+            <Pill>
+              <Receipt size={13} aria-hidden /> {sums.invoices} {sums.invoices === 1 ? 'invoice' : 'invoices'}
+            </Pill>
+            <Pill>
+              <Wallet size={13} aria-hidden /> {sums.payments} {sums.payments === 1 ? 'payment' : 'payments'}
+            </Pill>
+            {sums.credits > 0 && <Pill>{sums.credits} {sums.credits === 1 ? 'credit' : 'credits'}</Pill>}
+            <span className="ml-auto text-caption text-muted">As at {formatDate(todayISO())}</span>
+          </div>
+          <p className="mt-6 text-label text-muted">{closing > 0 ? 'Balance owed' : closing < 0 ? 'In credit' : 'Balance'}</p>
+          <p className="tabular font-display text-headline font-bold tracking-[-0.02em] text-primary sm:text-jumbo">{naira(Math.abs(closing), true)}</p>
+          <p className="mt-1 truncate text-label text-secondary">{distributor?.company ?? 'Choose an account'}</p>
+          {root && !scoped && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Link
+                to={`${root}/invoices`}
+                className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-label font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
+                style={{ backgroundColor: 'var(--hero)' }}
+              >
+                <Receipt size={15} aria-hidden /> Invoices
+              </Link>
+            </div>
+          )}
+        </QuietCard>
+
+        <AccentCard className="lg:col-span-5">
+          <AccentBadge icon={<Wallet size={13} aria-hidden />}>Paid so far</AccentBadge>
+          <p className="tabular mt-5 font-display text-headline font-bold tracking-[-0.02em] sm:text-display">{naira(sums.cash)}</p>
+          <p className="mt-1 text-caption opacity-80">Last: {sums.lastPaid}</p>
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <AccentTile label="Invoiced" value={naira(sums.invoiced)} hint={`${paidShare}% settled`} />
+            <AccentTile label="Credits" value={naira(sums.credited)} hint="Credit notes and returns" />
+          </div>
+        </AccentCard>
       </div>
 
       {loading ? (

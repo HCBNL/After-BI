@@ -64,6 +64,7 @@ const DistributorsPage = lazy(() => import('@/pages/partners/DistributorsPage'))
 
 const InvoicesPage = lazy(() => import('@/pages/finance/InvoicesPage'));
 const StatementPage = lazy(() => import('@/pages/finance/StatementPage'));
+const FinanceDashboardPage = lazy(() => import('@/pages/finance/FinanceDashboardPage'));
 const CreditPage = lazy(() => import('@/pages/finance/CreditPage'));
 const ReportsPage = lazy(() => import('@/pages/finance/ReportsPage'));
 
@@ -382,6 +383,7 @@ export default function App() {
             <Route path="movements" element={<MovementsPage />} />
             <Route path="returns" element={<ReturnsPage />} />
 
+            <Route path="finance" element={<RequireRole roles={['super_admin', 'admin']}><FinanceDashboardPage /></RequireRole>} />
             <Route path="invoices" element={<InvoicesPage />} />
             <Route path="statement" element={<StatementPage />} />
             <Route path="reports" element={<ReportsPage />} />
@@ -529,6 +531,7 @@ export default function App() {
             <Route path="all" element={<AllActions />} />
             <Route path="orders" element={<OrdersPage />} />
             <Route path="approvals" element={<ApprovalsPage />} />
+            <Route path="finance" element={<FinanceDashboardPage />} />
             <Route path="invoices" element={<InvoicesPage />} />
             <Route path="statement" element={<StatementPage />} />
             <Route path="credit" element={<CreditPage />} />

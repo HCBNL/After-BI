@@ -1586,6 +1586,42 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
  * from the top corner and a thin accent line, so they feel part of the
  * brand rather than plain boxes.
  */
+/* The figure card: the theme's deep shade, a soft light from the top right,
+   and the AfterBI bars as a faint signature behind the number. */
+.ab-stat {
+  background-color: var(--hero);
+  background-image:
+    radial-gradient(120% 95% at 100% 0%, color-mix(in srgb, var(--swatch) 34%, transparent), transparent 62%),
+    linear-gradient(155deg, color-mix(in srgb, var(--hero) 82%, #ffffff 18%), var(--hero) 70%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 24px -14px color-mix(in srgb, var(--hero) 80%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.12);
+  border: 1px solid color-mix(in srgb, var(--hero) 70%, #ffffff 12%);
+}
+.ab-stat .ab-stat-bars {
+  position: absolute;
+  right: -0.5rem;
+  bottom: -1.5rem;
+  z-index: -1;
+  width: 6.5rem;
+  height: 6.5rem;
+  color: #ffffff;
+  opacity: 0.1;
+  transform: rotate(-6deg);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+}
+.ab-stat:hover .ab-stat-bars { transform: rotate(-6deg) translateY(-4px); opacity: 0.14; }
+[data-theme='dark'] .ab-stat {
+  background-image:
+    radial-gradient(120% 95% at 100% 0%, color-mix(in srgb, var(--swatch) 24%, transparent), transparent 62%),
+    linear-gradient(155deg, color-mix(in srgb, var(--hero) 88%, #ffffff 8%), var(--hero) 72%);
+  border-color: color-mix(in srgb, var(--hero) 60%, #ffffff 14%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ab-stat .ab-stat-bars { transition: none; }
+}
+
 .ab-kpi {
   background-image:
     radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--swatch) 14%, transparent), transparent 60%),

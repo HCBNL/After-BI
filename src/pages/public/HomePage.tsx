@@ -19,8 +19,8 @@ import { faqJsonLd, homeJsonLd } from '@/lib/siteJsonLd';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
-import { Accordion, IndustryCard, PictureFallback, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
-import { ModuleMock, Phone, PortalScreen, Sparkline } from '@/components/marketing/mocks';
+import { Accordion, IndustryCard, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { Sparkline } from '@/components/marketing/mocks';
 import { VideoCard } from '@/components/marketing/VideoCard';
 import { homeVideos } from '@/lib/siteDoc';
 import { cn } from '@/lib/cn';
@@ -103,13 +103,6 @@ function HeroPhoto() {
       alt="AfterBI in use"
       eager
       className={frame}
-      fallback={
-        <div className="relative h-full w-full bg-gradient-to-br from-navy-500 via-navy-700 to-navy-900">
-          <div aria-hidden className="site-dark-dots absolute inset-0" />
-          <div aria-hidden className="absolute -left-10 bottom-10 h-64 w-64 rounded-full bg-brand-500/35 blur-3xl" />
-          <div aria-hidden className="absolute right-0 top-0 h-48 w-48 rounded-full bg-navy-300/30 blur-3xl" />
-        </div>
-      }
     />
   );
 }
@@ -234,29 +227,10 @@ function Lifecycle() {
           </Link>
         </div>
 
-        <div className="site-panel rounded-[1.6rem] p-5 sm:p-8">
-          <SiteImage
-            slot={tab.image}
-            alt={tab.title}
-            className="aspect-[7/5] rounded-2xl"
-            imgClassName="object-contain"
-            fallback={<TabArt slug={tab.art} />}
-          />
-        </div>
+        {/* Only the picture: no panel colour, no padding round it. */}
+        <SiteImage slot={tab.image} alt={tab.title} className="aspect-[7/5] rounded-[1.6rem]" />
       </div>
     </Section>
-  );
-}
-
-/** The tab picture until a real one is uploaded: a screen with a phone beside it. */
-function TabArt({ slug }: { slug: string }) {
-  return (
-    <div className="relative h-full w-full">
-      <ModuleMock slug={slug} className="!bg-none !bg-transparent !p-0 pr-[18%] pt-[4%]" />
-      <Phone className="absolute bottom-[2%] right-0 w-[24%]">
-        <PortalScreen />
-      </Phone>
-    </div>
   );
 }
 
@@ -271,15 +245,6 @@ function Showcase() {
           slot="showcase"
           alt="AfterBI on a phone in a store"
           className="aspect-[6/5] rounded-[2rem]"
-          fallback={
-            <div className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-navy-700 to-navy-950">
-              <div aria-hidden className="site-dark-dots absolute inset-0" />
-              <div aria-hidden className="absolute -left-10 bottom-0 h-64 w-64 rounded-full bg-brand-500/25 blur-3xl" />
-              <Phone className="relative w-[34%]">
-                <PortalScreen />
-              </Phone>
-            </div>
-          }
         />
         <div>
           <SectionHead title="Your whole business, in your pocket" body="Reps, managers and partners work from any phone, wherever the business happens." />
@@ -351,7 +316,6 @@ function Questions() {
           slot="home-faq"
           alt="AfterBI support"
           className="hidden aspect-[4/5] rounded-[2rem] lg:block"
-          fallback={<PictureFallback tone="dark" />}
         />
         <div>
           <SectionHead title="Frequently asked questions" />
