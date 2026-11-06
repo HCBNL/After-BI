@@ -329,13 +329,29 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
   },
 );
 
+const LAYOUT = /^(?:[a-z0-9]+:)*-?(?:w|min-w|max-w|flex|basis|grow|shrink|m|mx|my|ml|mr|mt|mb|self|order|col|row|justify-self)(?:-|$)/;
+
+function splitLayout(className?: string): { outer: string; inner: string } {
+  const outer: string[] = [];
+  const inner: string[] = [];
+  for (const token of (className ?? '').split(/\s+/).filter(Boolean)) (LAYOUT.test(token) ? outer : inner).push(token);
+  return { outer: outer.join(' '), inner: inner.join(' ') };
+}
+
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
   function Select({ className, children, ...rest }, ref) {
+    /*
+     * Width and placement classes (max-w-sm, w-40, ml-auto, flex-1...) belong
+     * on the wrapper, not the <select>: on the select alone the wrapper stayed
+     * full width and the arrow sat at the far edge of the row, away from the
+     * box it opens. Everything else (height, text) stays on the select.
+     */
+    const { outer, inner } = splitLayout(className);
     return (
-      <div className="relative">
+      <div className={cn('relative', outer)}>
         <select
           ref={ref}
-          className={cn(FIELD_BASE, 'h-11 appearance-none pr-9 cursor-pointer', className)}
+          className={cn(FIELD_BASE, 'h-11 w-full appearance-none pr-9 cursor-pointer', inner)}
           {...rest}
         >
           {children}
@@ -662,7 +678,17 @@ export function ProgressBar({
  */
 function TileBars() {
   return (
-    <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden focusable="false" className="ab-stat-bars">
+    <svg
+      viewBox="0 0 32 32"
+      width="104"
+      height="104"
+      fill="currentColor"
+      aria-hidden
+      focusable="false"
+      /* Sized and placed here as well as in index.css, so the bars can never
+         spread across the card while the stylesheet is still loading or out of date. */
+      className="ab-stat-bars pointer-events-none absolute -bottom-6 -right-2 -z-10 h-[6.5rem] w-[6.5rem] -rotate-6 text-white opacity-10"
+    >
       <rect x="2" y="18" width="5.5" height="12" rx="2" />
       <rect x="10" y="13" width="5.5" height="17" rx="2" />
       <rect x="18" y="8" width="5.5" height="22" rx="2" />
@@ -699,7 +725,7 @@ export function StatTile({
   };
 
   return (
-    <div className={cn('ab-stat relative isolate overflow-hidden rounded-2xl p-4 text-white sm:p-5', className)}>
+    <div className={cn('ab-stat relative isolate overflow-hidden rounded-2xl p-4 text-white sm:p-5', className)} style={{ backgroundColor: 'var(--hero)' }}>
       <TileBars />
       <div className="flex items-start justify-between gap-3">
         <p className="text-micro font-semibold uppercase tracking-[0.08em] text-white/75">{label}</p>

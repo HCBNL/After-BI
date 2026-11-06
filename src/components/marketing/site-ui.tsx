@@ -136,9 +136,16 @@ export function useSiteImages(): Record<string, string> {
  * A picture slot.
  *
  * Uses the picture uploaded for this slot in Platform, Website first (or an
- * explicit `override`), then `/site/<slot>.webp`, `.png`, `.jpg`. If nothing
- * loads, `fallback` is drawn instead, so a slot without a picture is a
- * designed one rather than a broken one.
+ * explicit `override`), then `/site/<slot>.webp`, `.png`, `.jpg`.
+ *
+ * THE SLOT IS ONLY A SHAPE
+ *
+ * No colour, no shadow, no padding: the frame keeps its size and place on the
+ * page, and the picture fills it, centred and whole (contain, never cropped).
+ * A cut out picture (no background) sits straight on the page; one with its
+ * own background brings it. Until something is uploaded the slot is simply
+ * empty space of the right size: no stand in, no coloured card. `fallback` is
+ * kept in the signature so older callers still compile; it is not drawn.
  */
 export function SiteImage({
   slot,
@@ -146,7 +153,6 @@ export function SiteImage({
   alt,
   className,
   imgClassName,
-  fallback,
   eager = false,
   width = 1000,
 }: {
@@ -155,7 +161,8 @@ export function SiteImage({
   alt: string;
   className?: string;
   imgClassName?: string;
-  fallback: ReactNode;
+  /** Not drawn any more: see above. */
+  fallback?: ReactNode;
   eager?: boolean;
   /** Widest it will draw, in CSS pixels, so Cloudinary sends no more than that. */
   width?: number;
@@ -175,8 +182,7 @@ export function SiteImage({
   const failed = index >= sources.length;
 
   return (
-    <div className={cn('relative overflow-hidden', className)}>
-      {!loaded && <div className="absolute inset-0">{fallback}</div>}
+    <div className={cn('relative overflow-hidden bg-transparent', className, '!bg-none !shadow-none')}>
       {!failed && (
         <img
           key={sources[index]}
@@ -187,7 +193,7 @@ export function SiteImage({
           onLoad={() => setLoaded(true)}
           onError={() => setIndex((value) => value + 1)}
           className={cn(
-            'relative h-full w-full object-cover transition-opacity duration-500',
+            'relative h-full w-full object-contain object-center transition-opacity duration-500',
             loaded ? 'opacity-100' : 'opacity-0',
             imgClassName,
           )}
