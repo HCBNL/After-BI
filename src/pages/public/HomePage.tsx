@@ -228,7 +228,7 @@ function Lifecycle() {
         </div>
 
         {/* Only the picture: no panel colour, no padding round it. */}
-        <SiteImage slot={tab.image} alt={tab.title} className="aspect-[7/5] rounded-[1.6rem]" />
+        <SiteImage slot={tab.image} alt={tab.title} fit="contain" className="aspect-[7/5] rounded-[1.6rem]" />
       </div>
     </Section>
   );

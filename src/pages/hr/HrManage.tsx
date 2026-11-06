@@ -13,6 +13,8 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import {
   Banknote,
+  Clock3,
+  Settings2,
   CalendarPlus,
   Check,
   CheckCheck,
@@ -33,7 +35,7 @@ import {
   X,
 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Alert, Badge, Button, Card, EmptyState, Field, Input, Modal, Select, StatTile, Switch, Tabs, useToast } from '@/components/ui';
+import { Alert, Badge, Button, Card, EmptyState, Field, Input, Modal, SectionMenu, Select, StatTile, Switch, useToast } from '@/components/ui';
 import { Loading } from '@/components/brand/Loader';
 import { useAsync } from '@/hooks/useAsync';
 import { listMembers } from '@/lib/db';
@@ -252,23 +254,29 @@ export default function HrManage() {
         }
       />
 
-      <Tabs
-        items={[
-          { id: 'payroll', label: 'Payroll' },
-          { id: 'reissues', label: 'Reissues', count: pending.data?.length ?? 0 },
-          { id: 'today', label: 'Today', count: clockedToday.size },
-          { id: 'staff', label: 'Staff and salaries', count: people.length },
-          { id: 'bonuses', label: 'Bonuses and deductions', count: adjustments.data?.length ?? 0 },
-          { id: 'costs', label: 'Running costs', count: base.data.costs.length },
-          { id: 'holidays', label: 'Holidays', count: base.data.holidays.length },
-          { id: 'settings', label: 'Salary day' },
-        ]}
-        active={tab}
-        onChange={(id) => setTab(id as Tab)}
-      />
+      {/*
+        One row: which part of HR (a drop down, however many parts there are),
+        the month when that part has one, and Download CSV on the far right.
+      */}
+      <div className="flex flex-wrap items-center gap-3">
+        <SectionMenu
+          label="HR section"
+          active={tab}
+          onChange={(id) => setTab(id as Tab)}
+          className="w-full sm:w-auto sm:min-w-[16rem]"
+          items={[
+            { id: 'payroll', label: 'Payroll', icon: <Banknote />, hint: 'Who is paid what this month' },
+            { id: 'reissues', label: 'Reissues', icon: <RotateCcw />, count: pending.data?.length ?? 0, hint: 'Payslip corrections waiting' },
+            { id: 'today', label: 'Today', icon: <Clock3 />, count: clockedToday.size, hint: 'Who has clocked in' },
+            { id: 'staff', label: 'Staff and salaries', icon: <Users />, count: people.length, hint: 'Pay, bank and status per person' },
+            { id: 'bonuses', label: 'Bonuses and deductions', icon: <Gift />, count: adjustments.data?.length ?? 0, hint: 'One off additions and cuts' },
+            { id: 'costs', label: 'Running costs', icon: <Receipt />, count: base.data.costs.length, hint: 'Rent, diesel, internet and the rest' },
+            { id: 'holidays', label: 'Holidays', icon: <CalendarPlus />, count: base.data.holidays.length, hint: 'Days off for everyone' },
+            { id: 'settings', label: 'Salary day', icon: <Settings2 />, hint: 'When the month starts and pay goes out' },
+          ]}
+        />
 
-      {(tab === 'payroll' || tab === 'bonuses' || tab === 'costs') && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        {(tab === 'payroll' || tab === 'bonuses' || tab === 'costs') && (
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" aria-label="Previous month" onClick={() => setOffset((n) => n - 1)}>
               <ChevronLeft size={16} />
@@ -286,13 +294,14 @@ export default function HrManage() {
               </Button>
             )}
           </div>
-          {tab === 'payroll' && (
-            <Button variant="outline" icon={<Download size={16} />} onClick={exportCsv} disabled={!rows.length}>
-              Download CSV
-            </Button>
-          )}
-        </div>
-      )}
+        )}
+
+        {tab === 'payroll' && (
+          <Button variant="outline" icon={<Download size={16} />} onClick={exportCsv} disabled={!rows.length} className="ml-auto">
+            Download CSV
+          </Button>
+        )}
+      </div>
 
       {tab === 'payroll' && (
         <section className="space-y-4">

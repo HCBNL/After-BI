@@ -54,7 +54,7 @@ function Body() {
               <a
                 key={s.slug}
                 href={`#${s.slug}`}
-                className="group relative block overflow-hidden rounded-2xl ring-1 ring-navy-900/10 transition-transform hover:-translate-y-0.5"
+                className="group relative block overflow-hidden rounded-2xl transition-transform hover:-translate-y-0.5"
               >
                 <SiteImage
                   slot={s.image}
