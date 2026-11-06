@@ -942,6 +942,27 @@ export function listInvoices(
   );
 }
 
+/*
+ * The finance dashboard's three reads. Each is one query on a single field
+ * (no composite index to deploy), bounded by date or by status, so the cost
+ * grows with the period looked at, not with the life of the business.
+ */
+
+/** Invoices issued on or after `fromISO` (YYYY-MM-DD), newest first. */
+export function listInvoicesSince(fromISO: string, max = 3000): Promise<Invoice[]> {
+  return list<Invoice>('invoices', where('issuedOn', '>=', fromISO), orderBy('issuedOn', 'desc'), fsLimit(max));
+}
+
+/** Every invoice still owed on, whenever it was issued. */
+export function listOpenInvoices(max = 3000): Promise<Invoice[]> {
+  return list<Invoice>('invoices', where('status', 'in', ['issued', 'part_paid', 'overdue']), fsLimit(max));
+}
+
+/** Payments (cash, credit notes and return credits) on or after `fromISO`. */
+export function listPaymentsSince(fromISO: string, max = 5000): Promise<Payment[]> {
+  return list<Payment>('payments', where('paidOn', '>=', fromISO), orderBy('paidOn', 'desc'), fsLimit(max));
+}
+
 /** The live (not void) invoice raised from an order, if any. Read for the proforma's payment status. */
 export async function invoiceForOrder(order: Pick<Order, 'id' | 'distributorId'>): Promise<Invoice | null> {
   try {

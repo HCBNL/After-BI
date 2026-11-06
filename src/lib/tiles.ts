@@ -25,6 +25,7 @@
  */
 
 import {
+  LayoutDashboard,
   BarChart3,
   BellRing,
   Boxes,
@@ -75,7 +76,7 @@ export type ActionGroup =
   | 'Daily'
   | 'Sales'
   | 'Stock'
-  | 'Money'
+  | 'Finance'
   | 'Partners'
   | 'Team'
   | 'Company'
@@ -102,7 +103,7 @@ export const GROUP_ORDER: ActionGroup[] = [
   'Daily',
   'Sales',
   'Stock',
-  'Money',
+  'Finance',
   'Partners',
   'Team',
   'Company',
@@ -114,7 +115,7 @@ export const GROUP_ICON: Record<ActionGroup, LucideIcon> = {
   Daily: Sun,
   Sales: TrendingUp,
   Stock: Boxes,
-  Money: Wallet,
+  Finance: Wallet,
   Partners: Building2,
   Team: UsersRound,
   Company: Settings,
@@ -453,7 +454,16 @@ const ACTIONS: AppAction[] = [
     group: 'Stock',
   },
 
-  /* money */
+  /* finance */
+  {
+    id: 'finance',
+    label: 'Finance dashboard',
+    description: 'The business at a glance: invoiced, collected, owed, overdue and who owes it.',
+    icon: LayoutDashboard,
+    to: 'finance',
+    roles: MONEY,
+    group: 'Finance',
+  },
   {
     id: 'invoices',
     label: 'Invoices',
@@ -461,7 +471,7 @@ const ACTIONS: AppAction[] = [
     icon: Receipt,
     to: 'invoices',
     roles: EVERYONE,
-    group: 'Money',
+    group: 'Finance',
   },
   {
     id: 'statement',
@@ -470,7 +480,7 @@ const ACTIONS: AppAction[] = [
     icon: FileText,
     to: 'statement',
     roles: EVERYONE,
-    group: 'Money',
+    group: 'Finance',
   },
   {
     id: 'credit',
@@ -479,7 +489,7 @@ const ACTIONS: AppAction[] = [
     icon: CreditCard,
     to: 'credit',
     roles: MONEY,
-    group: 'Money',
+    group: 'Finance',
   },
   {
     id: 'reports',
@@ -488,7 +498,7 @@ const ACTIONS: AppAction[] = [
     icon: FileSpreadsheet,
     to: 'reports',
     roles: MONEY.concat('staff', 'operations_manager'),
-    group: 'Money',
+    group: 'Finance',
   },
 
   /* partners */
