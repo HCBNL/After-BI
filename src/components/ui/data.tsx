@@ -1,3 +1,4 @@
+import { SectionMenu } from './SectionMenu';
 import { useMemo, useState, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -197,6 +198,8 @@ export function Tabs({
   onChange: (id: string) => void;
   className?: string;
 }) {
+  /* Past five sections a row of tabs runs off the screen: use the drop down. */
+  if (items.length > 5) return <SectionMenu items={items} active={active} onChange={onChange} className={className} />;
   return (
     <div className={cn('scrollbar-thin -mb-px flex gap-1 overflow-x-auto border-b border-hairline', className)} role="tablist">
       {items.map((tab) => {

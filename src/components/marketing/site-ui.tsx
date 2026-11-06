@@ -140,10 +140,11 @@ export function useSiteImages(): Record<string, string> {
  *
  * THE SLOT IS ONLY A SHAPE
  *
- * No colour, no shadow, no padding: the frame keeps its size and place on the
- * page, and the picture fills it, centred and whole (contain, never cropped).
- * A cut out picture (no background) sits straight on the page; one with its
- * own background brings it. Until something is uploaded the slot is simply
+ * No colour, no shadow, no padding, no border: the frame keeps its size and
+ * place on the page, and the picture covers it edge to edge (object cover,
+ * centred), so pictures of different sizes still fill matching tiles.
+ * `fit="contain"` is for the rare slot that must show the whole picture,
+ * such as the laptop and phone screens. Until something is uploaded the slot is simply
  * empty space of the right size: no stand in, no coloured card. `fallback` is
  * kept in the signature so older callers still compile; it is not drawn.
  */
@@ -153,6 +154,7 @@ export function SiteImage({
   alt,
   className,
   imgClassName,
+  fit = 'cover',
   eager = false,
   width = 1000,
 }: {
@@ -163,6 +165,8 @@ export function SiteImage({
   imgClassName?: string;
   /** Not drawn any more: see above. */
   fallback?: ReactNode;
+  /** cover (default): fill the frame. contain: show the whole picture. */
+  fit?: 'cover' | 'contain';
   eager?: boolean;
   /** Widest it will draw, in CSS pixels, so Cloudinary sends no more than that. */
   width?: number;
@@ -193,7 +197,8 @@ export function SiteImage({
           onLoad={() => setLoaded(true)}
           onError={() => setIndex((value) => value + 1)}
           className={cn(
-            'relative h-full w-full object-contain object-center transition-opacity duration-500',
+            'relative h-full w-full object-center transition-opacity duration-500',
+            fit === 'contain' ? 'object-contain' : 'object-cover',
             loaded ? 'opacity-100' : 'opacity-0',
             imgClassName,
           )}
@@ -345,7 +350,7 @@ export function PictureFallback({ icon, tone = 'light' }: { icon?: ReactNode; to
 /** One category tile: the photo is the card, the icon a small badge, the name over a soft shade. */
 export function IndustryCard({ icon, name, className }: { icon: IndustryKey; name: string; className?: string }) {
   return (
-    <div className={cn('group relative overflow-hidden rounded-2xl ring-1 ring-navy-900/10', className)}>
+    <div className={cn('group relative overflow-hidden rounded-2xl', className)}>
       <SiteImage
         slot={`industry-${icon}`}
         alt={name}
