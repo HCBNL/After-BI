@@ -107,34 +107,3 @@ export function Hint({
   );
 }
 
-/**
- * The same thing, sized for the foot of a card rather than beside a label.
- *
- * Where a card previously ended in a boxed paragraph, this puts a single quiet
- * line there instead: so every card ends at the same height whether or not it
- * has something to explain.
- */
-export function HintFooter({ children, label = 'More about this' }: { children: ReactNode; label?: string }) {
-  const [open, setOpen] = useState(false);
-  const id = useId();
-
-  return (
-    <div className="mt-3 border-t border-hairline pt-2.5">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-controls={id}
-        className="inline-flex items-center gap-1.5 text-caption font-semibold text-muted transition-colors hover:text-brand-700 dark:hover:text-brand-300"
-      >
-        <Info size={13} />
-        {label}
-      </button>
-      {open && (
-        <p id={id} className="mt-2 text-caption leading-relaxed text-secondary">
-          {children}
-        </p>
-      )}
-    </div>
-  );
-}

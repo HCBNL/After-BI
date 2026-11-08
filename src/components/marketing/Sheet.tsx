@@ -112,7 +112,7 @@ export function Sheet({
         {progress !== undefined && (
           <div className="h-1 w-full shrink-0 bg-[var(--surface-sunken)]" aria-hidden>
             <div
-              className="h-full rounded-r-full bg-brand-600 transition-[width] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              className="h-full rounded-r-full bg-navy-900 transition-[width] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
               style={{ width: `${Math.max(4, Math.min(100, progress * 100))}%` }}
             />
           </div>

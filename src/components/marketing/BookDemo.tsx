@@ -68,7 +68,7 @@ function complain(step: WizardStep, value: string): string | null {
 }
 
 const PRIMARY =
-  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-600 px-6 text-[15px] font-bold text-white transition-all hover:bg-brand-500 active:scale-[0.98] disabled:opacity-60';
+  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 text-[15px] font-bold text-navy-900 ring-1 ring-navy-900/20 transition-all hover:bg-brand-600 active:scale-[0.98] disabled:opacity-60';
 const SECONDARY =
   'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--surface-card)] px-6 text-[15px] font-bold text-primary ring-1 ring-inset ring-[var(--border-hairline)] transition-colors hover:ring-[var(--border-strong)]';
 
@@ -122,7 +122,7 @@ function ChoiceList({
                  budget spent on a question nobody has to be persuaded to
                  answer. */
               active
-                ? 'border-brand-500 bg-white text-navy-900 ring-1 ring-brand-500'
+                ? 'border-brand-700 bg-white text-navy-900 ring-1 ring-brand-700'
                 : 'border-hairline bg-[var(--surface-card)] text-secondary hover:border-[var(--border-strong)] hover:text-primary',
             )}
           >
@@ -130,7 +130,7 @@ function ChoiceList({
             <span
               className={cn(
                 'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors',
-                active ? 'border-brand-500 bg-brand-600 text-white' : 'border-[var(--border-strong)]',
+                active ? 'border-brand-700 bg-brand-500 text-navy-900' : 'border-[var(--border-strong)]',
               )}
             >
               {active && <Check size={12} strokeWidth={3} />}
@@ -320,7 +320,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
                   maxLength={step.maxLength}
                   placeholder={step.placeholder}
                   onChange={(event) => set(event.target.value)}
-                  className="w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 py-3 text-[16px] leading-relaxed text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                  className="w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 py-3 text-[16px] leading-relaxed text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-700 focus:ring-2 focus:ring-brand-700/25"
                 />
               ) : (
                 <input
@@ -332,7 +332,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
                   autoComplete={step.autoComplete}
                   inputMode={step.kind === 'tel' ? 'tel' : undefined}
                   onChange={(event) => set(event.target.value)}
-                  className="h-14 w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 text-[17px] font-semibold text-primary outline-none transition-colors placeholder:font-normal placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                  className="h-14 w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 text-[17px] font-semibold text-primary outline-none transition-colors placeholder:font-normal placeholder:text-muted focus:border-brand-700 focus:ring-2 focus:ring-brand-700/25"
                 />
               )}
             </div>

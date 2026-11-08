@@ -173,8 +173,6 @@ export function SiteImage({
   alt: string;
   className?: string;
   imgClassName?: string;
-  /** Not drawn any more: see above. */
-  fallback?: ReactNode;
   /** cover (default): fill the frame. contain: show the whole picture. */
   fit?: 'cover' | 'contain';
   eager?: boolean;
@@ -343,23 +341,6 @@ export function IconBadge({ children, className }: { children: ReactNode; classN
   );
 }
 
-/** What a picture card shows until its photo is uploaded: a soft gradient with the icon, large and faint. */
-export function PictureFallback({ icon, tone = 'light' }: { icon?: ReactNode; tone?: 'light' | 'dark' }) {
-  return (
-    <div
-      className={cn(
-        'relative flex h-full w-full items-center justify-center',
-        tone === 'dark'
-          ? 'bg-gradient-to-br from-navy-600 via-navy-800 to-navy-950 text-white/15'
-          : 'bg-gradient-to-br from-navy-50 via-white to-navy-100 text-navy-900/15',
-      )}
-    >
-      <div aria-hidden className={cn('absolute inset-0', tone === 'dark' ? 'site-dark-dots' : '')} />
-      <span className="relative [&>svg]:h-16 [&>svg]:w-16">{icon}</span>
-    </div>
-  );
-}
-
 /** One category tile: the photo is the card, the icon a small badge, the name over a soft shade. */
 export function IndustryCard({ icon, name, className }: { icon: IndustryKey; name: string; className?: string }) {
   return (
@@ -370,7 +351,6 @@ export function IndustryCard({ icon, name, className }: { icon: IndustryKey; nam
         width={480}
         className="aspect-[4/3]"
         imgClassName="transition-transform duration-500 group-hover:scale-[1.05]"
-        fallback={<PictureFallback icon={<IndustryIcon icon={icon} />} />}
       />
       <IconBadge>
         <IndustryIcon icon={icon} size={17} />

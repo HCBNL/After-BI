@@ -39,7 +39,7 @@ import {
   type SocialKey,
 } from '@/lib/site';
 import { btn, container } from './tokens';
-import { ModuleIcon, PictureFallback, SiteImage } from './site-ui';
+import { ModuleIcon, SiteImage } from './site-ui';
 
 type MenuKey = 'products' | 'solutions' | 'support';
 
@@ -182,7 +182,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
             <button
               type="button"
               onClick={onBook}
-              className="tap hidden items-center whitespace-nowrap rounded-full bg-brand-600 px-5 text-[14.5px] font-bold text-white transition-colors hover:bg-brand-700 sm:inline-flex"
+              className="tap hidden items-center whitespace-nowrap rounded-full bg-brand-500 px-5 text-[14.5px] font-bold text-navy-900 ring-1 ring-navy-900/20 transition-colors hover:bg-brand-600 sm:inline-flex"
             >
               Book a demo
             </button>
@@ -363,7 +363,6 @@ function PromoCard({
         alt=""
         width={320}
         className="-mx-6 -mt-6 mb-5 aspect-[16/9]"
-        fallback={<PictureFallback tone="dark" />}
       />
       <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-navy-400/30 blur-2xl" />
       <p className="relative font-display text-[1.25rem] font-extrabold tracking-[-0.03em]">{title}</p>

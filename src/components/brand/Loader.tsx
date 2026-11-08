@@ -3,24 +3,27 @@ import { cn } from '@/lib/cn';
 /**
  * Waiting, drawn as the shape of what is coming.
  *
- * Every loading state in this app is a skeleton rather than a spinner, with one
- * exception (`BrandLoader`, where nothing below knows its shape yet). The
- * reason is not fashion:
- * a spinner tells you nothing about what is arriving, so a slow screen and a
- * broken screen look identical, and people reload: which on a bad connection
- * makes it slower. A skeleton that matches the real layout means the page does
- * not jump when data lands, which is the other half of the effect.
- */
-
-/**
- * The brand, while a whole screen waits on something it cannot draw yet.
+ * Every loading state in this app is a skeleton rather than a spinner. The
+ * reason is not fashion: a spinner tells you nothing about what is arriving,
+ * so a slow screen and a broken screen look identical, and people reload,
+ * which on a bad connection makes it slower. A skeleton that matches the real
+ * layout means the page does not jump when data lands, which is the other
+ * half of the effect.
  *
- * Used where a skeleton would be a lie, the organisation has not resolved, so
- * nothing below knows its own shape. Everywhere else, draw the shape.
+ * WHERE THE LOGO IS ALLOWED, WHICH IS ALMOST NOWHERE
+ *
+ * The mark belongs to arrival, not to navigation. It is drawn on the boot
+ * splash, before the app exists at all, and on the home screen, which is the
+ * one place a person lands rather than clicks into. Everywhere else, opening
+ * a screen shows the screen.
+ *
+ * It used to show on every route change, and that is a worse experience than
+ * nothing: the logo flashing between two pages makes a 90ms navigation feel
+ * like a page load, and after the fourth or fifth time in a session it reads
+ * as the app being slow rather than as the app being branded. Chunks are
+ * small and usually cached, so the honest answer for a route is to show
+ * nothing for the moment it takes and let the screen appear.
  */
-export function BrandLoader({ label = 'Loading' }: { label?: string }) {
-  return <BootSplash label={label} />;
-}
 
 export function Loading({
   label,
@@ -41,18 +44,6 @@ export function Loading({
           <div className="skeleton mt-2 h-4 w-2/3 max-w-xs rounded-full" />
         </div>
       ))}
-    </div>
-  );
-}
-
-/** A plain page. The fallback of last resort, for a route that is neither. */
-export function PageSkeleton() {
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-16">
-      <div className="skeleton h-8 w-1/2 rounded-lg" />
-      <div className="skeleton mt-4 h-4 w-full rounded-full" />
-      <div className="skeleton mt-2 h-4 w-5/6 rounded-full" />
-      <Loading className="mt-10" rows={2} />
     </div>
   );
 }
@@ -79,7 +70,7 @@ export function SiteSkeleton() {
  * and animation as the splash in index.html (the keyframes live there, in the
  * page head, so the very first frame already moves).
  */
-export function SignalMark({ size = 88 }: { size?: number }) {
+function SignalMark({ size = 88 }: { size?: number }) {
   return (
     <svg className="ab-signal" viewBox="-8 -14 146 146" width={size} height={size} overflow="visible" aria-hidden>
       <defs>
@@ -99,7 +90,7 @@ export function SignalMark({ size = 88 }: { size?: number }) {
 }
 
 /** The whole screen while the app (or the website) is on its way: the mark and the name. */
-export function BootSplash({ label = 'Loading AfterBI' }: { label?: string }) {
+function BootSplash({ label = 'Loading AfterBI' }: { label?: string }) {
   return (
     <div className="ab-splash fixed inset-0 z-[60] flex flex-col items-center justify-center gap-1.5" role="status" aria-label={label}>
       <SignalMark size={104} />
@@ -119,32 +110,41 @@ export function ShellSkeleton() {
  * around it, no halo, no colour wash, no bar. It fades in after a beat, so a
  * screen that is ready at once never flashes it.
  *
- * WHY THIS IS NOT `fixed inset-0`
+ * WHY THIS IS NEITHER `fixed inset-0` NOR A HEIGHT IN THE FLOW
  *
- * It used to be, and on a desktop the logo sat visibly left of where it
- * belonged. `fixed inset-0` centres on the viewport, and the viewport includes
- * the navigation rail: with a 365px rail on a 1920px screen the content starts
- * at 365 and its true centre is near 1142, while the mark sat at 960. Far
- * enough off to read as a bug rather than a loading state, and it drifted
- * again every time the rail was collapsed or expanded.
+ * Both have been tried and each missed one axis.
  *
- * Centring in the ordinary flow instead means the content column does the
- * arithmetic: the loader is a child of `main`, so it is already inside the
- * rail's offset and lands dead centre at every rail width, on every breakpoint,
- * with no measuring and no variable to keep in step.
+ * `fixed inset-0` centres on the viewport, and the viewport includes the
+ * navigation rail: with a 365px rail on a 1920px screen the content starts at
+ * 365 and its true centre is near 1142, while the mark sat at 960. Off
+ * horizontally, and it drifted again every time the rail was collapsed.
  *
- * `fullscreen` is for the one caller that genuinely has no shell around it yet,
- * the organisation gate, which runs before the rail is drawn. There the
+ * Centring in the flow with `min-h-[60vh]` fixed that axis and broke the
+ * other. A box 60vh tall, opening below `main`'s top padding, has its middle
+ * around a third of the way down the screen, so the mark sat high: correct
+ * left to right, visibly above centre top to bottom.
+ *
+ * So the loader is absolute against `main`, which is the one element that
+ * already knows both the rail's width and the header's height, and `flex-1`
+ * so it owns whatever vertical space is left. `inset-0` on it lands the mark
+ * dead centre on both axes at every rail width and breakpoint, with nothing
+ * measured and no variable to keep in step. The bottom is pulled in by the
+ * mobile bar's own height, because `inset` is measured against the padding
+ * box and that padding exists to keep content out from behind the bar.
+ *
+ * `fullscreen` is for the one caller that genuinely has no shell around it
+ * yet, the organisation gate, which runs before the rail is drawn. There the
  * viewport IS the section, so centring on it is correct.
+ *
+ * There was an `inline` variant too, for a loader sitting under a page's own
+ * heading. Those screens draw `Loading` skeletons now, so it had no callers
+ * left and has gone with them.
  */
 export function QuietLoader({
   label = 'Loading',
-  inline = false,
   fullscreen = false,
 }: {
   label?: string;
-  /** Shorter: for a loader under a page's own panel, where the heading already fills the top. */
-  inline?: boolean;
   /** Only before the shell exists. Inside it, this puts the mark off-centre. */
   fullscreen?: boolean;
 }) {
@@ -176,10 +176,10 @@ export function QuietLoader({
     <div
       role="status"
       aria-label={label}
-      className={cn(
-        'ab-quiet flex w-full items-center justify-center',
-        inline ? 'min-h-[38vh] py-10' : 'min-h-[60vh]',
-      )}
+      /* Absolute against `main` (which is `relative`): see the note above. The
+         bottom inset is the mobile bar's own padding, so the mark centres on
+         the space a page would actually occupy rather than behind the bar. */
+      className="ab-quiet absolute inset-x-0 top-0 bottom-[calc(var(--bottom-bar-h)+var(--safe-bottom))] flex items-center justify-center lg:bottom-0"
     >
       {mark}
       <span className="sr-only">{label}</span>

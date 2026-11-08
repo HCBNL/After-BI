@@ -152,13 +152,28 @@ export function Chrome({
             </div>
           </header>
 
-          <main className={cn('flex-1 px-3 py-4 sm:px-5 sm:py-6', 'pb-bottom-bar', (atHome || panel) && '@container')}>
+          {/* `relative`: the page loader centres itself on this element, which
+              is the only box that knows both the rail's width and the header's
+              height. See `QuietLoader`. */}
+          <main className={cn('relative flex-1 px-3 py-4 sm:px-5 sm:py-6', 'pb-bottom-bar', (atHome || panel) && '@container')}>
             <div className="mx-auto max-w-[1400px]">
               <Gate>
                 <ErrorBoundary resetOn={location.pathname} home={root}>
-                  {/* A page whose code is still arriving waits HERE, inside the shell,
-                      instead of throwing the whole screen back to the splash. */}
-                  <Suspense fallback={<QuietLoader label="Opening" />}>
+                  {/*
+                    A page whose code is still arriving waits HERE, inside the
+                    shell, instead of throwing the whole screen back to the
+                    splash.
+
+                    The logo is drawn for home and for nothing else. Home is
+                    somewhere a person lands, so a mark while it assembles
+                    reads as arrival; every other screen is somewhere they
+                    clicked, and a logo flashing between two pages makes a
+                    90ms navigation feel like a page load. The rail and header
+                    stay put either way, so what a route change actually shows
+                    is the frame with the content filling in, which is the
+                    honest picture of what is happening.
+                  */}
+                  <Suspense fallback={atHome ? <QuietLoader label="Opening" /> : null}>
                     <Outlet />
                   </Suspense>
                 </ErrorBoundary>

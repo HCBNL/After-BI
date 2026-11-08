@@ -1,7 +1,7 @@
 /**
  * Everything around a public page, so a page is only its own content.
  *
- *   PublicShell   header, closing band, footer, the WhatsApp button and the
+ *   PublicShell   header, closing band, footer, the help bubble and the
  *                 booking sheet
  *   useAsk        opens the booking sheet from anywhere inside the shell
  *   ClosingBand   the green band above every footer
@@ -22,14 +22,12 @@ import {
   type ReactNode,
 } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAsync } from '@/hooks/useAsync';
 import { getSiteHome, type SiteHome } from '@/lib/siteDoc';
-import { WHATSAPP_URL } from '@/lib/site';
-import { SITE_PALETTES, activePalette } from '@/lib/sitePalette';
 import { SiteFooter, SiteHeader } from './chrome';
 import { BookDemo } from './BookDemo';
+import { HelpBubble } from './HelpBubble';
 import { btn, container } from './tokens';
 import { SiteImage, SiteImagesProvider } from './site-ui';
 
@@ -161,15 +159,16 @@ export function PublicShell({
     const root = document.documentElement;
     const meta = document.querySelector('meta[name="theme-color"]');
     const before = meta?.getAttribute('content');
-    const palette = SITE_PALETTES[activePalette()];
     root.dataset.surface = 'site';
-    /* Which 60/30/10 palette the public pages wear; see lib/sitePalette.ts. */
-    root.dataset.palette = palette.id;
-    /* The browser's own bar takes the structure colour, not the accent. */
-    meta?.setAttribute('content', palette.structure);
+    /*
+     * The browser's own bar takes the structure colour, never the accent:
+     * it is a frame round the page, which is the thirty per cent's job. It
+     * is written out rather than read from a token because this runs before
+     * paint, when `.site` has not been mounted to compute a variable from.
+     */
+    meta?.setAttribute('content', '#0f1f36');
     return () => {
       delete root.dataset.surface;
-      delete root.dataset.palette;
       if (meta && before) meta.setAttribute('content', before);
     };
   }, []);
@@ -177,15 +176,30 @@ export function PublicShell({
   return (
     <AskContext.Provider value={ask}>
      <SiteImagesProvider value={images}>
+      {/*
+       * Everything public lives inside `.site`, the float and the sheet
+       * included.
+       *
+       * They used to sit outside it, as siblings, and that quietly cost them
+       * the palette: `.site` is where the public site's accent and structure
+       * scales are declared, so a `bg-brand-600` outside it resolved to the
+       * *app's* green instead of the site's orange. The old float papered
+       * over it by hard-coding a hex, which is why it was the one thing on
+       * the page a palette change could not reach. Both are children now, so
+       * neither can drift again.
+       *
+       * They are fixed-position, so being inside a flex column changes
+       * nothing about where they draw.
+       */}
       <div className="site flex min-h-[100dvh] flex-col">
         <SiteHeader overlay={overlay} onBook={book} />
         <main className="flex-1">{children}</main>
         {closing && <ClosingBand />}
         <SiteFooter />
-      </div>
 
-      <WhatsAppButton />
-      <BookDemo open={booking} onClose={() => setBooking(false)} />
+        <HelpBubble onBook={book} />
+        <BookDemo open={booking} onClose={() => setBooking(false)} />
+      </div>
      </SiteImagesProvider>
     </AskContext.Provider>
   );
@@ -232,7 +246,6 @@ function ClosingBand() {
             slot="cta-team"
             alt="The AfterBI team"
             className="min-h-[16rem] lg:min-h-full"
-            fallback={<ClosingArt />}
           />
         </div>
       </div>
@@ -240,56 +253,9 @@ function ClosingBand() {
   );
 }
 
-/** What the closing band shows until a photograph is added. */
-function ClosingArt() {
-  return (
-    <div className="relative h-full w-full bg-navy-800">
-      <div aria-hidden className="site-dark-dots absolute inset-0" />
-      <div className="absolute inset-0 flex items-center justify-center p-10">
-        <div className="w-full max-w-xs rounded-2xl bg-white p-5 text-navy-900 shadow-2xl">
-          <p className="text-[12px] font-bold uppercase tracking-wide text-navy-400">This month</p>
-          <div className="mt-3 flex items-end justify-between">
-            <span>
-              <span className="block text-[12px] text-navy-500">Sell in</span>
-              <span className="font-display text-[1.4rem] font-extrabold">₦84.2m</span>
-            </span>
-            <span className="text-right">
-              <span className="block text-[12px] text-navy-500">Sell through</span>
-              <span className="font-display text-[1.4rem] font-extrabold text-navy-900">₦71.9m</span>
-            </span>
-          </div>
-          <div className="mt-4 h-2.5 rounded-full bg-navy-100">
-            <div className="h-full w-[85%] rounded-full bg-navy-700" />
-          </div>
-          <p className="mt-2 text-[12px] font-semibold text-navy-500">₦12.3m still in the channel</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* --------------------------------------------------------- the float */
-
-/**
- * One button, bottom right, and it is WhatsApp rather than a chat widget.
- *
- * A hosted chat bubble is three hundred kilobytes of somebody else's
- * JavaScript, it is staffed between nine and five in a timezone that is not
- * this one, and the visitor has to stay on the page for the answer. In this
- * market the conversation is going to end up on WhatsApp regardless, so it may
- * as well start there and cost nothing.
+/*
+ * The float that used to live here was a single orange circle straight to
+ * WhatsApp. It is now `HelpBubble`, which answers the common questions in
+ * place and keeps the conversation as the last resort rather than the only
+ * one. The reasoning is at the top of that file.
  */
-function WhatsAppButton() {
-  return (
-    <a
-      href={WHATSAPP_URL}
-      target="_blank"
-      rel="noreferrer noopener"
-      aria-label="Message AfterBI on WhatsApp"
-      className="fixed bottom-5 right-5 z-40 inline-flex h-13 w-13 items-center justify-center rounded-full bg-[#ee6a00] text-white shadow-pop transition-transform hover:scale-105 active:scale-95 sm:bottom-7 sm:right-7"
-      style={{ bottom: 'calc(1.25rem + var(--safe-bottom))' }}
-    >
-      <MessageCircle size={22} aria-hidden />
-    </a>
-  );
-}

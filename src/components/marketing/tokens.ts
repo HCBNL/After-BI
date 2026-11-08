@@ -33,8 +33,16 @@ export const btn = {
    * The whole ten per cent of the palette is here and in the "most popular"
    * seal on the pricing card. If this class is on two things in one viewport,
    * one of them is wrong.
+   *
+   * Navy on lemon, not white on lemon: the accent is a *light* colour, so the
+   * label has to be the dark one. See the ramp note in `index.css`.
+   *
+   * The hairline is not decoration. The fill reads 1.2:1 against cream, so
+   * without an edge the button has no silhouette on a light page and only
+   * its text defines it; the ring gives it a boundary on paper and is
+   * invisible where it sits on the navy hero.
    */
-  accent: `${base} bg-brand-600 text-white hover:bg-brand-700`,
+  accent: `${base} bg-brand-500 text-navy-900 ring-1 ring-navy-900/20 hover:bg-brand-600`,
   /** Second choice on paper: structure, outlined. */
   outline: `${base} border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white`,
   /** Structure, solid. The quiet primary where the accent is already spent. */
@@ -65,6 +73,3 @@ export const container = 'mx-auto w-full max-w-7xl px-5 sm:px-8';
 export const eyebrowBase = 'text-[13px] font-bold uppercase tracking-[0.14em]';
 export const eyebrow = `${eyebrowBase} text-navy-500`;
 
-/** Text link with an arrow feel. Structure: a link is not a press-target. */
-export const textLink =
-  'inline-flex items-center gap-1.5 text-[15px] font-bold text-navy-900 underline underline-offset-4 decoration-navy-900/30 hover:decoration-navy-900';
