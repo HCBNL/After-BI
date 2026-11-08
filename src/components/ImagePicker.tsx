@@ -100,7 +100,7 @@ export function ImagePicker({
         <div className="mb-2 flex items-center gap-1.5">
           {label && <p className="text-micro font-semibold uppercase tracking-[0.1em] text-muted">{label}</p>}
           {/* The note sits behind the (i), like every other field's, not as prose under the box. */}
-          {hint && <Hint label={label ? `About ${label.toLowerCase()}` : 'About this picture'}>{hint}</Hint>}
+          {hint && <Hint label={label ? `About ${label}` : 'About this picture'}>{hint}</Hint>}
         </div>
       )}
 

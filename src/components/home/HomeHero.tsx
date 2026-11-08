@@ -206,8 +206,8 @@ function CardsPanel({
         <div className="shrink-0 text-right">
           <p className="text-caption font-medium text-white/60">{month.name}</p>
           <p className="font-display text-title font-bold leading-tight text-white">
-            Day {month.day}
-            <span className="font-semibold text-white/55"> of {month.days}</span>
+            {`Day ${month.day}`}
+            <span className="font-semibold text-white/55"> {`of ${month.days} days`}</span>
           </p>
         </div>
       </div>

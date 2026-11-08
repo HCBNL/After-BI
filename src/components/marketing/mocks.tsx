@@ -244,7 +244,7 @@ function ModuleBody({ slug }: { slug: string }) {
             <div key={depot as string} className="rounded-lg bg-white px-2.5 py-2 ring-1 ring-navy-900/8">
               <div className="flex justify-between text-[9px] font-bold text-navy-800">
                 <span>{depot}</span>
-                <span>{level}% cover</span>
+                <span>{`${level}% cover`}</span>
               </div>
               <div className="mt-1.5 h-1.5 rounded-full bg-navy-100">
                 <div

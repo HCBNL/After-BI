@@ -115,29 +115,74 @@ export function ShellSkeleton() {
 
 /**
  * Inside the shell, while a screen's code or data loads: the AfterBI logo,
- * exactly as it is, fixed at the centre of the screen. Nothing around it, no
- * halo, no colour wash, no bar. It fades in after a beat, so a screen that is
- * ready at once never flashes it. `inline` keeps it inside a page instead
- * (under that page's own panel), still centred.
+ * exactly as it is, centred on the space the screen is going to fill. Nothing
+ * around it, no halo, no colour wash, no bar. It fades in after a beat, so a
+ * screen that is ready at once never flashes it.
+ *
+ * WHY THIS IS NOT `fixed inset-0`
+ *
+ * It used to be, and on a desktop the logo sat visibly left of where it
+ * belonged. `fixed inset-0` centres on the viewport, and the viewport includes
+ * the navigation rail: with a 365px rail on a 1920px screen the content starts
+ * at 365 and its true centre is near 1142, while the mark sat at 960. Far
+ * enough off to read as a bug rather than a loading state, and it drifted
+ * again every time the rail was collapsed or expanded.
+ *
+ * Centring in the ordinary flow instead means the content column does the
+ * arithmetic: the loader is a child of `main`, so it is already inside the
+ * rail's offset and lands dead centre at every rail width, on every breakpoint,
+ * with no measuring and no variable to keep in step.
+ *
+ * `fullscreen` is for the one caller that genuinely has no shell around it yet,
+ * the organisation gate, which runs before the rail is drawn. There the
+ * viewport IS the section, so centring on it is correct.
  */
-export function QuietLoader({ label = 'Loading', inline = false }: { label?: string; inline?: boolean }) {
-  const mark = <img src="/brand/afterbi-mark.png" alt="" width={64} height={64} className="h-16 w-16 select-none object-contain" draggable={false} />;
-  if (inline) {
+export function QuietLoader({
+  label = 'Loading',
+  inline = false,
+  fullscreen = false,
+}: {
+  label?: string;
+  /** Shorter: for a loader under a page's own panel, where the heading already fills the top. */
+  inline?: boolean;
+  /** Only before the shell exists. Inside it, this puts the mark off-centre. */
+  fullscreen?: boolean;
+}) {
+  const mark = (
+    <img
+      src="/brand/afterbi-mark.png"
+      alt=""
+      width={64}
+      height={64}
+      className="h-16 w-16 select-none object-contain"
+      draggable={false}
+    />
+  );
+
+  if (fullscreen) {
     return (
-      <div role="status" aria-label={label} className="ab-quiet flex min-h-[38vh] items-center justify-center py-10">
+      <div
+        role="status"
+        aria-label={label}
+        className="ab-quiet fixed inset-0 z-30 flex items-center justify-center"
+      >
         {mark}
         <span className="sr-only">{label}</span>
       </div>
     );
   }
+
   return (
-    <>
-      {/* Keeps the page's height while the logo sits fixed over the screen's centre. */}
-      <div aria-hidden className="min-h-[60vh]" />
-      <div role="status" aria-label={label} className="ab-quiet pointer-events-none fixed inset-0 z-30 flex items-center justify-center">
-        {mark}
-        <span className="sr-only">{label}</span>
-      </div>
-    </>
+    <div
+      role="status"
+      aria-label={label}
+      className={cn(
+        'ab-quiet flex w-full items-center justify-center',
+        inline ? 'min-h-[38vh] py-10' : 'min-h-[60vh]',
+      )}
+    >
+      {mark}
+      <span className="sr-only">{label}</span>
+    </div>
   );
 }

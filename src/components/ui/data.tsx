@@ -330,7 +330,7 @@ export function Pagination({
 }) {
   if (pageCount <= 1) {
     return total !== undefined ? (
-      <p className="text-caption text-muted tabular">{total} record{total === 1 ? '' : 's'}</p>
+      <p className="text-caption text-muted tabular">{total === 1 ? '1 record' : `${total} records`}</p>
     ) : null;
   }
 

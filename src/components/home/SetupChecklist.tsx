@@ -86,7 +86,7 @@ export function SetupChecklist({
           </p>
         </div>
         <span className="tabular shrink-0 rounded-full bg-[var(--surface-sunken)] px-2.5 py-1 text-micro font-bold text-secondary">
-          {done} of {steps.length}
+          {`${done} of ${steps.length}`}
         </span>
       </div>
 

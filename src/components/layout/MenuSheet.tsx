@@ -268,8 +268,7 @@ export function MenuSheet({
               </ul>
             ) : (
               <p className="px-5 py-10 text-center text-body text-muted">
-                Nothing here matches &ldquo;{query.trim()}&rdquo;.
-              </p>
+                {`Nothing here matches “${query.trim()}”.`}</p>
             )
           ) : (
             <div className="pb-4">

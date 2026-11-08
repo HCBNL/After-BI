@@ -33,6 +33,10 @@ import { cn } from '@/lib/cn';
 import { nairaShort, count } from '@/lib/format';
 import type { FocusItem, Insight, Stage } from '@/lib/brief';
 import type { Severity } from '@/lib/reminders';
+import { getLang } from '@/lib/i18n';
+
+/* A Chinese full stop carries its own space; an English one needs a gap after it. */
+const SENTENCE_GAP = getLang() === 'zh' ? undefined : 'mr-[0.3em]';
 
 const DOT: Record<Severity, string> = {
   critical: 'bg-status-critical',
@@ -78,7 +82,9 @@ export function BriefCard({ root, className }: { root: string; className?: strin
           My tasks
         </Link>
       </div>
-      <p className="mt-1.5 max-w-3xl text-body leading-relaxed text-secondary">{brief.summary}</p>
+      <p className="mt-1.5 max-w-3xl text-body leading-relaxed text-secondary">
+        <Sentences items={brief.summary} />
+      </p>
 
       {brief.focus.length > 0 && (
         <ol className="mt-4 space-y-2">
@@ -141,9 +147,16 @@ function FocusRow({ item, rank, kept }: { item: FocusItem; rank?: number; kept: 
           {item.title}
         </Link>
         <p className="mt-0.5 text-label leading-snug text-secondary">{item.detail}</p>
-        <p className="mt-1 flex items-center gap-1.5 text-caption text-muted">
+        <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-caption text-muted">
           <span className={cn('h-1.5 w-1.5 rounded-full', DOT[item.severity])} aria-hidden />
-          {item.reason}
+          {/* Each phrase its own piece of text, a middle dot between: the dot
+              belongs to no language, so nothing has to translate a comma. */}
+          {item.reasons.map((reason, index) => (
+            <span key={index} className="flex items-center gap-x-1.5">
+              {index > 0 && <span aria-hidden>·</span>}
+              <span>{reason}</span>
+            </span>
+          ))}
         </p>
       </div>
       {item.reminder && item.reminder.key !== 'task-due' && (
@@ -207,14 +220,25 @@ export function Pipeline({ stages, bottleneck, className }: { stages: Stage[]; b
 
       <p className="text-micro font-bold uppercase tracking-[0.14em] text-white/60">Order trail</p>
       <div className="mb-5 mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        {/*
+          The number is drawn large on its own, so it stays a separate piece of
+          text, but the words after it are ONE piece: "orders on the way". It
+          used to be "order" + "s" + " on the way", three pieces of text, and a
+          translation cannot be found for "s". Likewise "worth ₦4.9m" is built
+          as one string, so the dictionary sees "worth {0}" and can put the
+          amount wherever its language wants it.
+ */}
         <p className="text-body font-semibold text-white/80">
-          <span className="tabular text-headline font-bold text-white">{count(totalCount)}</span> order{totalCount === 1 ? '' : 's'} on the way
+          <span className="tabular text-headline font-bold text-white">{count(totalCount)}</span>{' '}
+          <span>{totalCount === 1 ? 'order on the way' : 'orders on the way'}</span>
         </p>
-        {totalValue > 0 && <p className="tabular text-body font-semibold text-white/60">worth {nairaShort(totalValue)}</p>}
+        {totalValue > 0 && (
+          <p className="tabular text-body font-semibold text-white/60">{`worth ${nairaShort(totalValue)}`}</p>
+        )}
         <span className="ml-auto flex items-center gap-3 text-caption font-semibold text-white/70">
           <span className="flex items-center gap-1.5"><span className="ab-trail-active h-2.5 w-2.5 rounded-full" />Pending</span>
           <span className="flex items-center gap-1.5"><span className="ab-trail-clear h-2.5 w-2.5 rounded-full" />Clear</span>
-          <span className="flex items-center gap-1.5"><span className="ab-trail-pending h-2.5 w-2.5 rounded-full ring-1 ring-white/40" />Not yet</span>
+          <span className="flex items-center gap-1.5"><span className="ab-trail-pending h-2.5 w-2.5 rounded-full ring-1 ring-white/40" />Not reached</span>
         </span>
       </div>
 
@@ -350,10 +374,7 @@ function TrailStop({
         {label}
       </p>
       {(lit || reached) && <p className="tabular mt-1.5 truncate text-title font-bold leading-none text-white">{nairaShort(stage.value)}</p>}
-      <span className="sr-only">
-        {lit ? `${stage.count} pending` : 'Nothing waiting'}
-        {late ? `, ${lateText}` : ''}
-      </span>
+      <span className="sr-only">{lit ? (late ? `${stage.count} pending, ${lateText}` : `${stage.count} pending`) : 'Nothing waiting'}</span>
     </>
   );
 
@@ -414,5 +435,26 @@ export function Insights({ items, className }: { items: Insight[]; className?: s
         );
       })}
     </ul>
+  );
+}
+
+/**
+ * A run of sentences, each its own piece of text.
+ *
+ * See `Brief.summary`: the translator works on one piece of text at a time,
+ * against whole-sentence entries, so a paragraph has to reach the page as its
+ * sentences, not as one string. The small margin stands in for the space that
+ * used to join them, so English reads the same as before and Chinese, which
+ * puts no space after "。", gets no stray one.
+ */
+export function Sentences({ items }: { items: string[] }) {
+  return (
+    <>
+      {items.map((sentence, index) => (
+        <span key={index} className={index < items.length - 1 ? SENTENCE_GAP : undefined}>
+          {sentence}
+        </span>
+      ))}
+    </>
   );
 }

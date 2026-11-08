@@ -331,7 +331,7 @@ export function Tour({
       >
         <div className="flex items-start justify-between gap-3">
           <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">
-            {index + 1} of {steps.length}
+            {`${index + 1} of ${steps.length}`}
           </p>
           <button
             type="button"

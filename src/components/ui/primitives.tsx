@@ -499,17 +499,56 @@ export function Skeleton({ className }: { className?: string }) {
   return <div className={cn('skeleton rounded-lg', className)} />;
 }
 
+/**
+ * Nothing here yet, said in as few words as possible.
+ *
+ * WHY THE REASON IS BEHIND AN (i)
+ *
+ * These used to be a headline and then a paragraph, centred in the middle of
+ * an otherwise empty screen: "Nothing recorded in this period. Scorecards are
+ * built from sell-out. Nothing has been keyed for this month yet." Two
+ * sentences, set large, floating in white space with nothing to anchor them.
+ * The effect is the opposite of the intent, a wall of centred prose is the
+ * least readable shape text comes in, and it makes an ordinary empty table
+ * look like an error page.
+ *
+ * The explanation is still worth having. Somebody seeing a blank scorecard for
+ * the first time does need to know it is built from sell-out and that nobody
+ * has keyed any. But they need it once, and the hundredth time they open the
+ * screen they need the two words that tell them the month is empty and nothing
+ * else. So the headline stays visible and the reason moves behind the (i)
+ * beside it. Exactly the trade `Alert` and `Hint` already make everywhere else
+ * in this app, which is what makes it feel native rather than clever.
+ *
+ * Because every empty state in the app, including every table's, renders
+ * through this one component, this applies in all of them at once.
+ *
+ * WHEN THE REASON IS NOT FOLDED: `loud`
+ *
+ * A failure is not an explanation. "We could not load your orders" with the
+ * reason hidden behind an icon is hiding the one sentence that tells somebody
+ * what to do next, so a state that reports a fault passes `loud` and keeps its
+ * description in the open. Same carve-out `Alert` makes for `critical`.
+ */
 export function EmptyState({
   icon,
   title,
   description,
   action,
+  loud = false,
   className,
 }: {
   icon?: ReactNode;
+  /**
+   * A label, not a sentence. One to three words: "No orders yet", "Empty".
+   * Anything that needs a verb and an object belongs in `description`.
+   */
   title: string;
+  /** The reason, shown when the (i) is pressed. */
   description?: string;
   action?: ReactNode;
+  /** Keep the description visible. For a failure, never for an empty table. */
+  loud?: boolean;
   className?: string;
 }) {
   return (
@@ -519,8 +558,23 @@ export function EmptyState({
           {icon}
         </span>
       )}
-      <h3 className="text-lead font-semibold text-primary">{title}</h3>
-      {description && <p className="mt-1.5 max-w-sm text-body text-muted leading-relaxed">{description}</p>}
+
+      <div className="flex items-center gap-1.5">
+        <h3 className="text-lead font-semibold text-primary">{title}</h3>
+        {description && !loud && (
+          /* `align="right"` so the panel opens back across the screen rather
+             than off its right edge: the (i) sits at the centre of the page,
+             and the panel is wider than the gap to the right of it. */
+          <Hint label="Why this is empty" align="right">
+            {description}
+          </Hint>
+        )}
+      </div>
+
+      {description && loud && (
+        <p className="mt-1.5 max-w-sm text-body leading-relaxed text-muted">{description}</p>
+      )}
+
       {action && <div className="mt-5">{action}</div>}
     </div>
   );

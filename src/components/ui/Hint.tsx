@@ -84,7 +84,10 @@ export function Hint({
             role="note"
             className={cn(
               'absolute top-6 z-20 block w-max max-w-[min(19rem,72vw)] rounded-xl border border-hairline',
-              'surface-card p-3 pr-7 text-caption leading-relaxed text-secondary shadow-card',
+              /* `text-left` explicitly: a Hint inside a centred block (an empty
+                 state) would otherwise inherit `text-center` and set its
+                 paragraph ragged on both edges, which is hard to read. */
+              'surface-card p-3 pr-7 text-left text-caption leading-relaxed text-secondary shadow-card',
               align === 'right' ? 'right-0' : 'left-0',
             )}
           >

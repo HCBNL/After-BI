@@ -111,7 +111,15 @@ export function ProductSheet({
  */
       size="xl"
       title={product.name}
-      description={`${product.category} · ${product.unit}${product.sku ? ` · ${product.sku}` : ''}`}
+      description={
+        /* Separate pieces, so the category and the unit are each read in the chosen language. */
+        <>
+          {product.category}
+          {' · '}
+          {product.unit}
+          {product.sku ? ` · ${product.sku}` : null}
+        </>
+      }
       footer={
         <>
           {active && (
@@ -183,7 +191,7 @@ export function ProductSheet({
               Your price
             </p>
             <p className="tabular mt-1 text-display font-bold leading-none text-primary">
-              {typeof price === 'number' ? naira(price) : '—'}
+              {typeof price === 'number' ? naira(price) : 'Not priced'}
             </p>
             <p className="mt-1.5 text-caption text-muted">
               {product.unit}

@@ -220,8 +220,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
       >
         <Wordmark className="text-[1.45rem] !text-navy-900" />
         <p className="mt-3 text-[13px] font-semibold text-navy-500">
-          Book a demo ·{' '}
-          {sent ? 'All done' : reviewing ? 'One last look' : `Question ${index + 1} of ${WIZARD_STEPS.length}`}
+          {`Book a demo · ${sent ? 'All done' : reviewing ? 'One last look' : `Question ${index + 1} of ${WIZARD_STEPS.length}`}`}
         </p>
       </header>
 

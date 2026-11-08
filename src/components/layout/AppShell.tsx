@@ -20,7 +20,9 @@ function OrgGate({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const location = useLocation();
 
-  if (loading) return <QuietLoader label="Getting your organisation ready" />;
+  /* `fullscreen`: this runs before Chrome draws the rail, so there is no
+     content column to centre inside yet. The viewport is the section. */
+  if (loading) return <QuietLoader fullscreen label="Getting your organisation ready" />;
 
   if (error) {
     return (
@@ -54,7 +56,7 @@ function LockedScreen({ label, home }: { label: string; home: string }) {
         <Lock size={24} aria-hidden />
       </span>
       <p className="mt-4 flex items-center justify-center gap-1.5 text-title font-semibold text-primary">
-        {label} is not on your plan <OrgPlanBadge size={18} />
+        {`${label} is not on your plan `}<OrgPlanBadge size={18} />
       </p>
       <p className="mt-2 text-body leading-relaxed text-muted">
         Your organisation&rsquo;s plan does not include this feature. Ask your administrator, or contact AfterBI to upgrade.

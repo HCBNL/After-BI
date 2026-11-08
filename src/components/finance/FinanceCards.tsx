@@ -41,9 +41,36 @@ export function Pill({ children, className }: { children: ReactNode; className?:
   );
 }
 
+/*
+ * The comparison phrases, whole. Only three previous periods exist, and
+ * "vs {0}" is too little fixed wording to be translated safely (it would also
+ * match "vs" in anything else), so each phrase is its own entry.
+ */
+const VS: Record<string, string> = {
+  'last month': 'vs last month',
+  'last quarter': 'vs last quarter',
+  'last year': 'vs last year',
+  'last month (invoiced)': 'Invoiced, vs last month',
+  'last quarter (invoiced)': 'Invoiced, vs last quarter',
+  'last year (invoiced)': 'Invoiced, vs last year',
+};
+const NOTHING: Record<string, string> = {
+  'last month': 'Nothing to compare with last month',
+  'last quarter': 'Nothing to compare with last quarter',
+  'last year': 'Nothing to compare with last year',
+  'last month (invoiced)': 'Nothing invoiced last month to compare with',
+  'last quarter (invoiced)': 'Nothing invoiced last quarter to compare with',
+  'last year (invoiced)': 'Nothing invoiced last year to compare with',
+};
+
 /** Up or down against the previous period; nothing when there is nothing to compare. */
 export function Change({ value, label, onAccent = false }: { value: number | null; label: string; onAccent?: boolean }) {
-  if (value === null) return <span className={cn('text-caption', onAccent ? 'opacity-75' : 'text-muted')}>Nothing to compare with {label}</span>;
+  if (value === null)
+    return (
+      <span className={cn('text-caption', onAccent ? 'opacity-75' : 'text-muted')}>
+        {NOTHING[label] ?? `Nothing to compare with ${label}`}
+      </span>
+    );
   const up = value >= 0;
   return (
     <span className="inline-flex items-center gap-1.5 text-caption">
@@ -56,7 +83,7 @@ export function Change({ value, label, onAccent = false }: { value: number | nul
         {up ? '+' : ''}
         {value}%
       </span>
-      <span className={onAccent ? 'opacity-80' : 'text-muted'}>vs {label}</span>
+      <span className={onAccent ? 'opacity-80' : 'text-muted'}>{VS[label] ?? `compared with ${label}`}</span>
     </span>
   );
 }

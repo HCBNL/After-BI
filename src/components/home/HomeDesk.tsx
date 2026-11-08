@@ -19,13 +19,14 @@ import { BrandBars } from './HomeArt';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
 import { HeroLanguageButton } from '@/components/HeroLanguageButton';
 import { displayName, greeting, LayoutButton, ProfilePhoto } from './HomeHero';
+import { dateLocale } from '@/lib/locale';
 
 const HERO_ICON =
   'relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.12] text-white transition-colors hover:bg-white/20 active:bg-white/25';
 
 /** "Sunday, 20 September", in Lagos. */
 function todayLine(): string {
-  return new Intl.DateTimeFormat('en-NG', {
+  return new Intl.DateTimeFormat(dateLocale('en-NG'), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -248,6 +249,23 @@ export function DeskShortcuts({ role }: { role: Role }) {
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+/* This month, short, for the date badge: "Nov", "nov", "11月". */
+const MONTH_BADGE = (() => {
+  const now = new Date();
+  const locale = dateLocale('en-GB');
+  const long = now.toLocaleDateString(locale, { month: 'long', timeZone: 'Africa/Lagos' });
+  if (locale === 'en-GB') return long.slice(0, 3);
+  return now.toLocaleDateString(locale, { month: 'short', timeZone: 'Africa/Lagos' }).replace(/\.$/, '');
+})();
+
+/* Column heads for the month grid, Monday first, in the screen's own language. */
+const WEEKDAY_HEADS = (() => {
+  const locale = dateLocale('en-GB');
+  if (locale === 'en-GB') return WEEKDAYS.map((d) => d.slice(0, 2));
+  const fmt = new Intl.DateTimeFormat(locale, { weekday: 'narrow', timeZone: 'UTC' });
+  return WEEKDAYS.map((_, i) => fmt.format(new Date(Date.UTC(2024, 0, 1 + i))));
+})();
+
 /** Lagos "today", re-read every 30 seconds so the card turns over at midnight on its own. */
 function useLagosToday() {
   const [now, setNow] = useState(() => monthPosition());
@@ -277,7 +295,9 @@ export function MonthCard({ footnote }: { footnote?: string }) {
     const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
     const lead = (first.getUTCDay() + 6) % 7;
     const prevDays = new Date(Date.UTC(year, month - 1, 0)).getUTCDate();
-    const name = first.toLocaleDateString('en-GB', { month: 'long', timeZone: 'UTC' });
+    const name = first.toLocaleDateString(dateLocale('en-GB'), { month: 'long', timeZone: 'UTC' });
+    /* "November 2026", "novembre 2026", "2026年11月": each language orders it its own way. */
+    const title = first.toLocaleDateString(dateLocale('en-GB'), { month: 'long', year: 'numeric', timeZone: 'UTC' });
     const cells: { n: number; inMonth: boolean; weekend: boolean; key: string }[] = [];
     for (let i = 0; i < lead; i += 1) cells.push({ n: prevDays - lead + 1 + i, inMonth: false, weekend: i >= 5, key: `p${i}` });
     for (let d = 1; d <= days; d += 1) cells.push({ n: d, inMonth: true, weekend: (lead + d - 1) % 7 >= 5, key: `d${d}` });
@@ -286,12 +306,12 @@ export function MonthCard({ footnote }: { footnote?: string }) {
       cells.push({ n: t, inMonth: false, weekend: cells.length % 7 >= 5, key: `n${t}` });
       t += 1;
     }
-    return { year, month, days, name, cells };
+    return { year, month, days, name, title, cells };
   }, [today, offset]);
 
   const isThisMonth = offset === 0;
   const weekday = useMemo(
-    () => new Date(Date.UTC(today.year, today.month - 1, today.day)).toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' }),
+    () => new Date(Date.UTC(today.year, today.month - 1, today.day)).toLocaleDateString(dateLocale('en-GB'), { weekday: 'long', timeZone: 'UTC' }),
     [today],
   );
 
@@ -307,13 +327,15 @@ export function MonthCard({ footnote }: { footnote?: string }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-brand-600 text-white shadow-[0_10px_24px_-12px_rgba(0,0,0,0.45)] dark:bg-brand-500">
-            <span className="text-micro font-semibold uppercase tracking-[0.14em] opacity-80">{today.name.slice(0, 3)}</span>
+            <span className="text-micro font-semibold uppercase tracking-[0.14em] opacity-80">{MONTH_BADGE}</span>
             <span className="font-display text-headline font-bold leading-none">{today.day}</span>
           </span>
           <div className="min-w-0">
             <p className="truncate text-lead font-semibold text-primary">{weekday}</p>
             <p className="text-label text-muted">
-              Day {today.day} of {today.days} · {today.left > 0 ? `${today.left} day${today.left === 1 ? '' : 's'} to go` : 'Last day'}
+              {`Day ${today.day} of ${today.days}`}
+              {' · '}
+              {today.left > 1 ? `${today.left} days to go` : today.left === 1 ? '1 day to go' : 'Last day'}
             </p>
           </div>
         </div>
@@ -322,7 +344,7 @@ export function MonthCard({ footnote }: { footnote?: string }) {
       {/* month and arrows */}
       <div className="mt-4 flex items-center justify-between gap-2">
         <p className="text-body font-semibold text-primary">
-          {view.name} {view.year}
+          {view.title}
         </p>
         <div className="flex items-center gap-0.5">
           <button type="button" aria-label="Previous month" className={navButton} onClick={() => setOffset((o) => o - 1)}>
@@ -345,9 +367,9 @@ export function MonthCard({ footnote }: { footnote?: string }) {
 
       {/* the grid */}
       <div className="mt-2 grid grid-cols-7 gap-y-1 text-center">
-        {WEEKDAYS.map((d, i) => (
-          <span key={d} className={cn('pb-1 text-micro font-semibold uppercase tracking-wide', i >= 5 ? 'text-muted opacity-70' : 'text-muted')}>
-            {d.slice(0, 2)}
+        {WEEKDAY_HEADS.map((d, i) => (
+          <span key={WEEKDAYS[i]} translate="no" className={cn('pb-1 text-micro font-semibold uppercase tracking-wide', i >= 5 ? 'text-muted opacity-70' : 'text-muted')}>
+            {d}
           </span>
         ))}
         {view.cells.map((cell) => {
@@ -356,7 +378,16 @@ export function MonthCard({ footnote }: { footnote?: string }) {
           return (
             <span key={cell.key} className="flex items-center justify-center">
               <span
-                title={cell.inMonth ? `${cell.n} ${view.name} ${view.year}` : undefined}
+                title={
+                  cell.inMonth
+                    ? new Date(Date.UTC(view.year, view.month - 1, cell.n)).toLocaleDateString(dateLocale('en-GB'), {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                        timeZone: 'UTC',
+                      })
+                    : undefined
+                }
                 className={cn(
                   'tabular flex h-8 w-8 items-center justify-center rounded-full text-label transition-colors',
                   !cell.inMonth && 'text-muted opacity-40',
@@ -379,8 +410,11 @@ export function MonthCard({ footnote }: { footnote?: string }) {
           <div className="h-full rounded-full bg-brand-600 dark:bg-brand-500" style={{ width: `${(today.day / today.days) * 100}%` }} />
         </div>
         <div className="mt-2 flex items-center justify-between gap-3 text-caption text-muted">
-          <span className="truncate">{footnote ?? `Month ends ${today.days} ${today.name}`}</span>
-          <span className="shrink-0 font-semibold text-secondary">{Math.round((today.day / today.days) * 100)}% of the month</span>
+          <span className="truncate">{footnote ??
+            /* The whole date from the formatter, so each language orders day and
+               month its own way ("30 November", "11月30日", "30 novembre"). */
+            `Month ends ${new Date(Date.UTC(today.year, today.month - 1, today.days)).toLocaleDateString(dateLocale('en-GB'), { day: 'numeric', month: 'long', timeZone: 'UTC' })}`}</span>
+          <span className="shrink-0 font-semibold text-secondary">{`${Math.round((today.day / today.days) * 100)}% of the month`}</span>
         </div>
       </div>
     </section>

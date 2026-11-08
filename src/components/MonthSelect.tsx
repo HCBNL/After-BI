@@ -13,13 +13,14 @@ import { createPortal } from 'react-dom';
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { monthKey } from '@/lib/format';
+import { dateLocale } from '@/lib/locale';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export function monthLabel(key: string): string {
   const [y, m] = key.split('-').map(Number);
   if (!y || !m) return key;
-  return new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  return new Date(y, m - 1, 1).toLocaleDateString(dateLocale('en-GB'), { month: 'long', year: 'numeric' });
 }
 
 const keyOf = (year: number, month: number) => `${year}-${String(month).padStart(2, '0')}`;
