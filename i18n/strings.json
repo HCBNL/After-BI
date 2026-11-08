@@ -922,7 +922,6 @@
   "text": "Pending",
   "files": [
    "src/components/home/BriefCard.tsx",
-   "src/components/marketing/mocks.tsx",
    "src/pages/partners/DistributorsPage.tsx"
   ]
  },
@@ -1120,7 +1119,6 @@
   "text": "Today",
   "files": [
    "src/components/home/HomeDesk.tsx",
-   "src/components/marketing/mocks.tsx",
    "src/lib/salesAnalytics.ts",
    "src/lib/tasks.ts",
    "src/pages/hr/HrManage.tsx",
@@ -1650,54 +1648,6 @@
   ]
  },
  {
-  "text": "| Step | Teacher's Activity | Pupils' Activity | | --- | --- | --- | | Step I | | | | Step II | | | | Step III | | |",
-  "files": [
-   "src/components/MarkdownEditor.tsx"
-  ]
- },
- {
-  "text": "Bold",
-  "files": [
-   "src/components/MarkdownEditor.tsx"
-  ]
- },
- {
-  "text": "Bulleted list",
-  "files": [
-   "src/components/MarkdownEditor.tsx"
-  ]
- },
- {
-  "text": "Heading",
-  "files": [
-   "src/components/MarkdownEditor.tsx"
-  ]
- },
- {
-  "text": "Italic",
-  "files": [
-   "src/components/MarkdownEditor.tsx"
-  ]
- },
- {
-  "text": "Numbered list",
-  "files": [
-   "src/components/MarkdownEditor.tsx"
-  ]
- },
- {
-  "text": "Sub-heading",
-  "files": [
-   "src/components/MarkdownEditor.tsx"
-  ]
- },
- {
-  "text": "Table",
-  "files": [
-   "src/components/MarkdownEditor.tsx"
-  ]
- },
- {
   "text": "{0}ms",
   "files": [
    "src/components/marketing/bits.tsx",
@@ -1921,20 +1871,6 @@
   ]
  },
  {
-  "text": "Book a demo",
-  "files": [
-   "src/components/marketing/chrome.tsx",
-   "src/components/marketing/kit.tsx",
-   "src/pages/auth/ForgotPasswordPage.tsx",
-   "src/pages/auth/LoginPage.tsx",
-   "src/pages/public/DemoPage.tsx",
-   "src/pages/public/HomePage.tsx",
-   "src/pages/public/ModulePage.tsx",
-   "src/pages/public/ProductPage.tsx",
-   "src/pages/public/SolutionsPage.tsx"
-  ]
- },
- {
   "text": "By business",
   "files": [
    "src/components/marketing/chrome.tsx"
@@ -2120,9 +2056,86 @@
   ]
  },
  {
-  "text": "₦12.3m still in the channel",
+  "text": "{0}?text={1}",
   "files": [
-   "src/components/marketing/kit.tsx"
+   "src/components/marketing/HelpBubble.tsx",
+   "src/lib/site.ts"
+  ]
+ },
+ {
+  "text": "Answers first. A person if you need one.",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
+  ]
+ },
+ {
+  "text": "Book a demo",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx",
+   "src/components/marketing/chrome.tsx",
+   "src/components/marketing/kit.tsx",
+   "src/lib/help.ts",
+   "src/pages/auth/ForgotPasswordPage.tsx",
+   "src/pages/auth/LoginPage.tsx",
+   "src/pages/public/DemoPage.tsx",
+   "src/pages/public/HomePage.tsx",
+   "src/pages/public/ModulePage.tsx",
+   "src/pages/public/ProductPage.tsx",
+   "src/pages/public/SolutionsPage.tsx"
+  ]
+ },
+ {
+  "text": "Close help",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
+  ]
+ },
+ {
+  "text": "Help and answers",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
+  ]
+ },
+ {
+  "text": "How can we help?",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
+  ]
+ },
+ {
+  "text": "Not here? Type your question…",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
+  ]
+ },
+ {
+  "text": "Opens WhatsApp · we reply within a working day",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
+  ]
+ },
+ {
+  "text": "Read more",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
+  ]
+ },
+ {
+  "text": "Send to an agent",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
+  ]
+ },
+ {
+  "text": "Talk to an agent",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
+  ]
+ },
+ {
+  "text": "Your question",
+  "files": [
+   "src/components/marketing/HelpBubble.tsx"
   ]
  },
  {
@@ -2130,12 +2143,6 @@
   "files": [
    "src/components/marketing/kit.tsx",
    "src/pages/public/DemoPage.tsx"
-  ]
- },
- {
-  "text": "Message AfterBI on WhatsApp",
-  "files": [
-   "src/components/marketing/kit.tsx"
   ]
  },
  {
@@ -2154,715 +2161,9 @@
   ]
  },
  {
-  "text": "Sell in",
-  "files": [
-   "src/components/marketing/kit.tsx"
-  ]
- },
- {
-  "text": "Sell through",
-  "files": [
-   "src/components/marketing/kit.tsx",
-   "src/pages/public/HomePage.tsx"
-  ]
- },
- {
   "text": "The AfterBI team",
   "files": [
    "src/components/marketing/kit.tsx"
-  ]
- },
- {
-  "text": "{0}% cover",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "+0.8pt",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "+2.7m",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "+9 orders",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "2 over limit",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "30 days",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "60 days",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "90+ days",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Ageing",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Amara (South)",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Analytics",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/plans.ts",
-   "src/lib/tiles.ts"
-  ]
- },
- {
-  "text": "Apex Retail",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Apex Retail Group",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Approval needed",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Approvals and inventory",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Approved",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/sales/OrderDrawer.tsx",
-   "src/pages/sales/OrdersPage.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
-  "text": "Balance",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/finance/StatementPage.tsx"
-  ]
- },
- {
-  "text": "Billing",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/public/PricingPage.tsx"
-  ]
- },
- {
-  "text": "Billing and credit",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Bright Star",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Bright Star Stores",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "By region",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "By week",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Central",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Central DC",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Central DC to North Hub",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Central DC to West Hub",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Channel",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/salesAnalytics.ts",
-   "src/pages/sales/AnalyticsPage.tsx"
-  ]
- },
- {
-  "text": "Contacted",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
-  "text": "Coverage",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Credit",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/tiles.ts",
-   "src/pages/finance/StatementPage.tsx",
-   "src/pages/inventory/ReturnsPage.tsx"
-  ]
- },
- {
-  "text": "Current",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Daniel (East)",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Delivered",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Draft for FreshMart, 2 lines",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "East",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "East Hub",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "East Hub to FreshMart",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Finance",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/site.ts",
-   "src/lib/tiles.ts",
-   "src/pages/finance/FinanceDashboardPage.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
-  "text": "FreshMart",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "FreshMart (MT)",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Full access",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Good morning, Grace",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Grace (Central)",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Head office",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "In channel",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Instant noodles (carton)",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Inventory",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Invoice INV-2291",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Kola Stores",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Limit ₦3,000,000",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Load L-118",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Load L-119",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Load L-120",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Margin",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/inventory/ImportCalculator.tsx"
-  ]
- },
- {
-  "text": "My statement",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "New",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/admin/InvitePage.tsx",
-   "src/pages/platform/OrganisationsPage.tsx",
-   "src/pages/sales/AnalyticsPage.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
-  "text": "New order",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/home/PortalHome.tsx",
-   "src/pages/sales/CataloguePage.tsx",
-   "src/pages/sales/NewOrderDrawer.tsx",
-   "src/pages/sales/OrdersPage.tsx"
-  ]
- },
- {
-  "text": "North",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "North Hub",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Northgate",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Northgate Distribution",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "October",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Operations",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/site.ts",
-   "src/types/index.ts"
-  ]
- },
- {
-  "text": "Order held: Summit Wholesale is over its credit limit",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Order unfinished",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Orders",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/tiles.ts",
-   "src/pages/finance/ReportsPage.tsx",
-   "src/pages/sales/OrdersPage.tsx"
-  ]
- },
- {
-  "text": "Overdue",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/finance/CreditPage.tsx",
-   "src/pages/finance/FinanceDashboardPage.tsx",
-   "src/pages/finance/InvoicesPage.tsx",
-   "src/pages/home/PortalHome.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
-  "text": "Own accounts only",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Own workspace only",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Partners",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/site.ts",
-   "src/lib/tiles.ts"
-  ]
- },
- {
-  "text": "Pipeline",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Place an order",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Qualified",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
-  "text": "Receivables",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Recent orders",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Reminder sent",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Report sell-out",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Revenue",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/sales/AnalyticsPage.tsx"
-  ]
- },
- {
-  "text": "Revenue trend",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Sales",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/site.ts",
-   "src/lib/tiles.ts"
-  ]
- },
- {
-  "text": "Samuel (North)",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Seasoning cubes (case)",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Sell-in",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Sell-in vs sell-out",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Sell-out",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/tiles.ts",
-   "src/pages/finance/ReportsPage.tsx",
-   "src/pages/sales/AnalyticsPage.tsx",
-   "src/pages/sales/ScorecardsPage.tsx",
-   "src/pages/sales/SellOutPage.tsx"
-  ]
- },
- {
-  "text": "SO-10473",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "SO-10476",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "SO-10479",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "SO-10481",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "SO-10481 is waiting for you",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "SO-10482",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "South",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "South Hub",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Stock count at North Hub",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Summit Wholesale",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Summit Wholesale: statement due",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Task assigned",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "To approve",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Total",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/finance/InvoicesPage.tsx",
-   "src/pages/hr/HrManage.tsx",
-   "src/pages/sales/NewOrderDrawer.tsx",
-   "src/pages/sales/OrderDrawer.tsx"
-  ]
- },
- {
-  "text": "Unity Mall",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Value",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/sales/OrdersPage.tsx",
-   "src/pages/sales/SellOutPage.tsx"
-  ]
- },
- {
-  "text": "Vegetable oil 1L (carton)",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "West Hub",
-  "files": [
-   "src/components/marketing/mocks.tsx"
-  ]
- },
- {
-  "text": "Won",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/pages/platform/ProposalsPage.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
-  "text": "Your account",
-  "files": [
-   "src/components/marketing/mocks.tsx",
-   "src/lib/tour.ts",
-   "src/pages/public/LegalPage.tsx"
   ]
  },
  {
@@ -2990,7 +2291,6 @@
   "text": "This month",
   "files": [
    "src/components/MonthSelect.tsx",
-   "src/components/marketing/kit.tsx",
    "src/lib/financeSummary.ts",
    "src/lib/salesAnalytics.ts",
    "src/lib/site.ts",
@@ -3020,18 +2320,6 @@
   "text": "Zoom out",
   "files": [
    "src/components/PhotoCropper.tsx"
-  ]
- },
- {
-  "text": "b{0}",
-  "files": [
-   "src/components/Prose.tsx"
-  ]
- },
- {
-  "text": "noopener noreferrer",
-  "files": [
-   "src/components/Prose.tsx"
   ]
  },
  {
@@ -3157,12 +2445,6 @@
   ]
  },
  {
-  "text": "More about this",
-  "files": [
-   "src/components/ui/Hint.tsx"
-  ]
- },
- {
   "text": "Why this matters",
   "files": [
    "src/components/ui/Hint.tsx"
@@ -3229,12 +2511,6 @@
   "text": "Section",
   "files": [
    "src/components/ui/SectionMenu.tsx"
-  ]
- },
- {
-  "text": "Video",
-  "files": [
-   "src/components/VideoBlock.tsx"
   ]
  },
  {
@@ -5879,6 +5155,144 @@
   ]
  },
  {
+  "text": "(From afterbi.com)",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "(From afterbi.com{0})",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "A single site is usually live within a week. A larger network with several depots and many partners takes about a month, onboarding included.",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Can I see it before I commit?",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Do my distributors have to pay?",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Every organisation is isolated by database security rules, so one customer cannot read another. Every record keeps a full audit trail of who changed what.",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Find your setup",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "From ₦7,500 per user a month, billed per organisation, with two months free if you pay yearly. Three plans: Sole Trader, SME and Enterprise.",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Get back in",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Hello AfterBI, I have a question.{0}",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "How quickly can we go live?",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "I cannot sign in",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Is our data safe?",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "It is built for selling through other people: manufacturers, importers, distributors and modern trade suppliers each get a different starting shape.",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Most sign-in trouble is a forgotten workspace rather than a forgotten password. The sign-in help page walks through both.",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "No. Partner users are free on every plan, with no cap. Each distributor gets their own portal to place orders, check statements and report what they sold.",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "See security and access",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "See the partner portal",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "See the plans",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Talk through your setup",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "What does it cost?",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Will it fit the way we already sell?",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
+  "text": "Yes. A guided walkthrough runs about 30 minutes and we load your own products, partners and price list into it first, so you are looking at your business rather than a sample one.",
+  "files": [
+   "src/lib/help.ts"
+  ]
+ },
+ {
   "text": "{0}h {1}m",
   "files": [
    "src/lib/hr.ts"
@@ -5988,121 +5402,7 @@
   ]
  },
  {
-  "text": "{0} by bank transfer within {1} working days of their first payment.",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "{0} Partner Programme{1}",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "<div class=\"top\"> <div><div class=\"brand\"><img src=\"{0}\" alt=\"\">AfterBI</div><div style=\"font-size:9pt;color:#5b6472\">{1}</div></div> <div class=\"meta\">Reference {2}<br>{3}</div> </div> <div class=\"cover\"> <div class=\"eyebrow\">Partner Programme invitation</div> <h1>Introduce a business to AfterBI. Earn {4} when it subscribes.</h1> <p style=\"margin-top:14px\">{5}</p> <p>The people who run distribution in Nigeria listen to a small number of advisers: the consultant who fixed their route to market, the accountant who audits their books, the association that speaks for them. We would like you to be one of the people who tells them about AfterBI.</p> {6} </div> <div class=\"medal\"> <div class=\"ring\">{7}<small>per business</small></div> <p><b>For every business you introduce that subscribes</b>, we pay you {8}, once, by bank transfer within {9} working days of its first payment. There is no cap on how many businesses you introduce.</p> </div> <section> <h2>Why AfterBI is easy to recommend</h2> <div class=\"grid4\">{10}</div> </section> <section> <h2>How it works</h2> <table class=\"steps\">{11}</table> </section> <section> <h2>The terms</h2> <ul> <li>The reward is earned when a business you introduced subscribes and makes its first payment.</li> <li>A business counts as yours if we had not already been in touch with it before your introduction. We tell you straight away if we had.</li> <li>Paid in your name, by bank transfer, within {12} working days.</li> <li>No fee to join, nothing to sell, install or support.</li> </ul> </section> <section> <h2>Next step</h2> <p>Reply to {13} or call {14} quoting {15}, and we will set you up. The programme is also at {16}/partners.</p> <div class=\"sign\"> <div class=\"signed\"><img class=\"sigimg\" src=\"{17}\" alt=\"\">For {18} (AfterBI)<br><b>{19}</b>, {20}</div> <div>Partner<br>Name, signature and date</div> </div> </section> <div class=\"foot\"><span>{21}{22}</span><span>{23} · {24}</span></div>",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
   "text": "AB-PP-{0}{1}",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "Any plan, or an AfterBI Custom build.",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "Built for Nigerian distribution",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "Distributor logins are free on every plan, so the price never grows with the network.",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "for {0}",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "Introduce",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "Live in about a month",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "Nothing for you to support",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "On their own numbers, with a written proposal afterwards.",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "Orders, stock, invoices, credit and sell-out, on the phones the trade already carries.",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "Priced in naira, per business",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "Tell us about a distributor or manufacturer, or bring them to a walkthrough.",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "They subscribe",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "We load the products, prices and distributors and train every role ourselves.",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "We walk them through it",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "You are paid",
-  "files": [
-   "src/lib/partnerLetter.ts"
-  ]
- },
- {
-  "text": "You make the introduction. Walkthroughs, setup and support are all ours.",
   "files": [
    "src/lib/partnerLetter.ts"
   ]
@@ -6123,6 +5423,13 @@
   "text": "the calendar month (the 1st to the last day)",
   "files": [
    "src/lib/payroll.ts"
+  ]
+ },
+ {
+  "text": "Analytics",
+  "files": [
+   "src/lib/plans.ts",
+   "src/lib/tiles.ts"
   ]
  },
  {
@@ -6778,6 +6085,13 @@
   ]
  },
  {
+  "text": "Channel",
+  "files": [
+   "src/lib/salesAnalytics.ts",
+   "src/pages/sales/AnalyticsPage.tsx"
+  ]
+ },
+ {
   "text": "Cross River",
   "files": [
    "src/lib/salesAnalytics.ts"
@@ -6863,12 +6177,6 @@
   "files": [
    "src/lib/salesAnalytics.ts",
    "src/pages/inventory/ProductsPage.tsx"
-  ]
- },
- {
-  "text": "{0}?text={1}",
-  "files": [
-   "src/lib/site.ts"
   ]
  },
  {
@@ -7058,12 +6366,6 @@
   ]
  },
  {
-  "text": "Approval workflows",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Approvals, reminders and tasks that keep every transaction moving.",
   "files": [
    "src/lib/site.ts"
@@ -7128,12 +6430,6 @@
   "files": [
    "src/lib/site.ts",
    "src/pages/inventory/ProductsPage.tsx"
-  ]
- },
- {
-  "text": "Bill automatically, control credit exposure and see what actually sold through your channel.",
-  "files": [
-   "src/lib/site.ts"
   ]
  },
  {
@@ -7251,12 +6547,6 @@
   ]
  },
  {
-  "text": "Channel pricing",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Channel specific price lists",
   "files": [
    "src/lib/site.ts"
@@ -7270,12 +6560,6 @@
  },
  {
   "text": "Closing band",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Collect and grow",
   "files": [
    "src/lib/site.ts"
   ]
@@ -7419,12 +6703,6 @@
   ]
  },
  {
-  "text": "Data ownership",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Deal value and next steps on every opportunity",
   "files": [
    "src/lib/site.ts"
@@ -7437,19 +6715,7 @@
   ]
  },
  {
-  "text": "Dedicated price lists for open trade, modern trade and service accounts, applied automatically.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Dedicated workspaces for leadership, sales, operations, finance and partners",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Define who approves what. Without a designated approver, the super admin signs off.",
   "files": [
    "src/lib/site.ts"
   ]
@@ -7575,12 +6841,6 @@
   ]
  },
  {
-  "text": "Export reports, print documents, and take your complete record whenever you need it.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Exports ready for finance and the board",
   "files": [
    "src/lib/site.ts"
@@ -7596,6 +6856,15 @@
   "text": "Fashion and textiles: fabric rolls, clothing racks or shoes.",
   "files": [
    "src/lib/site.ts"
+  ]
+ },
+ {
+  "text": "Finance",
+  "files": [
+   "src/lib/site.ts",
+   "src/lib/tiles.ts",
+   "src/pages/finance/FinanceDashboardPage.tsx",
+   "src/types/index.ts"
   ]
  },
  {
@@ -7651,12 +6920,6 @@
   "files": [
    "src/lib/site.ts",
    "src/pages/public/NotFoundPage.tsx"
-  ]
- },
- {
-  "text": "Fulfil",
-  "files": [
-   "src/lib/site.ts"
   ]
  },
  {
@@ -7793,12 +7056,6 @@
   "files": [
    "src/lib/site.ts",
    "src/pages/public/SolutionsPage.tsx"
-  ]
- },
- {
-  "text": "integrated capabilities",
-  "files": [
-   "src/lib/site.ts"
   ]
  },
  {
@@ -7970,12 +7227,6 @@
   ]
  },
  {
-  "text": "Manage pipeline, capture orders and let partners buy on their own, with pricing and policy applied automatically.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Manage your pipeline from first lead to won account",
   "files": [
    "src/lib/site.ts"
@@ -8091,15 +7342,16 @@
   ]
  },
  {
-  "text": "One platform for sales, distribution and revenue",
+  "text": "One tap mobile approvals with a full audit trail",
   "files": [
    "src/lib/site.ts"
   ]
  },
  {
-  "text": "One tap mobile approvals with a full audit trail",
+  "text": "Operations",
   "files": [
-   "src/lib/site.ts"
+   "src/lib/site.ts",
+   "src/types/index.ts"
   ]
  },
  {
@@ -8181,6 +7433,13 @@
   ]
  },
  {
+  "text": "Partners",
+  "files": [
+   "src/lib/site.ts",
+   "src/lib/tiles.ts"
+  ]
+ },
+ {
   "text": "Partners order against their own price list and credit",
   "files": [
    "src/lib/site.ts"
@@ -8188,12 +7447,6 @@
  },
  {
   "text": "per month",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "per partner user, always",
   "files": [
    "src/lib/site.ts"
   ]
@@ -8247,12 +7500,6 @@
  },
  {
   "text": "Pipeline Management",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Pipeline, orders, inventory, billing and channel intelligence, connected.",
   "files": [
    "src/lib/site.ts"
   ]
@@ -8360,12 +7607,6 @@
   ]
  },
  {
-  "text": "role based workspaces",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Role based workspaces with data isolation enforced at the database.",
   "files": [
    "src/lib/site.ts"
@@ -8381,6 +7622,13 @@
   "text": "Run multi location sales and a partner network from one command centre.",
   "files": [
    "src/lib/site.ts"
+  ]
+ },
+ {
+  "text": "Sales",
+  "files": [
+   "src/lib/site.ts",
+   "src/lib/tiles.ts"
   ]
  },
  {
@@ -8612,12 +7860,6 @@
   ]
  },
  {
-  "text": "single source of truth",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Smart reminders and automated workflows",
   "files": [
    "src/lib/site.ts"
@@ -8842,12 +8084,6 @@
   ]
  },
  {
-  "text": "Turn approved orders into tracked deliveries, with live inventory across every location.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Two months free yearly",
   "files": [
    "src/lib/site.ts"
@@ -8927,12 +8163,6 @@
  },
  {
   "text": "Which company are you with?",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Win",
   "files": [
    "src/lib/site.ts"
   ]
@@ -9021,30 +8251,6 @@
   "text": "info@afterbi.com",
   "files": [
    "src/lib/siteMeta.ts"
-  ]
- },
- {
-  "text": "Cream, navy, signal orange. Corporate and warm.",
-  "files": [
-   "src/lib/sitePalette.ts"
-  ]
- },
- {
-  "text": "Harbour",
-  "files": [
-   "src/lib/sitePalette.ts"
-  ]
- },
- {
-  "text": "Meridian",
-  "files": [
-   "src/lib/sitePalette.ts"
-  ]
- },
- {
-  "text": "Mist, forest teal, electric blue. Calm and analytical.",
-  "files": [
-   "src/lib/sitePalette.ts"
   ]
  },
  {
@@ -9248,6 +8454,14 @@
   ]
  },
  {
+  "text": "Credit",
+  "files": [
+   "src/lib/tiles.ts",
+   "src/pages/finance/StatementPage.tsx",
+   "src/pages/inventory/ReturnsPage.tsx"
+  ]
+ },
+ {
   "text": "Daily",
   "files": [
    "src/lib/tiles.ts"
@@ -9395,6 +8609,14 @@
   ]
  },
  {
+  "text": "Orders",
+  "files": [
+   "src/lib/tiles.ts",
+   "src/pages/finance/ReportsPage.tsx",
+   "src/pages/sales/OrdersPage.tsx"
+  ]
+ },
+ {
   "text": "Organisations",
   "files": [
    "src/lib/tiles.ts",
@@ -9462,6 +8684,16 @@
   "files": [
    "src/lib/tiles.ts",
    "src/pages/finance/ReportsPage.tsx"
+  ]
+ },
+ {
+  "text": "Sell-out",
+  "files": [
+   "src/lib/tiles.ts",
+   "src/pages/finance/ReportsPage.tsx",
+   "src/pages/sales/AnalyticsPage.tsx",
+   "src/pages/sales/ScorecardsPage.tsx",
+   "src/pages/sales/SellOutPage.tsx"
   ]
  },
  {
@@ -9772,6 +9004,13 @@
   ]
  },
  {
+  "text": "Your account",
+  "files": [
+   "src/lib/tour.ts",
+   "src/pages/public/LegalPage.tsx"
+  ]
+ },
+ {
   "text": "Your account, in three numbers",
   "files": [
    "src/lib/tour.ts"
@@ -9921,6 +9160,15 @@
    "src/pages/platform/OrganisationsPage.tsx",
    "src/pages/platform/StaffPage.tsx",
    "src/pages/shared/ProfilePage.tsx"
+  ]
+ },
+ {
+  "text": "New",
+  "files": [
+   "src/pages/admin/InvitePage.tsx",
+   "src/pages/platform/OrganisationsPage.tsx",
+   "src/pages/sales/AnalyticsPage.tsx",
+   "src/types/index.ts"
   ]
  },
  {
@@ -11414,6 +10662,16 @@
   ]
  },
  {
+  "text": "Overdue",
+  "files": [
+   "src/pages/finance/CreditPage.tsx",
+   "src/pages/finance/FinanceDashboardPage.tsx",
+   "src/pages/finance/InvoicesPage.tsx",
+   "src/pages/home/PortalHome.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
   "text": "Owing",
   "files": [
    "src/pages/finance/CreditPage.tsx",
@@ -12152,6 +11410,15 @@
   ]
  },
  {
+  "text": "Total",
+  "files": [
+   "src/pages/finance/InvoicesPage.tsx",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/sales/NewOrderDrawer.tsx",
+   "src/pages/sales/OrderDrawer.tsx"
+  ]
+ },
+ {
   "text": "Unpaid",
   "files": [
    "src/pages/finance/InvoicesPage.tsx"
@@ -12379,6 +11646,12 @@
  },
  {
   "text": "As at {0}",
+  "files": [
+   "src/pages/finance/StatementPage.tsx"
+  ]
+ },
+ {
+  "text": "Balance",
   "files": [
    "src/pages/finance/StatementPage.tsx"
   ]
@@ -12679,6 +11952,15 @@
   "text": "Low stock turns amber",
   "files": [
    "src/pages/home/PortalHome.tsx"
+  ]
+ },
+ {
+  "text": "New order",
+  "files": [
+   "src/pages/home/PortalHome.tsx",
+   "src/pages/sales/CataloguePage.tsx",
+   "src/pages/sales/NewOrderDrawer.tsx",
+   "src/pages/sales/OrdersPage.tsx"
   ]
  },
  {
@@ -14426,12 +13708,6 @@
   ]
  },
  {
-  "text": "22px 22px",
-  "files": [
-   "src/pages/hr/HrParts.tsx"
-  ]
- },
- {
   "text": "absent, tap to request a reissue",
   "files": [
    "src/pages/hr/HrParts.tsx"
@@ -15250,6 +14526,12 @@
  },
  {
   "text": "Kept quotes",
+  "files": [
+   "src/pages/inventory/ImportCalculator.tsx"
+  ]
+ },
+ {
+  "text": "Margin",
   "files": [
    "src/pages/inventory/ImportCalculator.tsx"
   ]
@@ -17670,6 +16952,13 @@
   ]
  },
  {
+  "text": "Won",
+  "files": [
+   "src/pages/platform/ProposalsPage.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
   "text": "Write one after a walkthrough call, while the prospect's numbers are fresh.",
   "files": [
    "src/pages/platform/ProposalsPage.tsx"
@@ -18360,6 +17649,12 @@
   ]
  },
  {
+  "text": "Sell through",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
   "text": "Trusted by sales and distribution teams",
   "files": [
    "src/pages/public/HomePage.tsx"
@@ -18658,6 +17953,12 @@
  },
  {
   "text": "a month for {0} users. Billed",
+  "files": [
+   "src/pages/public/PricingPage.tsx"
+  ]
+ },
+ {
+  "text": "Billing",
   "files": [
    "src/pages/public/PricingPage.tsx"
   ]
@@ -19124,6 +18425,12 @@
  },
  {
   "text": "Nothing in the previous period",
+  "files": [
+   "src/pages/sales/AnalyticsPage.tsx"
+  ]
+ },
+ {
+  "text": "Revenue",
   "files": [
    "src/pages/sales/AnalyticsPage.tsx"
   ]
@@ -19733,6 +19040,14 @@
   ]
  },
  {
+  "text": "Approved",
+  "files": [
+   "src/pages/sales/OrderDrawer.tsx",
+   "src/pages/sales/OrdersPage.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
   "text": "Approver",
   "files": [
    "src/pages/sales/OrderDrawer.tsx"
@@ -20112,6 +19427,13 @@
   "text": "Try a different search, or clear the filter above.",
   "files": [
    "src/pages/sales/OrdersPage.tsx"
+  ]
+ },
+ {
+  "text": "Value",
+  "files": [
+   "src/pages/sales/OrdersPage.tsx",
+   "src/pages/sales/SellOutPage.tsx"
   ]
  },
  {
@@ -21731,6 +21053,12 @@
   ]
  },
  {
+  "text": "Contacted",
+  "files": [
+   "src/types/index.ts"
+  ]
+ },
+ {
   "text": "Modern trade",
   "files": [
    "src/types/index.ts"
@@ -21756,6 +21084,12 @@
  },
  {
   "text": "Part paid",
+  "files": [
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "Qualified",
   "files": [
    "src/types/index.ts"
   ]
