@@ -15,8 +15,17 @@ const SKIP_ATTR = new Set(['className','class','key','id','type','name','href','
 const SKIP_PROP = new Set(['className','id','to','href','src','icon','key','slug','path','tone','kind','role','status','group','image','art','field','value','type','variant','size','href','url','collection','orderBy','where','format','unit','currency','color','accent','mode','layout','align','sort','dir','pattern']);
 
 const out = new Map();
+
+/*
+ * JSX text reaches the page with its entities decoded: "&rsquo;" is drawn as
+ * "’". The dictionary is matched against what the page shows, so a key stored
+ * with the raw entity could never match. Decode here, the way React does.
+ */
+const ENTITIES = { ldquo: '“', rdquo: '”', lsquo: '‘', rsquo: '’', nbsp: '\u00a0', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", hellip: '…', middot: '·', times: '×', copy: '©' };
+const decode = (s) => s.replace(/&([a-z]+);/g, (m, n) => ENTITIES[n] ?? m).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)));
+
 const add = (text, file, jsx = false) => {
-  const t = text.replace(/\s+/g, ' ').trim();
+  const t = (jsx ? decode(text) : text).replace(/\s+/g, ' ').trim();
   if (!t || !/[A-Za-z]/.test(t)) return;
   if (!(jsx ? /[A-Za-z]{2}/.test(t) : keep(t))) return;
   const prev = out.get(t);
@@ -31,10 +40,11 @@ function keep(t) {
   if (/^[a-z]+[A-Z][A-Za-z0-9]*$/.test(t)) return false; // camelCase
   if (/^[A-Z0-9_]+$/.test(t) && t.length > 1 && !/^[A-Z]{2,5}$/.test(t)) return false; // CONSTANT
   if (/^#[0-9a-f]{3,8}$/i.test(t)) return false;
-  if (/[{};]\s*$|^\s*[<{]/.test(t) && /[:;]/.test(t) && !/ [a-z]+ [a-z]+ /.test(t)) return false; // css/html
+  const bare = t.replace(/\{\d+\}/g, 'X'); // a {0} slot is not a css brace
+  if (/[{};]\s*$|^\s*[<{]/.test(bare) && /[:;]/.test(bare) && !/ [a-z]+ [a-z]+ /.test(bare)) return false; // css/html
   const words = t.split(' ');
   const classy = words.filter((w) => /^(!?[a-z0-9]+:)*!?-?[a-z]+(-[a-z0-9.\[\]#%/()_,]+)+$|^(flex|grid|hidden|block|inline|relative|absolute|fixed|sticky|truncate|uppercase|italic|underline|shrink-0|grow|tabular|tap|ink|site|surface-card|surface-page|transition|rounded|border|shadow|ring|container|sr-only)$/.test(w)).length;
-  if (classy >= Math.max(1, words.length * 0.5)) return false;
+  if (classy >= Math.max(1, words.length * 0.5) && !/^[A-Z][a-z]/.test(t)) return false; // a class list never starts with a capitalised word
   if (/^[a-z][\w-]*\.(tsx?|png|jpe?g|svg|webp|pdf|csv|json)$/i.test(t)) return false;
   if (/^(GET|POST|PUT|DELETE)$/.test(t)) return false;
   return true;
