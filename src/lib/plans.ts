@@ -128,10 +128,6 @@ export function isActionLocked(actionId: string): boolean {
   return current.lockedActions.has(actionId);
 }
 
-export function isFeatureLocked(key: FeatureKey): boolean {
-  return current.locked.has(key);
-}
-
 function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => {

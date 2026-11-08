@@ -73,37 +73,3 @@ export async function restGet(path: string): Promise<Record<string, unknown> | n
   return decodeFields(body.fields);
 }
 
-/**
- * Every document in a root collection where `field == value`.
- *
- * A structured query rather than a listing, because the rules allow a reader
- * only the published articles and a listing that might include a draft is
- * refused as a whole.
- */
-export async function restWhere(
-  collection: string,
-  field: string,
-  value: string,
-  limit = 100,
-): Promise<{ id: string; data: Record<string, unknown> }[]> {
-  if (!BASE) return [];
-  const response = await call(`${BASE}:runQuery${KEY ? `?key=${KEY}` : ''}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      structuredQuery: {
-        from: [{ collectionId: collection }],
-        where: { fieldFilter: { field: { fieldPath: field }, op: 'EQUAL', value: { stringValue: value } } },
-        limit,
-      },
-    }),
-  });
-  if (!response.ok) throw new Error(`Firestore answered ${response.status}`);
-  const rows = (await response.json()) as { document?: { name: string; fields?: Record<string, RestValue> } }[];
-  return rows
-    .filter((row) => row.document)
-    .map((row) => ({
-      id: row.document!.name.split('/').pop() ?? '',
-      data: decodeFields(row.document!.fields),
-    }));
-}

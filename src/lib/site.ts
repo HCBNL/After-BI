@@ -14,7 +14,6 @@
  */
 
 import { SUPPORT_EMAIL, WHATSAPP_URL } from './siteMeta';
-import type { SiteBanner } from './siteDoc';
 
 export { SUPPORT_EMAIL, WHATSAPP_URL } from './siteMeta';
 
@@ -32,22 +31,6 @@ export const META_DESCRIPTION =
   'billing, credit and channel intelligence on one secure cloud platform, with automated workflows for every team and partner.';
 
 /* ---------------------------------------------------- the built-in cover */
-
-/** Kept for the cover editor in Platform, Website. The new front page does not use it. */
-export const DEFAULT_BANNER: SiteBanner[] = [
-  {
-    id: 'default',
-    kind: 'image',
-    src: '',
-    mobileSrc: '',
-    title: 'One platform for sales, distribution and revenue',
-    subtitle: 'Pipeline, orders, inventory, billing and channel intelligence, connected.',
-    dim: 0,
-    buttons: true,
-  },
-];
-
-/* ------------------------------------------------------------------ the nav */
 
 /**
  * The top bar. Platform, Solutions and Support open a menu panel; the rest are
@@ -263,16 +246,6 @@ export const MONTH_STEPS: { title: string; body: string }[] = [
 /* ------------------------------------------------------------- the proof */
 
 export type ProofIcon = 'lock' | 'device' | 'roles' | 'audit';
-
-/** Four properties of the platform, under the hero. Each can be shown in a demo. */
-export const PROOF: { value: string; icon: ProofIcon }[] = [
-  { value: 'Enterprise grade security', icon: 'lock' },
-  { value: 'Works on any device', icon: 'device' },
-  { value: 'Role based workspaces', icon: 'roles' },
-  { value: 'Full audit trail', icon: 'audit' },
-];
-
-/* -------------------------------------------------------------- the pricing */
 
 export interface Plan {
   name: string;
@@ -645,40 +618,6 @@ export const TABS: { key: TabKey; label: string; title: string; points: string[]
   },
 ];
 
-/** From lead to revenue: the three stages the front page walks through. */
-export const LIFECYCLE: { title: string; body: string; slugs: string[] }[] = [
-  {
-    title: 'Win',
-    body: 'Manage pipeline, capture orders and let partners buy on their own, with pricing and policy applied automatically.',
-    slugs: ['leads', 'orders', 'distributor-portal'],
-  },
-  {
-    title: 'Fulfil',
-    body: 'Turn approved orders into tracked deliveries, with live inventory across every location.',
-    slugs: ['stock', 'deliveries'],
-  },
-  {
-    title: 'Collect and grow',
-    body: 'Bill automatically, control credit exposure and see what actually sold through your channel.',
-    slugs: ['invoices', 'credit', 'sell-out'],
-  },
-];
-
-/** "From out of the box to tailored." */
-export const PLATFORM: { title: string; body: string }[] = [
-  { title: 'Channel pricing', body: 'Dedicated price lists for open trade, modern trade and service accounts, applied automatically.' },
-  { title: 'Approval workflows', body: 'Define who approves what. Without a designated approver, the super admin signs off.' },
-  { title: 'Data ownership', body: 'Export reports, print documents, and take your complete record whenever you need it.' },
-];
-
-/** The numbers band. Facts about the product, not claims about customers. */
-export const STATS: { value: string; label: string }[] = [
-  { value: '12', label: 'integrated capabilities' },
-  { value: '6', label: 'role based workspaces' },
-  { value: '₦0', label: 'per partner user, always' },
-  { value: '1', label: 'single source of truth' },
-];
-
 export type IndustryIcon = 'food' | 'drinks' | 'care' | 'home' | 'baby' | 'agro' | 'pharma' | 'build' | 'electronics' | 'spirits' | 'stationery' | 'fashion';
 
 export const INDUSTRIES: { name: string; icon: IndustryIcon }[] = [
@@ -755,16 +694,6 @@ export const SOLUTIONS: Solution[] = [
     image: 'solution-modern-trade',
   },
 ];
-
-export function solutionBySlug(slug: string | undefined): Solution | undefined {
-  return SOLUTIONS.find((item) => item.slug === slug);
-}
-
-/**
- * Customer stories for the front page. EMPTY ON PURPOSE: the section does not
- * draw until there is a real one, added with the customer's permission.
- */
-export const STORIES: { quote: string; name: string; role: string; company: string; stat?: string; statLabel?: string; photo?: string }[] = [];
 
 /** Customer logos for the "trusted by" strip. EMPTY ON PURPOSE. Files go in /public/site/logos/. */
 export const LOGOS: { name: string; src: string }[] = [];

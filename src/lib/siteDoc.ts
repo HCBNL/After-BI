@@ -163,39 +163,6 @@ export function homeVideos(home: SiteHome | null | undefined): SiteVideo[] {
   return (home?.videos ?? []).filter((video) => video?.url?.trim()).slice(0, MAX_HOME_VIDEOS);
 }
 
-/** `founderLinks` as a clean list: full web addresses only, no repeats, at most ten. */
-export function founderLinkList(raw: string | undefined): string[] {
-  const seen = new Set<string>();
-  for (const part of (raw ?? '').split(/\s+/)) {
-    const value = part.trim();
-    if (/^https?:\/\/[^\s/]+\.[^\s]+/i.test(value)) seen.add(value);
-    if (seen.size >= 10) break;
-  }
-  return [...seen];
-}
-
-/** A slide with neither a picture nor words is not a slide yet. */
-export function bannerHasContent(slide: Partial<SiteBanner> | undefined): boolean {
-  return Boolean(slide && (slide.src?.trim() || slide.title?.trim() || slide.subtitle?.trim()));
-}
-
-/** A new, empty slide, with the defaults a first-time slide wants. */
-export function newBanner(): SiteBanner {
-  return {
-    id: `b${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
-    kind: 'image',
-    src: '',
-    mobileSrc: '',
-    title: '',
-    subtitle: '',
-    /* 55 rather than 0: the common first upload is a bright photograph of a
-       depot or a truck, and white words on it are unreadable until it is
-       pushed back. */
-    dim: 55,
-    buttons: true,
-  };
-}
-
 /**
  * What the public pages should show. Never throws.
  *

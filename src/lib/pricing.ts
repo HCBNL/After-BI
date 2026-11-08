@@ -12,7 +12,7 @@
  * in Settings may set a price; the super admin always may, a distributor never.
  */
 
-import type { Order, OrderCredit, OrderLine, OrgSettings, PriceTier, Role } from '@/types';
+import type { Order, OrderLine, OrgSettings, PriceTier, Role } from '@/types';
 
 /* discounts */
 
@@ -102,19 +102,6 @@ export function orderNet(order: Pick<Order, 'total' | 'netTotal' | 'creditTotal'
 export function effectiveLines(order: Pick<Order, 'lines' | 'credits'>) {
   return applyCredits(order.lines ?? [], order.credits);
 }
-
-/** The order as it now stands: lines repriced, total net. For prints and analytics. */
-export function effectiveOrder<O extends Order>(order: O): O {
-  if (!(order.creditTotal ?? 0) && !(order.credits ?? []).length) return order;
-  return { ...order, lines: effectiveLines(order), total: orderNet(order) };
-}
-
-/** The credit notes on an order, as the order keeps them. */
-export function orderCredits(order: Pick<Order, 'credits'>): OrderCredit[] {
-  return order.credits ?? [];
-}
-
-/* landed cost */
 
 export const CURRENCIES = ['NGN', 'USD', 'CNY', 'EUR', 'GBP'] as const;
 export type Currency = (typeof CURRENCIES)[number];

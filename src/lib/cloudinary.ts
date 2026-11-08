@@ -182,18 +182,6 @@ export function videoUrl(url: string | undefined, width: number): string {
 }
 
 /**
- * The first frame of a Cloudinary video, as a picture: what shows before the
- * video starts, and instead of it for a visitor who asked for less motion.
- * Empty for any other kind of link, which has no still to ask for.
- */
-export function videoStill(url: string | undefined, width: number): string {
-  if (!url || !url.includes('/video/upload/')) return '';
-  return url
-    .replace('/video/upload/', `/video/upload/so_0,q_auto,w_${width},c_limit/`)
-    .replace(/\.[a-z0-9]+(\?.*)?$/i, '.jpg');
-}
-
-/**
  * A photo straight off a phone camera is 3 to 8 MB, far over the upload cap.
  * This redraws it no wider or taller than `max` pixels as a JPEG in the
  * browser, so any photo can be used; a small file is returned untouched.

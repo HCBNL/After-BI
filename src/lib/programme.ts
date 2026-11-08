@@ -16,7 +16,7 @@
  * ever what the owner types in, and a section with nothing in it is not drawn.
  */
 
-import { naira } from './format';
+
 
 /* ================================================================ Custom */
 
@@ -136,19 +136,3 @@ export interface ResolvedPartners {
   testimonies: PartnerTestimony[];
 }
 
-export function resolvePartners(raw: PartnerSettings | undefined): ResolvedPartners {
-  const reward = Number(raw?.reward) > 0 ? Math.round(Number(raw?.reward)) : PARTNER_DEFAULTS.reward;
-  const payDays = Number(raw?.payDays) > 0 ? Math.round(Number(raw?.payDays)) : PARTNER_DEFAULTS.payDays;
-  return {
-    reward,
-    payDays,
-    rewardText: naira(reward),
-    /* Never edited: the starting four. Saved empty on purpose: none. */
-    packages: (raw?.packages ? raw.packages.filter((p) => p.name?.trim()) : DEFAULT_PACKAGES).slice(0, 6),
-    testimonies: (raw?.testimonies ?? []).filter((t) => t.quote?.trim() && t.name?.trim()),
-  };
-}
-
-export function fillPerk(text: string, p: { rewardText: string; payDays: number }): string {
-  return text.replace(/\{reward\}/g, p.rewardText).replace(/\{payDays\}/g, String(p.payDays));
-}

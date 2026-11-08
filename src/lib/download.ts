@@ -124,7 +124,3 @@ export async function downloadCsv(filename: string, rows: CsvCell[][]): Promise<
   return saveFile(filename, blob);
 }
 
-/** `students-2026-08-27.csv`, a name that still sorts sensibly in a year. */
-export function datedFilename(base: string, extension = 'csv'): string {
-  return `${base}-${new Date().toISOString().slice(0, 10)}.${extension}`;
-}
