@@ -6162,6 +6162,13 @@
  {
   "text": "Enterprise",
   "files": [
+   "src/lib/plans.ts",
+   "src/lib/site.ts"
+  ]
+ },
+ {
+  "text": "Enterprise Group",
+  "files": [
    "src/lib/plans.ts"
   ]
  },
@@ -6175,13 +6182,6 @@
   "text": "Goods coming back and the credit they raise.",
   "files": [
    "src/lib/plans.ts"
-  ]
- },
- {
-  "text": "Growth",
-  "files": [
-   "src/lib/plans.ts",
-   "src/lib/site.ts"
   ]
  },
  {
@@ -6229,13 +6229,6 @@
   ]
  },
  {
-  "text": "Premium",
-  "files": [
-   "src/lib/plans.ts",
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Reports",
   "files": [
    "src/lib/plans.ts",
@@ -6278,6 +6271,20 @@
   ]
  },
  {
+  "text": "SME",
+  "files": [
+   "src/lib/plans.ts",
+   "src/lib/site.ts"
+  ]
+ },
+ {
+  "text": "Sole Trader",
+  "files": [
+   "src/lib/plans.ts",
+   "src/lib/site.ts"
+  ]
+ },
+ {
   "text": "Spreadsheet exports.",
   "files": [
    "src/lib/plans.ts"
@@ -6287,13 +6294,6 @@
   "text": "Staff ID cards and digital business cards.",
   "files": [
    "src/lib/plans.ts"
-  ]
- },
- {
-  "text": "Starter",
-  "files": [
-   "src/lib/plans.ts",
-   "src/lib/site.ts"
   ]
  },
  {
@@ -7533,6 +7533,12 @@
   ]
  },
  {
+  "text": "Enterprise plan card",
+  "files": [
+   "src/lib/site.ts"
+  ]
+ },
+ {
   "text": "Every location and partner on a single dashboard",
   "files": [
    "src/lib/site.ts"
@@ -7551,13 +7557,13 @@
   ]
  },
  {
-  "text": "Everything in Growth, plus:",
+  "text": "Everything in SME, plus:",
   "files": [
    "src/lib/site.ts"
   ]
  },
  {
-  "text": "Everything in Starter, plus:",
+  "text": "Everything in Sole Trader, plus:",
   "files": [
    "src/lib/site.ts"
   ]
@@ -7605,6 +7611,12 @@
   ]
  },
  {
+  "text": "For an owner-run business and a small team.",
+  "files": [
+   "src/lib/site.ts"
+  ]
+ },
+ {
   "text": "For brands with several locations and partners.",
   "files": [
    "src/lib/site.ts"
@@ -7612,12 +7624,6 @@
  },
  {
   "text": "For groups that need full control and support.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "For growing teams getting started.",
   "files": [
    "src/lib/site.ts"
   ]
@@ -7705,13 +7711,7 @@
   ]
  },
  {
-  "text": "Growth plan card",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Growth: a manager reading a dashboard, a full store shelf, a handshake.",
+  "text": "Growing: a manager reading a dashboard, a full store shelf, a handshake.",
   "files": [
    "src/lib/site.ts"
   ]
@@ -8282,12 +8282,6 @@
   ]
  },
  {
-  "text": "Premium plan card",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Priorities",
   "files": [
    "src/lib/site.ts"
@@ -8636,6 +8630,12 @@
   ]
  },
  {
+  "text": "SME plan card",
+  "files": [
+   "src/lib/site.ts"
+  ]
+ },
+ {
   "text": "So we know who we are speaking with.",
   "files": [
    "src/lib/site.ts"
@@ -8648,6 +8648,12 @@
   ]
  },
  {
+  "text": "Sole Trader plan card",
+  "files": [
+   "src/lib/site.ts"
+  ]
+ },
+ {
   "text": "Solutions page banner",
   "files": [
    "src/lib/site.ts"
@@ -8655,12 +8661,6 @@
  },
  {
   "text": "Someone setting things up at a desk: price lists, a laptop, a planning board.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Starter plan card",
   "files": [
    "src/lib/site.ts"
   ]
@@ -8812,19 +8812,19 @@
   ]
  },
  {
-  "text": "Top of the Growth plan card. A busy distributor with several reps and a depot.",
+  "text": "Top of the Enterprise plan card. A large operation: big warehouse, fleet, many people.",
   "files": [
    "src/lib/site.ts"
   ]
  },
  {
-  "text": "Top of the Premium plan card. A large operation: big warehouse, fleet, many people.",
+  "text": "Top of the SME plan card. A busy distributor with several reps and a depot.",
   "files": [
    "src/lib/site.ts"
   ]
  },
  {
-  "text": "Top of the Starter plan card. A small team or a single shop getting started.",
+  "text": "Top of the Sole Trader plan card. An owner-run business: a single shop or a small team getting started.",
   "files": [
    "src/lib/site.ts"
   ]
@@ -9021,6 +9021,30 @@
   "text": "info@afterbi.com",
   "files": [
    "src/lib/siteMeta.ts"
+  ]
+ },
+ {
+  "text": "Cream, navy, signal orange. Corporate and warm.",
+  "files": [
+   "src/lib/sitePalette.ts"
+  ]
+ },
+ {
+  "text": "Harbour",
+  "files": [
+   "src/lib/sitePalette.ts"
+  ]
+ },
+ {
+  "text": "Meridian",
+  "files": [
+   "src/lib/sitePalette.ts"
+  ]
+ },
+ {
+  "text": "Mist, forest teal, electric blue. Calm and analytical.",
+  "files": [
+   "src/lib/sitePalette.ts"
   ]
  },
  {
