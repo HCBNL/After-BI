@@ -6,7 +6,7 @@
 import { useEffect, useMemo } from 'react';
 import { useTour } from '@/context/TourContext';
 import { AlertCircle, Building2, Plus, TrendingUp, Wallet } from 'lucide-react';
-import { QuietLoader } from '@/components/brand/Loader';
+import { Loading } from '@/components/brand/Loader';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
 import { HomeHero } from '@/components/home/HomeHero';
 import type { Kpi } from '@/components/home/HomeSlides';
@@ -167,7 +167,7 @@ export default function PlatformHome() {
   }, [settled, startIfNew]);
 
   if (!user) return null;
-  if (loading && data === undefined) return <QuietLoader label="Getting the platform ready" />;
+  if (loading && data === undefined) return <Loading rows={4} label="Getting the platform ready" />;
 
   const cards = layout === 'cards';
   const failed = Boolean(error);

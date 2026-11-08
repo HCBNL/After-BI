@@ -1386,46 +1386,62 @@
  * Pulling it back to the press-targets is what makes "Book a demo" visible
  * from across a room.
  *
- * HOW A VARIATION IS SWITCHED
+ * WHERE THE THREE ROLES LIVE
  *
- * STRUCTURE is the `navy-*` scale and ACCENT is the `brand-*` scale, so every
- * utility already written on the public pages keeps working and a whole
- * palette is one attribute. `src/lib/sitePalette.ts` holds the chosen one and
- * `PublicShell` stamps it on <html> as `data-palette`. Both variations below
- * are drawn out of the AfterBI mark itself rather than invented beside it:
- * the mark carries a blue, a green, a gold and an orange-red, so an accent
- * taken from it is a colour the brand already owns.
+ * STRUCTURE is the `navy-*` scale and ACCENT is the `brand-*` scale, both
+ * overridden here inside `.site`. That is the whole mechanism: the app's own
+ * green is untouched outside this block, and every `bg-navy-900` or
+ * `bg-brand-500` already written on a public page lands in the right role
+ * without a second vocabulary to learn.
+ *
+ * THE ACCENT IS A LIGHT COLOUR, WHICH INVERTS THE USUAL RAMP
+ *
+ * This matters more than it sounds, and it is why the steps below are not
+ * used the way a dark accent's steps would be.
+ *
+ * The accent was a signal orange, and it looked dim. It was dim, and the
+ * reason is arithmetic rather than taste: an accent carrying white text has
+ * to be dark enough for that text to clear 4.5:1, and orange is the worst
+ * hue in the wheel for that, because a *bright* orange and white are close
+ * in luminance. Meeting the contrast floor had pushed it down to 18 per cent
+ * luminance, which is to say most of the way to brown.
+ *
+ * Lemon green escapes that by giving up white text. At 78 per cent luminance
+ * it is four times brighter than the orange was, and navy on it reads at
+ * 13:1, nearly three times the contrast the orange could manage. The colour
+ * can be loud precisely because the label on it is dark.
+ *
+ * So the ramp divides by job, not by depth:
+ *
+ *   500  THE FILL      #c8f531, the bright one. Always with navy on it,
+ *                      never white, and always with a hairline, because at
+ *                      1.2:1 against cream the fill alone has no edge.
+ *   600  THE HOVER     a step deeper, so pressing it reads as pressing.
+ *   700  INK & STROKE  #5f7a06, a deep olive of the same hue, for accent
+ *                      *text* and rings on paper. The bright step is
+ *                      invisible as text on white (1.3:1); this clears AA.
+ *
+ * Anything that puts the 500 on white as text or a hairline is a bug, and
+ * anything that puts white text on the 500 is the same bug inverted.
  *
  * Light in BOTH themes on purpose, the same way the old pages were dark in
  * both, so shared components that read the surface tokens (the booking sheet,
  * the loaders) follow without rules of their own.
  */
 @layer components {
-  /* ---------------------------------------------------------- VARIATION A */
-  /*
-   * "Harbour": cream ground, navy structure, signal orange accent.
-   *
-   * Navy and cream is the classic pairing and on its own it is merely
-   * correct, the look of a law firm. The orange is what stops it being
-   * polite: it is the mark's own orange-red (#fe4c14) pulled one step toward
-   * a traffic signal, which is a colour nobody scrolls past. It is also the
-   * closest of the two to the site as it stands, so nothing a customer
-   * already recognises is thrown away.
-   */
-  .site,
-  html[data-palette='harbour'] .site {
-    /* ACCENT, the 10: signal orange out of the mark's orange-red bar. */
-    --color-brand-50: #fff3ee;
-    --color-brand-100: #ffe3d7;
-    --color-brand-200: #ffc4ac;
-    --color-brand-300: #ff9e79;
-    --color-brand-400: #ff7a4a;
-    --color-brand-500: #ff5a1f;
-    --color-brand-600: #dc3c06; /* fills: 4.5:1 under white text */
-    --color-brand-700: #b32e04; /* accent text on paper */
-    --color-brand-800: #8f2706;
-    --color-brand-900: #72220a;
-    --color-brand-950: #3f1003;
+  .site {
+    /* ACCENT, the 10: lemon green. See the ramp note above before using a step. */
+    --color-brand-50: #fbffe8;
+    --color-brand-100: #f3ffc2;
+    --color-brand-200: #e8ff8d;
+    --color-brand-300: #dcfb57;
+    --color-brand-400: #d2f93f;
+    --color-brand-500: #c8f531; /* THE FILL. Navy on it: 13:1. */
+    --color-brand-600: #b2e000; /* hover and pressed */
+    --color-brand-700: #5f7a06; /* ink and strokes on paper: 4.9:1 on white */
+    --color-brand-800: #4b5f0b;
+    --color-brand-900: #3b4a0c;
+    --color-brand-950: #212b05;
 
     /* STRUCTURE, the 30: deep corporate navy. */
     --color-navy-50: #f2f6fb;
@@ -1444,63 +1460,12 @@
     --site-ground: #fbf8f4;
     --site-ground-deep: #f4efe8;
     --site-ink: 15, 31, 54;
-    --site-accent: 255, 90, 31;
+    --site-accent: 200, 245, 49;
     --site-hero-from: #0a1526;
     --site-hero-mid: #12264a;
     --site-hero-to: #1b3a6e;
     --site-hero-light: 63, 101, 150;
-  }
 
-  /* ---------------------------------------------------------- VARIATION B */
-  /*
-   * "Meridian": mist ground, deep forest-teal structure, electric blue accent.
-   *
-   * The calm pairing, and the one that reads as a data product rather than a
-   * corporate one. The green is the mark's green (#039754) taken down to
-   * something you can set body copy in; the accent is the mark's blue
-   * (#0c7afd) at full strength, which beside that green is the "one weird
-   * colour" the rule asks for. Both are lifted straight off the logo, so the
-   * page and the mark finally agree with each other.
-   */
-  html[data-palette='meridian'] .site {
-    /* ACCENT, the 10: the mark's own electric blue. */
-    --color-brand-50: #eff6ff;
-    --color-brand-100: #dbeafe;
-    --color-brand-200: #bbd8fe;
-    --color-brand-300: #8dbffe;
-    --color-brand-400: #549ffd;
-    --color-brand-500: #0c7afd;
-    --color-brand-600: #0063db; /* fills: 5.5:1 under white text */
-    --color-brand-700: #0a4fae; /* accent text on paper */
-    --color-brand-800: #0d3f85;
-    --color-brand-900: #11376b;
-    --color-brand-950: #0b2246;
-
-    /* STRUCTURE, the 30: the mark's green, taken down to a reading colour. */
-    --color-navy-50: #f1f8f5;
-    --color-navy-100: #dceee5;
-    --color-navy-200: #b6dcc9;
-    --color-navy-300: #83c2a6;
-    --color-navy-400: #4ca37f;
-    --color-navy-500: #238561;
-    --color-navy-600: #136a4c;
-    --color-navy-700: #0f543d;
-    --color-navy-800: #0d4332;
-    --color-navy-900: #0b3429;
-    --color-navy-950: #06201a;
-
-    /* GROUND, the 60: cool mist under white cards. */
-    --site-ground: #f6f9f8;
-    --site-ground-deep: #eaf2ee;
-    --site-ink: 11, 52, 41;
-    --site-accent: 12, 122, 253;
-    --site-hero-from: #06201a;
-    --site-hero-mid: #0b3429;
-    --site-hero-to: #11513c;
-    --site-hero-light: 76, 163, 127;
-  }
-
-  .site {
     background-color: #ffffff;
     color: rgb(var(--site-ink));
     color-scheme: light;
@@ -1663,6 +1628,70 @@ html[data-lang='zh'] body {
   .hr-aurora, .hr-aurora-slow, .hr-digit, .hr-sheen, .hr-ring, .hr-confetti,
   .hr-breathe, .hr-breathe-red, .hr-rise, .hr-blink { animation: none !important; }
 }
+
+/* ---------------------------------------------- the salary card's palette */
+/*
+ * THE WHOLE COLOUR OF THE SALARY CARD, IN ONE PLACE.
+ *
+ * The card used to name its own colours: a green glow, a gold glow, a green
+ * full stop, a bar running green to orange to gold, and an SVG ring with
+ * three hex stops written into the markup. None of it knew what theme it was
+ * in, so picking Blue in Profile left a green-and-orange panel sitting on a
+ * blue app.
+ *
+ * Everything below derives from the three variables the theme already sets
+ * (`--swatch`, `--ground-a`, `--ground-c`, declared near "colour" above and
+ * swapped by `[data-accent]`). So this block is the only place the card's
+ * colour exists, a new theme needs no work here at all, and the component
+ * carries no colour of its own: it names roles, not shades.
+ *
+ * Three roles, which is all a card this size needs:
+ *
+ *   KEY    `--hr-key`   the theme colour, lifted toward white so it still
+ *                       reads on a dark panel when somebody picks a near
+ *                       black custom colour from the palette.
+ *   LIFT   `--hr-lift`  the brightest ground step: the far end of the ring
+ *                       and the bar, so both read as a sweep rather than a
+ *                       flat fill.
+ *   GROUND `--hr-deep`  the deepest step, taken most of the way to black.
+ *                       Dark enough to stay premium, tinted enough that a
+ *                       glance tells you which theme you are in.
+ */
+.hr-cycle {
+  --hr-key: color-mix(in srgb, var(--swatch) 82%, #ffffff);
+  --hr-lift: var(--ground-a);
+  --hr-deep: color-mix(in srgb, var(--ground-c) 58%, #05070b);
+
+  background-color: var(--hr-deep);
+  /* The dot grid lives here rather than in a div of its own: it never moves,
+     so it has no reason to be an element. */
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.07) 1px, transparent 0);
+  background-size: 22px 22px;
+  color: #ffffff;
+}
+
+/* The two drifting lights. Still elements, because they animate. */
+.hr-cycle-glow-a { background: color-mix(in srgb, var(--hr-lift) 42%, transparent); }
+.hr-cycle-glow-b { background: color-mix(in srgb, var(--swatch) 24%, transparent); }
+
+/* Anything that should be the theme colour: the eyebrow, the full stop, the
+   party popper. One class, so there is one answer. */
+.hr-cycle-key { color: var(--hr-key); }
+
+/* The period bar and the ring share one sweep, deep to bright. */
+.hr-cycle-bar { background-image: linear-gradient(90deg, var(--hr-lift), var(--hr-key)); }
+
+/* The bead at the tip of the ring, and its halo. */
+.hr-cycle-bead {
+  background: var(--hr-key);
+  box-shadow: 0 0 18px 6px color-mix(in srgb, var(--hr-key) 55%, transparent);
+}
+
+/* Confetti, on salary day. Four shades off the same theme, plus white. */
+.hr-cycle-confetti-1 { background: var(--hr-key); }
+.hr-cycle-confetti-2 { background: var(--hr-lift); }
+.hr-cycle-confetti-3 { background: #ffffff; }
+.hr-cycle-confetti-4 { background: color-mix(in srgb, var(--hr-key) 45%, #ffffff); }
 
 /*
  * No scrollbars anywhere: laptop, desktop, tablet or phone, in the site and

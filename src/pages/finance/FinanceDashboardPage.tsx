@@ -17,7 +17,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, BadgePercent, Clock3, FileText, PieChart, Receipt, RotateCcw, TrendingUp, Users, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { QuietLoader } from '@/components/brand/Loader';
+import { Loading } from '@/components/brand/Loader';
 import { Hint } from '@/components/ui';
 import {
   AccentArrow,
@@ -80,7 +80,7 @@ export default function FinanceDashboardPage() {
       <PageHeader title="Finance" description="Invoiced, collected and owed, with who owes it and how late." />
 
       {loading && !sum ? (
-        <QuietLoader label="Adding it up" />
+        <Loading rows={3} label="Adding it up" />
       ) : !sum ? null : (
         <div className="space-y-4">
           {/* row 1: the headline and the one bright card */}

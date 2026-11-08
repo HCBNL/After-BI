@@ -8,8 +8,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
-import { IconBadge, ModuleIcon, PictureFallback, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
-import { ModuleMock } from '@/components/marketing/mocks';
+import { IconBadge, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
 import { MODULES, MONTH_STEPS, PRODUCT_GROUPS, type SiteImageKey } from '@/lib/site';
@@ -69,7 +68,6 @@ function Body() {
             eager
             width={1400}
             className="mx-auto mt-12 aspect-[21/9] max-w-6xl rounded-[2rem] shadow-[0_30px_70px_-34px_rgba(15,31,54,0.45)]"
-            fallback={<PictureFallback tone="dark" />}
           />
         </div>
       </section>
@@ -93,7 +91,6 @@ function Body() {
                         slot={`module-${slug}` as SiteImageKey}
                         alt={`${m.name} in AfterBI`}
                         className="aspect-[16/10]"
-                        fallback={<ModuleMock slug={slug} />}
                       />
                       <IconBadge>
                         <ModuleIcon slug={slug} size={17} />
@@ -125,7 +122,6 @@ function Body() {
                   alt={step.title}
                   width={480}
                   className="aspect-[16/10]"
-                  fallback={<PictureFallback tone="dark" />}
                 />
                 <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900/90 font-display text-[1.05rem] font-extrabold text-white ring-1 ring-white/25 backdrop-blur-sm">
                   {index + 1}

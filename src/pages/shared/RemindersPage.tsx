@@ -13,7 +13,7 @@ import { Insights, Pipeline, Sentences } from '@/components/home/BriefCard';
 import { useToast } from '@/components/ui';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button, LinkButton, SegmentedControl, Switch } from '@/components/ui';
-import { QuietLoader } from '@/components/brand/Loader';
+import { Loading } from '@/components/brand/Loader';
 import { useReminders } from '@/context/RemindersContext';
 import { cn } from '@/lib/cn';
 import type { Severity } from '@/lib/reminders';
@@ -116,7 +116,7 @@ export default function RemindersPage() {
       )}
 
       {loading && !checkedAt ? (
-        <QuietLoader inline label="Reading your records" />
+        <Loading rows={3} label="Reading your records" />
       ) : shown.length === 0 ? (
         <div className="rounded-2xl border border-hairline surface-card p-10 text-center shadow-card">
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">

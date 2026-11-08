@@ -13,8 +13,6 @@ import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container, eyebrow } from '@/components/marketing/tokens';
 import { CheckList, IconBadge, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
-import { SceneMock } from '@/components/marketing/mocks';
-import { ModuleMock } from '@/components/marketing/mocks';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
 import { MODULES, SOLUTIONS, moduleBySlug, type SiteImageKey } from '@/lib/site';
@@ -79,7 +77,6 @@ function Body({ slug }: { slug: string }) {
                 alt={`${item.name} in AfterBI`}
                 eager
                 className="aspect-[16/10] rounded-[1.6rem] shadow-[0_30px_70px_-30px_rgba(15,31,54,0.4)]"
-                fallback={<ModuleMock slug={slug} />}
               />
             </Reveal>
           </div>
@@ -117,7 +114,6 @@ function Body({ slug }: { slug: string }) {
                   alt={s.name}
                   width={640}
                   className="aspect-[3/1]"
-                  fallback={<SceneMock slug={s.modules[0]} />}
                 />
                 <div className="p-7">
                 <p className={eyebrow}>{s.name}</p>
@@ -149,7 +145,6 @@ function Body({ slug }: { slug: string }) {
                   width={480}
                   className="aspect-[16/10]"
                   imgClassName="transition-transform duration-500 group-hover:scale-[1.04]"
-                  fallback={<ModuleMock slug={m.slug} />}
                 />
                 <IconBadge>
                   <ModuleIcon slug={m.slug} size={17} />

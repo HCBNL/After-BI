@@ -8,8 +8,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container, eyebrow } from '@/components/marketing/tokens';
-import { CheckList, IndustryCard, ModuleIcon, PictureFallback, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
-import { SceneMock } from '@/components/marketing/mocks';
+import { CheckList, IndustryCard, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
 import { INDUSTRIES, MODULES, SOLUTIONS } from '@/lib/site';
@@ -47,7 +46,6 @@ function Body() {
             eager
             width={1400}
             className="mx-auto mt-10 aspect-[21/9] max-w-6xl rounded-[2rem] shadow-[0_30px_70px_-34px_rgba(15,31,54,0.45)]"
-            fallback={<PictureFallback tone="dark" />}
           />
           <div className="mx-auto mt-6 grid max-w-6xl grid-cols-2 gap-3 lg:grid-cols-4">
             {SOLUTIONS.map((s) => (
@@ -62,7 +60,6 @@ function Body() {
                   width={420}
                   className="aspect-[3/2]"
                   imgClassName="transition-transform duration-500 group-hover:scale-[1.05]"
-                  fallback={<SceneMock slug={s.modules[0]} />}
                 />
                 <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/85 to-transparent px-4 pb-3 pt-10 text-left text-[14.5px] font-bold text-white">
                   {s.name}
@@ -81,7 +78,6 @@ function Body() {
                 slot={s.image}
                 alt={s.name}
                 className={cn('aspect-[3/2] rounded-[2rem]', index % 2 === 1 && 'lg:order-2')}
-                fallback={<SceneMock slug={s.modules[0]} />}
               />
               <div>
                 <p className={eyebrow}>{s.name}</p>

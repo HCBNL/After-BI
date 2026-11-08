@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom';
 import { CalendarDays, Check, Flag, ListPlus, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Button, EmptyState, Input, SegmentedControl, useToast } from '@/components/ui';
-import { QuietLoader } from '@/components/brand/Loader';
+import { Loading } from '@/components/brand/Loader';
 import { useReminders } from '@/context/RemindersContext';
 import { dueLabel, taskTiming, type Task, type TaskPriority } from '@/lib/tasks';
 import { todayISO } from '@/lib/format';
@@ -176,7 +176,7 @@ export default function TasksPage() {
 
       {/* ------------------------------------------------------------ list */}
       {tasksLoading && tasks.length === 0 ? (
-        <QuietLoader inline label="Reading your tasks" />
+        <Loading rows={3} label="Reading your tasks" />
       ) : shown.length === 0 ? (
         <EmptyState
           icon={<Check size={22} />}

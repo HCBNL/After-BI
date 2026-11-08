@@ -12,7 +12,7 @@ import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { cn } from '@/lib/cn';
 import { btn, container } from '@/components/marketing/tokens';
-import { PictureFallback, SiteImage } from '@/components/marketing/site-ui';
+import { SiteImage } from '@/components/marketing/site-ui';
 import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/site';
 
 const EXPECT = [
@@ -46,7 +46,7 @@ function Body() {
         <Reveal>
           <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-navy-500">Book a demo</p>
           <h1 className="mt-3 font-display text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.6rem]">
-            See AfterBI in action<span className="text-brand-500">.</span>
+            See AfterBI in action<span className="text-brand-700">.</span>
           </h1>
           <p className="mt-5 max-w-xl text-[18px] leading-[1.65] text-navy-700/85">
             A guided demo, configured around your products, partners and price lists.
@@ -77,7 +77,6 @@ function Body() {
                     alt={item.title}
                     width={420}
                     className="aspect-[16/10]"
-                    fallback={<PictureFallback />}
                   />
                   <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900/90 font-display text-[0.95rem] font-extrabold text-white ring-1 ring-white/25 backdrop-blur-sm">
                     0{index + 1}

@@ -9,7 +9,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
-import { PictureFallback, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
 import { PLANS, PRICING_NOTES, yearly, type Plan } from '@/lib/site';
@@ -116,12 +116,12 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
            other two cards are hairline structure, which is what makes the
            recommendation legible at a glance. */
         plan.featured
-          ? 'ring-2 ring-brand-500 shadow-[0_30px_60px_-30px_rgba(var(--site-accent),0.4)]'
+          ? 'ring-2 ring-brand-700 shadow-[0_30px_60px_-30px_rgba(var(--site-accent),0.55)]'
           : 'ring-1 ring-navy-900/10',
       )}
     >
       {plan.featured && (
-        <span className="absolute -top-3.5 left-8 z-10 rounded-full bg-brand-500 px-3.5 py-1 text-[12px] font-bold uppercase tracking-[0.1em] text-white">
+        <span className="absolute -top-3.5 left-8 z-10 rounded-full bg-brand-500 px-3.5 py-1 text-[12px] font-bold uppercase tracking-[0.1em] text-navy-900 ring-1 ring-navy-900/20">
           Most popular
         </span>
       )}
@@ -132,7 +132,6 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
         alt={`${plan.name} plan`}
         width={480}
         className="-mx-5 mb-6 aspect-[16/9] rounded-[1.1rem]"
-        fallback={<PictureFallback />}
       />
       <h2 className="font-display text-[1.5rem] font-extrabold tracking-[-0.03em] text-navy-900">{plan.name}</h2>
       <p className="mt-1.5 min-h-[3rem] text-[15px] text-navy-600">{plan.forWho}</p>

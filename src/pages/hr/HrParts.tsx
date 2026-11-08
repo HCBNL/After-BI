@@ -79,7 +79,8 @@ function Unit({ value, label }: { value: string; label: string }) {
   );
 }
 
-const CONFETTI_COLOURS = ['#fbbf24', '#ee6a00', '#ffffff', '#4ec54e', '#7cb1f0', '#f472b6'];
+/* Four shades off the current theme; the colours live in `.hr-cycle-confetti-*`. */
+const CONFETTI_TONES = ['hr-cycle-confetti-1', 'hr-cycle-confetti-2', 'hr-cycle-confetti-3', 'hr-cycle-confetti-4'];
 
 function Confetti() {
   const pieces = useMemo(
@@ -89,7 +90,7 @@ function Confetti() {
         delay: (i * 0.23) % 4,
         duration: 3.2 + ((i * 7) % 10) / 4,
         drift: ((i % 7) - 3) * 18,
-        colour: CONFETTI_COLOURS[i % CONFETTI_COLOURS.length],
+        tone: CONFETTI_TONES[i % CONFETTI_TONES.length],
         w: 6 + (i % 3) * 2,
       })),
     [],
@@ -99,12 +100,11 @@ function Confetti() {
       {pieces.map((p, i) => (
         <span
           key={i}
-          className="hr-confetti absolute top-0 rounded-[2px]"
+          className={cn('hr-confetti absolute top-0 rounded-[2px]', p.tone)}
           style={{
             left: `${p.left}%`,
             width: p.w,
             height: p.w * 1.6,
-            background: p.colour,
             animationDelay: `${p.delay}s`,
             animationDuration: `${p.duration}s`,
             ['--hr-drift' as string]: `${p.drift}px`,
@@ -155,36 +155,29 @@ export function PayCountdown({
   const angle = pct * 2 * Math.PI - Math.PI / 2;
 
   return (
-    <section className="relative isolate overflow-hidden rounded-[28px] bg-night p-5 text-white shadow-pop sm:p-8">
-      {/* the light behind it */}
+    <section className="hr-cycle relative isolate overflow-hidden rounded-[28px] p-5 shadow-pop sm:p-8">
+      {/* The two drifting lights. The ground and the dot grid are `.hr-cycle`. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="hr-aurora absolute -left-24 -top-28 h-80 w-80 rounded-full bg-brand-600/35 blur-[90px]" />
-        <div className="hr-aurora-slow absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-gold-400/20 blur-[100px]" />
-        <div
-          className="absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)',
-            backgroundSize: '22px 22px',
-          }}
-        />
+        <div className="hr-aurora hr-cycle-glow-a absolute -left-24 -top-28 h-80 w-80 rounded-full blur-[90px]" />
+        <div className="hr-aurora-slow hr-cycle-glow-b absolute -bottom-32 right-0 h-96 w-96 rounded-full blur-[100px]" />
       </div>
       {isPayday && <Confetti />}
 
       <div className="grid items-center gap-6 md:grid-cols-[1fr_auto] md:gap-10">
         <div className="hr-rise min-w-0">
-          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 text-micro font-semibold uppercase tracking-[0.14em] text-gold-300">
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 text-micro font-semibold uppercase tracking-[0.14em] hr-cycle-key">
             {isPayday ? <PartyPopper size={13} aria-hidden /> : <Sparkles size={13} aria-hidden />}
             {isPayday ? 'Salary day' : 'Next salary'}
           </p>
           <h2 className="mt-3 font-display text-display font-bold leading-[1.05] tracking-[-0.04em] sm:text-jumbo">
             {isPayday ? (
               <>
-                It&rsquo;s salary day<span className="text-gold-400">!</span>
+                It&rsquo;s salary day<span className="hr-cycle-key">!</span>
               </>
             ) : (
               <>
                 {prettyIso(period.payDay, { weekday: 'long', day: 'numeric', month: 'long' })}
-                <span className="text-brand-500">.</span>
+                <span className="hr-cycle-key">.</span>
               </>
             )}
           </h2>
@@ -205,7 +198,7 @@ export function PayCountdown({
           <div className="mt-5">
             <div className="relative h-2.5 overflow-hidden rounded-full bg-white/10">
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-brand-600 via-[#f0643b] to-gold-400 transition-[width] duration-1000"
+                className="hr-cycle-bar absolute inset-y-0 left-0 rounded-full transition-[width] duration-1000"
                 style={{ width: `${pct * 100}%` }}
               >
                 <span className="hr-sheen absolute inset-0 rounded-full" />
@@ -226,10 +219,10 @@ export function PayCountdown({
         <div className="relative mx-auto hidden h-[212px] w-[212px] shrink-0 sm:block">
           <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90" aria-hidden>
             <defs>
+              {/* The same sweep as the bar, read straight off the theme. */}
               <linearGradient id="hr-ring-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#ee6a00" />
-                <stop offset="55%" stopColor="#f0643b" />
-                <stop offset="100%" stopColor="#fbbf24" />
+                <stop offset="0%" stopColor="var(--hr-lift)" />
+                <stop offset="100%" stopColor="var(--hr-key)" />
               </linearGradient>
             </defs>
             <circle cx="100" cy="100" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="12" />
@@ -250,12 +243,12 @@ export function PayCountdown({
           {/* the bead at the tip of the ring */}
           <span
             aria-hidden
-            className="absolute h-4 w-4 rounded-full bg-gold-300 shadow-[0_0_18px_6px_rgba(251,191,36,0.55)] transition-all duration-1000"
+            className="hr-cycle-bead absolute h-4 w-4 rounded-full transition-all duration-1000"
             style={{ left: `calc(50% + ${(R / 200) * 100 * Math.cos(angle)}% - 8px)`, top: `calc(50% + ${(R / 200) * 100 * Math.sin(angle)}% - 8px)` }}
           />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             {isPayday ? (
-              <PartyPopper size={48} className="text-gold-300" aria-hidden />
+              <PartyPopper size={48} className="hr-cycle-key" aria-hidden />
             ) : (
               <>
                 <span className="font-display text-jumbo font-bold leading-none tracking-[-0.05em]">

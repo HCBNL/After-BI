@@ -16,7 +16,7 @@
 import { Link } from 'react-router-dom';
 import { Seo } from '@/components/Seo';
 import { PublicShell } from '@/components/marketing/kit';
-import { Accordion, PictureFallback, SiteImage } from '@/components/marketing/site-ui';
+import { Accordion, SiteImage } from '@/components/marketing/site-ui';
 import { btn } from '@/components/marketing/tokens';
 import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/site';
 
@@ -80,7 +80,6 @@ export default function SignInHelpPage() {
                 alt="AfterBI support"
                 width={480}
                 className="min-h-[14rem]"
-                fallback={<PictureFallback tone="dark" />}
               />
             </div>
           </div>
