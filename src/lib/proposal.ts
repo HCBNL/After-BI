@@ -157,11 +157,16 @@ export function blankProposal(): ProposalInput {
   };
 }
 
-/** The plan that fits the size, as a starting point the owner can change. */
+/**
+ * The plan that fits the size, as a starting point the owner can change.
+ *
+ * Returns the plan's *name*, because that is what a proposal prints and what
+ * `planByName` resolves; older names still resolve through PLAN_ALIASES.
+ */
 export function suggestPlan(depots: number, staff: number): string {
-  if (depots <= 1 && staff <= 10) return 'Starter';
-  if (staff <= 25) return 'Growth';
-  return 'Premium';
+  if (depots <= 1 && staff <= 10) return 'Sole Trader';
+  if (staff <= 25) return 'SME';
+  return 'Enterprise';
 }
 
 /* ---------------------------------------------------------------- figures */

@@ -37,11 +37,21 @@ export interface PlanInfo {
   defaultLocked: FeatureKey[];
 }
 
+/*
+ * The ids are permanent and the labels are not.
+ *
+ * A tenant record stores the id, so `starter` stays `starter` in the database
+ * for the life of the product however the pricing page words it. The labels
+ * below are what a person reads, and they track the public plan names in
+ * `lib/site.ts`: Sole Trader, SME, Enterprise. `enterprise` is the fourth,
+ * off-menu tier for a group of companies under one roof, which is why it is
+ * not simply the id for the plan now *called* Enterprise.
+ */
 export const PLANS: Record<PlanId, PlanInfo> = {
-  starter: { id: 'starter', label: 'Starter', fill: '#3f4854', ring: 'rgba(255,255,255,0.22)', defaultLocked: ['credit', 'analytics', 'scorecards'] },
-  growth: { id: 'growth', label: 'Growth', fill: '#ee6a00', ring: 'rgba(255,255,255,0.28)', defaultLocked: [] },
-  premium: { id: 'premium', label: 'Premium', fill: '#1d7ef0', ring: 'rgba(255,255,255,0.32)', defaultLocked: [] },
-  enterprise: { id: 'enterprise', label: 'Enterprise', fill: '#b8860b', ring: 'rgba(255,255,255,0.35)', defaultLocked: [] },
+  starter: { id: 'starter', label: 'Sole Trader', fill: '#3f4854', ring: 'rgba(255,255,255,0.22)', defaultLocked: ['credit', 'analytics', 'scorecards'] },
+  growth: { id: 'growth', label: 'SME', fill: '#dc3c06', ring: 'rgba(255,255,255,0.28)', defaultLocked: [] },
+  premium: { id: 'premium', label: 'Enterprise', fill: '#1d7ef0', ring: 'rgba(255,255,255,0.32)', defaultLocked: [] },
+  enterprise: { id: 'enterprise', label: 'Enterprise Group', fill: '#b8860b', ring: 'rgba(255,255,255,0.35)', defaultLocked: [] },
 };
 
 export function planOf(value: unknown): PlanId | undefined {

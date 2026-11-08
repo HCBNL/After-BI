@@ -276,6 +276,16 @@ export const PROOF: { value: string; icon: ProofIcon }[] = [
 
 export interface Plan {
   name: string;
+  /**
+   * The plan's permanent id, and the one thing here that must never change.
+   *
+   * It keys the picture slot (`plan-starter`) and matches `PlanId` in
+   * lib/plans.ts, which is what a tenant record stores. The *name* above is
+   * marketing copy and has been rewritten more than once; deriving the slot
+   * from the name, as this file used to, meant every rename orphaned an
+   * uploaded picture and every saved proposal stopped finding its plan.
+   */
+  id: 'starter' | 'growth' | 'premium';
   /** Monthly, in naira, per organisation: `perUser` × `users`. */
   price: number | null;
   /** Price per user per month, in naira. */
@@ -292,17 +302,19 @@ export interface Plan {
 /** Priced per user, sold in packs; partner users are always free. */
 export const PLANS: Plan[] = [
   {
-    name: 'Starter',
+    id: 'starter',
+    name: 'Sole Trader',
     perUser: 7_500,
     users: 10,
     price: 75_000,
     cadence: 'per month',
-    forWho: 'For growing teams getting started.',
+    forWho: 'For an owner-run business and a small team.',
     includes: ['10 users', 'Unlimited partner users', 'One location', 'Orders, inventory and billing', 'Pipeline management'],
     cta: 'Get started',
   },
   {
-    name: 'Growth',
+    id: 'growth',
+    name: 'SME',
     perUser: 6_900,
     users: 25,
     price: 172_500,
@@ -310,7 +322,7 @@ export const PLANS: Plan[] = [
     forWho: 'For brands with several locations and partners.',
     includes: [
       '25 users',
-      'Everything in Starter, plus:',
+      'Everything in Sole Trader, plus:',
       'Unlimited locations',
       'Credit management',
       'Channel intelligence and analytics',
@@ -320,7 +332,8 @@ export const PLANS: Plan[] = [
     cta: 'Get started',
   },
   {
-    name: 'Premium',
+    id: 'premium',
+    name: 'Enterprise',
     perUser: 5_000,
     users: 50,
     price: 250_000,
@@ -328,7 +341,7 @@ export const PLANS: Plan[] = [
     forWho: 'For groups that need full control and support.',
     includes: [
       '50 users',
-      'Everything in Growth, plus:',
+      'Everything in SME, plus:',
       'Multiple entities under one group',
       'Custom roles and approval workflows',
       'Priority onboarding and support',
@@ -342,13 +355,31 @@ export function yearly(monthly: number): number {
   return monthly * 10;
 }
 
-/** Older plan names, so saved proposals still find their plan. */
-const PLAN_ALIASES: Record<string, string> = { Depot: 'Starter', Distribution: 'Growth', Group: 'Premium', Enterprise: 'Premium' };
+/**
+ * Every name a plan has ever been sold under, pointing at its id.
+ *
+ * A proposal saved in 2024 says "Depot", one from last month says "Starter"
+ * and the card today says "Sole Trader". All three are the same product, and
+ * reopening any of those proposals has to land on it. Resolving to the id
+ * rather than to the current name is what stops the next rename breaking the
+ * ones before it.
+ */
+const PLAN_ALIASES: Record<string, Plan['id']> = {
+  Depot: 'starter',
+  Starter: 'starter',
+  'Sole Trader': 'starter',
+  Distribution: 'growth',
+  Growth: 'growth',
+  SME: 'growth',
+  Group: 'premium',
+  Premium: 'premium',
+  Enterprise: 'premium',
+};
 
 export function planByName(name: string | undefined): Plan | undefined {
   if (!name) return undefined;
-  const wanted = PLAN_ALIASES[name] ?? name;
-  return PLANS.find((plan) => plan.name === wanted);
+  const id = PLAN_ALIASES[name];
+  return PLANS.find((plan) => (id ? plan.id === id : plan.name === name));
 }
 
 /** "180000" as "₦180,000". */
@@ -814,7 +845,7 @@ const STEP_PHOTO = [
   'Someone setting things up at a desk: price lists, a laptop, a planning board.',
   'A team being onboarded: people with phones and laptops, a short meeting.',
   'Goods moving on their own: a loaded van leaving, a forklift, a busy depot.',
-  'Growth: a manager reading a dashboard, a full store shelf, a handshake.',
+  'Growing: a manager reading a dashboard, a full store shelf, a handshake.',
 ];
 
 const DEMO_PHOTO = [
@@ -835,9 +866,11 @@ function buildSlots(): Record<string, SiteSlot> {
     'home-faq': { group: 'Front page', label: 'Questions section', size: '1000 × 1250', ratio: '4/5', what: 'Beside the frequently asked questions. A friendly support person, or someone working at a laptop.' },
     'features-hero': { group: 'Platform page', label: 'Platform page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Platform page (/features). The whole product: laptop and phone with AfterBI, or a team at work.' },
     'solutions-hero': { group: 'Solutions', label: 'Solutions page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Solutions page. The value chain: factory, warehouse, truck and store in one picture.' },
-    'plan-starter': { group: 'Pricing', label: 'Starter plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Starter plan card. A small team or a single shop getting started.' },
-    'plan-growth': { group: 'Pricing', label: 'Growth plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Growth plan card. A busy distributor with several reps and a depot.' },
-    'plan-premium': { group: 'Pricing', label: 'Premium plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Premium plan card. A large operation: big warehouse, fleet, many people.' },
+    /* Slot keys are the plan *ids*, not their names: see `Plan.id`. A plan
+       renamed on the card keeps the picture already uploaded for it. */
+    'plan-starter': { group: 'Pricing', label: 'Sole Trader plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Sole Trader plan card. An owner-run business: a single shop or a small team getting started.' },
+    'plan-growth': { group: 'Pricing', label: 'SME plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the SME plan card. A busy distributor with several reps and a depot.' },
+    'plan-premium': { group: 'Pricing', label: 'Enterprise plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Enterprise plan card. A large operation: big warehouse, fleet, many people.' },
     'help-contact': { group: 'Book a demo and support', label: 'Sign in help: contact box', size: '1000 × 750', ratio: '4/3', what: 'Beside "None of those?" on the sign in help page. A friendly support person on a phone or headset.' },
     'menu-platform': { group: 'Menus and closing band', label: 'Platform menu card', size: '800 × 450', ratio: '16/9', what: 'The dark card in the Platform drop down menu ("Explore the platform"). AfterBI on a laptop.' },
     'menu-support': { group: 'Menus and closing band', label: 'Support menu card', size: '800 × 450', ratio: '16/9', what: 'The dark card in the Support drop down menu ("Already a customer?"). Someone signing in on a phone or laptop.' },
