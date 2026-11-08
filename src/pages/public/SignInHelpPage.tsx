@@ -47,7 +47,7 @@ export default function SignInHelpPage() {
       <PublicShell closing={false}>
         <section className="site-wash pb-20 pt-14 sm:pt-20">
           <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
-            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-brand-700">Support</p>
+            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-navy-500">Support</p>
             <h1 className="mt-3 font-display text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.4rem]">
               Can’t get in?
             </h1>
@@ -64,7 +64,7 @@ export default function SignInHelpPage() {
                 Tell us the address you are trying and what the screen says. Nobody from AfterBI will ever ask for your password.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Link to="/login" className={btn.green}>
+                <Link to="/login" className={btn.accent}>
                   Back to sign in
                 </Link>
                 <a href={`mailto:${SUPPORT_EMAIL}?subject=Trouble%20signing%20in`} className={btn.lineWhite}>

@@ -1362,76 +1362,211 @@
 
 /* ==================================================== the public site, light */
 /*
- * Every public page is drawn inside `.site`: white paper, navy type, green for
- * the one thing to press. Light in BOTH themes on purpose, the same way the
- * old pages were dark in both, so shared components that read the surface
- * tokens (the booking sheet, the loaders) follow without rules of their own.
+ * THE 60 / 30 / 10 RULE, WHICH IS THE WHOLE PUBLIC PALETTE
+ *
+ * Two colours do ninety per cent of the work and one loud colour does the
+ * last ten, and the loud one is only ever on something a visitor is meant to
+ * press. Said as a budget:
+ *
+ *   60  GROUND      paper. The page, the cards, the space between things.
+ *                   It is a colour, not an absence of one: a warm cream or a
+ *                   cool mist reads as a chosen surface where plain #fff
+ *                   reads as a default.
+ *   30  STRUCTURE   everything that is *information*: headlines, body, section
+ *                   labels, tick marks, icon tiles, the dark bands, the
+ *                   footer. One deep colour, used at many weights.
+ *   10  ACCENT      the primary button, the one badge that says "start here",
+ *                   the ring round the plan being recommended, the focus ring,
+ *                   the full stop in the wordmark. Nothing else, ever.
+ *
+ * Why the last line is the one that matters: before this, the accent was on
+ * every tick, every eyebrow, every text link and every hover on the public
+ * pages. A colour spent on a hundred things is a colour that points at
+ * nothing, so a visitor's eye had no idea where the page wanted them to go.
+ * Pulling it back to the press-targets is what makes "Book a demo" visible
+ * from across a room.
+ *
+ * HOW A VARIATION IS SWITCHED
+ *
+ * STRUCTURE is the `navy-*` scale and ACCENT is the `brand-*` scale, so every
+ * utility already written on the public pages keeps working and a whole
+ * palette is one attribute. `src/lib/sitePalette.ts` holds the chosen one and
+ * `PublicShell` stamps it on <html> as `data-palette`. Both variations below
+ * are drawn out of the AfterBI mark itself rather than invented beside it:
+ * the mark carries a blue, a green, a gold and an orange-red, so an accent
+ * taken from it is a colour the brand already owns.
+ *
+ * Light in BOTH themes on purpose, the same way the old pages were dark in
+ * both, so shared components that read the surface tokens (the booking sheet,
+ * the loaders) follow without rules of their own.
  */
 @layer components {
-  .site {
-    /* The public site's brand colour is orange. Overriding the brand scale
-       here turns every brand utility inside the site orange, while the app
-       itself keeps its own colour. */
-    --color-brand-50: #fff6ed;
-    --color-brand-100: #ffead5;
-    --color-brand-200: #ffd0a8;
-    --color-brand-300: #ffb072;
-    --color-brand-400: #ff913d;
-    --color-brand-500: #ff7a00;
-    --color-brand-600: #ee6a00;
-    --color-brand-700: #c95600;
-    --color-brand-800: #9f4407;
-    --color-brand-900: #7f390b;
-    --color-brand-950: #451a03;
+  /* ---------------------------------------------------------- VARIATION A */
+  /*
+   * "Harbour": cream ground, navy structure, signal orange accent.
+   *
+   * Navy and cream is the classic pairing and on its own it is merely
+   * correct, the look of a law firm. The orange is what stops it being
+   * polite: it is the mark's own orange-red (#fe4c14) pulled one step toward
+   * a traffic signal, which is a colour nobody scrolls past. It is also the
+   * closest of the two to the site as it stands, so nothing a customer
+   * already recognises is thrown away.
+   */
+  .site,
+  html[data-palette='harbour'] .site {
+    /* ACCENT, the 10: signal orange out of the mark's orange-red bar. */
+    --color-brand-50: #fff3ee;
+    --color-brand-100: #ffe3d7;
+    --color-brand-200: #ffc4ac;
+    --color-brand-300: #ff9e79;
+    --color-brand-400: #ff7a4a;
+    --color-brand-500: #ff5a1f;
+    --color-brand-600: #dc3c06; /* fills: 4.5:1 under white text */
+    --color-brand-700: #b32e04; /* accent text on paper */
+    --color-brand-800: #8f2706;
+    --color-brand-900: #72220a;
+    --color-brand-950: #3f1003;
 
+    /* STRUCTURE, the 30: deep corporate navy. */
+    --color-navy-50: #f2f6fb;
+    --color-navy-100: #e3ebf5;
+    --color-navy-200: #c6d5e8;
+    --color-navy-300: #9bb4d4;
+    --color-navy-400: #6588b5;
+    --color-navy-500: #3f6596;
+    --color-navy-600: #2c4d7a;
+    --color-navy-700: #213d63;
+    --color-navy-800: #172d4b;
+    --color-navy-900: #0f1f36;
+    --color-navy-950: #0a1526;
+
+    /* GROUND, the 60: warm cream under white cards. */
+    --site-ground: #fbf8f4;
+    --site-ground-deep: #f4efe8;
+    --site-ink: 15, 31, 54;
+    --site-accent: 255, 90, 31;
+    --site-hero-from: #0a1526;
+    --site-hero-mid: #12264a;
+    --site-hero-to: #1b3a6e;
+    --site-hero-light: 63, 101, 150;
+  }
+
+  /* ---------------------------------------------------------- VARIATION B */
+  /*
+   * "Meridian": mist ground, deep forest-teal structure, electric blue accent.
+   *
+   * The calm pairing, and the one that reads as a data product rather than a
+   * corporate one. The green is the mark's green (#039754) taken down to
+   * something you can set body copy in; the accent is the mark's blue
+   * (#0c7afd) at full strength, which beside that green is the "one weird
+   * colour" the rule asks for. Both are lifted straight off the logo, so the
+   * page and the mark finally agree with each other.
+   */
+  html[data-palette='meridian'] .site {
+    /* ACCENT, the 10: the mark's own electric blue. */
+    --color-brand-50: #eff6ff;
+    --color-brand-100: #dbeafe;
+    --color-brand-200: #bbd8fe;
+    --color-brand-300: #8dbffe;
+    --color-brand-400: #549ffd;
+    --color-brand-500: #0c7afd;
+    --color-brand-600: #0063db; /* fills: 5.5:1 under white text */
+    --color-brand-700: #0a4fae; /* accent text on paper */
+    --color-brand-800: #0d3f85;
+    --color-brand-900: #11376b;
+    --color-brand-950: #0b2246;
+
+    /* STRUCTURE, the 30: the mark's green, taken down to a reading colour. */
+    --color-navy-50: #f1f8f5;
+    --color-navy-100: #dceee5;
+    --color-navy-200: #b6dcc9;
+    --color-navy-300: #83c2a6;
+    --color-navy-400: #4ca37f;
+    --color-navy-500: #238561;
+    --color-navy-600: #136a4c;
+    --color-navy-700: #0f543d;
+    --color-navy-800: #0d4332;
+    --color-navy-900: #0b3429;
+    --color-navy-950: #06201a;
+
+    /* GROUND, the 60: cool mist under white cards. */
+    --site-ground: #f6f9f8;
+    --site-ground-deep: #eaf2ee;
+    --site-ink: 11, 52, 41;
+    --site-accent: 12, 122, 253;
+    --site-hero-from: #06201a;
+    --site-hero-mid: #0b3429;
+    --site-hero-to: #11513c;
+    --site-hero-light: 76, 163, 127;
+  }
+
+  .site {
     background-color: #ffffff;
-    color: #0f1f36;
+    color: rgb(var(--site-ink));
     color-scheme: light;
 
     --surface-page: #ffffff;
     --surface-card: #ffffff;
-    --surface-sunken: #f2f6fb;
+    --surface-sunken: var(--color-navy-50);
     --surface-raised: #ffffff;
-    --surface-inverse: #0f1f36;
+    --surface-inverse: var(--color-navy-900);
 
-    --text-primary: #0f1f36;
-    --text-secondary: #3d4d63;
-    --text-muted: #6a7889;
+    --text-primary: rgb(var(--site-ink));
+    --text-secondary: var(--color-navy-700);
+    --text-muted: var(--color-navy-500);
     --text-inverse: #ffffff;
 
-    --border-hairline: rgba(15, 31, 54, 0.1);
-    --border-strong: rgba(15, 31, 54, 0.22);
+    --border-hairline: rgba(var(--site-ink), 0.1);
+    --border-strong: rgba(var(--site-ink), 0.22);
 
-    --shadow-card: 0 1px 2px rgba(15, 31, 54, 0.06), 0 12px 32px -16px rgba(15, 31, 54, 0.18);
-    --shadow-pop: 0 18px 50px -18px rgba(15, 31, 54, 0.35);
+    --shadow-card: 0 1px 2px rgba(var(--site-ink), 0.06), 0 12px 32px -16px rgba(var(--site-ink), 0.18);
+    --shadow-pop: 0 18px 50px -18px rgba(var(--site-ink), 0.35);
     --accent-text: var(--color-brand-700);
   }
 
-  /* The hero's light: two soft washes, green top left, navy top right. */
+  /*
+   * The ground, the 60.
+   *
+   * Two washes and a gradient, and the accent is deliberately not one of
+   * them: a page lit in the accent colour spends the budget before the
+   * reader reaches a button. What tints the paper is the structure colour at
+   * a whisper, which is what makes the cream read as warm rather than grey.
+   */
   .site-wash {
     background-image:
-      radial-gradient(50rem 28rem at 8% -8%, rgba(255, 122, 0, 0.12), transparent 60%),
-      radial-gradient(44rem 26rem at 96% 0%, rgba(44, 77, 122, 0.12), transparent 60%),
-      linear-gradient(180deg, #fbf8f5 0%, #ffffff 100%);
+      radial-gradient(50rem 28rem at 8% -8%, rgba(var(--site-ink), 0.055), transparent 60%),
+      radial-gradient(44rem 26rem at 96% 0%, rgba(var(--site-ink), 0.04), transparent 60%),
+      linear-gradient(180deg, var(--site-ground) 0%, #ffffff 100%);
   }
 
   /* A fine dotted grid, for panels that want texture without a picture. */
   .site-dots {
-    background-image: radial-gradient(rgba(15, 31, 54, 0.12) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(var(--site-ink), 0.12) 1px, transparent 1px);
     background-size: 18px 18px;
   }
 
-  /* The front page hero: deep navy, lit from the right. */
+  /*
+   * The front page hero: the structure colour at full depth, lit from the
+   * right by its own lighter steps. The one accent allowed on it is the
+   * button sitting on top, so the glow here is structure, not accent.
+   */
   .site-hero {
     background-image:
-      radial-gradient(60rem 40rem at 85% 30%, rgba(63, 101, 150, 0.55), transparent 60%),
-      radial-gradient(40rem 30rem at 10% 110%, rgba(255, 122, 0, 0.18), transparent 60%),
-      linear-gradient(160deg, #0a1526 0%, #12264a 55%, #1b3a6e 100%);
+      radial-gradient(60rem 40rem at 85% 30%, rgba(var(--site-hero-light), 0.55), transparent 60%),
+      radial-gradient(40rem 30rem at 10% 110%, rgba(var(--site-accent), 0.14), transparent 60%),
+      linear-gradient(160deg, var(--site-hero-from) 0%, var(--site-hero-mid) 55%, var(--site-hero-to) 100%);
   }
 
-  /* The soft panel behind tab pictures. */
+  /*
+   * The soft panel behind tab pictures: ground, not accent.
+   *
+   * It used to be a lavender-to-peach gradient belonging to neither palette,
+   * which put a third and fourth colour on the page for the sake of a
+   * backdrop. Two steps of the ground do the same job and cost nothing from
+   * the budget.
+   */
   .site-panel {
-    background-image: linear-gradient(135deg, #f3f5ff 0%, #fff4ea 100%);
+    background-image: linear-gradient(135deg, var(--site-ground-deep) 0%, var(--site-ground) 100%);
   }
 
   @keyframes site-float {

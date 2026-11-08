@@ -97,7 +97,7 @@ function Body() {
                       <li key={slug}>
                         <Link
                           to={`/features/${slug}`}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[14px] font-bold text-navy-800 ring-1 ring-navy-900/10 hover:text-brand-700"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[14px] font-bold text-navy-800 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-900 hover:text-white"
                         >
                           <ModuleIcon slug={slug} size={15} /> {m.name}
                         </Link>
@@ -105,7 +105,7 @@ function Body() {
                     ) : null;
                   })}
                 </ul>
-                <button type="button" onClick={book} className={cn(btn.green, 'mt-8')}>
+                <button type="button" onClick={book} className={cn(btn.accent, 'mt-8')}>
                   Book a demo
                 </button>
               </div>

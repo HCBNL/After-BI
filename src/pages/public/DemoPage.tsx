@@ -44,7 +44,7 @@ function Body() {
     <section className="site-wash">
       <div className={cn(container, 'grid gap-12 pb-20 pt-14 sm:pt-20 lg:grid-cols-2 lg:items-center lg:gap-16')}>
         <Reveal>
-          <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-brand-700">Book a demo</p>
+          <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-navy-500">Book a demo</p>
           <h1 className="mt-3 font-display text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.6rem]">
             See AfterBI in action<span className="text-brand-500">.</span>
           </h1>
@@ -52,7 +52,7 @@ function Body() {
             A guided demo, configured around your products, partners and price lists.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button type="button" onClick={book} className={btn.green}>
+            <button type="button" onClick={book} className={btn.accent}>
               Book a demo
             </button>
             <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className={btn.outline}>
@@ -61,7 +61,7 @@ function Body() {
           </div>
           <p className="mt-7 text-[15px] text-navy-500">
             Prefer email?{' '}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-bold text-brand-700 hover:underline">
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
               {SUPPORT_EMAIL}
             </a>
           </p>
@@ -79,7 +79,7 @@ function Body() {
                     className="aspect-[16/10]"
                     fallback={<PictureFallback />}
                   />
-                  <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 font-display text-[0.95rem] font-extrabold text-white ring-1 ring-white/25">
+                  <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900/90 font-display text-[0.95rem] font-extrabold text-white ring-1 ring-white/25 backdrop-blur-sm">
                     0{index + 1}
                   </span>
                 </div>

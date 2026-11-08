@@ -56,7 +56,7 @@ function Body() {
             >
               {value === 'monthly' ? 'Monthly' : 'Yearly'}
               {value === 'yearly' && (
-                <span className={cn('ml-2 rounded-full px-2 py-0.5 text-[11.5px]', cycle === value ? 'bg-brand-500 text-white' : 'bg-brand-100 text-brand-800')}>
+                <span className={cn('ml-2 rounded-full px-2 py-0.5 text-[11.5px]', cycle === value ? 'bg-white/20 text-white' : 'bg-navy-100 text-navy-700')}>
                   2 months free
                 </span>
               )}
@@ -76,7 +76,7 @@ function Body() {
       <ul className={cn(container, 'mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3')}>
         {PRICING_NOTES.map((note) => (
           <li key={note} className="flex items-center gap-2 text-[15px] font-semibold text-navy-600">
-            <Check size={17} strokeWidth={3} aria-hidden className="text-brand-500" />
+            <Check size={17} strokeWidth={3} aria-hidden className="text-navy-400" />
             {note}
           </li>
         ))}
@@ -111,7 +111,13 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
     <div
       className={cn(
         'relative flex h-full flex-col rounded-[1.6rem] bg-white px-8 pb-8 pt-5 text-left',
-        plan.featured ? 'ring-2 ring-brand-500 shadow-[0_30px_60px_-30px_rgba(238,106,0,0.45)]' : 'ring-1 ring-navy-900/10',
+        /* The recommended plan is the one place on this page, besides its
+           own button, where the accent is spent: a ring and a seal. The
+           other two cards are hairline structure, which is what makes the
+           recommendation legible at a glance. */
+        plan.featured
+          ? 'ring-2 ring-brand-500 shadow-[0_30px_60px_-30px_rgba(var(--site-accent),0.4)]'
+          : 'ring-1 ring-navy-900/10',
       )}
     >
       {plan.featured && (
@@ -120,7 +126,9 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
         </span>
       )}
       <SiteImage
-        slot={`plan-${plan.name.toLowerCase()}`}
+        /* Keyed by the plan's id, never its name: a rename must not orphan
+           the picture the owner has already uploaded for this card. */
+        slot={`plan-${plan.id}`}
         alt={`${plan.name} plan`}
         width={480}
         className="-mx-5 mb-6 aspect-[16/9] rounded-[1.1rem]"
@@ -145,7 +153,7 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
         )}
       </p>
 
-      <button type="button" onClick={onBook} className={cn('mt-6 w-full', plan.featured ? btn.green : btn.outline)}>
+      <button type="button" onClick={onBook} className={cn('mt-6 w-full', plan.featured ? btn.accent : btn.outline)}>
         {plan.cta}
       </button>
 
@@ -157,7 +165,7 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
             </li>
           ) : (
             <li key={line} className="flex gap-2.5 text-[15px] text-navy-700">
-              <Check size={17} aria-hidden className="mt-[0.15em] shrink-0 text-brand-500" />
+              <Check size={17} aria-hidden className="mt-[0.15em] shrink-0 text-navy-400" />
               {line}
             </li>
           ),

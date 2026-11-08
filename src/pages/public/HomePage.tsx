@@ -68,7 +68,7 @@ function Hero() {
           </h1>
           <p className="mt-6 max-w-lg text-[18px] leading-[1.6] text-white/80 sm:text-[20px]">{body}</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <button type="button" onClick={book} className={cn(btn.green, 'h-14 px-8 text-[16px]')}>
+            <button type="button" onClick={book} className={cn(btn.accent, 'h-14 px-8 text-[16px]')}>
               Book a demo
             </button>
             <Link to="/pricing" className={cn(btn.lineWhite, 'h-14 px-8 text-[16px]')}>
@@ -78,7 +78,7 @@ function Hero() {
           <ul className="mt-9 flex flex-wrap gap-x-6 gap-y-2">
             {HERO.trust.map((item) => (
               <li key={item} className="flex items-center gap-2 text-[14.5px] font-semibold text-white/75">
-                <Check size={16} strokeWidth={3} aria-hidden className="text-brand-400" />
+                <Check size={16} strokeWidth={3} aria-hidden className="text-white/55" />
                 {item}
               </li>
             ))}
@@ -125,7 +125,7 @@ function FloatingCards() {
 
       <div className={cn(card, 'right-[-2%] top-[38%] hidden w-[58%] p-4 sm:block sm:p-5')} style={{ animationDelay: '1.5s' }}>
         <p className="flex items-center gap-2 text-[14px] font-bold sm:text-[15px]">
-          <TrendingUp size={18} aria-hidden className="text-brand-500" /> Sell through
+          <TrendingUp size={18} aria-hidden className="text-navy-500" /> Sell through
         </p>
         <p className="mt-0.5 text-[12.5px] text-navy-500">Up 12% this month</p>
         <Sparkline className="mt-2 h-14 sm:h-16" />
@@ -138,7 +138,7 @@ function FloatingCards() {
 
       <div className={cn(card, 'site-float bottom-[5%] right-0 w-[58%] p-4 sm:right-[6%] sm:w-[52%] sm:p-5')} style={{ animationDelay: '3s' }}>
         <p className="flex items-center gap-2 text-[14px] font-bold sm:text-[15px]">
-          <BellRing size={18} aria-hidden className="text-brand-500" /> Automation
+          <BellRing size={18} aria-hidden className="text-navy-500" /> Automation
         </p>
         <p className="mt-1 text-[12.5px] text-navy-500 sm:text-[13px]">6 reminders sent, 3 approvals cleared</p>
       </div>
@@ -199,13 +199,16 @@ function Lifecycle() {
               aria-selected={on}
               onClick={() => setActive(t.key)}
               className={cn(
+                /* Which tab is open is state, and state is structure: the
+                   accent has to stay reserved for the thing that starts a
+                   conversation, which on this page is the hero button. */
                 'relative flex flex-col items-center gap-1.5 px-1 pb-4 pt-1 text-[13px] font-bold transition-colors sm:flex-row sm:gap-2 sm:px-2 sm:text-[19px]',
-                on ? 'text-brand-600' : 'text-navy-800 hover:text-brand-600',
+                on ? 'text-navy-900' : 'text-navy-500 hover:text-navy-900',
               )}
             >
               <Icon size={22} aria-hidden />
               {t.label}
-              {on && <span aria-hidden className="absolute inset-x-0 -bottom-px h-[3px] rounded-full bg-brand-500" />}
+              {on && <span aria-hidden className="absolute inset-x-0 -bottom-px h-[3px] rounded-full bg-navy-900" />}
             </button>
           );
         })}
@@ -222,7 +225,7 @@ function Lifecycle() {
               </li>
             ))}
           </ul>
-          <Link to={tab.link} className="mt-8 inline-flex items-center gap-2 text-[16px] font-bold text-brand-600 hover:gap-3 transition-all">
+          <Link to={tab.link} className="mt-8 inline-flex items-center gap-2 text-[16px] font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 transition-all hover:gap-3 hover:decoration-navy-900">
             Learn more <ArrowRight size={18} aria-hidden />
           </Link>
         </div>
@@ -251,14 +254,14 @@ function Showcase() {
           <ul className="mt-7 space-y-3">
             {['Approve orders on the go', 'Live stock and credit, everywhere', 'Partners order without calling you'].map((line) => (
               <li key={line} className="flex items-center gap-3 text-[17px] font-semibold text-navy-800">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-navy-100 text-navy-700">
                   <Check size={14} strokeWidth={3} aria-hidden />
                 </span>
                 {line}
               </li>
             ))}
           </ul>
-          <button type="button" onClick={book} className={cn(btn.green, 'mt-9')}>
+          <button type="button" onClick={book} className={cn(btn.accent, 'mt-9')}>
             Book a demo
           </button>
         </div>

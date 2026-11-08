@@ -43,7 +43,7 @@ function Body() {
             body="Sales, operations, finance and intelligence on a single data model."
           />
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <button type="button" onClick={book} className={btn.green}>
+            <button type="button" onClick={book} className={btn.accent}>
               Book a demo
             </button>
             <Link to="/pricing" className={btn.outline}>
@@ -56,7 +56,7 @@ function Body() {
               <a
                 key={m.slug}
                 href={`#${m.slug}`}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-navy-700 ring-1 ring-navy-900/10 hover:text-brand-700"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-navy-700 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-900 hover:text-white"
               >
                 <ModuleIcon slug={m.slug} size={15} /> {m.name}
               </a>
@@ -102,7 +102,7 @@ function Body() {
                     <div className="flex flex-1 flex-col p-7">
                       <h3 className="font-display text-[1.4rem] font-extrabold tracking-[-0.03em] text-navy-900">{m.name}</h3>
                       <p className="mt-3 flex-1 text-[16px] leading-relaxed text-navy-700/85">{m.blurb}</p>
-                      <span className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-700">
+                      <span className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 group-hover:decoration-navy-900">
                         Learn more <ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-1" />
                       </span>
                     </div>
@@ -127,7 +127,7 @@ function Body() {
                   className="aspect-[16/10]"
                   fallback={<PictureFallback tone="dark" />}
                 />
-                <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 font-display text-[1.05rem] font-extrabold text-white ring-1 ring-white/25">
+                <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900/90 font-display text-[1.05rem] font-extrabold text-white ring-1 ring-white/25 backdrop-blur-sm">
                   {index + 1}
                 </span>
               </div>

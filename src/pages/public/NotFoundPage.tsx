@@ -30,7 +30,7 @@ export default function NotFoundPage() {
             </h1>
             <p className="mt-5 max-w-xl text-[18px] leading-[1.65] text-navy-700/85">Check the address, or try one of these.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link to="/" className={btn.green}>
+              <Link to="/" className={btn.accent}>
                 Front page
               </Link>
               <Link to="/features" className={btn.outline}>
@@ -42,7 +42,7 @@ export default function NotFoundPage() {
             </div>
             <p className="mt-10 text-[15px] text-navy-500">
               Broken link?{' '}
-              <a href={`mailto:${SUPPORT_EMAIL}?subject=Broken%20link`} className="font-bold text-brand-700 hover:underline">
+              <a href={`mailto:${SUPPORT_EMAIL}?subject=Broken%20link`} className="font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
                 {SUPPORT_EMAIL}
               </a>
             </p>

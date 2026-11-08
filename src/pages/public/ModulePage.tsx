@@ -57,7 +57,7 @@ function Body({ slug }: { slug: string }) {
 
           <div className="mt-8 grid items-center gap-12 lg:grid-cols-[1fr_1.15fr]">
             <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-bold text-brand-700 ring-1 ring-navy-900/8">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-bold text-navy-700 ring-1 ring-navy-900/8">
                 <ModuleIcon slug={slug} size={15} /> {item.name}
               </span>
               <h1 className="mt-5 font-display text-[2.5rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.5rem]">
@@ -65,7 +65,7 @@ function Body({ slug }: { slug: string }) {
               </h1>
               <p className="mt-5 max-w-xl text-[18px] leading-relaxed text-navy-700/85">{item.blurb}</p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <button type="button" onClick={book} className={btn.green}>
+                <button type="button" onClick={book} className={btn.accent}>
                   Book a demo
                 </button>
                 <Link to="/pricing" className={btn.outline}>
@@ -93,7 +93,7 @@ function Body({ slug }: { slug: string }) {
             {item.points.map((point, index) => (
               <Reveal key={point} delay={index * 60}>
                 <div className="h-full rounded-2xl bg-navy-50 p-6">
-                  <span className="font-display text-[1.4rem] font-extrabold text-brand-600">0{index + 1}</span>
+                  <span className="font-display text-[1.4rem] font-extrabold text-navy-400">0{index + 1}</span>
                   <p className="mt-3 text-[16.5px] font-semibold leading-snug text-navy-900">{point}</p>
                 </div>
               </Reveal>
@@ -123,7 +123,7 @@ function Body({ slug }: { slug: string }) {
                 <p className={eyebrow}>{s.name}</p>
                 <p className="mt-2 text-[18px] font-bold text-navy-900">{s.blurb}</p>
                 <CheckList items={s.points} className="mt-5" />
-                <span className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-700">
+                <span className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 group-hover:decoration-navy-900">
                   See the solution <ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-1" />
                 </span>
                 </div>
@@ -158,7 +158,7 @@ function Body({ slug }: { slug: string }) {
               <div className="flex flex-1 flex-col p-7">
               <h3 className="text-[19px] font-bold text-navy-900">{m.name}</h3>
               <p className="mt-2 flex-1 text-[15.5px] leading-relaxed text-navy-700/80">{m.blurb}</p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-[14.5px] font-bold text-brand-700">
+              <span className="mt-5 inline-flex items-center gap-1.5 text-[14.5px] font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 group-hover:decoration-navy-900">
                 Learn more <ArrowRight size={15} aria-hidden />
               </span>
               </div>
