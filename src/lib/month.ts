@@ -3,6 +3,7 @@
  * equivalent of "week 6 of the term". Month-end is when targets close and
  * distributors restock, so it is the calendar this business actually runs on.
  */
+import { dateLocale } from './locale';
 export interface MonthPosition {
   year: number;
   month: number;
@@ -26,7 +27,8 @@ export function monthPosition(now: Date = new Date()): MonthPosition {
   const month = get('month');
   const day = get('day');
   const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const name = new Intl.DateTimeFormat('en-GB', { month: 'long', timeZone: 'UTC' }).format(
+  /* The parts above are arithmetic and keep a fixed locale; the name is for the screen. */
+  const name = new Intl.DateTimeFormat(dateLocale('en-GB'), { month: 'long', timeZone: 'UTC' }).format(
     new Date(Date.UTC(year, month - 1, 15)),
   );
   const firstWeekday = (new Date(Date.UTC(year, month - 1, 1)).getUTCDay() + 6) % 7;

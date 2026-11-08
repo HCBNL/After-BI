@@ -1662,7 +1662,16 @@ export async function decideReturn(
     const legal =
       (record.status === 'requested' && (status === 'approved' || status === 'rejected')) ||
       (record.status === 'approved' && status === 'received');
-    if (!legal) throw new Error(`This return is already ${record.status}, so it cannot be marked ${status}.`);
+    if (!legal) {
+      /* One whole sentence per move, so every language can word it. */
+      const REFUSED: Record<ReturnStatus, string> = {
+        requested: 'This return has already been decided, so it cannot go back to waiting.',
+        approved: 'Only a return that is waiting for a decision can be approved.',
+        rejected: 'Only a return that is waiting for a decision can be rejected.',
+        received: 'Only an approved return can be received back into stock.',
+      };
+      throw new Error(REFUSED[status]);
+    }
 
     if (status === 'received') {
       if (!options.warehouseId) throw new Error('Choose the depot the goods are coming back into.');

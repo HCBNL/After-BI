@@ -170,9 +170,60 @@ interface Subject {
    * un-make it.
  */
   authorityRoles?: Role[];
-  /** What to call it in a sentence: "order", "return", "sell-out record". */
-  noun: string;
+  /** Which kind of record it is, which picks the sentences below. */
+  noun: Noun;
 }
+
+type Noun = 'order' | 'return' | 'invoice' | 'sell-out record';
+
+/*
+ * THE REFUSALS, WRITTEN OUT WHOLE FOR EACH KIND OF RECORD.
+ *
+ * These used to be one sentence each with the noun dropped into a slot:
+ * "This {0} belongs to another account." Fine in English, and impossible in
+ * French, where the demonstrative and the past participle both agree with the
+ * noun's gender: "Cette commande… modifiée" but "Ce retour… modifié". A
+ * translation of the slotted sentence has no way to know which, so it came out
+ * as "Ce(tte) {0}… modifié(e)", which no French speaker would write. Chinese
+ * fared better but still read as a form letter.
+ *
+ * Twenty-four short sentences is a small price for every language being able
+ * to say each one properly.
+ */
+const SAYS: Record<Noun, Record<'foreign' | 'locked' | 'notYours' | 'recall' | 'waiting' | 'decided', string>> = {
+  order: {
+    foreign: 'This order belongs to another account.',
+    locked: 'An order is part of the ledger and cannot be edited by anyone, including an administrator. Correct it with an opposite entry so both stay visible.',
+    notYours: 'Only whoever raised this order, or an administrator, can change it.',
+    recall: 'Recall this order to edit it. That takes it out of the approval queue and puts it back in your drafts.',
+    waiting: 'This order is waiting for a decision. Whoever raised it can recall it, or an administrator can amend it.',
+    decided: 'This order has already been decided. Only an administrator can change it now, and the change is recorded.',
+  },
+  return: {
+    foreign: 'This return belongs to another account.',
+    locked: 'A return is part of the ledger and cannot be edited by anyone, including an administrator. Correct it with an opposite entry so both stay visible.',
+    notYours: 'Only whoever raised this return, or an administrator, can change it.',
+    recall: 'Recall this return to edit it. That takes it out of the approval queue and puts it back in your drafts.',
+    waiting: 'This return is waiting for a decision. Whoever raised it can recall it, or an administrator can amend it.',
+    decided: 'This return has already been decided. Only an administrator can change it now, and the change is recorded.',
+  },
+  invoice: {
+    foreign: 'This invoice belongs to another account.',
+    locked: 'An invoice is part of the ledger and cannot be edited by anyone, including an administrator. Correct it with an opposite entry so both stay visible.',
+    notYours: 'Only whoever raised this invoice, or an administrator, can change it.',
+    recall: 'Recall this invoice to edit it. That takes it out of the approval queue and puts it back in your drafts.',
+    waiting: 'This invoice is waiting for a decision. Whoever raised it can recall it, or an administrator can amend it.',
+    decided: 'This invoice has already been settled. Only an administrator can change it now, and the change is recorded.',
+  },
+  'sell-out record': {
+    foreign: 'This sell-out record belongs to another account.',
+    locked: 'A sell-out record is part of the ledger and cannot be edited by anyone, including an administrator. Correct it with an opposite entry so both stay visible.',
+    notYours: 'Only whoever keyed this sell-out record, or an administrator, can change it.',
+    recall: 'Recall this sell-out record to edit it. That takes it out of the approval queue and puts it back in your drafts.',
+    waiting: 'This sell-out record is waiting for a decision. Whoever keyed it can recall it, or an administrator can amend it.',
+    decided: 'This sell-out record has already been settled. Only an administrator can change it now, and the change is recorded.',
+  },
+};
 
 /**
  * May this person change this record right now?
@@ -198,16 +249,13 @@ function amendmentFor(user: UserProfile | null, subject: Subject): Verdict {
  */
   if (role === 'distributor' || role === 'sales_rep') {
     if (subject.distributorId && !(partnerScope(user) ?? []).includes(subject.distributorId)) {
-      return NO(subject.stage, `This ${subject.noun} belongs to another account.`);
+      return NO(subject.stage, SAYS[subject.noun].foreign);
     }
   }
 
   switch (subject.stage) {
     case 'locked':
-      return NO(
-        'locked',
-        `A ${subject.noun} is part of the ledger and cannot be edited by anyone, including an administrator. Correct it with an opposite entry so both stay visible.`,
-      );
+      return NO('locked', SAYS[subject.noun].locked);
 
     case 'open':
       if (isAuthor || isPeer || admin) {
@@ -220,7 +268,7 @@ function amendmentFor(user: UserProfile | null, subject: Subject): Verdict {
           stage: 'open',
         };
       }
-      return NO('open', `Only whoever raised this ${subject.noun}, or an administrator, can change it.`);
+      return NO('open', SAYS[subject.noun].notYours);
 
     case 'submitted':
       /*
@@ -248,14 +296,11 @@ function amendmentFor(user: UserProfile | null, subject: Subject): Verdict {
           canRecall: true,
           canCancel: true,
           byOverride: false,
-          reason: `Recall this ${subject.noun} to edit it. That takes it out of the approval queue and puts it back in your drafts.`,
+          reason: SAYS[subject.noun].recall,
           stage: 'submitted',
         };
       }
-      return NO(
-        'submitted',
-        `This ${subject.noun} is waiting for a decision. Whoever raised it can recall it, or an administrator can amend it.`,
-      );
+      return NO('submitted', SAYS[subject.noun].waiting);
 
     case 'settled':
       if (admin) {
@@ -268,10 +313,7 @@ function amendmentFor(user: UserProfile | null, subject: Subject): Verdict {
           stage: 'settled',
         };
       }
-      return NO(
-        'settled',
-        `This ${subject.noun} has already been decided. Only an administrator can change it now, and the change is recorded.`,
-      );
+      return NO('settled', SAYS[subject.noun].decided);
   }
 }
 

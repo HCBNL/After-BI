@@ -19,6 +19,7 @@
 
 import { daysOverdue, todayISO } from './format';
 import type { Invoice, Payment } from '@/types';
+import { dateLocale } from './locale';
 
 export type FinancePeriod = 'month' | 'quarter' | 'year';
 
@@ -193,7 +194,7 @@ export function summarise(
     const last = new Date(today.getFullYear(), today.getMonth() - k + 1, 0);
     trend.push({
       key: iso(first).slice(0, 7),
-      label: first.toLocaleDateString('en-GB', { month: 'short' }),
+      label: first.toLocaleDateString(dateLocale('en-GB'), { month: 'short' }),
       invoiced: sumInvoices(iso(first), iso(last)),
       collected: sumPayments(iso(first), iso(last), isCash),
     });

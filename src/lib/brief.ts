@@ -35,8 +35,14 @@ export interface FocusItem {
   detail: string;
   to: string;
   severity: Severity;
-  /** Why it is ranked where it is, in a few words. */
-  reason: string;
+  /**
+   * Why it is ranked where it is, as separate short phrases ("past its window",
+   * "3 days old"). An array, not one comma-joined string, so that each phrase
+   * reaches the page as its own piece of text and can be translated on its
+   * own: a joined string has a different shape for every combination, and no
+   * dictionary can hold every combination.
+   */
+  reasons: string[];
   /** The reminder behind it, when there is one: it can become a task. */
   reminder?: Reminder;
   score: number;
@@ -62,7 +68,21 @@ export interface Insight {
 
 export interface Brief {
   greeting: string;
-  summary: string;
+  /**
+   * The summary, one sentence per entry.
+   *
+   * WHY NOT ONE STRING
+   *
+   * It used to be one string, the sentences joined with spaces, and in Chinese
+   * that produced "您自己的清单中有 No orders were booked today. 2 things need
+   * you today…": half a sentence translated and the rest left in English. The
+   * page is translated piece of text by piece of text, against a dictionary of
+   * whole sentences with {0} slots for the figures. Four sentences in one
+   * piece of text is a shape no entry matches, so the nearest loose pattern
+   * grabbed the whole paragraph as its {0}. One sentence per entry, rendered
+   * as one piece of text each, and every sentence meets its own entry.
+   */
+  summary: string[];
   focus: FocusItem[];
   pipeline: Stage[];
   /** The stage holding the most up, when one is. */
@@ -88,7 +108,22 @@ const daysSince = (iso: string | undefined, now: number) =>
   iso ? Math.max(0, Math.floor((now - new Date(iso).getTime()) / DAY)) : 0;
 const hoursBetween = (from?: string, to?: string) =>
   from && to ? (new Date(to).getTime() - new Date(from).getTime()) / 3_600_000 : NaN;
-const plural = (n: number, word: string, many = `${word}s`) => `${count(n)} ${n === 1 ? word : many}`;
+
+/*
+ * NO `plural()` HELPER, ON PURPOSE.
+ *
+ * There used to be one, producing "3 orders" to drop into a sentence. That
+ * makes the English easy and every other language hard: the sentence reaches
+ * the translator as "{0} worth {1} were started", where {0} is an English noun
+ * phrase that has to be translated separately and then made to agree with a
+ * sentence built for English word order. Chinese counts with a measure word
+ * between the number and the noun, French makes the participle agree. Neither
+ * fits.
+ *
+ * So every sentence below is written out whole, once for one and once for
+ * many, and the only thing left in a slot is a bare number, an amount or a
+ * name. Each language then gets the whole sentence to word as it wants.
+ */
 
 const WEIGHT: Record<Severity, number> = { critical: 100, warning: 60, later: 20 };
 
@@ -115,14 +150,15 @@ function score(reminder: Reminder): number {
   return WEIGHT[reminder.severity] + age + money + mine;
 }
 
-function reasonFor(reminder: Reminder): string {
+function reasonsFor(reminder: Reminder): string[] {
   const parts: string[] = [];
   if (reminder.severity === 'critical') parts.push('well past its window');
   else if (reminder.severity === 'warning') parts.push('past its window');
-  if (reminder.days > 0) parts.push(`${plural(reminder.days, 'day')} old`);
+  if (reminder.days === 1) parts.push('1 day old');
+  else if (reminder.days > 1) parts.push(`${count(reminder.days)} days old`);
   if (reminder.amount && reminder.amount >= 1) parts.push(`${nairaShort(reminder.amount)} held up`);
   if (reminder.key === 'task-due') parts.push('your own task');
-  return parts.join(', ') || 'worth a look';
+  return parts.length ? parts : ['worth a look'];
 }
 
 function focusFrom(reminders: Reminder[]): FocusItem[] {
@@ -133,7 +169,7 @@ function focusFrom(reminders: Reminder[]): FocusItem[] {
       detail: reminder.detail,
       to: reminder.to,
       severity: reminder.severity,
-      reason: reasonFor(reminder),
+      reasons: reasonsFor(reminder),
       reminder,
       score: score(reminder),
     }))
@@ -196,14 +232,14 @@ function pipelineFrom(input: BriefInput, now: number): Stage[] {
     ),
     stage(
       'fulfil',
-      'Approved, not delivered',
+      'Approved, to deliver',
       byStatus('approved').map((o) => ({ value: orderNet(o), since: o.approvedAt ?? o.createdAt })),
       t.fulfilDays,
       `${root}/orders`,
     ),
     stage(
       'invoice',
-      'Delivered, not invoiced',
+      'Delivered, to invoice',
       byStatus('fulfilled')
         .filter((o) => !invoiced.has(o.id))
         .map((o) => ({ value: orderNet(o), since: o.fulfilledAt ?? o.updatedAt ?? o.createdAt })),
@@ -213,7 +249,7 @@ function pipelineFrom(input: BriefInput, now: number): Stage[] {
     {
       ...stage(
         'collect',
-        'Invoiced, not paid',
+        'Invoiced, unpaid',
         open.map((i) => ({ value: i.total - (i.amountPaid ?? 0), since: i.issuedOn })),
         -1,
         `${root}/invoices`,
@@ -223,7 +259,7 @@ function pipelineFrom(input: BriefInput, now: number): Stage[] {
     },
     stage(
       'paid',
-      'Paid in the last 30 days',
+      'Paid (30 days)',
       invoices.filter((i) => i.status === 'paid' && (i.updatedAt ?? i.createdAt) >= monthAgo).map((i) => ({ value: i.total })),
       -1,
       `${root}/invoices`,
@@ -245,10 +281,21 @@ function average(values: number[]): number {
   return clean.length ? clean.reduce((a, b) => a + b, 0) / clean.length : NaN;
 }
 
+/**
+ * How long something took, as one of a handful of fixed phrases.
+ *
+ * Unlike the sentences, a duration is fine to drop into a slot: "5 hours" is a
+ * complete noun phrase in every language this app speaks, and the dictionary
+ * holds each shape ("{0} hours", "1 day") once.
+ */
 function duration(hours: number): string {
   if (hours < 1) return 'under an hour';
-  if (hours < 36) return plural(Math.round(hours), 'hour');
-  return plural(Math.round(hours / 24), 'day');
+  if (hours < 36) {
+    const h = Math.round(hours);
+    return h === 1 ? '1 hour' : `${count(h)} hours`;
+  }
+  const d = Math.round(hours / 24);
+  return d === 1 ? '1 day' : `${count(d)} days`;
 }
 
 /**
@@ -273,9 +320,9 @@ function insightsFrom(input: BriefInput, now: number): Insight[] {
       out.push({
         id: 'sign-speed',
         tone: slow ? 'warning' : 'good',
-        text: `Orders that needed a signature waited ${duration(hours)} on average this month${
-          slow ? `, longer than the ${plural(input.thresholds.approvalHours, 'hour')} your organisation allows` : ''
-        }.`,
+        text: slow
+          ? `Orders that needed a signature waited ${duration(hours)} on average this month, longer than the ${duration(input.thresholds.approvalHours)} your organisation allows.`
+          : `Orders that needed a signature waited ${duration(hours)} on average this month.`,
         to: `${root}/approvals`,
       });
     }
@@ -287,7 +334,8 @@ function insightsFrom(input: BriefInput, now: number): Insight[] {
       out.push({
         id: 'fulfil-speed',
         tone: fulfil / 24 > input.thresholds.fulfilDays ? 'warning' : 'good',
-        text: `From approved to delivered took ${duration(fulfil)} on average across ${plural(delivered.length, 'order')}.`,
+        /* At least three orders reach here: the floor for an average. */
+        text: `From approved to delivered took ${duration(fulfil)} on average across ${count(delivered.length)} orders.`,
         to: `${root}/orders`,
       });
     }
@@ -350,7 +398,8 @@ function insightsFrom(input: BriefInput, now: number): Insight[] {
     out.push({
       id: 'abandoned',
       tone: 'warning',
-      text: `${plural(abandoned.length, 'order')} worth ${nairaShort(abandoned.reduce((a, o) => a + orderNet(o), 0))} were started this month and never submitted.`,
+      /* Two at least, by the condition above, so always the plural sentence. */
+      text: `${count(abandoned.length)} orders worth ${nairaShort(abandoned.reduce((a, o) => a + orderNet(o), 0))} were started this month and never submitted.`,
       to: `${root}/orders`,
     });
   }
@@ -366,7 +415,10 @@ function insightsFrom(input: BriefInput, now: number): Insight[] {
       out.push({
         id: 'due-week',
         tone: 'neutral',
-        text: `${plural(due.length, 'invoice')} worth ${naira(amount)} fall due in the next 7 days.`,
+        text:
+          due.length === 1
+            ? `1 invoice worth ${naira(amount)} falls due in the next 7 days.`
+            : `${count(due.length)} invoices worth ${naira(amount)} fall due in the next 7 days.`,
         to: `${root}/invoices`,
       });
     }
@@ -390,32 +442,60 @@ function todayLine(orders: Order[], now: number): string {
     (o) => (o.status === 'approved' || o.status === 'fulfilled') && (o.createdAt ?? '').slice(0, 10) === today,
   );
   if (!booked.length) return 'No orders were booked today.';
-  return `Today: ${plural(booked.length, 'order')} booked, worth ${nairaShort(booked.reduce((a, o) => a + orderNet(o), 0))}.`;
+  const worth = nairaShort(booked.reduce((a, o) => a + orderNet(o), 0));
+  return booked.length === 1
+    ? `Today: 1 order booked, worth ${worth}.`
+    : `Today: ${count(booked.length)} orders booked, worth ${worth}.`;
 }
 
-function summaryFrom(focus: FocusItem[], reminders: Reminder[], bottleneck: Stage | null, tasksToday: number): string {
+function summaryFrom(focus: FocusItem[], reminders: Reminder[], bottleneck: Stage | null, tasksToday: number): string[] {
   const action = reminders.filter((r) => r.severity !== 'later');
   if (action.length === 0) {
-    const quiet = reminders.length
-      ? ` ${plural(reminders.length, 'thing')} worth knowing when you have a moment.`
-      : ' Your records are inside every window your organisation set.';
-    return `Nothing needs you right now.${quiet}`;
+    return [
+      'Nothing needs you right now.',
+      reminders.length === 0
+        ? 'Your records are inside every window your organisation set.'
+        : reminders.length === 1
+          ? '1 thing is worth knowing when you have a moment.'
+          : `${count(reminders.length)} things are worth knowing when you have a moment.`,
+    ];
   }
 
   const held = action.reduce((sum, r) => sum + (r.amount ?? 0), 0);
-  const parts = [
-    `${plural(action.length, 'thing')} ${action.length === 1 ? 'needs' : 'need'} you today${
-      held >= 1 ? `, with ${nairaShort(held)} held up across them` : ''
-    }.`,
+  const n = action.length;
+  const parts: string[] = [
+    held >= 1
+      ? n === 1
+        ? `1 thing needs you today, with ${nairaShort(held)} held up.`
+        : `${count(n)} things need you today, with ${nairaShort(held)} held up across them.`
+      : n === 1
+        ? '1 thing needs you today.'
+        : `${count(n)} things need you today.`,
   ];
+
+  /* The reminder's own title goes in the slot. It is a whole sentence of its
+     own, and the dictionary translates it as one before it is placed. */
   if (focus[0]) parts.push(`Start with this: ${focus[0].title}.`);
+
   if (bottleneck && bottleneck.stuck >= 2) {
+    /* The stage is named by its label as it stands, capitalised, so the
+       dictionary finds it as the same phrase the trail shows. Lower-casing it
+       to sit mid-sentence, as this once did, made it a phrase nobody had
+       translated. */
+    const stuck = count(bottleneck.stuck);
+    const days = bottleneck.oldestDays;
     parts.push(
-      `Most orders are held at "${bottleneck.label.toLowerCase()}" (${count(bottleneck.stuck)}, the oldest ${plural(bottleneck.oldestDays, 'day')}).`,
+      days > 1
+        ? `${stuck} orders are held up at “${bottleneck.label}”, the oldest for ${count(days)} days.`
+        : days === 1
+          ? `${stuck} orders are held up at “${bottleneck.label}”, the oldest for 1 day.`
+          : `${stuck} orders are held up at “${bottleneck.label}”.`,
     );
   }
-  if (tasksToday > 0) parts.push(`${plural(tasksToday, 'task')} on your own list ${tasksToday === 1 ? 'is' : 'are'} due.`);
-  return parts.join(' ');
+
+  if (tasksToday === 1) parts.push('1 task on your own list is due.');
+  else if (tasksToday > 1) parts.push(`${count(tasksToday)} tasks on your own list are due.`);
+  return parts;
 }
 
 /* -------------------------------------------------------------- the brief */
@@ -437,7 +517,7 @@ export function buildBrief(input: BriefInput): Brief {
 
   return {
     greeting: greetingFor(input.firstName, new Date(now)),
-    summary: [todayLine(input.orders, now), summaryFrom(focus, input.reminders, bottleneck, tasksToday)].filter(Boolean).join(' '),
+    summary: [todayLine(input.orders, now), ...summaryFrom(focus, input.reminders, bottleneck, tasksToday)].filter(Boolean),
     focus,
     pipeline,
     bottleneck,

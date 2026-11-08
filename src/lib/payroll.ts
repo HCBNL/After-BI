@@ -23,6 +23,7 @@
  *
  * All dates are 'yyyy-mm-dd' strings in local (Lagos) time.
  */
+import { dateLocale } from './locale';
 
 export const DEFAULT_PAY_DAY = 25;
 export const DEFAULT_CYCLE_START = 24;
@@ -110,7 +111,7 @@ export function periodFor(year: number, month0: number, rules: PayRules): PayPer
     start = dayIn(prev.getFullYear(), prev.getMonth(), rules.cycleStart);
     end = addDays(dayIn(year, month0, rules.cycleStart), -1);
   }
-  const label = new Date(year, month0, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  const label = new Date(year, month0, 1).toLocaleDateString(dateLocale('en-GB'), { month: 'long', year: 'numeric' });
   return { label, key: `${year}-${pad(month0 + 1)}`, year, month0, start, end, payDay: payDayFor(year, month0, rules) };
 }
 
@@ -186,7 +187,7 @@ export function computePay(args: {
 }
 
 export function prettyIso(value: string, opts: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' }): string {
-  return fromIso(value).toLocaleDateString('en-GB', opts);
+  return fromIso(value).toLocaleDateString(dateLocale('en-GB'), opts);
 }
 
 /** 1st, 2nd, 3rd, 4th … 23rd, 24th. */

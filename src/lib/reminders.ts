@@ -89,13 +89,22 @@ export function thresholdsFrom(stored?: Partial<ReminderThresholds> | null): Rem
 const DAY = 86_400_000;
 const hoursSince = (iso?: string) => (iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 3_600_000) : 0);
 const daysSince = (iso?: string) => (iso ? Math.floor((Date.now() - new Date(iso).getTime()) / DAY) : 0);
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
+/*
+ * Every title and detail below is written out whole, once for one and once for
+ * many, with only a number, an amount, a code or a name left in a slot. See
+ * the note in brief.ts: a sentence assembled from "3 days" and "is overdue"
+ * cannot be put into Chinese or French word order by a dictionary, and a
+ * whole sentence with a bare number in it can.
+ */
+
+/** When something happened, as one of a few fixed phrases ("3 hours ago"). */
 function ageLabel(iso?: string): string {
   const hours = hoursSince(iso);
   if (hours < 1) return 'in the last hour';
-  if (hours < 24) return plural(hours, 'hour') + ' ago';
-  return plural(Math.floor(hours / 24), 'day') + ' ago';
+  if (hours < 24) return hours === 1 ? '1 hour ago' : `${count(hours)} hours ago`;
+  const days = Math.floor(hours / 24);
+  return days === 1 ? '1 day ago' : `${count(days)} days ago`;
 }
 
 const RANK: Record<Severity, number> = { critical: 0, warning: 1, later: 2 };
@@ -197,8 +206,12 @@ export function buildReminders(input: ReminderInput): Reminder[] {
         key: 'invoice-overdue',
         severity: days >= 14 ? 'critical' : 'warning',
         title: partner
-          ? `${invoice.invoiceNumber} is ${plural(days, 'day')} overdue`
-          : `${invoice.distributorName} is ${plural(days, 'day')} late on ${invoice.invoiceNumber}`,
+          ? days === 1
+            ? `${invoice.invoiceNumber} is 1 day overdue`
+            : `${invoice.invoiceNumber} is ${count(days)} days overdue`
+          : days === 1
+            ? `${invoice.distributorName} is 1 day late on ${invoice.invoiceNumber}`
+            : `${invoice.distributorName} is ${count(days)} days late on ${invoice.invoiceNumber}`,
         detail: `${naira(owed)} outstanding of ${naira(invoice.total)}.`,
         to: `${root}/invoices`,
         since: invoice.dueOn,
@@ -321,7 +334,11 @@ export function buildReminders(input: ReminderInput): Reminder[] {
         key: 'sellout-quiet',
         severity: 'later',
         title: 'No sell-out keyed lately',
-        detail: newest ? `The last one was ${plural(days, 'day')} ago.` : 'Nothing has been keyed yet.',
+        detail: !newest
+          ? 'Nothing has been keyed yet.'
+          : days === 1
+            ? 'The last one was 1 day ago.'
+            : `The last one was ${count(days)} days ago.`,
         to: `${root}/sell-out`,
         days,
       });
@@ -355,7 +372,12 @@ export function buildReminders(input: ReminderInput): Reminder[] {
       id: `task:${task.id}`,
       key: 'task-due',
       severity: days >= 3 || (days >= 1 && task.priority === 'high') ? 'critical' : 'warning',
-      title: days > 0 ? `Your task is ${plural(days, 'day')} late: ${task.title}` : `Due today: ${task.title}`,
+      title:
+        days > 1
+          ? `Your task is ${count(days)} days late: ${task.title}`
+          : days === 1
+            ? `Your task is 1 day late: ${task.title}`
+            : `Due today: ${task.title}`,
       detail: task.note || 'From your own to do list.',
       to: task.to || `${root}/tasks`,
       since: task.due,

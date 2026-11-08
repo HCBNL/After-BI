@@ -58,6 +58,8 @@ interface Template {
   re: RegExp;
   out: string;
   weight: number;
+  /** Too little fixed wording to trust with words: its slots may only hold numbers. */
+  numbersOnly: boolean;
 }
 
 let exact: Map<string, string> | null = null;
@@ -84,12 +86,18 @@ function build(dict: Record<string, string>): void {
         .split(/(\{\d+\})/)
         .map((part) => (/^\{\d+\}$/.test(part) ? `(?<p${part.slice(1, -1)}>.+?)` : escapeRe(part)))
         .join('');
-      /* Too little fixed wording ("{0}s") would match ordinary text by accident. */
+      /*
+       * Too little fixed wording would match ordinary text by accident:
+       * "{0} of {1}" also fits "Bank of Industry". Such an entry used to be
+       * dropped, which meant every counter ("3 of 5", "Day 6 of 30") stayed in
+       * English. Now it is kept, but only allowed to fire when every slot
+       * holds a number, which is the only thing a counter ever holds.
+       */
       const letters = source.replace(/\{\d+\}/g, '').replace(/[^A-Za-z]/g, '').length;
-      if (letters < 4) continue;
+      if (letters < 1) continue;
       const weight = source.replace(/\{\d+\}/g, '').length;
       try {
-        templates.push({ re: new RegExp(`^${pattern}$`, 's'), out: target, weight });
+        templates.push({ re: new RegExp(`^${pattern}$`, 's'), out: target, weight, numbersOnly: letters < 4 });
       } catch {
         /* a placeholder used twice: skip this template */
       }
@@ -98,6 +106,49 @@ function build(dict: Record<string, string>): void {
     }
   }
   templates.sort((a, b) => b.weight - a.weight);
+}
+
+/** A count, an amount or a percentage: "3", "1,204", "₦4.9m", "45%", "99+". */
+const NUMBER = /^[-−]?[₦$€£#+~]?\s?\d[\d,.\s]*(%|[kmbKMB]|Md|万|亿|\+)?\s?₦?$/;
+
+/**
+ * True when a slot has caught more than one sentence.
+ *
+ * A slot is for a figure, a name, a code or one phrase. When a page puts
+ * several sentences in one piece of text, a loose entry such as
+ * "{0} on your own list {1} due." will happily match the lot, with {0} holding
+ * every sentence before the last, and the page shows the last few words in
+ * Chinese glued to a paragraph of English. Refusing the match leaves the text
+ * in English, which is honest, instead of half translated, which is not.
+ *
+ * "Ltd. Lagos" has a full stop in it too, so it is not enough to look for one:
+ * it takes a sentence break followed by at least three more words.
+ */
+function spansSentences(value: string): boolean {
+  const brk = /[.!?。！？]\s+(?=\S)/.exec(value);
+  if (!brk) return false;
+  return value.slice(brk.index + brk[0].length).split(/\s+/).filter(Boolean).length >= 3;
+}
+
+/*
+ * Chinese sets Latin words and figures apart from the characters around them
+ * with a space: "由 Ada Obi 于 11月6日 创建", not "由Ada Obi于11月6日创建". A
+ * slot filled with a name or a number gets that space; one filled with a
+ * phrase the dictionary turned into Chinese does not, and neither does a
+ * figure that runs into a date character (6日, 2026年).
+ */
+const HAN = /[\u3400-\u9fff\uf900-\ufaff]/;
+const LATIN_START = /^[A-Za-z0-9₦$€£#(]/;
+const LATIN_END = /[A-Za-z0-9%)]$/;
+const DATE_UNIT = /^[年月日号]/;
+let spacedLang = false;
+
+function spaced(text: string, before: string | undefined, after: string | undefined): string {
+  if (!spacedLang || !text) return text;
+  let out = text;
+  if (before && HAN.test(before) && LATIN_START.test(out)) out = ' ' + out;
+  if (after && HAN.test(after) && LATIN_END.test(out) && !(DATE_UNIT.test(after) && /\d$/.test(out))) out += ' ';
+  return out;
 }
 
 /** The translation of one piece of text, or null if the dictionary does not know it. */
@@ -110,9 +161,12 @@ export function translateText(core: string, depth = 0): string | null {
     const m = t.re.exec(core);
     if (!m) continue;
     const groups = m.groups ?? {};
-    return t.out.replace(/\{(\d+)\}/g, (_, i: string) => {
+    if (Object.values(groups).some((value) => value !== undefined && spansSentences(value))) continue;
+    if (t.numbersOnly && !Object.values(groups).every((value) => value !== undefined && NUMBER.test(value.trim()))) continue;
+    return t.out.replace(/\{(\d+)\}/g, (slot: string, i: string, at: number, whole: string) => {
       const value = groups[`p${i}`] ?? '';
-      return translateText(value.trim(), depth + 1) ?? value;
+      const text = translateText(value.trim(), depth + 1) ?? value;
+      return spaced(text, whole[at - 1], whole[at + slot.length]);
     });
   }
   return null;
@@ -156,7 +210,8 @@ function doAttrs(el: Element): void {
     if (!value) continue;
     let seen = doneAttr.get(el);
     if (seen?.get(name) === value) continue;
-    if (skipped(el)) return;
+    /* A text box's own contents are the person's, but its placeholder and label are ours. */
+    if (skipped(el.tagName === 'TEXTAREA' ? el.parentElement : el)) return;
     const next = translateValue(value);
     if (!seen) {
       seen = new Map();
@@ -227,6 +282,7 @@ export async function startI18n(): Promise<void> {
   try {
     /* Each language is its own file, fetched only by the people who choose it. */
     const dict = (lang === 'zh' ? await import('@/i18n/zh.json') : await import('@/i18n/fr.json')).default as Record<string, string>;
+    spacedLang = lang === 'zh';
     build(dict);
     sweep(document.body);
     sweep(document.head);

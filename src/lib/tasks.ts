@@ -17,6 +17,7 @@
 import { collection, deleteDoc, doc, getDocs, limit, query, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { todayISO } from './format';
+import { dateLocale } from './locale';
 
 export type TaskPriority = 'high' | 'normal';
 
@@ -119,6 +120,6 @@ export function dueLabel(due: string | undefined, today = todayISO()): string {
   if (diff === 1) return 'Tomorrow';
   if (diff === -1) return 'Yesterday';
   if (diff < 0) return `${-diff} days late`;
-  if (diff < 7) return day.toLocaleDateString('en-NG', { weekday: 'long' });
-  return day.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
+  if (diff < 7) return day.toLocaleDateString(dateLocale('en-NG'), { weekday: 'long' });
+  return day.toLocaleDateString(dateLocale('en-NG'), { day: 'numeric', month: 'short' });
 }
