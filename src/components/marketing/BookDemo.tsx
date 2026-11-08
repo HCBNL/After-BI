@@ -116,8 +116,13 @@ function ChoiceList({
             aria-pressed={active}
             className={cn(
               'tap flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left text-[15px] font-semibold transition-all',
+              /* A chosen answer is a control the reader has just used, so
+                 the accent belongs here, but as an outline rather than a
+                 filled card: six filled accent cards in a grid is the whole
+                 budget spent on a question nobody has to be persuaded to
+                 answer. */
               active
-                ? 'border-brand-500 bg-brand-50 text-navy-900'
+                ? 'border-brand-500 bg-white text-navy-900 ring-1 ring-brand-500'
                 : 'border-hairline bg-[var(--surface-card)] text-secondary hover:border-[var(--border-strong)] hover:text-primary',
             )}
           >
@@ -228,8 +233,10 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
       <div className="scrollbar-thin flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-2 sm:px-7">
         {sent ? (
           <div className="my-auto flex flex-col items-center justify-center py-10 text-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-400/15">
-              <CheckCircle2 size={32} className="text-brand-400" aria-hidden />
+            {/* Done, not "press me": the accent would be pointing at
+                nothing, since there is nothing left on this screen to do. */}
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-navy-500/15">
+              <CheckCircle2 size={32} className="text-navy-600" aria-hidden />
             </span>
             <h2 className="mt-5 font-display text-[1.5rem] font-extrabold tracking-tight text-primary">
               That is on its way
@@ -240,7 +247,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
             </p>
             <p className="mt-4 text-[13px] text-muted">
               Nothing opened? Write to{' '}
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-brand-400 underline">
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-primary underline underline-offset-4">
                 {SUPPORT_EMAIL}
               </a>
               .

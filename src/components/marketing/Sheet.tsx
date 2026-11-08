@@ -103,16 +103,16 @@ export function Sheet({
           wide ? 'sm:max-w-3xl' : 'sm:max-w-lg',
         )}
       >
-        {/* The green light over the top of the sheet, as on the front page. */}
+        {/* The light over the top of the sheet, in the palette's own ink. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(70%_100%_at_50%_0%,rgba(16,185,129,0.12),rgba(16,185,129,0)_70%)]"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-[radial-gradient(70%_100%_at_50%_0%,rgba(var(--site-ink,15_31_54),0.07),transparent_70%)]"
         />
 
         {progress !== undefined && (
           <div className="h-1 w-full shrink-0 bg-[var(--surface-sunken)]" aria-hidden>
             <div
-              className="h-full rounded-r-full bg-gradient-to-r from-brand-400 to-brand-600 transition-[width] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              className="h-full rounded-r-full bg-brand-600 transition-[width] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
               style={{ width: `${Math.max(4, Math.min(100, progress * 100))}%` }}
             />
           </div>

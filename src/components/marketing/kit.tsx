@@ -27,6 +27,7 @@ import { Link } from 'react-router-dom';
 import { useAsync } from '@/hooks/useAsync';
 import { getSiteHome, type SiteHome } from '@/lib/siteDoc';
 import { WHATSAPP_URL } from '@/lib/site';
+import { SITE_PALETTES, activePalette } from '@/lib/sitePalette';
 import { SiteFooter, SiteHeader } from './chrome';
 import { BookDemo } from './BookDemo';
 import { btn, container } from './tokens';
@@ -160,10 +161,15 @@ export function PublicShell({
     const root = document.documentElement;
     const meta = document.querySelector('meta[name="theme-color"]');
     const before = meta?.getAttribute('content');
+    const palette = SITE_PALETTES[activePalette()];
     root.dataset.surface = 'site';
-    meta?.setAttribute('content', '#0f1f36');
+    /* Which 60/30/10 palette the public pages wear; see lib/sitePalette.ts. */
+    root.dataset.palette = palette.id;
+    /* The browser's own bar takes the structure colour, not the accent. */
+    meta?.setAttribute('content', palette.structure);
     return () => {
       delete root.dataset.surface;
+      delete root.dataset.palette;
       if (meta && before) meta.setAttribute('content', before);
     };
   }, []);
@@ -187,17 +193,25 @@ export function PublicShell({
 
 /* ------------------------------------------------------- the closing band */
 
-/** The last thing a reader sees is the ask: a green band with a picture beside it. */
+/**
+ * The last thing a reader sees is the ask: a deep band with a picture beside it.
+ *
+ * The band used to be painted in the accent, which is the most expensive way
+ * to spend the ten per cent: a thousand-pixel slab of the loud colour, with
+ * the actual button inside it forced to white to stay visible. Now the band
+ * is the structure colour at depth and the button on it is the brightest
+ * thing in the section, which is the whole arrangement in miniature.
+ */
 function ClosingBand() {
   const { book } = useAsk();
 
   return (
     <section className="bg-white py-16 sm:py-20">
       <div className={container}>
-        <div className="relative isolate grid overflow-hidden rounded-[2rem] bg-brand-700 text-white lg:grid-cols-[1.15fr_1fr]">
-          <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 -z-10 h-80 w-80 rounded-full bg-brand-500/40 blur-3xl" />
+        <div className="relative isolate grid overflow-hidden rounded-[2rem] bg-navy-900 text-white lg:grid-cols-[1.15fr_1fr]">
+          <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 -z-10 h-80 w-80 rounded-full bg-navy-500/40 blur-3xl" />
           <div className="p-8 sm:p-12 lg:p-14">
-            <p className="text-[13px] font-bold uppercase tracking-[0.16em] text-brand-200">Book a demo</p>
+            <p className="text-[13px] font-bold uppercase tracking-[0.16em] text-navy-200">Book a demo</p>
             <h2 className="mt-4 font-display text-[2rem] font-extrabold leading-[1.08] tracking-[-0.035em] sm:text-[2.8rem]">
               Ready to see AfterBI in action?
             </h2>
@@ -205,7 +219,8 @@ function ClosingBand() {
               A guided demo, configured around your products, partners and price lists.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button type="button" onClick={book} className={btn.white}>
+              {/* The accent, now that the band behind it is structure. */}
+              <button type="button" onClick={book} className={btn.accent}>
                 Book a demo
               </button>
               <Link to="/pricing" className={btn.lineWhite}>
@@ -228,7 +243,7 @@ function ClosingBand() {
 /** What the closing band shows until a photograph is added. */
 function ClosingArt() {
   return (
-    <div className="relative h-full w-full bg-brand-800">
+    <div className="relative h-full w-full bg-navy-800">
       <div aria-hidden className="site-dark-dots absolute inset-0" />
       <div className="absolute inset-0 flex items-center justify-center p-10">
         <div className="w-full max-w-xs rounded-2xl bg-white p-5 text-navy-900 shadow-2xl">
@@ -240,11 +255,11 @@ function ClosingArt() {
             </span>
             <span className="text-right">
               <span className="block text-[12px] text-navy-500">Sell through</span>
-              <span className="font-display text-[1.4rem] font-extrabold text-brand-700">₦71.9m</span>
+              <span className="font-display text-[1.4rem] font-extrabold text-navy-900">₦71.9m</span>
             </span>
           </div>
           <div className="mt-4 h-2.5 rounded-full bg-navy-100">
-            <div className="h-full w-[85%] rounded-full bg-brand-500" />
+            <div className="h-full w-[85%] rounded-full bg-navy-700" />
           </div>
           <p className="mt-2 text-[12px] font-semibold text-navy-500">₦12.3m still in the channel</p>
         </div>

@@ -4,9 +4,22 @@
  * In a file with no imports on purpose, so the header, the footer and the
  * pages can all read it without importing one another.
  *
- * The public site is light: white paper, navy type, green for the one thing a
- * screen wants pressed. Buttons are pill shaped and tall, the way a visitor's
- * thumb expects a marketing page to be.
+ * WHERE THE ACCENT IS ALLOWED, WHICH IS THE POINT OF THIS FILE
+ *
+ * The public site runs on 60/30/10 (see "the public site, light" in
+ * `src/index.css`): ground, structure, accent. This file is where most of the
+ * ten per cent is spent, so the rule is written here rather than remembered:
+ *
+ *   accent  →  `btn.accent` and nothing else in this file.
+ *   structure → every other button, every label, every link.
+ *
+ * `btn.accent` is one button per screen. Two accent buttons side by side is
+ * two primary actions, which is none: the second one goes to `btn.outline`,
+ * which is the structure colour and reads as the quieter choice without
+ * looking disabled.
+ *
+ * Buttons are pill shaped and tall, the way a visitor's thumb expects a
+ * marketing page to be.
  */
 
 const base =
@@ -14,19 +27,25 @@ const base =
   'text-[15px] font-bold transition-colors active:scale-[0.98]';
 
 export const btn = {
-  /** The one thing a screen wants pressed. */
-  green: `${base} bg-brand-600 text-white hover:bg-brand-700`,
-  /** Second choice on white. */
+  /**
+   * THE ACCENT. The one thing a screen wants pressed.
+   *
+   * The whole ten per cent of the palette is here and in the "most popular"
+   * seal on the pricing card. If this class is on two things in one viewport,
+   * one of them is wrong.
+   */
+  accent: `${base} bg-brand-600 text-white hover:bg-brand-700`,
+  /** Second choice on paper: structure, outlined. */
   outline: `${base} border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white`,
-  /** Navy, solid. */
+  /** Structure, solid. The quiet primary where the accent is already spent. */
   navy: `${base} bg-navy-900 text-white hover:bg-navy-800`,
-  /** White on a dark or green band. */
-  white: `${base} bg-white text-navy-900 hover:bg-brand-50`,
-  /** Outline on a dark or green band. */
+  /** White on a dark band: the accent would compete with the band itself. */
+  white: `${base} bg-white text-navy-900 hover:bg-navy-100`,
+  /** Outline on a dark band. */
   lineWhite: `${base} border-2 border-white/60 text-white hover:bg-white/10`,
 
   /* Kept for the few shared pieces that still ask for the old names. */
-  light: `${base} bg-white text-navy-900 hover:bg-brand-50`,
+  light: `${base} bg-white text-navy-900 hover:bg-navy-100`,
   glass: `${base} border-2 border-navy-900/15 text-navy-900 hover:border-navy-900`,
   line: `${base} border-2 border-navy-900/15 text-navy-900 hover:border-navy-900`,
 } as const;
@@ -34,10 +53,18 @@ export const btn = {
 /** The content column, the same width on every page. */
 export const container = 'mx-auto w-full max-w-7xl px-5 sm:px-8';
 
-/** Small green label above a section title. */
+/**
+ * The small caps label above a section title: structure, not accent.
+ *
+ * There is one of these on nearly every section of every page, so painting
+ * them in the accent put the loud colour forty times on a single scroll and
+ * left the button it was supposed to be pointing at indistinguishable from a
+ * caption. Set in the structure colour at a lighter step, it still reads as a
+ * label and costs nothing from the ten.
+ */
 export const eyebrowBase = 'text-[13px] font-bold uppercase tracking-[0.14em]';
-export const eyebrow = `${eyebrowBase} text-brand-700`;
+export const eyebrow = `${eyebrowBase} text-navy-500`;
 
-/** Text link with an arrow feel. */
+/** Text link with an arrow feel. Structure: a link is not a press-target. */
 export const textLink =
-  'inline-flex items-center gap-1.5 text-[15px] font-bold text-brand-700 underline-offset-4 hover:underline';
+  'inline-flex items-center gap-1.5 text-[15px] font-bold text-navy-900 underline underline-offset-4 decoration-navy-900/30 hover:decoration-navy-900';

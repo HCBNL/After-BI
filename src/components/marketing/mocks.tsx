@@ -31,12 +31,23 @@ export function Window({ children, className, title = 'afterbi.com' }: { childre
   );
 }
 
+/*
+ * A note on colour in these mocks.
+ *
+ * They are pictures of the product sitting on a marketing page, which means
+ * they compete with the page's own call to action. Painted in the accent,
+ * every bar chart and progress bar in them was brighter than the "Book a
+ * demo" button two hundred pixels away. Data here is drawn in the structure
+ * colour, which is what data should be anyway, and each mock keeps at most
+ * one accent hit, the single thing that looks live.
+ */
+
 /** A phone. */
 export function Phone({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div className={cn('rounded-[1.8rem] bg-navy-950 p-1.5 shadow-[0_30px_70px_-25px_rgba(15,31,54,0.6)]', className)}>
       <div className="overflow-hidden rounded-[1.4rem] bg-white">
-        <div className="flex h-5 items-center justify-center bg-brand-700">
+        <div className="flex h-5 items-center justify-center bg-navy-900">
           <span className="h-1.5 w-10 rounded-full bg-navy-950/40" />
         </div>
         {children}
@@ -52,7 +63,7 @@ function Kpi({ label, value, delta, up = true }: { label: string; value: string;
     <div className="rounded-lg bg-white p-2.5 ring-1 ring-navy-900/8">
       <p className="truncate text-[8.5px] font-semibold uppercase tracking-wide text-navy-400">{label}</p>
       <p className="mt-1 font-display text-[15px] font-extrabold leading-none text-navy-900">{value}</p>
-      <p className={cn('mt-1 truncate text-[8.5px] font-bold', up ? 'text-brand-600' : 'text-[#d9534f]')}>{delta}</p>
+      <p className={cn('mt-1 truncate text-[8.5px] font-bold', up ? 'text-navy-600' : 'text-[#d9534f]')}>{delta}</p>
     </div>
   );
 }
@@ -74,7 +85,7 @@ function Bars({ a, b, className }: { a: number[]; b: number[]; className?: strin
       {a.map((value, index) => (
         <div key={index} className="flex h-full flex-1 items-end gap-[2px]">
           <span className="flex-1 rounded-t-sm bg-navy-300" style={{ height: `${value}%` }} />
-          <span className="flex-1 rounded-t-sm bg-brand-500" style={{ height: `${b[index]}%` }} />
+          <span className="flex-1 rounded-t-sm bg-navy-700" style={{ height: `${b[index]}%` }} />
         </div>
       ))}
     </div>
@@ -88,7 +99,7 @@ export function Sparkline({ className, light = false }: { className?: string; li
       {[20, 40, 60].map((y) => (
         <line key={y} x1="0" x2="200" y1={y} y2={y} stroke={light ? 'rgba(255,255,255,0.12)' : 'rgba(15,31,54,0.08)'} strokeWidth="1" />
       ))}
-      <path d="M0 62 C 25 55, 40 66, 60 58 S 95 40, 115 46 S 150 30, 170 24 S 190 14, 200 10" fill="none" stroke="var(--color-brand-500)" strokeWidth="3" strokeLinecap="round" />
+      <path d="M0 62 C 25 55, 40 66, 60 58 S 95 40, 115 46 S 150 30, 170 24 S 190 14, 200 10" fill="none" stroke="var(--color-navy-700)" strokeWidth="3" strokeLinecap="round" />
       <path d="M0 66 C 30 64, 50 60, 75 56 S 120 50, 140 44 S 180 36, 200 30" fill="none" stroke={light ? 'rgba(255,255,255,0.45)' : '#9bb4d4'} strokeWidth="2" strokeDasharray="5 5" />
     </svg>
   );
@@ -143,7 +154,7 @@ function Sidebar() {
           key={slug}
           className={cn(
             'flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[8.5px] font-semibold',
-            index === 0 ? 'bg-white text-brand-700 ring-1 ring-navy-900/8' : 'text-navy-500',
+            index === 0 ? 'bg-white text-navy-900 ring-1 ring-navy-900/8' : 'text-navy-500',
           )}
         >
           <ModuleIcon slug={slug} size={10} />
@@ -201,12 +212,12 @@ export function PortalScreen() {
       <div className="rounded-lg bg-navy-900 p-2 text-white">
         <p className="text-[7.5px] text-white/60">Balance</p>
         <p className="font-display text-[13px] font-extrabold">₦1,240,500</p>
-        <p className="text-[7.5px] text-brand-300">Limit ₦3,000,000</p>
+        <p className="text-[7.5px] text-white/60">Limit ₦3,000,000</p>
       </div>
       {['Place an order', 'My statement', 'Report sell-out'].map((label, index) => (
         <div key={label} className="flex items-center justify-between rounded-md bg-navy-50 px-2 py-1.5">
           <span className="truncate text-[8px] font-bold text-navy-800">{label}</span>
-          <span className={cn('h-1.5 w-1.5 rounded-full', index === 0 ? 'bg-brand-500' : 'bg-navy-300')} />
+          <span className={cn('h-1.5 w-1.5 rounded-full', index === 0 ? 'bg-navy-900' : 'bg-navy-300')} />
         </div>
       ))}
     </div>
@@ -248,7 +259,7 @@ function ModuleBody({ slug }: { slug: string }) {
               </div>
               <div className="mt-1.5 h-1.5 rounded-full bg-navy-100">
                 <div
-                  className={cn('h-full rounded-full', (level as number) < 30 ? 'bg-[#e0a100]' : 'bg-brand-500')}
+                  className={cn('h-full rounded-full', (level as number) < 30 ? 'bg-[#e0a100]' : 'bg-navy-700')}
                   style={{ width: `${level}%` }}
                 />
               </div>
@@ -284,8 +295,8 @@ function ModuleBody({ slug }: { slug: string }) {
           <div className="rounded-lg bg-white p-2.5 ring-1 ring-navy-900/8">
             <p className="text-[9px] font-bold text-navy-900">Ageing</p>
             {[
-              ['Current', 70, 'bg-brand-500'],
-              ['30 days', 45, 'bg-brand-300'],
+              ['Current', 70, 'bg-navy-700'],
+              ['30 days', 45, 'bg-navy-400'],
               ['60 days', 24, 'bg-[#e0a100]'],
               ['90+ days', 12, 'bg-[#d9534f]'],
             ].map(([label, width, color]) => (
@@ -334,7 +345,7 @@ function ModuleBody({ slug }: { slug: string }) {
               <p className="mt-1 font-display text-[16px] font-extrabold text-navy-900">{score}%</p>
               <div className="mt-1 h-1.5 rounded-full bg-navy-100">
                 <div
-                  className={cn('h-full rounded-full', (score as number) >= 90 ? 'bg-brand-500' : 'bg-[#e0a100]')}
+                  className={cn('h-full rounded-full', (score as number) >= 90 ? 'bg-navy-700' : 'bg-[#e0a100]')}
                   style={{ width: `${Math.min(100, score as number)}%` }}
                 />
               </div>
@@ -383,7 +394,7 @@ function ModuleBody({ slug }: { slug: string }) {
                 <div key={r as string} className="mt-1.5 flex items-center gap-1.5">
                   <span className="w-9 text-[8px] font-semibold text-navy-500">{r}</span>
                   <div className="h-1.5 flex-1 rounded-full bg-navy-100">
-                    <div className="h-full rounded-full bg-brand-500" style={{ width: `${v}%` }} />
+                    <div className="h-full rounded-full bg-navy-700" style={{ width: `${v}%` }} />
                   </div>
                 </div>
               ))}
@@ -395,7 +406,7 @@ function ModuleBody({ slug }: { slug: string }) {
       return (
         <div className="space-y-1.5 p-3">
           {[
-            ['Approval needed', 'SO-10481 is waiting for you', 'bg-brand-500'],
+            ['Approval needed', 'SO-10481 is waiting for you', 'bg-brand-500'], // the one live thing in the mock
             ['Reminder sent', 'Summit Wholesale: statement due', 'bg-navy-400'],
             ['Task assigned', 'Stock count at North Hub', 'bg-navy-400'],
             ['Order unfinished', 'Draft for FreshMart, 2 lines', 'bg-[#e0a100]'],
@@ -452,7 +463,7 @@ function ModuleBody({ slug }: { slug: string }) {
 /** A screen of one module, in a window. */
 export function ModuleMock({ slug, className }: { slug: string; className?: string }) {
   return (
-    <div className={cn('flex h-full w-full items-center justify-center bg-gradient-to-br from-navy-50 to-brand-50 p-[6%]', className)}>
+    <div className={cn('flex h-full w-full items-center justify-center bg-gradient-to-br from-navy-50 to-white p-[6%]', className)}>
       <Window className="w-full">
         <div className="aspect-[16/10] bg-navy-50/50">
           <ModuleBody slug={slug} />
@@ -467,7 +478,7 @@ export function SceneMock({ slug, className }: { slug: string; className?: strin
   return (
     <div className={cn('relative flex h-full w-full items-center justify-center overflow-hidden bg-navy-900 p-[8%]', className)}>
       <div aria-hidden className="site-dark-dots absolute inset-0" />
-      <div aria-hidden className="absolute -left-16 -top-16 h-64 w-64 rounded-full bg-brand-500/25 blur-3xl" />
+      <div aria-hidden className="absolute -left-16 -top-16 h-64 w-64 rounded-full bg-navy-500/35 blur-3xl" />
       <div aria-hidden className="absolute -bottom-20 -right-10 h-64 w-64 rounded-full bg-navy-400/30 blur-3xl" />
       <Window className="relative w-full">
         <div className="aspect-[16/10] bg-navy-50/50">

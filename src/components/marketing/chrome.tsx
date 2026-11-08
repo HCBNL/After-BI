@@ -100,7 +100,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
         <div className={cn(container, 'flex h-11 items-center justify-between gap-3 text-[13px]')}>
           <p className="hidden min-w-0 truncate sm:block">
             <span className="font-semibold">{PROMO.text}</span>{' '}
-            <Link to={PROMO.link.href} className="hidden font-bold text-brand-300 underline-offset-4 hover:underline md:inline">
+            <Link to={PROMO.link.href} className="hidden font-bold text-white underline underline-offset-4 decoration-white/40 hover:decoration-white md:inline">
               {PROMO.link.label}
             </Link>
           </p>
@@ -176,6 +176,9 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
             >
               {door.label}
             </Link>
+            {/* The accent on the header, and the only one above the fold.
+                Everything else on this bar is structure so that this button
+                is the brightest thing on the page from any scroll position. */}
             <button
               type="button"
               onClick={onBook}
@@ -222,7 +225,7 @@ function PanelLink({ to, title, body, icon }: { to: string; title: string; body?
   return (
     <Link to={to} className="group flex gap-3 rounded-xl p-3 transition-colors hover:bg-navy-50">
       {icon && (
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-600 group-hover:text-white">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-100 text-navy-700 transition-colors group-hover:bg-navy-900 group-hover:text-white">
           {icon}
         </span>
       )}
@@ -286,13 +289,13 @@ function SolutionsPanel() {
         <ul className="grid grid-cols-2 gap-x-4 px-3">
           {INDUSTRIES.map((item) => (
             <li key={item.name}>
-              <Link to="/solutions#industries" className="block py-2 text-[14.5px] font-semibold text-navy-700 hover:text-brand-700">
+              <Link to="/solutions#industries" className="block py-2 text-[14.5px] font-semibold text-navy-700 hover:text-navy-900 hover:underline hover:underline-offset-4">
                 {item.name}
               </Link>
             </li>
           ))}
         </ul>
-        <Link to="/solutions" className="mt-4 inline-flex items-center gap-1.5 px-3 text-[14.5px] font-bold text-brand-700 hover:underline">
+        <Link to="/solutions" className="mt-4 inline-flex items-center gap-1.5 px-3 text-[14.5px] font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
           All solutions <ArrowRight size={16} aria-hidden />
         </Link>
       </div>
@@ -311,7 +314,7 @@ function SupportPanel({ onBook }: { onBook: () => void }) {
       <div>
         <PanelTitle>Talk to us</PanelTitle>
         <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="group flex gap-3 rounded-xl p-3 hover:bg-navy-50">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-100 text-navy-700 transition-colors group-hover:bg-navy-900 group-hover:text-white">
             <MessageCircle size={19} aria-hidden />
           </span>
           <span>
@@ -320,7 +323,7 @@ function SupportPanel({ onBook }: { onBook: () => void }) {
           </span>
         </a>
         <a href={`mailto:${SUPPORT_EMAIL}`} className="group flex gap-3 rounded-xl p-3 hover:bg-navy-50">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-100 text-navy-700 transition-colors group-hover:bg-navy-900 group-hover:text-white">
             <Mail size={19} aria-hidden />
           </span>
           <span>
@@ -362,14 +365,14 @@ function PromoCard({
         className="-mx-6 -mt-6 mb-5 aspect-[16/9]"
         fallback={<PictureFallback tone="dark" />}
       />
-      <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-brand-500/25 blur-2xl" />
+      <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-navy-400/30 blur-2xl" />
       <p className="relative font-display text-[1.25rem] font-extrabold tracking-[-0.03em]">{title}</p>
       <p className="relative mt-2 text-[14px] leading-relaxed text-white/70">{body}</p>
       <div className="relative mt-5 flex flex-col gap-2">
-        <button type="button" onClick={onBook} className={cn(btn.green, 'h-11')}>
+        <button type="button" onClick={onBook} className={cn(btn.accent, 'h-11')}>
           Book a demo
         </button>
-        <Link to={link.to} className="inline-flex items-center justify-center gap-1.5 py-2 text-[14px] font-bold text-brand-300 hover:text-white">
+        <Link to={link.to} className="inline-flex items-center justify-center gap-1.5 py-2 text-[14px] font-bold text-white/70 hover:text-white">
           {link.label} <ArrowRight size={15} aria-hidden />
         </Link>
       </div>
@@ -485,7 +488,7 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
             onClose();
             onBook();
           }}
-          className={btn.green}
+          className={btn.accent}
         >
           Book a demo
         </button>
@@ -529,7 +532,7 @@ export function SiteFooter() {
                     rel="noreferrer noopener"
                     aria-label={channel.label}
                     title={channel.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.07] text-white/80 transition-colors hover:bg-brand-600 hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.07] text-white/80 transition-colors hover:bg-white/20 hover:text-white"
                   >
                     <SocialIcon name={channel.key} />
                   </a>

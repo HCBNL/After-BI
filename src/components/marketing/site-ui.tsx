@@ -46,11 +46,21 @@ import { container, eyebrow, eyebrowBase } from './tokens';
 
 /* ------------------------------------------------------------------ section */
 
+/*
+ * A section's ground, and never its accent.
+ *
+ * A full-bleed band in the accent colour is the ten per cent spent on a
+ * backdrop: the page goes loud for six hundred pixels and the button inside
+ * the band has to be white to survive it, so the one colour that should mean
+ * "press this" ends up meaning "this is a section". Both dark tones are the
+ * structure colour at different depths; the accent stays on the button.
+ */
 const TONES = {
   white: 'bg-white text-navy-900',
   mist: 'bg-navy-50 text-navy-900',
   navy: 'bg-navy-900 text-white',
-  green: 'bg-brand-700 text-white',
+  /* Kept under its old name so callers need no edit: a deep structure band. */
+  green: 'bg-navy-800 text-white',
 } as const;
 
 export function Section({
@@ -94,7 +104,7 @@ export function SectionHead({
   const big = Tag === 'h1';
   return (
     <header className={cn(align === 'center' && 'mx-auto text-center', 'max-w-3xl', className)}>
-      {kicker && <p className={onDark ? `${eyebrowBase} text-brand-300` : eyebrow}>{kicker}</p>}
+      {kicker && <p className={onDark ? `${eyebrowBase} text-navy-200` : eyebrow}>{kicker}</p>}
       <Tag
         className={cn(
           'font-display font-extrabold tracking-[-0.035em] text-balance',
@@ -226,13 +236,13 @@ export function Accordion({ items, className }: { items: { q: string; a: string 
                 aria-expanded={isOpen}
                 aria-controls={panel}
                 onClick={() => setOpen(isOpen ? null : index)}
-                className="flex w-full items-center justify-between gap-6 py-5 text-left text-[17px] font-bold text-navy-900 transition-colors hover:text-brand-700"
+                className="flex w-full items-center justify-between gap-6 py-5 text-left text-[17px] font-bold text-navy-900 transition-colors hover:text-navy-600"
               >
                 {item.q}
                 <ChevronDown
                   size={20}
                   aria-hidden
-                  className={cn('shrink-0 text-navy-400 transition-transform duration-200', isOpen && 'rotate-180 text-brand-700')}
+                  className={cn('shrink-0 text-navy-400 transition-transform duration-200', isOpen && 'rotate-180 text-navy-900')}
                 />
               </button>
             </h3>
@@ -253,10 +263,13 @@ export function CheckList({ items, onDark = false, className }: { items: string[
     <ul className={cn('space-y-3', className)}>
       {items.map((item) => (
         <li key={item} className={cn('flex gap-3 text-[16px] leading-[1.55]', onDark ? 'text-white/85' : 'text-navy-800')}>
+          {/* A tick is information, not an invitation: structure, not accent.
+              Twelve accent ticks beside a single accent button is eleven
+              false signals and one real one. */}
           <span
             className={cn(
               'mt-[0.15em] flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
-              onDark ? 'bg-brand-400/20 text-brand-300' : 'bg-brand-100 text-brand-700',
+              onDark ? 'bg-white/15 text-white' : 'bg-navy-100 text-navy-700',
             )}
           >
             <Check size={13} strokeWidth={3} aria-hidden />
@@ -321,7 +334,7 @@ export function IconBadge({ children, className }: { children: ReactNode; classN
     <span
       className={cn(
         'absolute left-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-xl text-white',
-        'bg-gradient-to-br from-brand-400/90 to-brand-700/90 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.5)] ring-1 ring-white/25 backdrop-blur-sm',
+        'bg-gradient-to-br from-navy-600/90 to-navy-900/90 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.5)] ring-1 ring-white/25 backdrop-blur-sm',
         className,
       )}
     >
@@ -338,7 +351,7 @@ export function PictureFallback({ icon, tone = 'light' }: { icon?: ReactNode; to
         'relative flex h-full w-full items-center justify-center',
         tone === 'dark'
           ? 'bg-gradient-to-br from-navy-600 via-navy-800 to-navy-950 text-white/15'
-          : 'bg-gradient-to-br from-brand-50 via-white to-navy-50 text-brand-500/25',
+          : 'bg-gradient-to-br from-navy-50 via-white to-navy-100 text-navy-900/15',
       )}
     >
       <div aria-hidden className={cn('absolute inset-0', tone === 'dark' ? 'site-dark-dots' : '')} />

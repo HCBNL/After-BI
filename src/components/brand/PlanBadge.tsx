@@ -2,8 +2,9 @@
  * The organisation's plan, as a verification seal beside its name.
  *
  * A badge, not a button: it does nothing when tapped. The colour says which
- * plan the organisation is on (slate Starter, orange Growth, blue Premium,
- * gold Enterprise), and the plan's name is the tooltip and accessible label.
+ * plan the organisation is on (slate Sole Trader, orange SME, blue
+ * Enterprise, gold Enterprise Group), and the plan's name is the tooltip and
+ * accessible label.
  * The platform owner sets the plan in Platform (Organisations); every member
  * of the organisation sees the same seal.
  *

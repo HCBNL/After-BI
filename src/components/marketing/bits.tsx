@@ -88,7 +88,13 @@ export function Reveal({
 
 /* ----------------------------------------------------------------- the dot */
 
-/** The full stop, in the brand's green. The entire mark. */
+/**
+ * The full stop, in the accent. The entire mark.
+ *
+ * One of the few places outside a button where the ten per cent is spent,
+ * and it earns it: a single character per headline, which is as small as a
+ * use of a colour can be while still being the thing you notice.
+ */
 export function Stop() {
   return <span className="text-brand-500">.</span>;
 }
