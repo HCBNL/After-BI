@@ -10,6 +10,12 @@ import { Button, useToast } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import { fromIso, isOffDay, prettyIso, workingDays, daysBetween, type PayPeriod } from '@/lib/payroll';
 import { clockIn, clockOut, getAttendance, hoursBetween, timeOf, type Attendance } from '@/lib/hr';
+import { dateLocale } from '@/lib/locale';
+
+/** Monday to Sunday, one letter or character each, in the chosen language. 1 Jan 2024 was a Monday. */
+const WEEKDAY_INITIALS = Array.from({ length: 7 }, (_, i) =>
+  new Date(Date.UTC(2024, 0, 1 + i)).toLocaleDateString(dateLocale('en-GB'), { weekday: 'narrow', timeZone: 'UTC' }),
+);
 
 /* ------------------------------------------------------------------ time */
 
@@ -183,8 +189,7 @@ export function PayCountdown({
             )}
           </h2>
           <p className="mt-1.5 text-body text-white/60">
-            {period.label} salary, covers {prettyIso(period.start, { day: 'numeric', month: 'short' })} to{' '}
-            {prettyIso(period.end, { day: 'numeric', month: 'short' })}
+            {`${period.label} salary, covers ${prettyIso(period.start, { day: 'numeric', month: 'short' })} to ${prettyIso(period.end, { day: 'numeric', month: 'short' })}`}
           </p>
 
           {!isPayday && (
@@ -209,7 +214,7 @@ export function PayCountdown({
             <div className="mt-2 flex justify-between gap-2 text-caption font-semibold text-white/50">
               <span>{prettyIso(period.start, { day: 'numeric', month: 'short' })}</span>
               <span className="text-white/75">
-                Working day {Math.min(done, wd.length)} of {wd.length}
+                {`Working day ${Math.min(done, wd.length)} of ${wd.length}`}
               </span>
               <span>{prettyIso(period.end, { day: 'numeric', month: 'short' })}</span>
             </div>
@@ -259,7 +264,7 @@ export function PayCountdown({
                 <span className="mt-1 text-micro font-bold uppercase tracking-[0.14em] text-white/50">{d === 1 ? 'day to go' : 'days to go'}</span>
               </>
             )}
-            <span className="mt-2 rounded-full bg-white/10 px-2 py-0.5 text-micro font-bold tabular text-white/70">{Math.round(pct * 100)}% of the month</span>
+            <span className="mt-2 rounded-full bg-white/10 px-2 py-0.5 text-micro font-bold tabular text-white/70">{`${Math.round(pct * 100)}% of the month`}</span>
           </div>
         </div>
       </div>
@@ -373,8 +378,7 @@ export function ClockCard({
           </Button>
         ) : offDay && state === 'out' ? (
           <p className="rounded-2xl border border-dashed border-hairline px-4 py-3.5 text-center text-body text-secondary">
-            {holidayName ? `${holidayName} (a holiday).` : 'Day off.'} No clock in needed today.
-          </p>
+            {`${holidayName ? `${holidayName} (a holiday).` : 'Day off.'} No clock in needed today.`}</p>
         ) : state === 'out' ? (
           <Button full size="lg" icon={<LogIn size={18} />} loading={busy} onClick={() => void act('in')} className="hr-breathe !bg-[#0b8f0b] hover:!bg-[#0a7a0a]">
             Clock in
@@ -516,8 +520,14 @@ export function AttendanceStrip({
   return (
     <div className="max-w-[460px]">
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((w, i) => (
-          <span key={i} className="text-center text-micro font-semibold uppercase text-muted">
+        {/*
+          The weekday initials come from the browser, in the chosen language:
+          "M T W T F S S" cannot be translated letter by letter, because T is
+          both Tuesday and Thursday and S both Saturday and Sunday. translate=
+          "no" stops the page translator re-reading them as English letters.
+ */}
+        {WEEKDAY_INITIALS.map((w, i) => (
+          <span key={i} translate="no" className="text-center text-micro font-semibold uppercase text-muted">
             {w}
           </span>
         ))}
@@ -540,7 +550,7 @@ export function AttendanceStrip({
                 if (toggles) onToggle?.(date, !countsNow);
                 else if (asks) onRequest?.(date);
               }}
-              title={`${prettyIso(date)}: ${LABEL[st]}${asks ? ', tap to request a reissue' : ''}`}
+              title={`${prettyIso(date)}: ${asks ? 'absent, tap to request a reissue' : LABEL[st]}`}
               style={{ animationDelay: `${i * 18}ms` }}
               className={cn(
                 'hr-rise relative flex aspect-square flex-col items-center justify-center rounded-xl border text-label font-bold leading-none tabular transition-transform',
@@ -586,7 +596,7 @@ export function PeriodNote({ period }: { period: PayPeriod }) {
   return (
     <p className="flex items-center gap-1.5 text-label text-muted">
       <CalendarDays size={13} aria-hidden />
-      {prettyIso(period.start, { day: 'numeric', month: 'short' })} to {prettyIso(period.end, { day: 'numeric', month: 'short', year: 'numeric' })}
+      {`From ${prettyIso(period.start, { day: 'numeric', month: 'short' })} to ${prettyIso(period.end, { day: 'numeric', month: 'short', year: 'numeric' })}`}
     </p>
   );
 }

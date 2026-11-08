@@ -118,6 +118,17 @@ function Bars({ rows: all, onPick, empty }: { rows: Row[]; onPick?: (key: string
   );
 }
 
+/** Each table's title as one phrase, so every language can word it. */
+const REVENUE_BY: Record<Dimension, string> = {
+  rep: 'Revenue by salesperson',
+  customer: 'Revenue by customer',
+  channel: 'Revenue by channel',
+  state: 'Revenue by state',
+  zone: 'Revenue by region',
+  category: 'Revenue by category',
+  product: 'Revenue by product',
+};
+
 export default function AnalyticsPage() {
   const { distributors, products } = useOrg();
   const wide = useWide();
@@ -197,7 +208,6 @@ export default function AnalyticsPage() {
 
   const active = Object.entries(filters).filter(([, v]) => v) as [keyof Filters, string][];
   const visible = showAll ? rows : rows.slice(0, 12);
-  const sourceLabel = source === 'sell-in' ? 'sell-in' : 'sell-out';
 
   return (
     <div>
@@ -259,7 +269,7 @@ export default function AnalyticsPage() {
           {/* --------------------------------------------------------- KPIs */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatTile
-              label={`Revenue (${sourceLabel})`}
+              label={source === 'sell-in' ? 'Revenue (sell-in)' : 'Revenue (sell-out)'}
               value={nairaShort(summary.revenue)}
               hint={summary.growth === null ? 'Nothing in the previous period' : `${summary.growth >= 0 ? '+' : ''}${summary.growth.toFixed(1)}% on the previous period`}
               icon={<Wallet size={17} />}
@@ -351,7 +361,7 @@ export default function AnalyticsPage() {
 
           {/* --------------------------------------------------- breakdowns */}
           <Panel
-            title={`Revenue by ${DIMENSION_LABEL[tab].toLowerCase()}`}
+            title={REVENUE_BY[tab]}
             action={
               <Button
                 variant="outline"
@@ -376,7 +386,15 @@ export default function AnalyticsPage() {
               />
             </div>
             {rows.length === 0 ? (
-              <p className="text-label text-muted">No {sourceLabel} in this period{active.length ? ' for these filters' : ''}.</p>
+              <p className="text-label text-muted">{/* Whole sentences: "sell-in" and "sell-out" take different words, and
+                  in French different genders, so neither can sit in a slot. */}
+              {source === 'sell-in'
+                ? active.length
+                  ? 'No sell-in in this period for these filters.'
+                  : 'No sell-in in this period.'
+                : active.length
+                  ? 'No sell-out in this period for these filters.'
+                  : 'No sell-out in this period.'}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[34rem] text-left">
@@ -384,7 +402,7 @@ export default function AnalyticsPage() {
                     <tr className="border-b border-hairline text-caption uppercase tracking-[0.06em] text-muted">
                       <th className="py-2 pr-3 font-semibold">{DIMENSION_LABEL[tab]}</th>
                       <th className="py-2 pr-3 text-right font-semibold">Revenue</th>
-                      <th className="w-[28%] py-2 pr-3 font-semibold">Share</th>
+                      <th className="w-[28%] py-2 pr-3 font-semibold">Share of total</th>
                       <th className="py-2 pr-3 text-right font-semibold">vs previous</th>
                       {tab !== 'customer' && tab !== 'product' && <th className="py-2 text-right font-semibold">Customers</th>}
                     </tr>
@@ -447,7 +465,7 @@ export default function AnalyticsPage() {
                   {toCall.map((c) => (
                     <li key={c.customer} className="flex items-baseline justify-between gap-3">
                       <span className="min-w-0 truncate text-label font-semibold text-primary">{c.customer}</span>
-                      <span className="tabular shrink-0 text-caption text-muted">{nairaShort(c.previous)} last period</span>
+                      <span className="tabular shrink-0 text-caption text-muted">{`${nairaShort(c.previous)} last period`}</span>
                     </li>
                   ))}
                 </ul>

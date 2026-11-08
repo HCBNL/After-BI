@@ -149,7 +149,7 @@ export default function MovementsPage() {
         loading={loading}
         dense
         emptyIcon={<FileSpreadsheet size={22} />}
-        emptyTitle="Nothing has moved yet"
+        emptyTitle="Nothing moved yet"
         emptyDescription="Movements appear here the moment stock goes in or out."
       />
     </div>

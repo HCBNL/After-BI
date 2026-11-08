@@ -218,7 +218,7 @@ export default function SellOutPage() {
         loading={loading}
         dense
         emptyIcon={<TrendingUp size={22} />}
-        emptyTitle={search ? 'Nothing matches that' : 'Nothing recorded this month'}
+        emptyTitle={search ? 'Nothing matches that' : 'Empty'}
         emptyDescription={
           search
             ? 'Try a different product or outlet.'

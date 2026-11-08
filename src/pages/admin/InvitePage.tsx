@@ -127,7 +127,7 @@ export default function InvitePage() {
       <div>
         {made ? (
           <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
-            <h2 className="text-title font-semibold text-primary">{made.name} can sign in now</h2>
+            <h2 className="text-title font-semibold text-primary">{`${made.name} can sign in now`}</h2>
             <p className="mt-1 text-label leading-relaxed text-muted">
               Hand these over yourself. The password is not shown again once you leave this screen.
             </p>

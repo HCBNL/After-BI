@@ -56,6 +56,14 @@ const TONE: Record<ReturnStatus, 'neutral' | 'gold' | 'good' | 'critical'> = {
   rejected: 'critical',
 };
 
+/** A return's status, as a word rather than the stored key. */
+const RETURN_WORD: Record<string, string> = {
+  requested: 'Waiting for a decision',
+  approved: 'Accepted for credit',
+  received: 'Back in stock',
+  rejected: 'Not accepted',
+};
+
 export default function ReturnsPage() {
   const { user } = useAuth();
   const toast = useToast();
@@ -136,7 +144,7 @@ export default function ReturnsPage() {
     {
       key: 'status',
       header: 'Status',
-      cell: (row) => <Badge tone={TONE[row.status]}>{row.status}</Badge>,
+      cell: (row) => <Badge tone={TONE[row.status]}>{RETURN_WORD[row.status] ?? row.status}</Badge>,
     },
   ];
 
@@ -164,7 +172,7 @@ export default function ReturnsPage() {
         active={filter}
         onChange={(id) => setFilter(id as 'open' | 'all')}
         items={[
-          { id: 'open', label: 'Open', count: returns.filter((r) => r.status === 'requested' || r.status === 'approved').length },
+          { id: 'open', label: 'In progress', count: returns.filter((r) => r.status === 'requested' || r.status === 'approved').length },
           { id: 'all', label: 'All', count: returns.length },
         ]}
       />
@@ -255,21 +263,20 @@ function ReturnDrawer({
           <div className="min-w-0">
             <p className="text-lead font-semibold text-primary">{record.distributorName}</p>
             <p className="mt-0.5 text-label text-muted">
-              Raised by {record.requestedByName} · {formatDate(record.createdAt)}
+              {`Raised by ${record.requestedByName} · ${formatDate(record.createdAt)}`}
             </p>
           </div>
-          <Badge tone={TONE[record.status]}>{record.status}</Badge>
+          <Badge tone={TONE[record.status]}>{RETURN_WORD[record.status] ?? record.status}</Badge>
         </div>
 
         <div className="rounded-2xl border border-hairline surface-sunken p-4">
           <p className="text-body font-semibold text-primary">{record.productName}</p>
-          <p className="tabular mt-0.5 text-label text-muted">{count(record.quantity)} coming back</p>
+          <p className="tabular mt-0.5 text-label text-muted">{`${count(record.quantity)} coming back`}</p>
           <p className="mt-2 text-label leading-relaxed text-secondary">{record.reason}</p>
           {record.creditValue ? (
             <>
               <p className="tabular mt-3 text-lead font-bold text-primary">
-                {naira(record.creditValue)} credit
-              </p>
+                {`${naira(record.creditValue)} credit`}</p>
               <p className="mt-0.5 text-label text-muted">
                 {unapplied <= 0
                   ? 'Applied to the account\u2019s invoices.'
@@ -341,9 +348,7 @@ function ReturnDrawer({
           <div className="space-y-3 rounded-2xl border border-hairline surface-sunken p-4">
             <p className="text-body font-semibold text-primary">Receive it back into stock</p>
             <p className="text-label leading-snug text-muted">
-              This adds {count(record.quantity)} of {record.productName} to the depot you pick and
-              writes it to the ledger. Only do it once the goods are physically counted in.
-            </p>
+              {`This adds ${count(record.quantity)} of ${record.productName} to the depot you pick and writes it to the ledger. Only do it once the goods are physically counted in.`}</p>
             <Field label="Depot">
               <Select value={depot || defaultWarehouse?.id || ''} onChange={(e) => setDepot(e.target.value)}>
                 {warehouses.map((w) => (

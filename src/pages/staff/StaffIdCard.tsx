@@ -248,7 +248,14 @@ function StaffPreview({
   qr?: string;
 }) {
   return (
+    /*
+      translate="no": this is a picture of the printed card, and the printed
+      card is an English document (its PDF is built in English for the people
+      the holder shows it to). Translating the preview would show a card that
+      does not exist.
+ */
     <div
+      translate="no"
       className="relative mx-auto overflow-hidden rounded-[10px] bg-white text-[#111420] shadow-[0_18px_40px_-18px_rgba(0,0,0,0.45)] ring-1 ring-black/10"
       style={{ width: 216, height: 342, fontFamily: 'Helvetica, Arial, sans-serif' }}
     >
@@ -299,9 +306,7 @@ function StaffPreview({
           <p className="pt-2 text-center text-[8px] font-bold text-[#ee6a00]">{COMPANY.tagline}</p>
           <div className="space-y-2 px-[18px] pt-1.5 text-[7.8px] leading-snug">
             <p>
-              The holder of this card is a member of staff of {COMPANY.name}, the company behind {COMPANY.product}. This
-              card is the property of the company and is not transferable. If found, please return it to:
-            </p>
+              {`The holder of this card is a member of staff of ${COMPANY.name}, the company behind ${COMPANY.product}. This card is the property of the company and is not transferable. If found, please return it to:`}</p>
             <div className="divide-y divide-[#e4e7ee] pt-1">
               {[
                 ...(COMPANY.address ? [['OFFICE', [COMPANY.address]]] : []),

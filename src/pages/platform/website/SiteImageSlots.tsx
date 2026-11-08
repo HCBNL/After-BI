@@ -35,8 +35,7 @@ export function SiteImageSlots({
     <div className="space-y-8">
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={done === entries.length ? 'good' : 'brand'}>
-          {done} of {entries.length} pictures added
-        </Badge>
+          {`${done} of ${entries.length} pictures added`}</Badge>
         <Hint label="About website pictures">
           Every box below is one picture on the public website, drawn at the shape the site shows it. Tap the (i) on a box to
           see where it appears and what to put in it. Keep each file under 2 MB (JPG or WebP at the size given). An empty box
@@ -60,7 +59,7 @@ export function SiteImageSlots({
             <div className="mb-3 flex items-center justify-between gap-3 border-b border-hairline pb-2">
               <h3 className="text-body font-semibold text-primary">{group}</h3>
               <span className="text-caption font-semibold text-muted">
-                {filled} of {slots.length}
+                {`${filled} of ${slots.length}`}
               </span>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -109,8 +108,7 @@ function SlotTile({
       <div className="mb-2 flex items-center gap-1.5">
         <p className="min-w-0 flex-1 truncate text-label font-semibold text-primary">{slot.label}</p>
         <Hint label={`About ${slot.label}`} align="right">
-          {slot.what} Export at {slot.size} pixels. Slot name: {slotKey}.
-        </Hint>
+          {`${slot.what} Export at ${slot.size} pixels. Slot name: ${slotKey}.`}</Hint>
       </div>
 
       <button

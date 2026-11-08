@@ -300,7 +300,7 @@ export default function LoginPage() {
                 Book a demo
               </Link>
             </nav>
-            <p className="mt-3">© {year} Contoric. AfterBI is a Contoric product.</p>
+            <p className="mt-3">{`© ${year} Contoric. AfterBI is a Contoric product.`}</p>
           </footer>
         </main>
       </div>

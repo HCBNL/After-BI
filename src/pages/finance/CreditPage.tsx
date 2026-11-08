@@ -92,8 +92,7 @@ export default function CreditPage() {
           <p className="tabular text-body font-bold text-primary">{naira(row.outstanding)}</p>
           {row.overdue > 0 && (
             <p className="tabular text-caption font-semibold text-status-critical">
-              {naira(row.overdue)} late
-            </p>
+              {`${naira(row.overdue)} late`}</p>
           )}
         </div>
       ),

@@ -82,7 +82,7 @@ export default function CardPage() {
             )}
             {card.staffNo && (
               <p className="mt-1 text-[12px] text-[#686e7e]">
-                Staff no. {card.staffNo}, {card.company || COMPANY.name}
+                {`Staff no. ${card.staffNo}, ${card.company || COMPANY.name}`}
               </p>
             )}
 

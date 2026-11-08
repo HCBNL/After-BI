@@ -145,9 +145,13 @@ export default function ForgotPasswordPage() {
                     Check your email
                   </h1>
                   <p className="mt-4 text-center text-lead leading-relaxed text-secondary">
-                    If there is an AfterBI account for{' '}
-                    <strong className="font-semibold text-primary">{email.trim()}</strong>, a link to set a new
-                    password is on its way. It expires in an hour.
+                    If there is an AfterBI account for this address, a link to set a new password is on its way. It
+                    expires in an hour.
+                  </p>
+                  <p className="mt-3 text-center">
+                    <strong translate="no" className="break-all font-semibold text-primary">
+                      {email.trim()}
+                    </strong>
                   </p>
                   <p className="mt-4 text-center text-body leading-relaxed text-muted">
                     We say “if” on purpose: this screen never confirms which addresses have accounts. If nothing
@@ -244,7 +248,7 @@ export default function ForgotPasswordPage() {
                 Book a demo
               </Link>
             </nav>
-            <p className="mt-3">© {year} Contoric. AfterBI is a Contoric product.</p>
+            <p className="mt-3">{`© ${year} Contoric. AfterBI is a Contoric product.`}</p>
           </footer>
         </main>
       </div>

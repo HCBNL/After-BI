@@ -50,6 +50,9 @@ const STATUS_TONE: Record<DistributorStatus, 'good' | 'gold' | 'neutral'> = {
   inactive: 'neutral',
 };
 
+/** A distributor's status, as a word rather than the stored key. */
+const PARTNER_WORD: Record<string, string> = { pending: 'Pending', active: 'Active', inactive: 'Inactive' };
+
 export default function DistributorsPage() {
   const { distributors, loading, reload } = useOrg();
   const toast = useToast();
@@ -145,8 +148,7 @@ export default function DistributorsPage() {
             </p>
             {position.overdue > 0 && (
               <p className="tabular text-caption font-semibold text-status-critical">
-                {naira(position.overdue)} overdue
-              </p>
+                {`${naira(position.overdue)} overdue`}</p>
             )}
           </div>
         );
@@ -179,7 +181,7 @@ export default function DistributorsPage() {
       key: 'status',
       header: 'Status',
       sortValue: (row) => row.status,
-      cell: (row) => <Badge tone={STATUS_TONE[row.status]}>{row.status}</Badge>,
+      cell: (row) => <Badge tone={STATUS_TONE[row.status]}>{PARTNER_WORD[row.status] ?? row.status}</Badge>,
     },
   ];
 

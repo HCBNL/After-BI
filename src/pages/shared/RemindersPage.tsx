@@ -9,7 +9,7 @@
  */
 import { useMemo, useState } from 'react';
 import { AlarmClock, BellRing, Check, ChevronDown, ListPlus, RefreshCw } from 'lucide-react';
-import { Insights, Pipeline } from '@/components/home/BriefCard';
+import { Insights, Pipeline, Sentences } from '@/components/home/BriefCard';
 import { useToast } from '@/components/ui';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button, LinkButton, SegmentedControl, Switch } from '@/components/ui';
@@ -17,6 +17,7 @@ import { QuietLoader } from '@/components/brand/Loader';
 import { useReminders } from '@/context/RemindersContext';
 import { cn } from '@/lib/cn';
 import type { Severity } from '@/lib/reminders';
+import { dateLocale } from '@/lib/locale';
 
 const VIEWS = [
   { value: 'action', label: 'Needs action' },
@@ -25,10 +26,27 @@ const VIEWS = [
 ];
 
 const TONE: Record<Severity, { dot: string; word: string }> = {
-  critical: { dot: 'bg-status-critical', word: 'Now' },
+  /* "Urgent", not "Now": "Now" is also the month picker's badge for the
+     current month, and the dictionary has one translation per English word. */
+  critical: { dot: 'bg-status-critical', word: 'Urgent' },
   warning: { dot: 'bg-status-warning', word: 'Soon' },
   later: { dot: 'bg-brand-500', word: 'Later' },
 };
+
+/** The headline over the list, as one sentence for each case. */
+function countsLine(action: number, later: number): string {
+  if (!action && !later) return 'Nothing is waiting';
+  if (!action) return later === 1 ? '1 thing worth knowing' : `${later} things worth knowing`;
+  const head = action === 1 ? '1 thing needs action' : `${action} things need action`;
+  if (!later) return head;
+  return action === 1
+    ? later === 1
+      ? '1 thing needs action, 1 worth knowing'
+      : `1 thing needs action, ${later} worth knowing`
+    : later === 1
+      ? `${action} things need action, 1 worth knowing`
+      : `${action} things need action, ${later} worth knowing`;
+}
 
 export default function RemindersPage() {
   const { reminders, counts, loading, checkedAt, reload, snooze, notify, setNotify, brief, tasks, keepAsTask } = useReminders();
@@ -69,12 +87,17 @@ export default function RemindersPage() {
       </PageHeader>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-hairline surface-card px-4 py-3 shadow-card">
+        {/*
+          Each line is built as one whole string before it reaches the page.
+          "Checked {time}" used to be the word and the time as two pieces of
+          text, and the counts two pieces with a comma glued to the second,
+          and neither shape is something a translation can be written for.
+ */}
         <p className="min-w-0 text-body font-semibold text-primary">
-          {counts.action ? `${counts.action} waiting on somebody` : 'Nothing is waiting'}
-          {counts.later ? `, ${counts.later} worth knowing` : ''}
+          <span>{countsLine(counts.action, counts.later)}</span>
           {checkedAt && (
             <span className="ml-2 text-caption font-normal text-muted">
-              Checked {checkedAt.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })}
+              {`Checked ${checkedAt.toLocaleTimeString(dateLocale('en-NG'), { hour: '2-digit', minute: '2-digit' })}`}
             </span>
           )}
         </p>
@@ -127,7 +150,7 @@ export default function RemindersPage() {
  * The day's summary as one notification line. Tap it and it opens to the full
  * sentence and anything worth knowing; tap again and it folds away.
  */
-function SummaryBar({ summary, insights }: { summary: string; insights: Parameters<typeof Insights>[0]['items'] }) {
+function SummaryBar({ summary, insights }: { summary: string[]; insights: Parameters<typeof Insights>[0]['items'] }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="mb-4 overflow-hidden rounded-2xl border border-hairline surface-card shadow-card">
@@ -141,12 +164,16 @@ function SummaryBar({ summary, insights }: { summary: string; insights: Paramete
           <BellRing size={17} aria-hidden />
           <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-status-critical ring-2 ring-[var(--surface-card)]" />
         </span>
-        <span className={cn('min-w-0 flex-1 text-body font-semibold text-primary', !open && 'truncate')}>{open ? 'Today' : summary}</span>
+        <span className={cn('min-w-0 flex-1 text-body font-semibold text-primary', !open && 'truncate')}>
+          {open ? 'Today' : <Sentences items={summary} />}
+        </span>
         <ChevronDown size={17} aria-hidden className={cn('shrink-0 text-muted transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <div className="border-t border-hairline px-4 pb-4 pt-3">
-          <p className="text-body leading-relaxed text-secondary">{summary}</p>
+          <p className="text-body leading-relaxed text-secondary">
+            <Sentences items={summary} />
+          </p>
           {insights.length > 0 && <Insights items={insights} className="mt-3" />}
         </div>
       )}

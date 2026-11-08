@@ -154,15 +154,14 @@ function Business({ tabs, home }: { tabs: React.ReactNode; home: SiteHome | unde
                       <Badge tone={STATUS_TONE[p.status]}>{STATUS_LABEL[p.status]}</Badge>
                     </div>
                     <p className="mt-1 text-label text-secondary">
-                      {proposalNumber(p)} · {p.plan} · {naira(figures(p).monthlyTotal)} a month
-                    </p>
+                      {`${proposalNumber(p)} · ${p.plan} · ${naira(figures(p).monthlyTotal)} a month`}</p>
                   </button>
                   <div className="flex shrink-0 gap-2">
                     <Button variant="secondary" size="sm" onClick={() => setEditing(p)}>
                       Open
                     </Button>
                     <Button variant="ghost" size="sm" icon={<Trash2 size={14} />} onClick={() => setRemoving(p)}>
-                      <span className="sr-only">Delete {p.company}</span>
+                      <span className="sr-only">{`Delete ${p.company}`}</span>
                     </Button>
                   </div>
                 </div>

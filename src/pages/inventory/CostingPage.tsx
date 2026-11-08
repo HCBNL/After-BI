@@ -386,13 +386,12 @@ function CostingDrawer({
                     className="w-[124px]"
                   >
                     <option value="total">For all</option>
-                    <option value="unit">Per {unitWord}</option>
+                    <option value="unit">{`Per ${unitWord}`}</option>
                   </Select>
                 </div>
                 {(line.currency !== 'NGN' || line.per === 'unit') && (
                   <p className="tabular mt-1.5 text-right text-caption text-muted">
-                    {naira(costInNaira(line, draft), true)} in all
-                  </p>
+                    {`${naira(costInNaira(line, draft), true)} in all`}</p>
                 )}
               </li>
             ))}
@@ -436,7 +435,7 @@ function CostingDrawer({
             <p className="tabular mt-1 text-headline font-bold text-primary">{naira(total, true)}</p>
           </div>
           <div className="rounded-2xl border border-brand-500/40 bg-brand-50/60 p-4 dark:bg-brand-500/10">
-            <p className="text-micro font-bold uppercase tracking-wide text-muted">Landed cost per {unitWord}</p>
+            <p className="text-micro font-bold uppercase tracking-wide text-muted">{`Landed cost per ${unitWord}`}</p>
             <p className="tabular mt-1 text-headline font-bold text-primary">
               {quantity > 0 ? naira(perUnit, true) : 'Add a quantity'}
             </p>
@@ -450,9 +449,7 @@ function CostingDrawer({
 
         {foreign.some((c) => !(draft.rates[c] ?? 0)) && (
           <Alert tone="warning" title="A rate is missing">
-            Costs in {foreign.filter((c) => !(draft.rates[c] ?? 0)).join(' and ')} count as nothing until you type the
-            exchange rate.
-          </Alert>
+            {`Costs in ${foreign.filter((c) => !(draft.rates[c] ?? 0)).join(' and ')} count as nothing until you type the exchange rate.`}</Alert>
         )}
 
         {/* selling prices */}
@@ -510,8 +507,7 @@ function CostingDrawer({
                   </p>
                   {row.price > 0 && (
                     <p className="tabular text-caption text-muted">
-                      {naira(row.price - perUnit, true)} profit per {unitWord}
-                      {quantity > 0 ? ` · ${naira((row.price - perUnit) * quantity)} on all ${count(quantity)}` : ''}
+                      {`${naira(row.price - perUnit, true)} profit per ${unitWord}${quantity > 0 ? ` · ${naira((row.price - perUnit) * quantity)} on all ${count(quantity)}` : ''}`}
                     </p>
                   )}
                   {draft.basis === 'margin' && row.percent >= 100 && (
@@ -528,7 +524,7 @@ function CostingDrawer({
                   <option value="">Not for a tier</option>
                   {PRICE_TIERS.map((t) => (
                     <option key={t} value={t}>
-                      Use for {t}
+                      {`Use for ${t}`}
                     </option>
                   ))}
                 </Select>
@@ -556,8 +552,7 @@ function CostingDrawer({
         {product && perUnit > 0 && (
           <section>
             <h3 className="mb-2 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
-              {product.name}: prices today
-            </h3>
+              {`${product.name}: prices today`}</h3>
             <div className="grid gap-2 sm:grid-cols-3">
               {PRICE_TIERS.map((tier) => {
                 const price = product.pricing[tier];
@@ -615,8 +610,7 @@ function CostingDrawer({
           </div>
           {product && toApply.length === 0 && (
             <p className="mt-2 text-caption leading-snug text-muted">
-              To write prices onto {product.name}, pick a tier beside a margin (Use for OT, MT or SA).
-            </p>
+              {`To write prices onto ${product.name}, pick a tier beside a margin (Use for OT, MT or SA).`}</p>
           )}
         </div>
       </div>
@@ -633,7 +627,8 @@ function CostingDrawer({
             {toApply.map((row) => (
               <span key={row.id} className="block">
                 <Badge tone="brand">{row.tier}</Badge>{' '}
-                {typeof product?.pricing[row.tier!] === 'number' ? `${naira(product.pricing[row.tier!]!, true)} to ` : ''}
+                {/* An arrow, not "to": it reads the same in every language. */}
+                {typeof product?.pricing[row.tier!] === 'number' ? `${naira(product.pricing[row.tier!]!, true)} → ` : ''}
                 <strong>{naira(row.price, true)}</strong>
               </span>
             ))}

@@ -93,7 +93,8 @@ export default function OrganisationsPage() {
           </p>
           <p className="truncate text-caption text-muted">
             {row.id}
-            {planOf(row.planId) ? `, ${PLANS[planOf(row.planId)!].label}` : ', no plan'}
+            {', '}
+            {planOf(row.planId) ? PLANS[planOf(row.planId)!].label : 'no plan'}
             {(row.locked?.length ?? 0) > 0 ? `, ${row.locked!.length} locked` : ''}
           </p>
         </div>

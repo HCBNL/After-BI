@@ -43,6 +43,21 @@ import { cn } from '@/lib/cn';
 
 const PERIODS: FinancePeriod[] = ['month', 'quarter', 'year'];
 
+const COLLECTED_LABEL: Record<FinancePeriod, string> = {
+  month: 'Collected this month',
+  quarter: 'Collected this quarter',
+  year: 'Collected this year',
+};
+
+/** What was invoiced and what came off it, as one sentence for each case. */
+function invoicedLine(invoiced: number, notes: number, returns: number): string {
+  const total = naira(invoiced);
+  if (notes > 0 && returns > 0) return `${total} invoiced, less ${naira(notes)} in credit notes and ${naira(returns)} in returns`;
+  if (notes > 0) return `${total} invoiced, less ${naira(notes)} in credit notes`;
+  if (returns > 0) return `${total} invoiced, less ${naira(returns)} in returns`;
+  return `${total} invoiced`;
+}
+
 export default function FinanceDashboardPage() {
   const { user } = useAuth();
   const root = user ? PORTAL_ROOT[user.role] : '';
@@ -108,9 +123,7 @@ export default function FinanceDashboardPage() {
                     <Change value={change(sum.invoiced, sum.invoicedPrev)} label={`${sum.range.previousLabel} (invoiced)`} />
                   </div>
                   <p className="tabular mt-2 text-caption text-muted">
-                    {naira(sum.invoiced)} invoiced
-                    {sum.creditNotes > 0 && `, less ${naira(sum.creditNotes)} credit notes`}
-                    {sum.returns > 0 && `, less ${naira(sum.returns)} returns`}
+                    {invoicedLine(sum.invoiced, sum.creditNotes, sum.returns)}
                   </p>
                 </div>
                 {root && <AccentArrow to={`${root}/reports`} label="Open reports" />}
@@ -132,16 +145,16 @@ export default function FinanceDashboardPage() {
               <div className="flex items-start justify-between gap-3">
                 <AccentBadge icon={<Wallet size={13} aria-hidden />}>Owed to you</AccentBadge>
               </div>
-              <p className="mt-5 text-label opacity-80">Across {sum.openCount.toLocaleString('en-NG')} open invoices</p>
+              <p className="mt-5 text-label opacity-80">{`Across ${sum.openCount.toLocaleString('en-NG')} open invoices`}</p>
               <p className="tabular font-display text-headline font-bold tracking-[-0.02em] sm:text-display">{naira(sum.owed)}</p>
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <AccentTile
                   label="Overdue"
                   value={nairaShort(sum.overdue)}
-                  hint={`${sum.overdueCount} ${sum.overdueCount === 1 ? 'invoice' : 'invoices'} late`}
+                  hint={sum.overdueCount === 1 ? '1 invoice late' : `${sum.overdueCount} invoices late`}
                 />
                 <AccentTile
-                  label={`Collected, ${PERIOD_LABEL[period].toLowerCase()}`}
+                  label={COLLECTED_LABEL[period]}
                   value={nairaShort(sum.collected)}
                   hint={`${sum.collectionRate}% of invoiced`}
                 />
@@ -187,15 +200,14 @@ function Collections({ sum, period }: { sum: Sum; period: FinancePeriod }) {
         ]}
       >
         <p className="tabular font-display text-title font-bold text-primary">{nairaShort(sum.collected)}</p>
-        <p className="tabular text-caption font-semibold text-muted">{sum.collectionRate}% in</p>
+        <p className="tabular text-caption font-semibold text-muted">{`${sum.collectionRate}% in`}</p>
       </Ring>
       <div className="mt-4 flex justify-center">
         <Change value={change(sum.collected, sum.collectedPrev)} label={sum.range.previousLabel} />
       </div>
       <p className="mx-auto mt-3 w-fit rounded-full border border-hairline px-3 py-1 text-caption text-secondary">
         <BadgePercent size={13} aria-hidden className="mr-1 inline -translate-y-px" />
-        {sum.collectionRate}% of what was invoiced came in as cash
-      </p>
+        {`${sum.collectionRate}% of what was invoiced came in as cash`}</p>
       <dl className="mt-4 space-y-2 text-caption">
         <Legend color="var(--swatch)" label="Cash in" value={naira(sum.collected)} strong />
         <Legend color={CREDIT_TONE} label="Credit notes and returns" value={naira(credits)} />
@@ -360,7 +372,7 @@ function Debtors({ sum, root }: { sum: Sum; root: string }) {
   const top = sum.debtors[0]?.owed ?? 0;
   return (
     <QuietCard className="lg:col-span-5">
-      <CardHead icon={<Users size={18} aria-hidden />} title="Who owes most" right={<Pill>Top {sum.debtors.length || 0}</Pill>} />
+      <CardHead icon={<Users size={18} aria-hidden />} title="Who owes most" right={<Pill>{`Top ${sum.debtors.length || 0}`}</Pill>} />
       {sum.debtors.length === 0 ? (
         <p className="py-6 text-center text-label text-muted">Nobody owes anything. Every invoice is settled.</p>
       ) : (
@@ -372,8 +384,7 @@ function Debtors({ sum, root }: { sum: Sum; root: string }) {
                   <span className="min-w-0 flex-1 truncate font-semibold text-primary group-hover:underline">{d.name}</span>
                   {d.overdue > 0 && (
                     <span className="tabular inline-flex items-center gap-1 text-caption font-semibold text-status-critical">
-                      <AlertTriangle size={12} aria-hidden /> {nairaShort(d.overdue)} late
-                    </span>
+                      <AlertTriangle size={12} aria-hidden /> {` ${nairaShort(d.overdue)} late`}</span>
                   )}
                   <span className="tabular font-semibold text-primary">{naira(d.owed)}</span>
                 </div>
@@ -387,8 +398,9 @@ function Debtors({ sum, root }: { sum: Sum; root: string }) {
                   />
                 </div>
                 <p className="mt-1 text-caption text-muted">
-                  {d.invoices} open {d.invoices === 1 ? 'invoice' : 'invoices'}
-                  {d.oldestDays > 0 ? `, oldest ${d.oldestDays} days late` : ', none late'}
+                  {d.invoices === 1
+                    ? d.oldestDays > 0 ? `1 open invoice, ${d.oldestDays} days late` : '1 open invoice, not late'
+                    : d.oldestDays > 0 ? `${d.invoices} open invoices, oldest ${d.oldestDays} days late` : `${d.invoices} open invoices, none late`}
                 </p>
               </Link>
             </li>

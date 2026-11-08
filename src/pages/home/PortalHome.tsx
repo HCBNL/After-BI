@@ -173,7 +173,7 @@ function tipsFor(role: Role, root: string): Tip[] {
         icon: Receipt,
         title: 'Record payments as they land',
         body: 'Part payments are fine. The invoice and the statement update together.',
-        cta: { label: 'Open invoices', to: `${root}/invoices` },
+        cta: { label: 'View invoices', to: `${root}/invoices` },
       },
       {
         id: 'credit',
@@ -303,7 +303,9 @@ export default function PortalHome() {
       label: 'Waiting for you',
       value: count(data.awaitingMe),
       caption: data.awaitingMe
-        ? `Order${data.awaitingMe === 1 ? '' : 's'} that cannot move until you sign.`
+        ? data.awaitingMe === 1
+          ? 'An order that cannot move until you sign.'
+          : 'Orders that cannot move until you sign.'
         : 'Nothing is waiting on your signature.',
       icon: <ClipboardCheck size={17} />,
       tone: data.awaitingMe ? 'warning' : 'brand',
@@ -323,7 +325,9 @@ export default function PortalHome() {
       label: 'Below threshold',
       value: count(data.lowStock),
       caption: data.lowStock
-        ? `Product line${data.lowStock === 1 ? '' : 's'} at or under the level you set.`
+        ? data.lowStock === 1
+          ? 'A product line at or under the level you set.'
+          : 'Product lines at or under the level you set.'
         : 'Every line is above its threshold.',
       icon: <Warehouse size={17} />,
       tone: data.lowStock ? 'warning' : 'good',
@@ -339,7 +343,7 @@ export default function PortalHome() {
       icon: <Wallet size={17} />,
       tone: data.overdue ? 'critical' : 'brand',
       progress: data.overdue && data.outstanding ? (data.overdue / data.outstanding) * 100 : undefined,
-      action: { label: 'Open invoices', to: `${root}/invoices` },
+      action: { label: 'View invoices', to: `${root}/invoices` },
     };
 
     if (isPartner(role)) return [orders, money, sellOut];
@@ -452,7 +456,7 @@ export default function PortalHome() {
         state: 'info',
         icon: ShoppingCart,
         to: `${root}/orders`,
-        title: `${count(data.openOrders)} open order${data.openOrders === 1 ? '' : 's'}`,
+        title: data.openOrders === 1 ? '1 open order' : `${count(data.openOrders)} open orders`,
         detail: 'Submitted or approved, not yet fulfilled.',
       });
     }

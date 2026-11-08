@@ -41,6 +41,19 @@ const TIMING_TONE = {
   none: 'text-muted',
 } as const;
 
+/** The count line under the title, one whole sentence per case so every language can word it. */
+function taskLine(total: number, late: number, today: number): string {
+  if (total === 1) {
+    if (late) return '1 task to do, and it is late.';
+    if (today) return '1 task to do, due today.';
+    return '1 task to do.';
+  }
+  if (late && today) return `${total} tasks to do: ${late} late, ${today} due today.`;
+  if (late) return `${total} tasks to do, ${late} of them late.`;
+  if (today) return `${total} tasks to do, ${today} of them due today.`;
+  return `${total} tasks to do.`;
+}
+
 export default function TasksPage() {
   const { tasks, tasksLoading, tasksError, createTask, toggleTask, deleteTask, editTask, brief, keepAsTask } = useReminders();
   const toast = useToast();
@@ -79,7 +92,7 @@ export default function TasksPage() {
         title="My tasks"
         description={
           open.length
-            ? `${open.length} to do${late ? `, ${late} late` : ''}${today ? `, ${today} due today` : ''}.`
+            ? taskLine(open.length, late, today)
             : 'Nothing on your list. Add something, or keep one of the suggestions below.'
         }
       >

@@ -115,8 +115,7 @@ export default function CompanyInfo() {
           )}
           {banks.length > 0 && (
             <Alert tone="info" title="Pay only into these accounts">
-              {name} does not recognise payments into any other account, whoever asks for them. If someone sends different bank details, check here first.
-            </Alert>
+              {`${name} does not recognise payments into any other account, whoever asks for them. If someone sends different bank details, check here first.`}</Alert>
           )}
         </div>
 
@@ -153,8 +152,7 @@ export default function CompanyInfo() {
           )}
           {wa && (
             <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-label font-semibold text-[#128C7E] hover:underline">
-              <MessageCircle size={15} aria-hidden /> Message {name} on WhatsApp
-            </a>
+              <MessageCircle size={15} aria-hidden /> {` Message ${name} on WhatsApp`}</a>
           )}
         </Card>
       </div>
@@ -208,7 +206,7 @@ function BankCarousel({ count, children }: { count: number; children: ReactNode[
             />
           ))}
           <span className="ml-2 text-caption font-semibold text-muted tabular">
-            {index + 1} of {count}
+            {`${index + 1} of ${count}`}
           </span>
         </div>
         <button type="button" onClick={() => go(index + 1)} aria-label="Next account" className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-secondary hover:bg-[var(--surface-sunken)] hover:text-primary">

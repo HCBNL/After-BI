@@ -359,9 +359,7 @@ export function NewOrderDrawer({
 
         {tierChanged && (
           <Alert tone="warning" title="Changing the distributor will re-price this order" defaultOpen>
-            Every line moves onto {TIER_LABEL[distributor?.category ?? 'OT'].toLowerCase()} pricing,
-            because the price comes from the account's tier. The total below already reflects that.
-          </Alert>
+            {`Every line moves onto ${TIER_LABEL[distributor?.category ?? 'OT'].toLowerCase()} pricing, because the price comes from the account's tier. The total below already reflects that.`}</Alert>
         )}
 
         {distributor && credit && (
@@ -381,17 +379,16 @@ export function NewOrderDrawer({
                   : `${naira(credit.headroom)} of credit left`
             }
           >
-            {naira(credit.outstanding)} is outstanding on this account
-            {credit.overdue > 0 ? `, of which ${naira(credit.overdue)} is past its due date.` : '.'}{' '}
-            This does not stop you raising the order. The approver sees the same figure.
-          </Alert>
+            {credit.overdue > 0
+              ? `${naira(credit.outstanding)} is outstanding on this account, of which ${naira(credit.overdue)} is past its due date. This does not stop you raising the order. The approver sees the same figure.`
+              : `${naira(credit.outstanding)} is outstanding on this account. This does not stop you raising the order. The approver sees the same figure.`}</Alert>
         )}
 
         {/* the basket */}
         {chosen.length > 0 && (
           <section className="rounded-2xl border border-hairline surface-sunken p-3">
             <h3 className="mb-2 px-1 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
-              {count(chosen.length)} line{chosen.length === 1 ? '' : 's'}
+              {chosen.length === 1 ? '1 line' : `${count(chosen.length)} lines`}
             </h3>
 
             <ul className="space-y-1.5">
@@ -516,8 +513,7 @@ export function NewOrderDrawer({
                         </label>
                         {off > 0 && (
                           <span className="tabular text-caption font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
-                            {naira(off, true)} off
-                          </span>
+                            {`${naira(off, true)} off`}</span>
                         )}
                         {unitPrice > listPrice && (
                           <span className="text-caption text-muted">Above list price</span>
@@ -528,13 +524,12 @@ export function NewOrderDrawer({
                             onClick={() => setPrice(product, '')}
                             className="text-caption font-semibold text-brand-700 underline dark:text-brand-300"
                           >
-                            Back to {naira(listPrice, true)}
+                            {`Back to ${naira(listPrice, true)}`}
                           </button>
                         )}
                         {cost !== undefined && unitPrice < cost && (
                           <span className="tabular w-full text-caption font-semibold text-status-critical">
-                            Below landed cost of {naira(cost, true)} per unit
-                          </span>
+                            {`Below landed cost of ${naira(cost, true)} per unit`}</span>
                         )}
                       </div>
                     )}
@@ -591,7 +586,7 @@ export function NewOrderDrawer({
             {sellable.length === 0 ? (
               <EmptyState
                 className="py-8"
-                title="Nothing priced for this tier"
+                title="Nothing priced"
                 description={`No active product carries a ${TIER_LABEL[distributor.category]} price. An administrator sets those on the product.`}
               />
             ) : (

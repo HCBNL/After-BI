@@ -65,7 +65,7 @@ export default function AllActions() {
                             <span className="text-body font-semibold text-primary">{action.label}</span>
                             {action.soon && (
                               <span className="rounded bg-gold-100 px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-gold-800 dark:bg-gold-900/40 dark:text-gold-300">
-                                Soon
+                                Coming soon
                               </span>
                             )}
                           </span>

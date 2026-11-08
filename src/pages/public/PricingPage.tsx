@@ -137,12 +137,11 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
       <p className="mt-2 min-h-[2.6rem] text-[14.5px] leading-snug text-navy-600">
         {cycle === 'yearly' ? (
           <>
-            <Price amount={perMonth} size="sm" /> a month for {plan.users} users. Billed <Price amount={yearly(monthly)} size="sm" /> yearly.
+            <Price amount={perMonth} size="sm" /> {` a month for ${plan.users} users. Billed `}<Price amount={yearly(monthly)} size="sm" /> yearly.
           </>
         ) : (
           <>
-            <Price amount={monthly} size="sm" /> a month for {plan.users} users
-          </>
+            <Price amount={monthly} size="sm" /> {` a month for ${plan.users} users`}</>
         )}
       </p>
 

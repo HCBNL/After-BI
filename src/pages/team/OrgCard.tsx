@@ -56,9 +56,7 @@ export default function OrgCard() {
         title="My business card"
         actions={
           <Hint label="About your business card">
-            A contact card anyone can open on their phone, under {orgName}&rsquo;s name and logo, with buttons to call you, WhatsApp you or save your
-            number. The details travel in the link, so nothing is stored.
-          </Hint>
+            {`A contact card anyone can open on their phone, under ${orgName}’s name and logo, with buttons to call you, WhatsApp you or save your number. The details travel in the link, so nothing is stored.`}</Hint>
         }
       />
       {missing && user && (

@@ -28,7 +28,7 @@ export default function VerifyStaffPage() {
         </div>
         <div className="px-6 py-7 text-center">
           {loading ? (
-            <p className="text-[15px] text-[#686e7e]">Checking {staffNo}…</p>
+            <p className="text-[15px] text-[#686e7e]">{`Checking ${staffNo}…`}</p>
           ) : data ? (
             <>
               {active ? (
@@ -43,7 +43,7 @@ export default function VerifyStaffPage() {
               {data.position && <p className="mt-1 text-[15px] font-bold text-[#ee6a00]">{data.position}</p>}
               {data.location && <p className="text-[13.5px] text-[#686e7e]">{data.location}</p>}
               <p className="mt-4 text-[12.5px] text-[#686e7e]">
-                Staff no. {staffNo.toUpperCase()} · {COMPANY.name}
+                {`Staff no. ${staffNo.toUpperCase()} · ${COMPANY.name}`}
               </p>
             </>
           ) : (
@@ -51,8 +51,7 @@ export default function VerifyStaffPage() {
               <ShieldAlert size={52} className="mx-auto text-[#d9534f]" aria-hidden />
               <h1 className="mt-3 font-display text-[1.4rem] font-extrabold">Not recognised</h1>
               <p className="mt-2 text-[14px] text-[#686e7e]">
-                {staffNo.toUpperCase()} is not an AfterBI staff number. Contact {COMPANY.email} if you were shown this card.
-              </p>
+                {`${staffNo.toUpperCase()} is not an AfterBI staff number. Contact ${COMPANY.email} if you were shown this card.`}</p>
             </>
           )}
           <Link to="/" className="mt-6 inline-block text-[14px] font-bold text-[#c95600] underline">

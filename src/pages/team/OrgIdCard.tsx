@@ -201,9 +201,7 @@ export default function OrgIdCard() {
         title="My ID card"
         actions={
           <Hint label="About your ID card">
-            Your {orgName} staff ID card, front and back. Download it and print at 100%, or take the card size PDF to a print shop. Your photo is
-            not uploaded anywhere.
-          </Hint>
+            {`Your ${orgName} staff ID card, front and back. Download it and print at 100%, or take the card size PDF to a print shop. Your photo is not uploaded anywhere.`}</Hint>
         }
       />
       {isAdmin && (!settings?.logoUrl || !settings?.signatoryName) && (
@@ -340,7 +338,14 @@ function Preview({
     ['WEB', issuer.website],
   ].filter(([, v]) => v);
   return (
+    /*
+      translate="no": this is a picture of the printed card, and the printed
+      card is an English document (its PDF is built in English for the people
+      the holder shows it to). Translating the preview would show a card that
+      does not exist.
+ */
     <div
+      translate="no"
       className="relative mx-auto overflow-hidden rounded-[10px] bg-white text-[#111420] shadow-[0_18px_40px_-18px_rgba(0,0,0,0.45)] ring-1 ring-black/10"
       style={{ width: 216, height: 342, fontFamily: 'Helvetica, Arial, sans-serif' }}
     >

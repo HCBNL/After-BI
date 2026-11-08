@@ -51,7 +51,7 @@ export default function LegalPage({ kind }: { kind: Kind }) {
       <section className="site-wash">
         <div className={cn(container, 'max-w-3xl pb-20 pt-14 sm:pt-20')}>
           <h1 className="font-display text-[2.4rem] font-extrabold tracking-[-0.04em] text-navy-900 sm:text-[3rem]">{page.title}</h1>
-          <p className="mt-2 text-[14px] text-navy-500">Last updated {UPDATED}</p>
+          <p className="mt-2 text-[14px] text-navy-500">{`Last updated ${UPDATED}`}</p>
           <p className="mt-6 text-[17px] leading-relaxed text-navy-700">{page.intro}</p>
           <div className="mt-10 space-y-8">
             {page.sections.map((section) => (

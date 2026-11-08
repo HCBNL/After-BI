@@ -196,11 +196,9 @@ export function AdjustPriceModal({
     >
       {issued ? (
         <div className="space-y-3 text-center">
-          <p className="text-title font-semibold text-primary">Credit note {issued.creditNumber} issued</p>
+          <p className="text-title font-semibold text-primary">{`Credit note ${issued.creditNumber} issued`}</p>
           <p className="text-body text-secondary">
-            {naira(issued.total, true)} has come off {issued.invoiceNumber}. It shows on the invoice, the customer's statement and
-            their balance.
-          </p>
+            {`${naira(issued.total, true)} has come off ${issued.invoiceNumber}. It shows on the invoice, the customer's statement and their balance.`}</p>
         </div>
       ) : !invoice ? (
         <div className="space-y-4">
@@ -224,7 +222,7 @@ export function AdjustPriceModal({
               {invoice.invoiceNumber}
               {invoice.orderNumber ? ` · ${invoice.orderNumber}` : ''} · {invoice.distributorName}
             </p>
-            <p className="tabular text-label font-semibold text-primary">{naira(owing, true)} still owed</p>
+            <p className="tabular text-label font-semibold text-primary">{`${naira(owing, true)} still owed`}</p>
           </div>
 
           <ul className="space-y-2">
@@ -234,8 +232,7 @@ export function AdjustPriceModal({
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-body font-semibold text-primary">{r.line.productName}</p>
                     <p className="tabular text-caption text-muted">
-                      {r.line.quantity.toLocaleString('en-NG')} × {naira(r.current, true)} now
-                    </p>
+                      {`${r.line.quantity.toLocaleString('en-NG')} × ${naira(r.current, true)} now`}</p>
                   </div>
                   <label className="flex items-center gap-2 text-caption font-medium text-muted">
                     New price
@@ -258,11 +255,10 @@ export function AdjustPriceModal({
                     </span>
                   </label>
                 </div>
-                {r.invalid && <p className="mt-1.5 text-caption text-status-critical">The new price must be lower than {naira(r.current, true)}. To charge more, raise a new order.</p>}
+                {r.invalid && <p className="mt-1.5 text-caption text-status-critical">{`The new price must be lower than ${naira(r.current, true)}. To charge more, raise a new order.`}</p>}
                 {r.credit > 0 && (
                   <p className="tabular mt-1.5 text-caption font-semibold text-primary">
-                    {naira(r.current - r.next, true)} off per unit · {naira(r.credit, true)} credit
-                  </p>
+                    {`${naira(r.current - r.next, true)} off per unit · ${naira(r.credit, true)} credit`}</p>
                 )}
               </li>
             ))}
@@ -304,8 +300,7 @@ export function AdjustPriceModal({
           {tooMuch && <p className="text-caption text-status-critical">That is more than is still owed. Lower the credit, or record the rest as a return.</p>}
           {earlier.length > 0 && (
             <p className="text-caption text-muted">
-              Earlier on this invoice: {earlier.map((n) => `${n.creditNumber} (${naira(n.total)})`).join(', ')}.
-            </p>
+              {`Earlier on this invoice: ${earlier.map((n) => `${n.creditNumber} (${naira(n.total)})`).join(', ')}.`}</p>
           )}
         </div>
       )}

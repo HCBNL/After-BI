@@ -34,6 +34,9 @@ import { monthKey, naira, nairaShort, percent } from '@/lib/format';
 import { useAsync as useAsyncMembers } from '@/hooks/useAsync';
 import type { Target } from '@/types';
 
+/** Who carries a target, as a word rather than the stored key. */
+const OWNER_KIND: Record<string, string> = { distributor: 'Distributor', rep: 'Sales rep', product: 'Product line' };
+
 export default function TargetsPage() {
   const { user } = useAuth();
   const toast = useToast();
@@ -135,7 +138,7 @@ export default function TargetsPage() {
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<TargetIcon size={22} />}
-          title="No target set for this period"
+          title="No target set"
           description={
             canSet
               ? 'Set one per rep, per distributor or per product line, and it is measured against sell-out automatically.'
@@ -159,7 +162,7 @@ export default function TargetsPage() {
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-body font-semibold text-primary">{row.ownerName}</p>
-                  <p className="text-caption capitalize text-muted">{row.ownerType}</p>
+                  <p className="text-caption text-muted">{OWNER_KIND[row.ownerType] ?? row.ownerType}</p>
                 </div>
                 <Badge
                   tone={row.progress >= 100 ? 'good' : row.progress >= 75 ? 'gold' : 'critical'}
@@ -176,7 +179,7 @@ export default function TargetsPage() {
 
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                 <p className="tabular text-label text-muted">
-                  {naira(row.achieved)} of {naira(row.value)}
+                  {`${naira(row.achieved)} of ${naira(row.value)}`}
                 </p>
 
                 {canSet && (

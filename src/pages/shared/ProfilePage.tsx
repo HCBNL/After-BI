@@ -164,7 +164,7 @@ export default function ProfilePage() {
               )}
               {managed > 0 && (
                 <Badge tone="neutral">
-                  {managed} distributor{managed === 1 ? '' : 's'}
+                  {managed === 1 ? '1 distributor' : `${managed} distributors`}
                 </Badge>
               )}
             </div>

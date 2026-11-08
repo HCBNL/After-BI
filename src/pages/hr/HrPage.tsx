@@ -103,10 +103,7 @@ export default function HrPage() {
         title="My pay"
         actions={
           <Hint label="How your pay is worked out">
-            Each month covers {cycleWords(base.data.settings.cycleStart)}, Monday to {saturday ? 'Saturday' : 'Friday'} only. Salary is paid on the{' '}
-            {ordinal(base.data.settings.payDay)}, or the working day before if that is a day off or holiday. Your monthly salary divided by the
-            working days is your daily rate; every day you clock in earns it. Bonuses are added and deductions taken off.
-          </Hint>
+            {`Each month covers ${cycleWords(base.data.settings.cycleStart)}, Monday to ${saturday ? 'Saturday' : 'Friday'} only. Salary is paid on the ${ordinal(base.data.settings.payDay)}, or the working day before if that is a day off or holiday. Your monthly salary divided by the working days is your daily rate; every day you clock in earns it. Bonuses are added and deductions taken off.`}</Hint>
         }
       />
 
@@ -126,7 +123,7 @@ export default function HrPage() {
 
         <section className="rounded-[24px] border border-hairline surface-card p-5 shadow-card sm:p-6">
           <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-[0.1em] text-muted">
-            <Banknote size={14} aria-hidden /> Earned so far, {period.label}
+            <Banknote size={14} aria-hidden /> {` Earned so far, ${period.label}`}
           </p>
           {!me ? (
             <Alert tone="info" className="mt-4" title="Salary not set up yet" icon={<Info size={16} />}>
@@ -138,8 +135,7 @@ export default function HrPage() {
                 <CountUp value={net} format={naira} />
               </p>
               <p className="mt-1.5 text-label text-secondary">
-                of {naira(me.salary)} monthly, {pay!.worked} of {pay!.eligible} working days
-              </p>
+                {`of ${naira(me.salary)} monthly, ${pay!.worked} of ${pay!.eligible} working days`}</p>
               <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[var(--surface-sunken)]">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-[#0b8f0b] to-[#4ec54e] transition-[width] duration-1000"
@@ -165,8 +161,12 @@ export default function HrPage() {
                 <p className="mt-4 flex items-start gap-2 rounded-2xl bg-[#0ca30c]/[0.08] px-3.5 py-3 text-label text-secondary">
                   <TrendingUp size={16} className="mt-0.5 shrink-0 text-[#0a7a0a] dark:text-[#4ec54e]" aria-hidden />
                   <span>
-                    Clock in on the {ahead} working {ahead === 1 ? 'day' : 'days'} left and this month pays{' '}
-                    <b className="text-primary">{naira(Math.max(0, pay!.pay + pay!.daily * ahead + bonus - deduction))}</b>.
+                    {/* No full stop after the figure: it would be a separate piece of
+                        text that no language can translate, and Chinese closes with 。 */}
+                    {ahead === 1
+                      ? 'Clock in on the 1 working day left and this month pays '
+                      : `Clock in on the ${ahead} working days left and this month pays `}
+                    <b className="text-primary">{naira(Math.max(0, pay!.pay + pay!.daily * ahead + bonus - deduction))}</b>
                   </span>
                 </p>
               )}

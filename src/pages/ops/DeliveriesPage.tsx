@@ -77,8 +77,9 @@ export default function DeliveriesPage() {
                     <p className="truncate text-label text-secondary">{order.distributorName}</p>
                   </div>
                   <p className="mt-0.5 text-label text-muted">
-                    {count(order.lines.length)} line{order.lines.length === 1 ? '' : 's'} · sent{' '}
-                    {formatDate(order.fulfilledAt)}
+                    {order.lines.length === 1
+                      ? `1 line · sent ${formatDate(order.fulfilledAt)}`
+                      : `${count(order.lines.length)} lines · sent ${formatDate(order.fulfilledAt)}`}
                   </p>
                   <ul className="mt-2 flex flex-wrap gap-1.5">
                     {order.lines.slice(0, 4).map((line, i) => (
@@ -91,8 +92,7 @@ export default function DeliveriesPage() {
                     ))}
                     {order.lines.length > 4 && (
                       <li className="rounded-lg bg-[var(--surface-sunken)] px-2 py-0.5 text-caption text-muted">
-                        +{order.lines.length - 4} more
-                      </li>
+                        {`+${order.lines.length - 4} more`}</li>
                     )}
                   </ul>
                 </div>

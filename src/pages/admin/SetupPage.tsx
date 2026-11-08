@@ -39,7 +39,7 @@ export default function SetupPage() {
       body: 'Stock is held per depot, and an order is fulfilled from one. Nothing can be received or shipped until at least one exists. This is the step everything else waits on.',
       to: `${root}/warehouses`,
       done: warehouses.length > 0,
-      state: `${count(warehouses.length)} depot${warehouses.length === 1 ? '' : 's'}`,
+      state: warehouses.length === 1 ? '1 depot' : `${count(warehouses.length)} depots`,
     },
     {
       id: 'products',
@@ -47,7 +47,7 @@ export default function SetupPage() {
       body: 'Each product carries a price for each of the three tiers. A tier you leave blank simply cannot order that product, which is usually what you want for a line only one channel carries.',
       to: `${root}/products`,
       done: products.length > 0,
-      state: `${count(products.length)} product${products.length === 1 ? '' : 's'}`,
+      state: products.length === 1 ? '1 product' : `${count(products.length)} products`,
     },
     {
       id: 'distributors',
@@ -55,7 +55,7 @@ export default function SetupPage() {
       body: 'Their tier decides which of the three prices they ever see. Their credit limit is checked while an order is being built, not after it is submitted.',
       to: `${root}/distributors`,
       done: distributors.length > 0,
-      state: `${count(distributors.length)} distributor${distributors.length === 1 ? '' : 's'}`,
+      state: distributors.length === 1 ? '1 distributor' : `${count(distributors.length)} distributors`,
     },
     {
       id: 'people',

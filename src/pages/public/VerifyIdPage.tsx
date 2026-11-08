@@ -62,7 +62,7 @@ export default function VerifyIdPage() {
               <h1 className="mt-3 font-display text-[1.6rem] font-extrabold leading-tight">{data.name}</h1>
               {data.position && <p className="mt-1 text-[15px] font-bold text-[#ee6a00]">{data.position}</p>}
               <p className="mt-1 text-[13px] text-[#686e7e]">
-                {data.company} · Staff no. {data.staffNo}
+                {`${data.company} · Staff no. ${data.staffNo}`}
               </p>
 
               {active && (
@@ -89,8 +89,7 @@ export default function VerifyIdPage() {
               )}
               {!active && (
                 <p className="mt-4 text-[13.5px] text-[#686e7e]">
-                  This person is no longer an active member of staff of {data.company}. Do not deal with them on the company's behalf.
-                </p>
+                  {`This person is no longer an active member of staff of ${data.company}. Do not deal with them on the company's behalf.`}</p>
               )}
             </>
           ) : (

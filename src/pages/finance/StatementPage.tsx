@@ -40,6 +40,14 @@ interface Line {
   balance: number;
 }
 
+/** How a payment came in, as the line the statement shows. */
+const RECEIVED: Record<string, string> = {
+  transfer: 'Payment received by bank transfer',
+  cash: 'Payment received in cash',
+  cheque: 'Payment received by cheque',
+  card: 'Payment received by card',
+};
+
 export default function StatementPage() {
   const { user } = useAuth();
   const { distributors, settings } = useOrg();
@@ -119,7 +127,7 @@ export default function StatementPage() {
             ? /^CN/.test(p.reference ?? '')
               ? `Price adjustment, credit note ${p.reference}`
               : `Credit for a return (${p.reference ?? ''})`
-            : `Payment received (${p.method})`,
+            : RECEIVED[p.method] ?? 'Payment received',
         debit: 0,
         credit: p.amount,
       })),
@@ -148,7 +156,7 @@ export default function StatementPage() {
       payments: cash.length,
       credited: credit.reduce((t, p) => t + p.amount, 0),
       credits: credit.length,
-      lastPaid: last ? `${naira(last.amount)} on ${formatDate(last.paidOn)}` : 'No payment yet',
+      lastPaid: last ? `Last paid ${naira(last.amount)} on ${formatDate(last.paidOn)}` : 'No payment yet',
     };
   }, [data]);
   const paidShare = sums.invoiced > 0 ? Math.min(100, Math.round(((sums.cash + sums.credited) / sums.invoiced) * 100)) : 0;
@@ -208,13 +216,13 @@ export default function StatementPage() {
         <QuietCard className="lg:col-span-7">
           <div className="flex flex-wrap items-center gap-2">
             <Pill>
-              <Receipt size={13} aria-hidden /> {sums.invoices} {sums.invoices === 1 ? 'invoice' : 'invoices'}
+              <Receipt size={13} aria-hidden /> {sums.invoices === 1 ? '1 invoice' : `${sums.invoices} invoices`}
             </Pill>
             <Pill>
-              <Wallet size={13} aria-hidden /> {sums.payments} {sums.payments === 1 ? 'payment' : 'payments'}
+              <Wallet size={13} aria-hidden /> {sums.payments === 1 ? '1 payment' : `${sums.payments} payments`}
             </Pill>
-            {sums.credits > 0 && <Pill>{sums.credits} {sums.credits === 1 ? 'credit' : 'credits'}</Pill>}
-            <span className="ml-auto text-caption text-muted">As at {formatDate(todayISO())}</span>
+            {sums.credits > 0 && <Pill>{sums.credits === 1 ? '1 credit' : `${sums.credits} credits`}</Pill>}
+            <span className="ml-auto text-caption text-muted">{`As at ${formatDate(todayISO())}`}</span>
           </div>
           <p className="mt-6 text-label text-muted">{closing > 0 ? 'Balance owed' : closing < 0 ? 'In credit' : 'Balance'}</p>
           <p className="tabular font-display text-headline font-bold tracking-[-0.02em] text-primary sm:text-jumbo">{naira(Math.abs(closing), true)}</p>
@@ -235,7 +243,7 @@ export default function StatementPage() {
         <AccentCard className="lg:col-span-5">
           <AccentBadge icon={<Wallet size={13} aria-hidden />}>Paid so far</AccentBadge>
           <p className="tabular mt-5 font-display text-headline font-bold tracking-[-0.02em] sm:text-display">{naira(sums.cash)}</p>
-          <p className="mt-1 text-caption opacity-80">Last: {sums.lastPaid}</p>
+          <p className="mt-1 text-caption opacity-80">{sums.lastPaid}</p>
           <div className="mt-5 grid grid-cols-2 gap-3">
             <AccentTile label="Invoiced" value={naira(sums.invoiced)} hint={`${paidShare}% settled`} />
             <AccentTile label="Credits" value={naira(sums.credited)} hint="Credit notes and returns" />
@@ -248,7 +256,7 @@ export default function StatementPage() {
       ) : lines.length === 0 ? (
         <EmptyState
           icon={<FileText size={22} />}
-          title="Nothing on this account"
+          title="Nothing yet"
           description="An invoice or a payment appears here the moment it is raised."
         />
       ) : (
@@ -266,7 +274,7 @@ export default function StatementPage() {
               </div>
               <div className="text-right">
                 <p className="text-label font-bold text-primary">{distributor?.company}</p>
-                <p className="text-caption text-muted">As at {formatDate(todayISO())}</p>
+                <p className="text-caption text-muted">{`As at ${formatDate(todayISO())}`}</p>
               </div>
             </div>
           </div>

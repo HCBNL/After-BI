@@ -150,8 +150,7 @@ export function ImportCalculator() {
           </div>
           {ready && (
             <p className="tabular mt-2 text-caption text-muted">
-              {naira(r.profit, true)} profit per unit ({Math.round(r.markup)}% on cost, {Math.round(r.margin)}% margin)
-            </p>
+              {`${naira(r.profit, true)} profit per unit (${Math.round(r.markup)}% on cost, ${Math.round(r.margin)}% margin)`}</p>
           )}
           {ready && s.quantity > 0 && (
             <div className="tabular mt-3 grid grid-cols-3 gap-2 border-t border-hairline pt-3 text-caption">
@@ -207,7 +206,7 @@ export function ImportCalculator() {
           />
           <div className="mt-3 grid grid-cols-2 gap-3">
             <label className="block">
-              <span className="mb-1 block text-label font-medium text-secondary">₦ per {sign}1</span>
+              <span className="mb-1 block text-label font-medium text-secondary">{`₦ per ${sign}1`}</span>
               <Input
                 type="number"
                 inputMode="decimal"
@@ -453,12 +452,12 @@ export function ImportCalculator() {
                   >
                     <p className="truncate text-body font-semibold text-primary">{q.name}</p>
                     <p className="tabular truncate text-caption text-muted">
-                      {foreign(q.price, q.currency)} at ₦{count(q.rate)} · {formatDate(q.at)}
+                      {`${foreign(q.price, q.currency)} at ₦${count(q.rate)} · ${formatDate(q.at)}`}
                     </p>
                   </button>
                   <div className="tabular text-right">
-                    <p className="text-caption text-muted">Cost {naira(q.cost, true)}</p>
-                    <p className="text-label font-semibold text-primary">Sell {naira(q.sell, true)}</p>
+                    <p className="text-caption text-muted">{`Cost ${naira(q.cost, true)}`}</p>
+                    <p className="text-label font-semibold text-primary">{`Sell ${naira(q.sell, true)}`}</p>
                   </div>
                   <IconButton label={`Remove ${q.name}`} onClick={() => patch({ quotes: s.quotes.filter((x) => x.id !== q.id) })}>
                     <X size={15} />

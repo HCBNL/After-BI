@@ -29,9 +29,7 @@ export default function StaffHome() {
           {user?.firstName ?? 'Welcome'}
         </h1>
         <p className="mt-2 max-w-xl text-body leading-relaxed text-white/70">
-          AfterBI staff{user ? ` · ${staffNumber(user.id)}` : ''}. Everything you need to present AfterBI to a prospect is
-          here. You cannot see any customer&rsquo;s records.
-        </p>
+          {`AfterBI staff${user ? ` · ${staffNumber(user.id)}` : ''}. Everything you need to present AfterBI to a prospect is here. You cannot see any customer’s records.`}</p>
       </section>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

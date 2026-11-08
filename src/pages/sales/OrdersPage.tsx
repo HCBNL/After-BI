@@ -237,7 +237,10 @@ export default function OrdersPage() {
       {error ? (
         <EmptyState
           icon={<ShoppingCart size={22} />}
-          title="We could not load your orders"
+          title="Could not load your orders"
+          /* `loud`: this is a fault, not an empty table. What to do about it
+             is the point of the screen, so it does not hide behind an (i). */
+          loud
           description="Check your connection and try again."
           action={
             <Button variant="outline" onClick={reload}>

@@ -113,7 +113,7 @@ export default function GuidePage() {
         <section className="mt-6">
           <h2 className="flex items-center gap-2 text-title font-semibold text-primary">
             <Lightbulb size={17} className="text-brand-600 dark:text-brand-400" aria-hidden />
-            Guides for {ROLE_LABEL[role].toLowerCase()}
+            {`Guides for ${ROLE_LABEL[role].toLowerCase()}`}
           </h2>
           <div className="mt-3 space-y-2.5">
             {all.map((guide) => (
@@ -169,7 +169,7 @@ function GuideCard({ guide, role, open: startOpen = false }: { guide: HowTo; rol
         className="flex w-full items-center gap-3 p-4 text-left"
       >
         <span className="min-w-0 flex-1 text-body font-semibold text-primary">{guide.title}</span>
-        <span className="shrink-0 text-caption text-muted">{guide.steps.length} steps</span>
+        <span className="shrink-0 text-caption text-muted">{`${guide.steps.length} steps`}</span>
         <ChevronDown size={17} aria-hidden className={cn('shrink-0 text-muted transition-transform', open && 'rotate-180')} />
       </button>
       {open && (

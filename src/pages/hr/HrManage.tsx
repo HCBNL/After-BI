@@ -243,12 +243,11 @@ export default function HrManage() {
         saturday={rules.saturday}
         footer={
           <p className="text-label text-white/65">
-            {current.label} payroll so far: <b className="text-white">{offset === 0 ? naira(totalNet) : 'open this month in Payroll'}</b>, {clockedToday.size} of{' '}
-            {people.filter((p) => !p.suspended).length} clocked in today
+            {`${current.label} payroll so far: `}<b className="text-white">{offset === 0 ? naira(totalNet) : 'open this month in Payroll'}</b>
+            {`, ${clockedToday.size} of ${people.filter((p) => !p.suspended).length} clocked in today`}
             {(pending.data?.length ?? 0) > 0 && (
               <button type="button" onClick={() => setTab('reissues')} className="font-bold text-gold-300 underline-offset-2 hover:underline">
-                , {pending.data!.length} reissue {pending.data!.length === 1 ? 'request' : 'requests'} waiting
-              </button>
+                {pending.data!.length === 1 ? ', 1 reissue request waiting' : `, ${pending.data!.length} reissue requests waiting`}</button>
             )}
           </p>
         }
@@ -307,7 +306,7 @@ export default function HrManage() {
         <section className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatTile label="Net payroll" value={nairaShort(totalNet)} icon={<Banknote size={16} />} tone="good" hint={`Full salaries ${nairaShort(fullPayroll)}`} />
-            <StatTile label="Running costs" value={nairaShort(costTotal)} icon={<Receipt size={16} />} tone="warning" hint={`${monthCosts.length} cost${monthCosts.length === 1 ? '' : 's'} this month`} />
+            <StatTile label="Running costs" value={nairaShort(costTotal)} icon={<Receipt size={16} />} tone="warning" hint={monthCosts.length === 1 ? '1 cost this month' : `${monthCosts.length} costs this month`} />
             <StatTile label="Total monthly cost" value={nairaShort(totalNet + costTotal)} tone="brand" hint="Net payroll plus running costs" />
             <StatTile
               label="Per person"
@@ -319,16 +318,15 @@ export default function HrManage() {
           </div>
 
           {unset.length > 0 && (
-            <Alert tone="warning" title={`${unset.length} ${unset.length === 1 ? 'person' : 'people'} without a salary`}>
-              {unset.map((p) => p.name).join(', ')}. Set their salary and resumption date under Staff and salaries.
-            </Alert>
+            <Alert tone="warning" title={unset.length === 1 ? '1 person without a salary' : `${unset.length} people without a salary`}>
+              {`${unset.map((p) => p.name).join(', ')}. Set their salary and resumption date under Staff and salaries.`}</Alert>
           )}
 
           {!att.data ? (
             <Loading label="Working out the payroll" />
           ) : rows.length === 0 ? (
             <Card>
-              <EmptyState icon={<Users size={22} />} title="Nobody on the payroll yet" description="Set a salary under Staff and salaries." />
+              <EmptyState icon={<Users size={22} />} title="Nobody yet" description="Set a salary under Staff and salaries." />
             </Card>
           ) : (
             <div className="overflow-hidden rounded-2xl border border-hairline surface-card shadow-card">
@@ -352,7 +350,7 @@ export default function HrManage() {
                         <span className="block truncate font-bold text-primary">{p.name}</span>
                         <span className="block truncate text-caption text-muted">
                           {p.hr!.position || ROLE_LABEL[p.role]}
-                          {r.missed > 0 && <span className="ml-1.5 font-semibold text-status-critical">{r.missed} missed</span>}
+                          {r.missed > 0 && <span className="ml-1.5 font-semibold text-status-critical">{`${r.missed} missed`}</span>}
                         </span>
                       </span>
                       <span className="text-right font-display text-title font-bold text-primary md:order-last">{naira(net)}</span>
@@ -368,11 +366,11 @@ export default function HrManage() {
                       <span className="text-secondary">
                         <span className="md:hidden">Earned </span>
                         {naira(r.pay)}
-                        <span className="block text-micro text-muted">{nairaPrecise(r.daily)} a day</span>
+                        <span className="block text-micro text-muted">{`${nairaPrecise(r.daily)} a day`}</span>
                       </span>
                       <span className="text-label">
                         {bonus > 0 && <span className="block font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">+ {naira(bonus)}</span>}
-                        {deduction > 0 && <span className="block font-semibold text-status-critical">minus {naira(deduction)}</span>}
+                        {deduction > 0 && <span className="block font-semibold text-status-critical">{`minus ${naira(deduction)}`}</span>}
                         {!bonus && !deduction && <span className="text-muted">None</span>}
                       </span>
                     </button>
@@ -380,7 +378,7 @@ export default function HrManage() {
                 ))}
               </ul>
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline bg-night px-4 py-4 text-white">
-                <span className="text-label font-semibold text-white/70">Net total, paid {prettyIso(period.payDay, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                <span className="text-label font-semibold text-white/70">{`Net total, paid ${prettyIso(period.payDay, { weekday: 'short', day: 'numeric', month: 'short' })}`}</span>
                 <span className="font-display text-headline font-bold tracking-[-0.03em]">
                   <CountUp value={totalNet} format={naira} />
                 </span>
@@ -583,7 +581,7 @@ function PersonDays({
                   <span className="font-semibold text-primary">{prettyIso(a.date)}</span>
                   <span className="flex items-center gap-2 text-secondary tabular">
                     <span>
-                      {a.absent ? 'Marked absent' : a.reissue ? 'Reissued' : a.manual ? 'Marked present' : `${timeOf(a.inAt)} to ${timeOf(a.outAt)}`}
+                      {a.absent ? 'Marked absent' : a.reissue ? 'Reissued' : a.manual ? 'Marked present' : `In ${timeOf(a.inAt)}, out ${timeOf(a.outAt)}`}
                       {a.outAt && <span className="text-muted">, {hoursBetween(a.inAt, a.outAt)}</span>}
                       {a.edited && <span className="ml-1.5 text-micro font-semibold text-[#8a6100] dark:text-gold-300">corrected</span>}
                     </span>
@@ -678,7 +676,7 @@ function Reissues({ list, onChanged }: { list: Reissue[] | undefined; onChanged:
       <Card>
         <EmptyState
           icon={<RotateCcw size={22} />}
-          title="No reissue requests waiting"
+          title="No requests"
           description="When someone misses a day they worked, they tap it on their My pay calendar and ask for a reissue. Requests land here."
         />
       </Card>
@@ -852,7 +850,7 @@ function Bonuses({ period, people, list, onChanged }: { period: PayPeriod; peopl
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
       <Card>
         <form onSubmit={(e) => void add(e)} className="space-y-4">
-          <p className="text-lead font-semibold text-primary">Add to {period.label}</p>
+          <p className="text-lead font-semibold text-primary">{`Add to ${period.label}`}</p>
           <Field label="Person" required>
             <Select value={uid} onChange={(e) => setUid(e.target.value)}>
               <option value="">Choose…</option>
@@ -993,8 +991,8 @@ function Costs({ period, all, onChanged }: { period: PayPeriod; all: Cost[]; onC
             </div>
             <Field label="How often">
               <Select value={frequency} onChange={(e) => setFrequency(e.target.value as 'monthly' | 'once')}>
-                <option value="monthly">Every month, from {period.label}</option>
-                <option value="once">Once, in {period.label}</option>
+                <option value="monthly">{`Every month, from ${period.label}`}</option>
+                <option value="once">{`Once, in ${period.label}`}</option>
               </Select>
             </Field>
             <Button type="submit" icon={<Plus size={16} />} loading={busy} full>
@@ -1004,7 +1002,7 @@ function Costs({ period, all, onChanged }: { period: PayPeriod; all: Cost[]; onC
         </Card>
         {byCategory.length > 0 && (
           <Card>
-            <p className="mb-3 text-lead font-semibold text-primary">By category, {period.label}</p>
+            <p className="mb-3 text-lead font-semibold text-primary">{`By category, ${period.label}`}</p>
             <ul className="space-y-2.5">
               {byCategory.map(([cat, amt]) => (
                 <li key={cat}>
@@ -1027,7 +1025,7 @@ function Costs({ period, all, onChanged }: { period: PayPeriod; all: Cost[]; onC
           <p className="text-lead font-bold tabular text-primary">{naira(total)}</p>
         </div>
         {month.length === 0 ? (
-          <EmptyState icon={<Receipt size={22} />} title="No running costs this month" description="Rent, diesel, internet, vehicle repairs: anything the business pays besides salaries. The Payroll tab adds them to the month's total cost." />
+          <EmptyState icon={<Receipt size={22} />} title="No running costs" description="Rent, diesel, internet, vehicle repairs: anything the business pays besides salaries. The Payroll tab adds them to the month's total cost." />
         ) : (
           <ul className="divide-y divide-[var(--border-hairline)]">
             {month.map((c) => (
@@ -1175,8 +1173,9 @@ function Holidays({ holidays, today, saturday, onChanged }: { holidays: { id: st
                 <div className="min-w-0">
                   <p className="truncate text-body font-semibold text-primary">{h.name}</p>
                   <p className="text-label text-muted">
-                    {prettyIso(h.id, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                    {isOffDay(h.id, saturday) && ', a day off anyway'}
+                    {isOffDay(h.id, saturday)
+                      ? `${prettyIso(h.id, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, a day off anyway`
+                      : prettyIso(h.id, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
                 <Button size="sm" variant="ghost" aria-label={`Remove ${h.name}`} onClick={() => void remove(h.id)}>
@@ -1242,7 +1241,9 @@ function PaySettings({ value, onSaved }: { value: HrSettings; onSaved: () => voi
           </Field>
         </div>
         <p className="rounded-2xl surface-sunken px-4 py-3 text-label text-secondary">
-          A month&rsquo;s salary covers <b className="text-primary">{cycleWords(c)}</b>, paid on the <b className="text-primary">{ordinal(Number(payDay) || 25)}</b>.
+          {/* No closing full stop: after the bold day it would be a piece of
+              text on its own, untranslatable, and wrong in Chinese. */}
+          A month&rsquo;s salary covers <b className="text-primary">{cycleWords(c)}</b>, paid on the <b className="text-primary">{ordinal(Number(payDay) || 25)}</b>
         </p>
 
         <Switch
@@ -1273,7 +1274,7 @@ function PaySettings({ value, onSaved }: { value: HrSettings; onSaved: () => voi
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([month, date]) => (
                   <li key={month} className="inline-flex items-center gap-1.5 rounded-full bg-gold-400/20 py-1 pl-3 pr-1 text-label font-semibold text-[#8a6100] dark:text-gold-300">
-                    {prettyIso(date, { month: 'long', year: 'numeric' })} salary on {prettyIso(date, { weekday: 'short', day: 'numeric', month: 'short' })}
+                    {`${prettyIso(date, { month: 'long', year: 'numeric' })} salary on ${prettyIso(date, { weekday: 'short', day: 'numeric', month: 'short' })}`}
                     <button
                       type="button"
                       aria-label="Remove"

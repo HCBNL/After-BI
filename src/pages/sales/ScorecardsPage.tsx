@@ -161,7 +161,7 @@ export default function ScorecardsPage() {
         getRowId={(row) => row.id}
         loading={loading}
         emptyIcon={<LineChart size={22} />}
-        emptyTitle="Nothing recorded in this period"
+        emptyTitle="Empty"
         emptyDescription="Scorecards are built from sell-out. Nothing has been keyed for this month yet."
       />
     </div>

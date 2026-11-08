@@ -171,7 +171,7 @@ export default function InvoicesPage() {
           <div>
             <p className="text-label text-secondary">{formatDate(row.dueOn)}</p>
             {open && late > 0 && (
-              <p className="text-caption font-semibold text-status-critical">{late} days late</p>
+              <p className="text-caption font-semibold text-status-critical">{`${late} days late`}</p>
             )}
           </div>
         );
@@ -269,7 +269,7 @@ export default function InvoicesPage() {
         active={filter}
         onChange={(id) => setFilter(id as Filter)}
         items={[
-          { id: 'open', label: 'Open', count: counts.open },
+          { id: 'open', label: 'Unpaid', count: counts.open },
           { id: 'overdue', label: 'Overdue', count: counts.overdue },
           { id: 'paid', label: 'Paid', count: counts.paid },
           { id: 'all', label: 'All', count: counts.all },
@@ -461,8 +461,7 @@ function RaiseInvoiceModal({
 
         {distributorId && forThisAccount.length === 0 && (
           <Alert tone="info" title="Nothing left to invoice on this account">
-            Every fulfilled order for {distributor?.company} already has an invoice against it.
-          </Alert>
+            {`Every fulfilled order for ${(distributor?.company) ?? ''} already has an invoice against it.`}</Alert>
         )}
 
         <Field label="Issue date" required>
@@ -471,15 +470,13 @@ function RaiseInvoiceModal({
 
         {distributor && (
           <p className="text-caption leading-snug text-muted">
-            Due {terms} days after the issue date, from {distributor.company}'s payment terms. Change
-            the terms on the distributor record rather than here, so every future invoice follows.
-          </p>
+            {`Due ${terms} days after the issue date, from ${distributor.company}'s payment terms. Change the terms on the distributor record rather than here, so every future invoice follows.`}</p>
         )}
 
         {order && (
           <div className="flex items-center justify-between rounded-xl border border-hairline surface-sunken px-4 py-3">
             <span className="text-label text-muted">
-              {order.lines.length} line{order.lines.length === 1 ? '' : 's'}
+              {order.lines.length === 1 ? '1 line' : `${order.lines.length} lines`}
             </span>
             <span className="tabular text-title font-bold text-primary">{naira(order.total)}</span>
           </div>
@@ -639,8 +636,7 @@ function PaymentModal({
       <div className="space-y-4">
         {invoice.amendedAt && (
           <Alert tone="warning" title="This invoice was amended after it was issued" defaultOpen>
-            Changed by {invoice.amendedBy ?? 'an administrator'}.
-          </Alert>
+            {`Changed by ${invoice.amendedBy ?? 'an administrator'}.`}</Alert>
         )}
 
         {invoice.status === 'void' && (
@@ -815,8 +811,7 @@ function PaymentModal({
         {paid.length > 0 && (
           <div>
             <h3 className="mb-2 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
-              {paid.length} payment{paid.length === 1 ? '' : 's'} received
-            </h3>
+              {paid.length === 1 ? '1 payment received' : `${paid.length} payments received`}</h3>
             <ul className="surface-card divide-y divide-[var(--border-hairline)] overflow-hidden rounded-xl border border-hairline">
               {paid.map((payment) => (
                 <li key={payment.id} className="flex items-center justify-between gap-3 px-3.5 py-2.5">

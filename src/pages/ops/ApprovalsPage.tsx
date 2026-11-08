@@ -83,7 +83,7 @@ export default function ApprovalsPage() {
       {waiting.length === 0 ? (
         <EmptyState
           icon={<ClipboardCheck size={22} />}
-          title="Nothing is waiting on you"
+          title="Nothing waiting"
           description="When an order needs your signature it appears here, and on your home screen."
         />
       ) : (
@@ -104,8 +104,9 @@ export default function ApprovalsPage() {
                     <p className="truncate text-label text-secondary">{order.distributorName}</p>
                   </div>
                   <p className="mt-0.5 text-label text-muted">
-                    {count(order.lines.length)} line{order.lines.length === 1 ? '' : 's'} · raised by{' '}
-                    {order.createdByName} on {formatDate(order.createdAt)}
+                    {order.lines.length === 1
+                      ? `1 line · raised by ${order.createdByName} on ${formatDate(order.createdAt)}`
+                      : `${count(order.lines.length)} lines · raised by ${order.createdByName} on ${formatDate(order.createdAt)}`}
                   </p>
 
                   {/*
@@ -118,8 +119,7 @@ export default function ApprovalsPage() {
                   */}
                   {order.approvers.length > 1 && (
                     <p className="mt-1 text-caption text-muted">
-                      Any one of the {order.approvers.length} named can sign
-                    </p>
+                      {`Any one of the ${order.approvers.length} named can sign`}</p>
                   )}
                 </div>
 
@@ -127,8 +127,7 @@ export default function ApprovalsPage() {
                   <p className="tabular text-lead font-bold text-primary">{naira(orderNet(order))}</p>
                   {summarise(order.lines ?? []).discount > 0 && (
                     <p className="tabular mt-0.5 text-caption font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
-                      {naira(summarise(order.lines).discount)} discount
-                    </p>
+                      {`${naira(summarise(order.lines).discount)} discount`}</p>
                   )}
                   <Badge tone="gold" className="mt-1">
                     {user && (order.approvers ?? []).includes(user.id) ? 'Awaiting you' : 'Super admin'}

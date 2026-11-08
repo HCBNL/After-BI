@@ -21,6 +21,9 @@ import type { OrgTenant } from '@/lib/tenant';
 import { PlanBadge } from '@/components/brand/PlanBadge';
 import { PLANS, planOf } from '@/lib/plans';
 
+/** A subscription's status, as a word rather than the stored key. */
+const SUB_WORD: Record<string, string> = { trial: 'Trial', active: 'Active', 'past-due': 'Past due', suspended: 'Suspended' };
+
 export default function PricingPage() {
   const { data, loading } = useAsync(() => listTenants(), [], { handleError: true });
   const tenants = useMemo(() => data ?? [], [data]);
@@ -102,7 +105,7 @@ export default function PricingPage() {
       header: 'Status',
       cell: (row) => (
         <Badge tone={row.status === 'active' ? 'good' : row.status === 'trial' ? 'gold' : 'critical'}>
-          {row.status}
+          {SUB_WORD[row.status] ?? row.status}
         </Badge>
       ),
     },

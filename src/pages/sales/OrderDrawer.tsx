@@ -179,8 +179,7 @@ export function OrderDrawer({
             <div className="min-w-0">
               <p className="text-lead font-semibold text-primary">{order.distributorName}</p>
               <p className="mt-0.5 text-label text-muted">
-                Raised by {order.createdByName} · {formatDateTime(order.createdAt)}
-                {order.deliveryNumber ? ` · Delivery note ${order.deliveryNumber}` : ''}
+                {`Raised by ${order.createdByName} · ${formatDateTime(order.createdAt)}${order.deliveryNumber ? ` · Delivery note ${order.deliveryNumber}` : ''}`}
               </p>
             </div>
             <Badge
@@ -209,24 +208,21 @@ export function OrderDrawer({
  */}
           {order.amendedAt && (
             <Alert tone="warning" title="This order was amended after it was decided" defaultOpen>
-              Changed by {order.amendedBy ?? 'an administrator'} on {formatDateTime(order.amendedAt)}.
-            </Alert>
+              {`Changed by ${order.amendedBy ?? 'an administrator'} on ${formatDateTime(order.amendedAt)}.`}</Alert>
           )}
 
           {order.status === 'draft' && order.recalledAt && (
             <Alert tone="info" title="Recalled from approval" defaultOpen>
-              {order.recalledBy ?? 'Somebody'} pulled this back on {formatDateTime(order.recalledAt)}
-              {order.recallReason ? ` (${order.recallReason})` : ''}. Every signature was cleared, so
-              sending it again asks for them afresh.
-            </Alert>
+              {order.recallReason
+                ? `${order.recalledBy ?? 'Somebody'} pulled this back on ${formatDateTime(order.recalledAt)}, giving this reason: ${order.recallReason}. Every signature was cleared, so sending it again asks for them afresh.`
+                : `${order.recalledBy ?? 'Somebody'} pulled this back on ${formatDateTime(order.recalledAt)}. Every signature was cleared, so sending it again asks for them afresh.`}</Alert>
           )}
 
           {order.status === 'cancelled' && (
             <Alert tone="critical" title="This order was cancelled" defaultOpen>
-              {order.cancelledBy ?? 'Somebody'} cancelled it
-              {order.cancelReason ? ` (${order.cancelReason})` : ''}. It is kept rather than deleted
-              because its number has been quoted.
-            </Alert>
+              {order.cancelReason
+                ? `${order.cancelledBy ?? 'Somebody'} cancelled it, giving this reason: ${order.cancelReason}. It is kept rather than deleted because its number has been quoted.`
+                : `${order.cancelledBy ?? 'Somebody'} cancelled it. It is kept rather than deleted because its number has been quoted.`}</Alert>
           )}
 
           {order.note && (
@@ -379,7 +375,7 @@ export function OrderDrawer({
                   to={`${root}/returns?new=1&account=${order.distributorId}`}
                   className="mt-2 inline-flex items-center gap-1 text-label font-semibold text-brand-700 hover:underline dark:text-brand-300"
                 >
-                  <Undo2 size={13} aria-hidden /> Raise a return for {order.distributorName}
+                  <Undo2 size={13} aria-hidden /> {` Raise a return for ${order.distributorName}`}
                 </Link>
               )}
             </div>
@@ -399,10 +395,7 @@ export function OrderDrawer({
           {/* A discount is stated before anybody signs, not discovered after. */}
           {priced.discount > 0 && (
             <Alert tone="warning" title={`Prices adjusted: ${naira(priced.discount, true)} below list`}>
-              {order.priceAdjustedBy ? `Set by ${order.priceAdjustedBy}. ` : ''}At list price this order is{' '}
-              {naira(priced.gross, true)}; it is charged at {naira(priced.net, true)}. The discount prints on
-              the proforma and the invoice.
-            </Alert>
+              {`${order.priceAdjustedBy ? `Set by ${order.priceAdjustedBy}. ` : ''}At list price this order is ${naira(priced.gross, true)}; it is charged at ${naira(priced.net, true)}. The discount prints on the proforma and the invoice.`}</Alert>
           )}
 
           {/* the lines */}
@@ -417,7 +410,7 @@ export function OrderDrawer({
               note at the top of `types/index.ts`.
             */}
             <h3 className="mb-2 flex items-center gap-1.5 text-micro font-semibold uppercase tracking-[0.12em] text-muted">
-              {count(order.lines.length)} line{order.lines.length === 1 ? '' : 's'}
+              {order.lines.length === 1 ? '1 line' : `${count(order.lines.length)} lines`}
               <Hint label="About these prices">
                 Prices are as they were when this order was raised, not today's. Every line carries
                 the price its tier had on the day, so the order keeps saying what it said then.
@@ -445,9 +438,7 @@ export function OrderDrawer({
                     </p>
                     {listPriceOf(line) > line.unitPrice && (
                       <p className="tabular mt-0.5 text-caption font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
-                        {naira((listPriceOf(line) - line.unitPrice) * line.quantity, true)} off (
-                        {naira(listPriceOf(line) - line.unitPrice, true)} per unit)
-                        {line.creditAmount > 0 && ` · was ${naira(line.priceBeforeCredit, true)} until the credit note`}
+                        {`${naira((listPriceOf(line) - line.unitPrice) * line.quantity, true)} off (${naira(listPriceOf(line) - line.unitPrice, true)} per unit)${(line.creditAmount > 0) ? ` · was ${naira(line.priceBeforeCredit, true)} until the credit note` : ''}`}
                       </p>
                     )}
                   </div>
@@ -464,7 +455,7 @@ export function OrderDrawer({
                     <span className="tabular">{naira(priced.gross, true)}</span>
                   </div>
                   <div className="flex items-center justify-between font-semibold text-[#0a7a0a] dark:text-[#4ec54e]">
-                    <span>Discount{order.discountNote ? ` (${order.discountNote})` : ''}</span>
+                    <span>{`Discount${order.discountNote ? ` (${order.discountNote})` : ''}`}</span>
                     <span className="tabular">({naira(priced.discount, true)})</span>
                   </div>
                 </div>
@@ -479,7 +470,7 @@ export function OrderDrawer({
                   {(order.credits ?? []).map((c) => (
                     <div key={c.id} className="flex items-center justify-between gap-3 font-semibold text-primary">
                       <span className="min-w-0 truncate">
-                        Credit note {c.creditNumber}
+                        {`Credit note ${c.creditNumber}`}
                         <span className="font-normal text-muted"> · {c.reason}</span>
                       </span>
                       <span className="tabular shrink-0">({naira(c.total, true)})</span>

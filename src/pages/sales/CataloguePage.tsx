@@ -55,6 +55,13 @@ function storedView(): View {
   }
 }
 
+/** The catalogue's subtitle for a partner, one whole sentence per price tier. */
+const AT_YOUR_PRICE: Record<PriceTier, string> = {
+  OT: 'Everything available to you, at your open trade price.',
+  MT: 'Everything available to you, at your modern trade price.',
+  SA: 'Everything available to you, at your service account price.',
+};
+
 export default function CataloguePage() {
   const { user } = useAuth();
   const { products } = useOrg();
@@ -145,7 +152,7 @@ export default function CataloguePage() {
         title="Catalogue"
         description={
           locked
-            ? `Everything available to you, at your ${TIER_LABEL[shown].toLowerCase()} price.`
+            ? AT_YOUR_PRICE[shown]
             : 'Everything for sale, at the tier you choose.'
         }
         actions={
@@ -233,7 +240,7 @@ export default function CataloguePage() {
       {rows.length === 0 ? (
         <EmptyState
           icon={<Package size={22} />}
-          title={search || category !== 'all' ? 'Nothing matches that' : 'Nothing priced for this tier'}
+          title={search || category !== 'all' ? 'Nothing matches that' : 'Nothing priced'}
           description={
             search || category !== 'all'
               ? 'Try a different product name, or another category.'
@@ -270,8 +277,13 @@ export default function CataloguePage() {
           {/* A catalogue that runs off the bottom of the screen should say how
               much of it there was, the way the last page of a brochure does. */}
           <p className="mt-4 text-caption text-muted">
-            {count(rows.length)} {rows.length === 1 ? 'product' : 'products'}
-            {category === 'all' ? '' : ` in ${category}`}
+            {category === 'all'
+              ? rows.length === 1
+                ? '1 product'
+                : `${count(rows.length)} products`
+              : rows.length === 1
+                ? `1 product in ${category}`
+                : `${count(rows.length)} products in ${category}`}
           </p>
         </>
       )}
@@ -370,7 +382,7 @@ function GalleryCard({
             {naira(product.pricing[tier]!)}
           </p>
           {product.moq > 1 && (
-            <p className="mt-1 text-caption text-muted">Minimum order {count(product.moq)}</p>
+            <p className="mt-1 text-caption text-muted">{`Minimum order ${count(product.moq)}`}</p>
           )}
         </div>
       </button>
