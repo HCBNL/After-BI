@@ -462,12 +462,40 @@ service cloud.firestore {
     }
 
     /* A rep's own pipeline. */
+    /*
+      Leads: a name and a trail, until a manager confirms it as a customer.
+      Its rep keeps the details and asks for confirmation; only a manager
+      confirms, declines or removes. The trail is append only.
+    */
     match /orgs/{orgId}/leads/{leadId} {
       allow read: if hasRole(orgId, ['sales_rep']) && resource.data.ownerId == request.auth.uid;
       allow create: if hasRole(orgId, ['super_admin', 'admin', 'staff', 'sales_rep'])
-        && request.resource.data.ownerId == request.auth.uid;
-      allow update: if admin(orgId) || resource.data.ownerId == request.auth.uid;
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.status == 'open';
+      allow update: if admin(orgId);
+      allow update: if resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId
+        && resource.data.get('status', 'open') != 'confirmed'
+        && request.resource.data.get('status', 'open') in ['open', 'pending']
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['confirmedAt', 'confirmedByName', 'customerId']);
       allow delete: if admin(orgId);
+
+      function leadData() {
+        return get(/databases/$(database)/documents/orgs/$(orgId)/leads/$(leadId)).data;
+      }
+
+      match /logs/{logId} {
+        allow read: if hasRole(orgId, ['sales_rep']) && leadData().ownerId == request.auth.uid;
+        allow create: if request.resource.data.by == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+          && request.resource.data.kind in ['visit', 'call', 'message', 'meeting', 'note', 'comment', 'request', 'confirmed', 'declined']
+          && (request.resource.data.kind != 'confirmed' || admin(orgId))
+          && (request.resource.data.kind != 'declined' || admin(orgId))
+          && (admin(orgId) || hasRole(orgId, ['staff']) || leadData().ownerId == request.auth.uid);
+        allow delete: if admin(orgId);
+      }
     }
 
     match /orgs/{orgId}/invoices/{invoiceId} {

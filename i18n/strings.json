@@ -316,6 +316,7 @@
    "src/pages/partners/DistributorsPage.tsx",
    "src/pages/platform/ProposalsPage.tsx",
    "src/pages/platform/StaffPage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/pages/team/CompanyInfo.tsx"
   ]
  },
@@ -1155,6 +1156,7 @@
    "src/lib/salesAnalytics.ts",
    "src/lib/tasks.ts",
    "src/pages/hr/HrManage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/pages/sales/SellOutPage.tsx",
    "src/pages/shared/RemindersPage.tsx",
    "src/pages/shared/TasksPage.tsx"
@@ -1478,6 +1480,7 @@
    "src/pages/platform/website/AdEditor.tsx",
    "src/pages/platform/website/SiteImageSlots.tsx",
    "src/pages/platform/website/VideoPicker.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/pages/sales/TargetsPage.tsx",
    "src/pages/staff/StaffIdCard.tsx",
    "src/pages/team/OrgIdCard.tsx"
@@ -1490,6 +1493,7 @@
    "src/pages/hr/HrManage.tsx",
    "src/pages/inventory/CostingPage.tsx",
    "src/pages/inventory/ImportCalculator.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/pages/sales/NewOrderDrawer.tsx"
   ]
  },
@@ -1571,18 +1575,6 @@
   ]
  },
  {
-  "text": "Balances will hide when you leave this page",
-  "files": [
-   "src/components/layout/Chrome.tsx"
-  ]
- },
- {
-  "text": "Balances will show when you leave this page",
-  "files": [
-   "src/components/layout/Chrome.tsx"
-  ]
- },
- {
   "text": "Go back",
   "files": [
    "src/components/layout/Chrome.tsx",
@@ -1598,12 +1590,6 @@
    "src/lib/tiles.ts",
    "src/pages/auth/ForgotPasswordPage.tsx",
    "src/pages/auth/LoginPage.tsx"
-  ]
- },
- {
-  "text": "Kept as it is for now so what you typed is not lost.",
-  "files": [
-   "src/components/layout/Chrome.tsx"
   ]
  },
  {
@@ -1961,8 +1947,7 @@
    "src/components/marketing/chrome.tsx",
    "src/lib/site.ts",
    "src/lib/tiles.ts",
-   "src/pages/partners/DistributorsPage.tsx",
-   "src/pages/sales/LeadsPage.tsx"
+   "src/pages/partners/DistributorsPage.tsx"
   ]
  },
  {
@@ -2099,7 +2084,8 @@
    "src/lib/social.ts",
    "src/pages/public/CardPage.tsx",
    "src/pages/public/SignInHelpPage.tsx",
-   "src/pages/public/VerifyIdPage.tsx"
+   "src/pages/public/VerifyIdPage.tsx",
+   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -5444,7 +5430,8 @@
  {
   "text": "Not yet",
   "files": [
-   "src/lib/hr.ts"
+   "src/lib/hr.ts",
+   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -5494,6 +5481,80 @@
   "text": "{0}/verify/id/{1}",
   "files": [
    "src/lib/idCards.ts"
+  ]
+ },
+ {
+  "text": "Asked to confirm",
+  "files": [
+   "src/lib/leads.ts"
+  ]
+ },
+ {
+  "text": "Call",
+  "files": [
+   "src/lib/leads.ts",
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Comment",
+  "files": [
+   "src/lib/leads.ts",
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Confirmed as customer",
+  "files": [
+   "src/lib/leads.ts"
+  ]
+ },
+ {
+  "text": "Customer account opened for {0}.",
+  "files": [
+   "src/lib/leads.ts"
+  ]
+ },
+ {
+  "text": "Meeting",
+  "files": [
+   "src/lib/leads.ts"
+  ]
+ },
+ {
+  "text": "Message",
+  "files": [
+   "src/lib/leads.ts"
+  ]
+ },
+ {
+  "text": "Not confirmed",
+  "files": [
+   "src/lib/leads.ts"
+  ]
+ },
+ {
+  "text": "Note",
+  "files": [
+   "src/lib/leads.ts",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/inventory/CostingPage.tsx",
+   "src/pages/inventory/MovementsPage.tsx",
+   "src/pages/inventory/StockPage.tsx",
+   "src/pages/platform/OrganisationsPage.tsx",
+   "src/pages/sales/NewOrderDrawer.tsx"
+  ]
+ },
+ {
+  "text": "Visit",
+  "files": [
+   "src/lib/leads.ts"
+  ]
+ },
+ {
+  "text": "Withdrew the request to confirm.",
+  "files": [
+   "src/lib/leads.ts"
   ]
  },
  {
@@ -5890,13 +5951,25 @@
   ]
  },
  {
-  "text": "afterbi.hideMoney",
+  "text": "[data-money]",
   "files": [
    "src/lib/privacy.ts"
   ]
  },
  {
-  "text": "input:not([type=search]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=date]):not([type=month]), textarea",
+  "text": "[title], [aria-label]",
+  "files": [
+   "src/lib/privacy.ts"
+  ]
+ },
+ {
+  "text": "a, button, input, select, textarea, label, [role=\"button\"], [role=\"link\"]",
+  "files": [
+   "src/lib/privacy.ts"
+  ]
+ },
+ {
+  "text": "afterbi.hideMoney",
   "files": [
    "src/lib/privacy.ts"
   ]
@@ -5940,7 +6013,8 @@
  {
   "text": "{0} days ago",
   "files": [
-   "src/lib/reminders.ts"
+   "src/lib/reminders.ts",
+   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -8437,7 +8511,8 @@
  {
   "text": "Yesterday",
   "files": [
-   "src/lib/tasks.ts"
+   "src/lib/tasks.ts",
+   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -9282,8 +9357,7 @@
   "files": [
    "src/pages/admin/InvitePage.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
-   "src/pages/sales/AnalyticsPage.tsx",
-   "src/types/index.ts"
+   "src/pages/sales/AnalyticsPage.tsx"
   ]
  },
  {
@@ -10079,7 +10153,8 @@
   "text": "Added",
   "files": [
    "src/pages/admin/UsersPage.tsx",
-   "src/pages/platform/website/SiteImageSlots.tsx"
+   "src/pages/platform/website/SiteImageSlots.tsx",
+   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -11136,6 +11211,7 @@
    "src/pages/finance/InvoicesPage.tsx",
    "src/pages/inventory/ReturnsPage.tsx",
    "src/pages/sales/CataloguePage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/pages/sales/OrdersPage.tsx"
   ]
  },
@@ -11503,6 +11579,7 @@
    "src/pages/platform/OrganisationsPage.tsx",
    "src/pages/platform/PricingPage.tsx",
    "src/pages/platform/ProposalsPage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/pages/sales/OrdersPage.tsx"
   ]
  },
@@ -13098,18 +13175,6 @@
   ]
  },
  {
-  "text": "Note",
-  "files": [
-   "src/pages/hr/HrManage.tsx",
-   "src/pages/inventory/CostingPage.tsx",
-   "src/pages/inventory/MovementsPage.tsx",
-   "src/pages/inventory/StockPage.tsx",
-   "src/pages/platform/OrganisationsPage.tsx",
-   "src/pages/sales/LeadsPage.tsx",
-   "src/pages/sales/NewOrderDrawer.tsx"
-  ]
- },
- {
   "text": "Nothing for {0}",
   "files": [
    "src/pages/hr/HrManage.tsx"
@@ -13715,7 +13780,8 @@
  {
   "text": "Request withdrawn",
   "files": [
-   "src/pages/hr/HrPage.tsx"
+   "src/pages/hr/HrPage.tsx",
+   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -13763,7 +13829,8 @@
  {
   "text": "Withdraw",
   "files": [
-   "src/pages/hr/HrPage.tsx"
+   "src/pages/hr/HrPage.tsx",
+   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -15427,6 +15494,7 @@
   "text": "That did not go through",
   "files": [
    "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/pages/sales/OrderDrawer.tsx"
   ]
  },
@@ -15750,8 +15818,7 @@
  {
   "text": "No location",
   "files": [
-   "src/pages/inventory/WarehousesPage.tsx",
-   "src/pages/sales/LeadsPage.tsx"
+   "src/pages/inventory/WarehousesPage.tsx"
   ]
  },
  {
@@ -16002,6 +16069,7 @@
   "files": [
    "src/pages/partners/DistributorsPage.tsx",
    "src/pages/sales/CataloguePage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/types/index.ts"
   ]
  },
@@ -16022,6 +16090,7 @@
   "files": [
    "src/pages/partners/DistributorsPage.tsx",
    "src/pages/sales/CataloguePage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/pages/shared/ProfilePage.tsx"
   ]
  },
@@ -16201,6 +16270,7 @@
   "text": "Not removed",
   "files": [
    "src/pages/platform/BanksPage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
    "src/pages/shared/ProfilePage.tsx"
   ]
  },
@@ -16921,8 +16991,7 @@
  {
   "text": "Lost",
   "files": [
-   "src/pages/platform/ProposalsPage.tsx",
-   "src/types/index.ts"
+   "src/pages/platform/ProposalsPage.tsx"
   ]
  },
  {
@@ -17104,8 +17173,7 @@
  {
   "text": "Won",
   "files": [
-   "src/pages/platform/ProposalsPage.tsx",
-   "src/types/index.ts"
+   "src/pages/platform/ProposalsPage.tsx"
   ]
  },
  {
@@ -18899,19 +18967,195 @@
   ]
  },
  {
-  "text": "A lead needs a company name",
+  "text": ", by {0}",
   "files": [
    "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
-  "text": "Businesses you are working on, by stage. {0} in open pipeline.",
+  "text": "· {0} days on average to confirm",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} asked {1}",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} confirmed as customers · {1} active this week",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} old {1} removed",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "A lead needs a business name",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "A manager will confirm it.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "About this lead",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Add a business you are following up, then log each visit, call and message on its trail.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Add a comment",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Added {0} · {1} days",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Added by {0} · {1}",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Ask a manager to confirm it as a customer.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Ask to confirm",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Awaiting confirmation",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "Before the trail was kept.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Business",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Businesses being followed up before they become customers. Log every visit, call and message on the lead's trail; when it is ready to buy, ask for it to be confirmed and a manager opens its customer account. A lead not confirmed within {0} days is due to be removed.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Confirm customer",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Confirmed as a customer",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Contact person",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Could not remove them all",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Credit limit and terms are set on the customer afterwards.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Customer confirmed",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Each one and its trail are taken off for good. Leads that became customers are not touched.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Edit details",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Filter leads",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Gone quiet",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Ikeja, Lagos",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Last activity",
   "files": [
    "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
   "text": "Lead",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "Lead removed",
   "files": [
    "src/pages/sales/LeadsPage.tsx"
   ]
@@ -18923,25 +19167,224 @@
   ]
  },
  {
+  "text": "Log it",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Met the buyer; they want samples of the 1L pack.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Never",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
   "text": "New lead",
   "files": [
    "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
-  "text": "Nothing here",
+  "text": "No contact yet",
   "files": [
    "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
-  "text": "Stage",
+  "text": "No leads match that search.",
   "files": [
    "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
-  "text": "Value if it closes",
+  "text": "No leads yet",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Not confirmed within a year. Remove them to keep the list to live leads.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Not logged",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Nothing here.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Nothing logged",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Open customer account",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Open customers",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Open its customer account so orders can be taken.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Over a year",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Over a year old",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Post",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Ready to buy?",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Remove {0} old {1}?",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Remove {0}?",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Rep",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx",
+   "src/pages/sales/ScorecardsPage.tsx"
+  ]
+ },
+ {
+  "text": "Search leads",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Send back",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Send for confirmation",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Sent back to the rep",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Sent for confirmation",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Supermarket with two branches; buys from a competitor today.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Take an order",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "The lead and its trail are taken off for good.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "The lead and its trail go; the customer account stays.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "the rep",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "The rep",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Trail",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Waiting for their CAC documents.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Wants to place a first order of 50 cartons this week.",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "What has happened",
+  "files": [
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "Why not yet",
   "files": [
    "src/pages/sales/LeadsPage.tsx"
   ]
@@ -19700,12 +20143,6 @@
  },
  {
   "text": "No target",
-  "files": [
-   "src/pages/sales/ScorecardsPage.tsx"
-  ]
- },
- {
-  "text": "Rep",
   "files": [
    "src/pages/sales/ScorecardsPage.tsx"
   ]
@@ -21393,7 +21830,7 @@
   ]
  },
  {
-  "text": "Contacted",
+  "text": "Confirmed",
   "files": [
    "src/types/index.ts"
   ]
@@ -21430,12 +21867,6 @@
  },
  {
   "text": "Part paid",
-  "files": [
-   "src/types/index.ts"
-  ]
- },
- {
-  "text": "Qualified",
   "files": [
    "src/types/index.ts"
   ]
