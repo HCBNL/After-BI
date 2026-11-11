@@ -9,6 +9,7 @@
   "text": "Colour",
   "files": [
    "src/components/AccentPicker.tsx",
+   "src/pages/inventory/ProductsPage.tsx",
    "src/pages/platform/BanksPage.tsx",
    "src/pages/shared/ProfilePage.tsx"
   ]
@@ -67,6 +68,7 @@
   "files": [
    "src/components/brand/Loader.tsx",
    "src/components/brand/Wordmark.tsx",
+   "src/components/home/HomeSlides.tsx",
    "src/components/layout/Chrome.tsx",
    "src/components/marketing/VideoCard.tsx",
    "src/context/RemindersContext.tsx",
@@ -161,6 +163,20 @@
   ]
  },
  {
+  "text": "Barcode",
+  "files": [
+   "src/components/catalogue/ProductSheet.tsx",
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "Brand",
+  "files": [
+   "src/components/catalogue/ProductSheet.tsx",
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
   "text": "Check the connection and try again.",
   "files": [
    "src/components/catalogue/ProductSheet.tsx",
@@ -207,6 +223,13 @@
   ]
  },
  {
+  "text": "Pack size",
+  "files": [
+   "src/components/catalogue/ProductSheet.tsx",
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
   "text": "Picture {0} of {1}",
   "files": [
    "src/components/catalogue/ProductSheet.tsx"
@@ -216,6 +239,13 @@
   "text": "Picture saved",
   "files": [
    "src/components/catalogue/ProductSheet.tsx"
+  ]
+ },
+ {
+  "text": "Sales note",
+  "files": [
+   "src/components/catalogue/ProductSheet.tsx",
+   "src/pages/inventory/ProductsPage.tsx"
   ]
  },
  {
@@ -673,6 +703,7 @@
   "files": [
    "src/components/GalleryManager.tsx",
    "src/components/ImagePicker.tsx",
+   "src/pages/platform/website/AdEditor.tsx",
    "src/pages/platform/website/SiteImageSlots.tsx",
    "src/pages/platform/website/VideoPicker.tsx"
   ]
@@ -1047,7 +1078,9 @@
  {
   "text": "Last day",
   "files": [
-   "src/components/home/HomeDesk.tsx"
+   "src/components/home/HomeDesk.tsx",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx"
   ]
  },
  {
@@ -1220,13 +1253,23 @@
   ]
  },
  {
-  "text": "Summary",
+  "text": "From AfterBI",
   "files": [
    "src/components/home/HomeSlides.tsx"
   ]
  },
  {
-  "text": "Tips",
+  "text": "Learn more",
+  "files": [
+   "src/components/home/HomeSlides.tsx",
+   "src/pages/platform/website/AdEditor.tsx",
+   "src/pages/public/HomePage.tsx",
+   "src/pages/public/ModulePage.tsx",
+   "src/pages/public/ProductPage.tsx"
+  ]
+ },
+ {
+  "text": "Summary",
   "files": [
    "src/components/home/HomeSlides.tsx"
   ]
@@ -1377,6 +1420,8 @@
   "text": "About {0}",
   "files": [
    "src/components/ImagePicker.tsx",
+   "src/components/layout/PageHeader.tsx",
+   "src/components/layout/PagePanel.tsx",
    "src/components/ui/primitives.tsx",
    "src/pages/platform/website/SiteImageSlots.tsx"
   ]
@@ -1405,6 +1450,7 @@
   "text": "Could not upload it",
   "files": [
    "src/components/ImagePicker.tsx",
+   "src/pages/platform/website/AdEditor.tsx",
    "src/pages/platform/website/SiteImageSlots.tsx",
    "src/pages/platform/website/VideoPicker.tsx"
   ]
@@ -1427,7 +1473,9 @@
   "files": [
    "src/components/ImagePicker.tsx",
    "src/pages/hr/HrManage.tsx",
+   "src/pages/inventory/ProductsPage.tsx",
    "src/pages/platform/BanksPage.tsx",
+   "src/pages/platform/website/AdEditor.tsx",
    "src/pages/platform/website/SiteImageSlots.tsx",
    "src/pages/platform/website/VideoPicker.tsx",
    "src/pages/sales/TargetsPage.tsx",
@@ -1523,6 +1571,18 @@
   ]
  },
  {
+  "text": "Balances will hide when you leave this page",
+  "files": [
+   "src/components/layout/Chrome.tsx"
+  ]
+ },
+ {
+  "text": "Balances will show when you leave this page",
+  "files": [
+   "src/components/layout/Chrome.tsx"
+  ]
+ },
+ {
   "text": "Go back",
   "files": [
    "src/components/layout/Chrome.tsx",
@@ -1538,6 +1598,12 @@
    "src/lib/tiles.ts",
    "src/pages/auth/ForgotPasswordPage.tsx",
    "src/pages/auth/LoginPage.tsx"
+  ]
+ },
+ {
+  "text": "Kept as it is for now so what you typed is not lost.",
+  "files": [
+   "src/components/layout/Chrome.tsx"
   ]
  },
  {
@@ -1571,12 +1637,6 @@
  },
  {
   "text": "Close menu",
-  "files": [
-   "src/components/layout/MenuSheet.tsx"
-  ]
- },
- {
-  "text": "menu-{0}",
   "files": [
    "src/components/layout/MenuSheet.tsx"
   ]
@@ -2185,6 +2245,36 @@
   ]
  },
  {
+  "text": "Balances hidden. Tap to show.",
+  "files": [
+   "src/components/MoneyToggle.tsx"
+  ]
+ },
+ {
+  "text": "Hide balances",
+  "files": [
+   "src/components/MoneyToggle.tsx"
+  ]
+ },
+ {
+  "text": "Show balances",
+  "files": [
+   "src/components/MoneyToggle.tsx"
+  ]
+ },
+ {
+  "text": "Tap to hide balances",
+  "files": [
+   "src/components/MoneyToggle.tsx"
+  ]
+ },
+ {
+  "text": "Tap to show balances",
+  "files": [
+   "src/components/MoneyToggle.tsx"
+  ]
+ },
+ {
   "text": "Apr",
   "files": [
    "src/components/MonthSelect.tsx"
@@ -2387,7 +2477,8 @@
  {
   "text": "Next",
   "files": [
-   "src/components/tour/Tour.tsx"
+   "src/components/tour/Tour.tsx",
+   "src/pages/public/HomePage.tsx"
   ]
  },
  {
@@ -2463,6 +2554,7 @@
    "src/pages/admin/UsersPage.tsx",
    "src/pages/finance/AdjustPriceModal.tsx",
    "src/pages/finance/InvoicesPage.tsx",
+   "src/pages/hr/HrManage.tsx",
    "src/pages/hr/HrPage.tsx",
    "src/pages/inventory/ProductsPage.tsx",
    "src/pages/inventory/ReturnsPage.tsx",
@@ -3054,7 +3146,9 @@
  {
   "text": "{0} days",
   "files": [
-   "src/lib/brief.ts"
+   "src/lib/brief.ts",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx"
   ]
  },
  {
@@ -3156,7 +3250,9 @@
  {
   "text": "1 day",
   "files": [
-   "src/lib/brief.ts"
+   "src/lib/brief.ts",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx"
   ]
  },
  {
@@ -3292,6 +3388,12 @@
   ]
  },
  {
+  "text": "Business card: {0}",
+  "files": [
+   "src/lib/businessCardPdf.ts"
+  ]
+ },
+ {
   "text": "{0}/brand/{1}",
   "files": [
    "src/lib/company.ts"
@@ -3325,7 +3427,8 @@
  {
   "text": "Sales and distribution platform",
   "files": [
-   "src/lib/company.ts"
+   "src/lib/company.ts",
+   "src/pages/public/HomePage.tsx"
   ]
  },
  {
@@ -4077,8 +4180,7 @@
  {
   "text": "Decide who signs big orders",
   "files": [
-   "src/lib/guide.ts",
-   "src/pages/home/PortalHome.tsx"
+   "src/lib/guide.ts"
   ]
  },
  {
@@ -4512,8 +4614,7 @@
  {
   "text": "Part payments are fine. The invoice and the statement update together.",
   "files": [
-   "src/lib/guide.ts",
-   "src/pages/home/PortalHome.tsx"
+   "src/lib/guide.ts"
   ]
  },
  {
@@ -5396,6 +5497,72 @@
   ]
  },
  {
+  "text": "All {0} days for {1} are used or already requested.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "Annual leave starts after a full year in the company. You can take it from {0}.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "Choose the first and last day.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "HR has not set your resumption date yet, so your leave cannot be worked out. Ask HR to add it.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "Leave has to start from tomorrow onwards.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "Split leave that runs into the new year into two requests, one for each year.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "That is {0} working days, and you have {1} left for {2}.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "That is {0} working days, more than the {1} a year allows.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "The last day is before the first.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "Those dates are all weekends or holidays now, so there is nothing to approve. Decline it instead.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "Those dates are all weekends or holidays, so there is nothing to take.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
   "text": "zh-CN",
   "files": [
    "src/lib/locale.ts"
@@ -5720,6 +5887,18 @@
   "files": [
    "src/lib/pricing.ts",
    "src/lib/quickCost.ts"
+  ]
+ },
+ {
+  "text": "afterbi.hideMoney",
+  "files": [
+   "src/lib/privacy.ts"
+  ]
+ },
+ {
+  "text": "input:not([type=search]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=date]):not([type=month]), textarea",
+  "files": [
+   "src/lib/privacy.ts"
   ]
  },
  {
@@ -6420,12 +6599,6 @@
   ]
  },
  {
-  "text": "Beside the frequently asked questions. A friendly support person, or someone working at a laptop.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Beverages",
   "files": [
    "src/lib/site.ts",
@@ -6916,13 +7089,6 @@
   ]
  },
  {
-  "text": "Front page",
-  "files": [
-   "src/lib/site.ts",
-   "src/pages/public/NotFoundPage.tsx"
-  ]
- },
- {
   "text": "Fulfilment and Logistics",
   "files": [
    "src/lib/site.ts"
@@ -6986,6 +7152,12 @@
   ]
  },
  {
+  "text": "HCBNL (Haiqing)",
+  "files": [
+   "src/lib/site.ts"
+  ]
+ },
+ {
   "text": "Health and Wellness",
   "files": [
    "src/lib/site.ts"
@@ -6999,12 +7171,6 @@
  },
  {
   "text": "Hello AfterBI, I would like to book a demo. {0}",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Hero photo",
   "files": [
    "src/lib/site.ts"
   ]
@@ -7041,12 +7207,6 @@
  },
  {
   "text": "How many warehouses or locations do you operate?",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "In your pocket",
   "files": [
    "src/lib/site.ts"
   ]
@@ -7150,30 +7310,6 @@
  },
  {
   "text": "Later this year",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Lifecycle tab: Finance",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Lifecycle tab: Intelligence",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Lifecycle tab: Operations",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Lifecycle tab: Sales",
   "files": [
    "src/lib/site.ts"
   ]
@@ -7403,6 +7539,12 @@
   ]
  },
  {
+  "text": "Orders, stock and collections used to live in three different places. Now our reps, depots and distributors work from one screen, and I can see the whole business from my phone.",
+  "files": [
+   "src/lib/site.ts"
+  ]
+ },
+ {
   "text": "Ownership by rep, with managers seeing the full board",
   "files": [
    "src/lib/site.ts"
@@ -7542,12 +7684,6 @@
  },
  {
   "text": "Protect cash flow at the moment of sale",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Questions section",
   "files": [
    "src/lib/site.ts"
   ]
@@ -7830,30 +7966,6 @@
   ]
  },
  {
-  "text": "Shown when the Finance tab is picked. AfterBI invoice, statement and credit screens on a light background.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Shown when the Intelligence tab is picked. AfterBI analytics and sell out dashboards on a light background.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Shown when the Operations tab is picked. AfterBI stock and deliveries screens on a light background.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "Shown when the Sales tab is picked. AfterBI order and pipeline screens on a light background (laptop plus phone).",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "Sign in help: contact box",
   "files": [
    "src/lib/site.ts"
@@ -7994,12 +8106,6 @@
   ]
  },
  {
-  "text": "The \"Your whole business, in your pocket\" section. A sales rep or store owner holding a phone or tablet with AfterBI on screen, in a store.",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
   "text": "The {0} card in \"Built for every consumer goods category\" (front page and Solutions page). {1}",
   "files": [
    "src/lib/site.ts"
@@ -8013,12 +8119,6 @@
  },
  {
   "text": "The {0} section of the Solutions page, its tile at the top, and the \"Who it is built for\" cards. {1}",
-  "files": [
-   "src/lib/site.ts"
-  ]
- },
- {
-  "text": "The big picture at the top of the front page. A person using AfterBI on a phone or tablet, in a warehouse, depot or shop. Real, natural photo. The floating cards are added by the site.",
   "files": [
    "src/lib/site.ts"
   ]
@@ -8372,6 +8472,12 @@
   ]
  },
  {
+  "text": "Attendance, leave and reissues, and for HR managers salaries, bonuses and running costs.",
+  "files": [
+   "src/lib/tiles.ts"
+  ]
+ },
+ {
   "text": "Bank names and logos organisations pick from when they add their accounts.",
   "files": [
    "src/lib/tiles.ts"
@@ -8387,7 +8493,8 @@
  {
   "text": "Business card",
   "files": [
-   "src/lib/tiles.ts"
+   "src/lib/tiles.ts",
+   "src/pages/team/MyCards.tsx"
   ]
  },
  {
@@ -8551,13 +8658,15 @@
   "text": "HR",
   "files": [
    "src/lib/tiles.ts",
-   "src/pages/hr/HrManage.tsx"
+   "src/pages/hr/HrManage.tsx",
+   "src/types/index.ts"
   ]
  },
  {
   "text": "ID card",
   "files": [
-   "src/lib/tiles.ts"
+   "src/lib/tiles.ts",
+   "src/pages/team/MyCards.tsx"
   ]
  },
  {
@@ -8584,13 +8693,19 @@
   ]
  },
  {
+  "text": "My cards",
+  "files": [
+   "src/lib/tiles.ts",
+   "src/pages/team/MyCards.tsx"
+  ]
+ },
+ {
   "text": "My ID card",
   "files": [
    "src/lib/tiles.ts",
    "src/pages/staff/StaffCard.tsx",
    "src/pages/staff/StaffHome.tsx",
    "src/pages/staff/StaffIdCard.tsx",
-   "src/pages/team/OrgCard.tsx",
    "src/pages/team/OrgIdCard.tsx"
   ]
  },
@@ -8671,12 +8786,6 @@
   "files": [
    "src/lib/tiles.ts",
    "src/pages/finance/InvoicesPage.tsx"
-  ]
- },
- {
-  "text": "Salaries, attendance, bonuses, deductions and running costs, with the payroll for any month.",
-  "files": [
-   "src/lib/tiles.ts"
   ]
  },
  {
@@ -8830,12 +8939,6 @@
   ]
  },
  {
-  "text": "Your digital business card. Share the link or let people scan it.",
-  "files": [
-   "src/lib/tiles.ts"
-  ]
- },
- {
   "text": "Your digital contact card. Share the link or let people scan it.",
   "files": [
    "src/lib/tiles.ts"
@@ -8848,7 +8951,7 @@
   ]
  },
  {
-  "text": "Your staff ID card with the company logo, front and back. Download and print.",
+  "text": "Your staff ID card and your business card, from the same details. Share, download and print.",
   "files": [
    "src/lib/tiles.ts"
   ]
@@ -8861,6 +8964,12 @@
  },
  {
   "text": "afterbi.tour.{0}",
+  "files": [
+   "src/lib/tour.ts"
+  ]
+ },
+ {
+  "text": "Attendance, leave and reissues",
   "files": [
    "src/lib/tour.ts"
   ]
@@ -8897,6 +9006,12 @@
  },
  {
   "text": "Lines below their threshold, orders waiting to go out, and what is waiting for your signature.",
+  "files": [
+   "src/lib/tour.ts"
+  ]
+ },
+ {
+  "text": "Open HR to see who clocked in, correct a day, and approve or decline leave and reissue requests.",
   "files": [
    "src/lib/tour.ts"
   ]
@@ -10325,6 +10440,7 @@
   "text": "Features",
   "files": [
    "src/pages/auth/LoginPage.tsx",
+   "src/pages/inventory/ProductsPage.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
    "src/pages/platform/ProposalsPage.tsx",
    "src/pages/public/NotFoundPage.tsx"
@@ -10911,8 +11027,7 @@
  {
   "text": "Open reports",
   "files": [
-   "src/pages/finance/FinanceDashboardPage.tsx",
-   "src/pages/home/PortalHome.tsx"
+   "src/pages/finance/FinanceDashboardPage.tsx"
   ]
  },
  {
@@ -11835,12 +11950,6 @@
   ]
  },
  {
-  "text": "Add a person",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "An order that cannot move until you sign.",
   "files": [
    "src/pages/home/PortalHome.tsx"
@@ -11859,30 +11968,6 @@
   ]
  },
  {
-  "text": "Create an account for each rep, depot and distributor. You hand them the details; nothing is emailed.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Credit limits show what each distributor may owe at once.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Each product carries OT, MT and SA prices. A distributor only ever sees their own tier.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Every invoice and payment to the balance carried forward. Print it or save it as a PDF.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Every line is above its threshold.",
   "files": [
    "src/pages/home/PortalHome.tsx"
@@ -11895,25 +11980,7 @@
   ]
  },
  {
-  "text": "Every movement is kept with who made it and the balance after it.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Every order, draft to delivered",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Getting your home ready",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Give your team their sign-ins",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
@@ -11931,36 +11998,9 @@
   ]
  },
  {
-  "text": "Key sell-out every day",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Know where you stand",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Lines below threshold",
   "files": [
    "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Low stock turns amber",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "New order",
-  "files": [
-   "src/pages/home/PortalHome.tsx",
-   "src/pages/sales/CataloguePage.tsx",
-   "src/pages/sales/NewOrderDrawer.tsx",
-   "src/pages/sales/OrdersPage.tsx"
   ]
  },
  {
@@ -11994,73 +12034,13 @@
   ]
  },
  {
-  "text": "Open catalogue",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Open credit limits",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Open distributors",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Open movements",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Open orders",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
  },
  {
-  "text": "Open products",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Open returns",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Open settings",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Open statement",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Open stock",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Open targets",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Order from your own price list",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
@@ -12090,56 +12070,7 @@
   ]
  },
  {
-  "text": "Pick the distributor, add the lines. The price comes from their tier, not from a box you type in.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Price tiers do the discounting",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Product lines at or under the level you set.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Raise a return for damage, shortage or expiry. The credit follows when it is approved.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Raise an order in under a minute",
-  "files": [
-   "src/pages/home/PortalHome.tsx",
-   "src/pages/platform/WebsitePage.tsx"
-  ]
- },
- {
-  "text": "Receiving a return writes the ledger and carries its credit.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Record payments as they land",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Record sell-out",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Record stock in as it lands",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
@@ -12151,31 +12082,13 @@
   ]
  },
  {
-  "text": "Reports as spreadsheets",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Restock or move stock before orders stall.",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
  },
  {
-  "text": "Returns put stock back",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Review and sign",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Sales, stock and debtors, for whoever asked for it in Excel.",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
@@ -12199,43 +12112,13 @@
   ]
  },
  {
-  "text": "Set a threshold and choose who signs. Choose nobody and it comes to you.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Set a threshold per line and it shows on this screen before orders stall.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Something wrong with a delivery?",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Stock above threshold",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
  },
  {
-  "text": "Stock in every depot",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "Submitted or approved, not yet fulfilled.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "The catalogue shows your tier’s prices and the minimum order for each line.",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
@@ -12248,12 +12131,6 @@
  },
  {
   "text": "This is taking too long. Check your connection and try again.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Tier, territory and credit for every distributor account.",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
@@ -12277,61 +12154,25 @@
   ]
  },
  {
-  "text": "Watch who is against their ceiling",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
   "text": "What actually left the shelves, keyed so far this month.",
   "files": [
    "src/pages/home/PortalHome.tsx"
   ]
  },
  {
-  "text": "What is on hand right now, and what has fallen below its threshold.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "What left the shelves is the number your target and scorecard are measured on.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Who raised it, who still has to sign, and whether it has left the depot.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Your statement, any time",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Your target for the month, and how far through it you are, on one screen.",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": "Your trading partners",
-  "files": [
-   "src/pages/home/PortalHome.tsx"
-  ]
- },
- {
-  "text": ", {0} of {1} clocked in today",
+  "text": ", {0} leave requests waiting",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
  },
  {
   "text": ", {0} reissue requests waiting",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": ", 1 leave request waiting",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -12346,6 +12187,19 @@
   "text": ", paid on the",
   "files": [
    "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": ", recorded by HR",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": ", weekends and holidays not counted.",
+  "files": [
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx"
   ]
  },
  {
@@ -12391,6 +12245,12 @@
   ]
  },
  {
+  "text": "{0} of {1} clocked in today",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
   "text": "{0} on the payroll",
   "files": [
    "src/pages/hr/HrManage.tsx"
@@ -12423,6 +12283,19 @@
  {
   "text": "{0} to {1}",
   "files": [
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} working days",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "{0} working days a year, after a full year in the company.",
+  "files": [
    "src/pages/hr/HrManage.tsx"
   ]
  },
@@ -12440,6 +12313,12 @@
  },
  {
   "text": "{0}. Set their salary and resumption date under Staff and salaries.",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "{0}. The paid days were taken back.",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -12463,6 +12342,12 @@
   ]
  },
  {
+  "text": "1 working day",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
   "text": "A green or blue day becomes",
   "files": [
    "src/pages/hr/HrManage.tsx"
@@ -12470,6 +12355,12 @@
  },
  {
   "text": "A month’s salary covers",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "About HR",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -12543,7 +12434,19 @@
   ]
  },
  {
+  "text": "Already used {0} of {1} days for {2}. This would go over.",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
   "text": "Amount (₦)",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Annual leave, {0} days a year",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -12554,6 +12457,22 @@
    "src/pages/hr/HrManage.tsx",
    "src/pages/inventory/ReturnsPage.tsx",
    "src/pages/sales/OrderDrawer.tsx"
+  ]
+ },
+ {
+  "text": "Approved",
+  "files": [
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx",
+   "src/pages/sales/OrderDrawer.tsx",
+   "src/pages/sales/OrdersPage.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "Attendance, leave, reissues and holidays. You can mark or correct a day, approve or decline requests, and record leave for someone.",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
   ]
  },
  {
@@ -12612,6 +12531,12 @@
   ]
  },
  {
+  "text": "Choose someone",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
   "text": "Christmas Day",
   "files": [
    "src/pages/hr/HrManage.tsx"
@@ -12629,6 +12554,13 @@
   "files": [
    "src/pages/hr/HrManage.tsx",
    "src/pages/hr/HrParts.tsx"
+  ]
+ },
+ {
+  "text": "Comment (optional)",
+  "files": [
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx"
   ]
  },
  {
@@ -12675,6 +12607,12 @@
   ]
  },
  {
+  "text": "Could not cancel it",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
   "text": "Could not change that day",
   "files": [
    "src/pages/hr/HrManage.tsx"
@@ -12688,6 +12626,12 @@
  },
  {
   "text": "Could not mark them",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Could not record it",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -12751,6 +12695,12 @@
  },
  {
   "text": "Days worked",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Decided, {0} onwards",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -12826,6 +12776,12 @@
   ]
  },
  {
+  "text": "Eligible from {0}. {1} of {2} days left for {3}.",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
   "text": "every month",
   "files": [
    "src/pages/hr/HrManage.tsx"
@@ -12868,9 +12824,22 @@
   ]
  },
  {
+  "text": "Fetching leave",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
   "text": "Fetching requests",
   "files": [
    "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "First day",
+  "files": [
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx"
   ]
  },
  {
@@ -12881,6 +12850,12 @@
  },
  {
   "text": "Full salaries {0}",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Goes in approved, and the days are paid.",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -12929,6 +12904,36 @@
  },
  {
   "text": "Independence Day",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Leave",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Leave approved",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Leave cancelled",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Leave declined",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Leave recorded",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -13057,6 +13062,12 @@
  },
  {
   "text": "No requests",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "No requests waiting",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -13202,6 +13213,12 @@
   ]
  },
  {
+  "text": "People apply for leave on their My pay screen. Requests land here for you to approve or decline.",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
   "text": "Per person",
   "files": [
    "src/pages/hr/HrManage.tsx"
@@ -13214,6 +13231,12 @@
    "src/pages/platform/StaffPage.tsx",
    "src/pages/staff/StaffIdCard.tsx",
    "src/pages/team/OrgIdCard.tsx"
+  ]
+ },
+ {
+  "text": "Record leave",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
   ]
  },
  {
@@ -13262,7 +13285,7 @@
   ]
  },
  {
-  "text": "Salaries, attendance, bonuses and running costs. Pay is the monthly salary divided by the working days, times the days actually worked.",
+  "text": "Salaries, attendance, leave, bonuses and running costs. Pay is the monthly salary divided by the working days, times the days actually worked. Approved leave days are paid as worked days.",
   "files": [
    "src/pages/hr/HrManage.tsx"
   ]
@@ -13420,6 +13443,12 @@
   ]
  },
  {
+  "text": "Used {0} of {1} days for {2} before this.",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
   "text": "Waiting",
   "files": [
    "src/pages/hr/HrManage.tsx",
@@ -13484,6 +13513,42 @@
   ]
  },
  {
+  "text": "Yes, cancel it",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Your own request: a manager has to decide it.",
+  "files": [
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "{0} of {1} working days left for {2}.",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
+  "text": "Annual leave",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
+  "text": "Annual leave starts after a full year with the company. You can take it from {0}.",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
+  "text": "Apply for leave",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
   "text": "Attendance",
   "files": [
    "src/pages/hr/HrPage.tsx",
@@ -13521,12 +13586,6 @@
   ]
  },
  {
-  "text": "Comment (optional)",
-  "files": [
-   "src/pages/hr/HrPage.tsx"
-  ]
- },
- {
   "text": "Could not load your pay",
   "files": [
    "src/pages/hr/HrPage.tsx"
@@ -13537,6 +13596,12 @@
   "files": [
    "src/pages/hr/HrPage.tsx",
    "src/pages/platform/StaffPage.tsx"
+  ]
+ },
+ {
+  "text": "Could not withdraw it",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
   ]
  },
  {
@@ -13553,6 +13618,12 @@
  },
  {
   "text": "Earned so far, {0}",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
+  "text": "Family visit.",
   "files": [
    "src/pages/hr/HrPage.tsx"
   ]
@@ -13588,6 +13659,18 @@
   ]
  },
  {
+  "text": "HR has not set your resumption date yet, so your leave starts once they do.",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
+  "text": "HR will review it. Approved days are paid as normal.",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
   "text": "HR will review it. The day turns blue once approved.",
   "files": [
    "src/pages/hr/HrPage.tsx"
@@ -13595,6 +13678,12 @@
  },
  {
   "text": "I forgot to clock in; I was at the depot from 9am.",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
+  "text": "Leave requested",
   "files": [
    "src/pages/hr/HrPage.tsx"
   ]
@@ -13624,6 +13713,12 @@
   ]
  },
  {
+  "text": "Request withdrawn",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
   "text": "Salary not set up yet",
   "files": [
    "src/pages/hr/HrPage.tsx"
@@ -13648,7 +13743,25 @@
   ]
  },
  {
+  "text": "This takes {0} working days",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
+  "text": "This takes 1 working day",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
   "text": "To be paid",
+  "files": [
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
+  "text": "Withdraw",
   "files": [
    "src/pages/hr/HrPage.tsx"
   ]
@@ -14751,7 +14864,19 @@
   ]
  },
  {
+  "text": "144 pcs per CTN",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
   "text": "A product needs a name",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "About product details",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
   ]
@@ -14787,6 +14912,18 @@
   ]
  },
  {
+  "text": "As people say it",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "Blue, pink, white",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
   "text": "Cover",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
@@ -14794,6 +14931,18 @@
  },
  {
   "text": "Cover shot",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "EAN or UPC",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "For staff, folded away",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
   ]
@@ -14871,6 +15020,12 @@
   ]
  },
  {
+  "text": "One per line",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
   "text": "Per carton",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
@@ -14884,6 +15039,12 @@
  },
  {
   "text": "Price by tier",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "Product details",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
   ]
@@ -14919,6 +15080,12 @@
   ]
  },
  {
+  "text": "Sells fastest in March to May. Pair with the desk fan for supermarkets.",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
   "text": "Service",
   "files": [
    "src/pages/inventory/ProductsPage.tsx",
@@ -14938,7 +15105,25 @@
   ]
  },
  {
+  "text": "Specification",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "Specifications",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
   "text": "The cover is the one the catalogue shows, so make it the clearest shot of the product on its own. The others are opened from the product sheet, which is what a member of staff turns round to show a customer: use them for the back of the pack, the colourways, or the item in use. Photographs are resized on delivery, so a customer on a phone never downloads the full file.",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "Three speed settings USB rechargeable, 6 hours a charge Folds flat for a handbag",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
   ]
@@ -14960,6 +15145,20 @@
   "files": [
    "src/pages/inventory/ProductsPage.tsx",
    "src/pages/inventory/StockPage.tsx"
+  ]
+ },
+ {
+  "text": "Value",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx",
+   "src/pages/sales/OrdersPage.tsx",
+   "src/pages/sales/SellOutPage.tsx"
+  ]
+ },
+ {
+  "text": "What a sales rep is asked after the price. Everything here appears on the product sheet in the catalogue, except the sales note, which is folded away because that sheet is shown to customers.",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
   ]
  },
  {
@@ -16188,8 +16387,7 @@
  {
   "text": "New organisation",
   "files": [
-   "src/pages/platform/OrganisationsPage.tsx",
-   "src/pages/platform/PlatformHome.tsx"
+   "src/pages/platform/OrganisationsPage.tsx"
   ]
  },
  {
@@ -16382,12 +16580,6 @@
   ]
  },
  {
-  "text": "Add an organisation and its first admin",
-  "files": [
-   "src/pages/platform/PlatformHome.tsx"
-  ]
- },
- {
   "text": "AfterBI platform",
   "files": [
    "src/pages/platform/PlatformHome.tsx",
@@ -16396,12 +16588,6 @@
  },
  {
   "text": "Create your first organisation",
-  "files": [
-   "src/pages/platform/PlatformHome.tsx"
-  ]
- },
- {
-  "text": "Everyone in a suspended organisation is signed out. Their data stays exactly as it was.",
   "files": [
    "src/pages/platform/PlatformHome.tsx"
   ]
@@ -16443,24 +16629,6 @@
   ]
  },
  {
-  "text": "One form. You get the sign-in details to hand over; nothing is emailed.",
-  "files": [
-   "src/pages/platform/PlatformHome.tsx"
-  ]
- },
- {
-  "text": "Open organisations",
-  "files": [
-   "src/pages/platform/PlatformHome.tsx"
-  ]
- },
- {
-  "text": "Open pricing",
-  "files": [
-   "src/pages/platform/PlatformHome.tsx"
-  ]
- },
- {
   "text": "Organisations set up",
   "files": [
    "src/pages/platform/PlatformHome.tsx"
@@ -16491,12 +16659,6 @@
   ]
  },
  {
-  "text": "Set what each organisation pays",
-  "files": [
-   "src/pages/platform/PlatformHome.tsx"
-  ]
- },
- {
   "text": "Set what they pay so the revenue figure is real.",
   "files": [
    "src/pages/platform/PlatformHome.tsx"
@@ -16509,19 +16671,7 @@
   ]
  },
  {
-  "text": "Suspending closes the portal",
-  "files": [
-   "src/pages/platform/PlatformHome.tsx"
-  ]
- },
- {
   "text": "Switch them to active when they start paying.",
-  "files": [
-   "src/pages/platform/PlatformHome.tsx"
-  ]
- },
- {
-  "text": "The monthly figure on this screen is the sum of what you typed on each one.",
   "files": [
    "src/pages/platform/PlatformHome.tsx"
   ]
@@ -17093,6 +17243,78 @@
   ]
  },
  {
+  "text": "Add an ad",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Button words (optional)",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Change the picture",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Line under the title (optional)",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Move down",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Move up",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Opens",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Pay staff by the days they worked.",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Payroll is here",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Showing",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Title (optional)",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
+  "text": "Upload the picture",
+  "files": [
+   "src/pages/platform/website/AdEditor.tsx"
+  ]
+ },
+ {
   "text": "Hidden everywhere.",
   "files": [
    "src/pages/platform/website/ProgrammeEditors.tsx"
@@ -17232,6 +17454,12 @@
   ]
  },
  {
+  "text": "Ads in the app",
+  "files": [
+   "src/pages/platform/WebsitePage.tsx"
+  ]
+ },
+ {
   "text": "AfterBI Custom",
   "files": [
    "src/pages/platform/WebsitePage.tsx"
@@ -17257,12 +17485,6 @@
  },
  {
   "text": "Empty reads: Watch the walkthrough.",
-  "files": [
-   "src/pages/platform/WebsitePage.tsx"
-  ]
- },
- {
-  "text": "Every picture on the public website, the demo videos, follow links and the Custom offer.",
   "files": [
    "src/pages/platform/WebsitePage.tsx"
   ]
@@ -17310,7 +17532,25 @@
   ]
  },
  {
+  "text": "Raise an order in under a minute",
+  "files": [
+   "src/pages/platform/WebsitePage.tsx"
+  ]
+ },
+ {
   "text": "Remove this video",
+  "files": [
+   "src/pages/platform/WebsitePage.tsx"
+  ]
+ },
+ {
+  "text": "Slide on every customer's home screen. A tap opens the address in the browser.",
+  "files": [
+   "src/pages/platform/WebsitePage.tsx"
+  ]
+ },
+ {
+  "text": "The ads in the app, every picture on the public website, the demo videos, follow links and the Custom offer.",
   "files": [
    "src/pages/platform/WebsitePage.tsx"
   ]
@@ -17494,50 +17734,19 @@
   ]
  },
  {
-  "text": "6 reminders sent, 3 approvals cleared",
-  "files": [
-   "src/pages/public/HomePage.tsx"
-  ]
- },
- {
-  "text": "AfterBI in use",
-  "files": [
-   "src/pages/public/HomePage.tsx"
-  ]
- },
- {
-  "text": "AfterBI on a phone in a store",
-  "files": [
-   "src/pages/public/HomePage.tsx"
-  ]
- },
- {
-  "text": "AfterBI support",
-  "files": [
-   "src/pages/public/HomePage.tsx",
-   "src/pages/public/SignInHelpPage.tsx"
-  ]
- },
- {
   "text": "AfterBI: the sales and distribution platform",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
  },
  {
-  "text": "Approve orders on the go",
+  "text": "Any phone, any depot",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
  },
  {
-  "text": "APR",
-  "files": [
-   "src/pages/public/HomePage.tsx"
-  ]
- },
- {
-  "text": "Automation",
+  "text": "Built for distribution",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
@@ -17556,13 +17765,25 @@
   ]
  },
  {
-  "text": "Credit and stock checks passed",
+  "text": "Distributor and partner sign-ins are free on every plan, so the whole chain can work in one place.",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
  },
  {
-  "text": "FEB",
+  "text": "Each business sees only its own data, and each person only what their role allows.",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
+  "text": "Each order, invoice and payment carries who did it and when, from first line to last receipt.",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
+  "text": "Every naira traceable",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
@@ -17580,29 +17801,9 @@
   ]
  },
  {
-  "text": "JAN",
+  "text": "In their words",
   "files": [
    "src/pages/public/HomePage.tsx"
-  ]
- },
- {
-  "text": "JUL",
-  "files": [
-   "src/pages/public/HomePage.tsx"
-  ]
- },
- {
-  "text": "JUN",
-  "files": [
-   "src/pages/public/HomePage.tsx"
-  ]
- },
- {
-  "text": "Learn more",
-  "files": [
-   "src/pages/public/HomePage.tsx",
-   "src/pages/public/ModulePage.tsx",
-   "src/pages/public/ProductPage.tsx"
   ]
  },
  {
@@ -17612,46 +17813,70 @@
   ]
  },
  {
-  "text": "Live stock and credit, everywhere",
+  "text": "Partners at no cost",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
  },
  {
-  "text": "MAR",
+  "text": "People you can reach",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
  },
  {
-  "text": "MAY",
+  "text": "Previous",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
  },
  {
-  "text": "Order approved",
+  "text": "Price tiers, credit limits, depots and partners are how the product thinks, not add-ons.",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
+  "text": "Secure in the cloud",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
+  "text": "Setup, training and support from a team a WhatsApp message away.",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
+  "text": "Show {0}",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
+  "text": "Still unsure? Book a short walkthrough and ask us anything.",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
+  "text": "Teams already running on AfterBI",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
+  "text": "The same screens on a laptop in head office and a phone at the warehouse gate.",
+  "files": [
+   "src/pages/public/HomePage.tsx"
+  ]
+ },
+ {
+  "text": "translateX(-{0}%)",
   "files": [
    "src/pages/public/HomePage.tsx",
-   "src/pages/sales/OrdersPage.tsx"
-  ]
- },
- {
-  "text": "Partners order without calling you",
-  "files": [
-   "src/pages/public/HomePage.tsx"
-  ]
- },
- {
-  "text": "Reps, managers and partners work from any phone, wherever the business happens.",
-  "files": [
-   "src/pages/public/HomePage.tsx"
-  ]
- },
- {
-  "text": "Sell through",
-  "files": [
-   "src/pages/public/HomePage.tsx"
+   "src/pages/team/CompanyInfo.tsx"
   ]
  },
  {
@@ -17661,13 +17886,13 @@
   ]
  },
  {
-  "text": "Up 12% this month",
+  "text": "Values that run through the product",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
  },
  {
-  "text": "Your whole business, in your pocket",
+  "text": "What we hold to",
   "files": [
    "src/pages/public/HomePage.tsx"
   ]
@@ -17915,6 +18140,12 @@
   ]
  },
  {
+  "text": "Front page",
+  "files": [
+   "src/pages/public/NotFoundPage.tsx"
+  ]
+ },
+ {
   "text": "Page not found",
   "files": [
    "src/pages/public/NotFoundPage.tsx"
@@ -18037,6 +18268,12 @@
  },
  {
   "text": "A suspended account was switched off by an administrator in your own organisation, and they can switch it back on. A suspended organisation is a billing matter, and your administrator needs to contact us.",
+  "files": [
+   "src/pages/public/SignInHelpPage.tsx"
+  ]
+ },
+ {
+  "text": "AfterBI support",
   "files": [
    "src/pages/public/SignInHelpPage.tsx"
   ]
@@ -18635,6 +18872,14 @@
   ]
  },
  {
+  "text": "New order",
+  "files": [
+   "src/pages/sales/CataloguePage.tsx",
+   "src/pages/sales/NewOrderDrawer.tsx",
+   "src/pages/sales/OrdersPage.tsx"
+  ]
+ },
+ {
   "text": "No active product carries a price for this tier yet.",
   "files": [
    "src/pages/sales/CataloguePage.tsx"
@@ -19040,14 +19285,6 @@
   ]
  },
  {
-  "text": "Approved",
-  "files": [
-   "src/pages/sales/OrderDrawer.tsx",
-   "src/pages/sales/OrdersPage.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
   "text": "Approver",
   "files": [
    "src/pages/sales/OrderDrawer.tsx"
@@ -19400,6 +19637,12 @@
   ]
  },
  {
+  "text": "Order approved",
+  "files": [
+   "src/pages/sales/OrdersPage.tsx"
+  ]
+ },
+ {
   "text": "Order number, distributor or product…",
   "files": [
    "src/pages/sales/OrdersPage.tsx"
@@ -19427,13 +19670,6 @@
   "text": "Try a different search, or clear the filter above.",
   "files": [
    "src/pages/sales/OrdersPage.tsx"
-  ]
- },
- {
-  "text": "Value",
-  "files": [
-   "src/pages/sales/OrdersPage.tsx",
-   "src/pages/sales/SellOutPage.tsx"
   ]
  },
  {
@@ -20614,6 +20850,7 @@
   "text": "Card size",
   "files": [
    "src/pages/staff/StaffIdCard.tsx",
+   "src/pages/team/OrgCard.tsx",
    "src/pages/team/OrgIdCard.tsx"
   ]
  },
@@ -20642,6 +20879,7 @@
   "text": "Download PDF",
   "files": [
    "src/pages/staff/StaffIdCard.tsx",
+   "src/pages/team/OrgCard.tsx",
    "src/pages/team/OrgIdCard.tsx"
   ]
  },
@@ -20945,25 +21183,127 @@
   ]
  },
  {
-  "text": "translateX(-{0}%)",
-  "files": [
-   "src/pages/team/CompanyInfo.tsx"
-  ]
- },
- {
   "text": "Your administrator has not added the company’s bank details yet.",
   "files": [
    "src/pages/team/CompanyInfo.tsx"
   ]
  },
  {
-  "text": "A contact card anyone can open on their phone, under {0}’s name and logo, with buttons to call you, WhatsApp you or save your number. The details travel in the link, so nothing is stored.",
+  "text": "About your cards",
+  "files": [
+   "src/pages/team/MyCards.tsx"
+  ]
+ },
+ {
+  "text": "Your staff ID card and your business card come from the same details. Set your position, location and phone on the ID card tab and both cards use them. Each one downloads as a print-ready PDF.",
+  "files": [
+   "src/pages/team/MyCards.tsx"
+  ]
+ },
+ {
+  "text": "{0}-business-card.pdf",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "A contact card anyone can open on their phone, under {0}’s name and logo, with buttons to call you, WhatsApp you or save your number. The details travel in the link, so nothing is stored. Download it to print at 85 × 55 mm, the standard card size.",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Actual size 85 × 55 mm, the standard business card.",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Add 3 mm bleed",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "and it will appear here, on the card you share, and on the printed one.",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Card downloaded",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Could not build the card",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "For a commercial print shop. Leave this off for your own printer.",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Front and back, at the standard 85 × 55 mm.",
   "files": [
    "src/pages/team/OrgCard.tsx"
   ]
  },
  {
   "text": "Hello, I am {0}{1} at {2}. Here is my contact card: {3}",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "On A4",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Print at 100% and cut along the marks.",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Print it",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Send this file to your print shop.",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "the ID card tab",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Try again, or check your connection.",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Your card shows your initials. Add a photo on",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "your profile",
   "files": [
    "src/pages/team/OrgCard.tsx"
   ]
@@ -21054,6 +21394,12 @@
  },
  {
   "text": "Contacted",
+  "files": [
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "HR officer",
   "files": [
    "src/types/index.ts"
   ]

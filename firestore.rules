@@ -141,7 +141,7 @@ service cloud.firestore {
           activeProfile()
           && profile().get('orgId', '') == resource.data.get('orgId', 'none')
           && (
-            role() in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager', 'warehouse_manager']
+            role() in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager', 'warehouse_manager', 'hr']
             || resource.data.get('role', '') in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager']
           )
         )
@@ -155,7 +155,7 @@ service cloud.firestore {
           && request.query.limit <= 500
           && resource.data.orgId == profile().get('orgId', '')
           && (
-            role() in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager', 'warehouse_manager']
+            role() in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager', 'warehouse_manager', 'hr']
             || resource.data.role in ['super_admin', 'admin', 'staff', 'finance_manager', 'operations_manager']
           )
         )
@@ -178,7 +178,7 @@ service cloud.firestore {
             && admin(request.resource.data.orgId)
             && request.resource.data.role in [
               'super_admin', 'admin', 'staff', 'sales_rep', 'distributor',
-              'warehouse_manager', 'finance_manager', 'operations_manager'
+              'warehouse_manager', 'finance_manager', 'operations_manager', 'hr'
             ]
             && (request.resource.data.role != 'super_admin' || role() == 'super_admin')
           )
@@ -547,10 +547,28 @@ service cloud.firestore {
       return hasRole(orgId, ['super_admin', 'admin', 'finance_manager']) && featureOn(orgId, 'hr');
     }
 
+    /*
+     * Runs people, not money: the HR managers above plus the `hr` role.
+     *
+     * An HR officer handles attendance, reissues, leave and the holiday list.
+     * Salaries, bonuses, running costs and the salary-day settings stay with
+     * the managers: every write to those is still `hrManager` only.
+     *
+     * The one thing an officer can read that touches pay is `hrStaff`, because
+     * that is where each person's resumption date lives, and both attendance
+     * and the one-year leave rule need it. Rules grant documents, not fields,
+     * so an officer reading that record also reads the salary on it. If that
+     * matters for a given organisation, the fix is to move `salary` into its
+     * own document; nothing else here would change.
+     */
+    function hrOfficer(orgId) {
+      return hasRole(orgId, ['super_admin', 'admin', 'finance_manager', 'hr']) && featureOn(orgId, 'hr');
+    }
+
     /* On the payroll: everyone inside the organisation except distributors. */
     function hrMember(orgId) {
       return hasRole(orgId, [
-        'super_admin', 'admin', 'staff', 'sales_rep', 'warehouse_manager', 'finance_manager', 'operations_manager'
+        'super_admin', 'admin', 'staff', 'sales_rep', 'warehouse_manager', 'finance_manager', 'operations_manager', 'hr'
       ]) && featureOn(orgId, 'hr');
     }
 
@@ -578,18 +596,18 @@ service cloud.firestore {
 
     match /hr/{orgId}/hrHolidays/{date} {
       allow read: if hrMember(orgId);
-      allow write: if hrManager(orgId);
+      allow write: if hrOfficer(orgId);
     }
 
     match /hr/{orgId}/hrStaff/{uid} {
-      allow read: if hrManager(orgId) || (hrMember(orgId) && uid == request.auth.uid);
+      allow read: if hrOfficer(orgId) || (hrMember(orgId) && uid == request.auth.uid);
       allow write: if hrManager(orgId)
         && request.resource.data.salary is int && request.resource.data.salary >= 0;
       allow delete: if hrManager(orgId);
     }
 
     match /hr/{orgId}/hrReissues/{id} {
-      allow read: if hrManager(orgId) || (
+      allow read: if hrOfficer(orgId) || (
         hrMember(orgId) && (id.matches(request.auth.uid + '_[0-9]{8}') || resource.data.uid == request.auth.uid)
       );
 
@@ -604,22 +622,22 @@ service cloud.firestore {
         && request.resource.data.name is string && request.resource.data.name.size() <= 100
         && (resource == null || resource.data.status == 'declined');
 
-      allow update: if hrManager(orgId)
+      allow update: if hrOfficer(orgId)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt'])
         && request.resource.data.status in ['approved', 'declined'];
 
-      allow delete: if hrManager(orgId);
+      allow delete: if hrOfficer(orgId);
     }
 
     match /hr/{orgId}/hrAttendance/{id} {
       /* The id check lets someone read their own day before it exists ("not clocked in yet"). */
-      allow read: if hrManager(orgId) || (
+      allow read: if hrOfficer(orgId) || (
         hrMember(orgId) && (id.matches(request.auth.uid + '_[0-9]{8}') || resource.data.uid == request.auth.uid)
       );
 
       allow create: if (
-          hrManager(orgId)
-          && request.resource.data.keys().hasOnly(['uid', 'name', 'day', 'manual', 'inAt', 'outAt', 'edited', 'reissue', 'absent'])
+          hrOfficer(orgId)
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'day', 'manual', 'inAt', 'outAt', 'edited', 'reissue', 'absent', 'leave'])
           && request.resource.data.day is int
           && id == request.resource.data.uid + '_' + string(request.resource.data.day)
         )
@@ -635,8 +653,8 @@ service cloud.firestore {
         );
 
       allow update: if (
-          hrManager(orgId)
-          && request.resource.data.keys().hasOnly(['uid', 'name', 'day', 'manual', 'inAt', 'outAt', 'edited', 'reissue', 'absent'])
+          hrOfficer(orgId)
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'day', 'manual', 'inAt', 'outAt', 'edited', 'reissue', 'absent', 'leave'])
         )
         || (
           hrMember(orgId)
@@ -648,7 +666,68 @@ service cloud.firestore {
           && request.resource.data.outAt == request.time
         );
 
-      allow delete: if hrManager(orgId);
+      allow delete: if hrOfficer(orgId);
+    }
+
+    /*
+     * Leave (see src/lib/leave.ts).
+     *
+     * Annual leave: ten working days a calendar year, and only once a person
+     * has been in the company a full year. Somebody asks for their own; an HR
+     * officer approves, declines, or records leave on someone's behalf.
+     *
+     * The year rule is checked here, not only in the app, against the
+     * resumption date on the person's own HR record: the request's first day
+     * must be on or after the first anniversary of it. Day numbers are
+     * yyyymmdd, so an anniversary is the resumption plus 10000.
+     *
+     * The ten-day ceiling per request is checked here too. The ceiling per
+     * YEAR is the app's job and the officer's: rules cannot sum a collection,
+     * and the approval is where a person who has already used their days is
+     * caught.
+     */
+    function resumedDay(orgId, uid) {
+      let r = get(/databases/$(database)/documents/hr/$(orgId)/hrStaff/$(uid)).data.get('resumption', '');
+      return r is string && r.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') ? int(r.replace('-', '')) : 99999999;
+    }
+
+    function leaveShape(d) {
+      return d.keys().hasOnly(['uid', 'name', 'from', 'to', 'days', 'year', 'reason', 'status', 'createdAt', 'decidedAt', 'decidedBy', 'byHr'])
+        && d.from is int && d.to is int && d.from <= d.to
+        && d.days is int && d.days >= 1 && d.days <= 10
+        && d.year is int && d.year == int(d.from / 10000) && d.year == int(d.to / 10000)
+        && d.reason is string && d.reason.size() <= 300
+        && d.name is string && d.name.size() <= 100;
+    }
+
+    match /hr/{orgId}/hrLeave/{id} {
+      allow read: if hrOfficer(orgId) || (hrMember(orgId) && resource.data.uid == request.auth.uid);
+
+      /* Your own request: pending, in the future, and a year after you resumed. */
+      allow create: if hrMember(orgId)
+        && leaveShape(request.resource.data)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.from > lagosDay()
+        && request.resource.data.from >= resumedDay(orgId, request.auth.uid) + 10000;
+
+      /* An HR officer recording leave for someone, or deciding a request. */
+      /* Nobody with only the HR officer role signs off their own leave: a manager does. */
+      allow create: if hrOfficer(orgId)
+        && leaveShape(request.resource.data)
+        && request.resource.data.status in ['pending', 'approved']
+        && (request.resource.data.uid != request.auth.uid || hrManager(orgId));
+      /* Decided once: only a pending request can be approved or declined. */
+      allow update: if hrOfficer(orgId)
+        && resource.data.status == 'pending'
+        && (resource.data.uid != request.auth.uid || hrManager(orgId))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt', 'decidedBy', 'days'])
+        && request.resource.data.days is int && request.resource.data.days >= 1 && request.resource.data.days <= 10
+        && request.resource.data.status in ['approved', 'declined'];
+
+      /* Withdraw your own while it is still pending. */
+      allow delete: if (hrOfficer(orgId) && (resource.data.uid != request.auth.uid || hrManager(orgId)))
+        || (hrMember(orgId) && resource.data.uid == request.auth.uid && resource.data.status == 'pending');
     }
 
     /* Bonuses and deductions: HR writes them; each person reads their own. */
