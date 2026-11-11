@@ -4,14 +4,14 @@
  * its own panel), and the home-screen chooser. `AppShell` wraps it for a
  * tenant, `PlatformShell` for the platform owner: same frame, one codebase.
  */
-import { Fragment, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ComponentType } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
-import { Avatar, useToast } from '@/components/ui';
+import { Avatar } from '@/components/ui';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HomeChooser } from '@/components/home/HomeChooser';
 import { useAuth } from '@/context/AuthContext';
@@ -22,7 +22,6 @@ import { fullName } from '@/lib/roles';
 import { useEntitlements } from '@/lib/plans';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
 import { QuietLoader } from '@/components/brand/Loader';
-import { clearDraft, draftOnPage, useMoneyHidden } from '@/lib/privacy';
 import type { Role } from '@/types';
 import { BottomBar } from './BottomBar';
 import { MenuSheet } from './MenuSheet';
@@ -86,29 +85,6 @@ export function Chrome({
   const role: Role = user?.role ?? 'staff';
   const root = PORTAL_ROOT[role];
   const atHome = location.pathname === root;
-  const moneyHidden = useMoneyHidden();
-  const toast = useToast();
-
-  /*
-   * Hiding or showing balances remounts the open page, so every figure on it
-   * is formatted again. Not while somebody is typing on it: a remount would
-   * empty their form, so that page switches when they leave it instead.
-   */
-  const [moneyEpoch, setMoneyEpoch] = useState(0);
-  const moneyWas = useRef(moneyHidden);
-  useEffect(() => {
-    if (moneyWas.current === moneyHidden) return;
-    moneyWas.current = moneyHidden;
-    if (draftOnPage()) {
-      toast.info(
-        moneyHidden ? 'Balances will hide when you leave this page' : 'Balances will show when you leave this page',
-        'Kept as it is for now so what you typed is not lost.',
-      );
-    } else {
-      setMoneyEpoch((n) => n + 1);
-    }
-  }, [moneyHidden, toast]);
-  useEffect(clearDraft, [location.pathname]);
   const entitlements = useEntitlements();
 
   const fallbackTitle = useMemo(() => {
@@ -179,7 +155,13 @@ export function Chrome({
           {/* `relative`: the page loader centres itself on this element, which
               is the only box that knows both the rail's width and the header's
               height. See `QuietLoader`. */}
-          <main className={cn('relative flex-1 px-3 py-4 sm:px-5 sm:py-6', 'pb-bottom-bar', (atHome || panel) && '@container')}>
+          <main className={cn(
+              'relative flex-1 px-3 py-4 sm:px-5 sm:py-6',
+              /* Under a coloured panel the sheet's curve is already the gap: no second one. */
+              panel && !atHome && 'pt-1 sm:pt-2',
+              'pb-bottom-bar',
+              (atHome || panel) && '@container',
+            )}>
             <div className="mx-auto max-w-[1400px]">
               <Gate>
                 <ErrorBoundary resetOn={location.pathname} home={root}>
@@ -198,10 +180,7 @@ export function Chrome({
                     honest picture of what is happening.
                   */}
                   <Suspense fallback={atHome ? <QuietLoader label="Opening" /> : null}>
-                    {/* Remounted when balances are hidden or shown: see moneyEpoch above. */}
-                    <Fragment key={moneyEpoch}>
-                      <Outlet />
-                    </Fragment>
+                    <Outlet />
                   </Suspense>
                 </ErrorBoundary>
               </Gate>

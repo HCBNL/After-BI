@@ -21,7 +21,6 @@ import { buildReminders, tally, thresholdsFrom, type Reminder } from '@/lib/remi
 import { buildBrief, type Brief } from '@/lib/brief';
 import { addTask, listTasks, removeTask, setTaskDone, sortTasks, updateTask, type Task } from '@/lib/tasks';
 import type { Invoice, Order } from '@/types';
-import { useMoneyHidden } from '@/lib/privacy';
 
 interface RemindersValue {
   reminders: Reminder[];
@@ -225,7 +224,6 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
     };
   }, [live, checkedAt]);
 
-  const hidden = useMoneyHidden();
   const all = useMemo(() => {
     if (!data || !user || !role) return [];
     return buildReminders({
@@ -241,8 +239,7 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
       distributors: org?.distributors ?? [],
       tasks,
     });
-    /* `hidden` is read by the money formatter inside, so flipping it has to rebuild the wording. */
-  }, [data, user, role, org?.settings?.reminders, org?.distributors, tasks, hidden]);
+  }, [data, user, role, org?.settings?.reminders, org?.distributors, tasks]);
 
   const today = todayISO();
   const reminders = useMemo(() => all.filter((r) => snoozed[r.id] !== today), [all, snoozed, today]);
