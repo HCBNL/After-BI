@@ -515,14 +515,21 @@ export interface Sale extends AmendmentTrail {
 
 /* leads */
 
-export type LeadStage = 'new' | 'contacted' | 'qualified' | 'won' | 'lost';
+/**
+ * Where a lead stands. Three states, no pipeline: a lead is a name being
+ * followed up, with a trail of what was done; it either becomes a customer,
+ * or after a year without that it is taken off.
+ *
+ *   open       a lead
+ *   pending    the rep has asked for it to be confirmed as a customer
+ *   confirmed  a manager confirmed it; `customerId` is the customer account
+ */
+export type LeadStatus = 'open' | 'pending' | 'confirmed';
 
-export const LEAD_STAGE_LABEL: Record<LeadStage, string> = {
-  new: 'New',
-  contacted: 'Contacted',
-  qualified: 'Qualified',
-  won: 'Won',
-  lost: 'Lost',
+export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
+  open: 'Lead',
+  pending: 'Awaiting confirmation',
+  confirmed: 'Confirmed',
 };
 
 export interface Lead {
@@ -532,14 +539,49 @@ export interface Lead {
   email?: string;
   phone?: string;
   location?: string;
-  stage: LeadStage;
-  /** Naira value if it closes. Feeds the pipeline figure on the home screen. */
-  estimatedValue?: number;
+  status: LeadStatus;
   ownerId: string;
   ownerName: string;
+  /** What the lead is about, written when it is added. The trail holds the rest. */
   note?: string;
   createdAt: string;
   updatedAt?: string;
+  /** The last entry on the trail, and how many there are. */
+  lastLogAt?: string;
+  logCount?: number;
+
+  /** The rep's request to confirm it as a customer. */
+  requestedAt?: string;
+  requestedByName?: string;
+  requestNote?: string;
+
+  confirmedAt?: string;
+  confirmedByName?: string;
+  /** The customer account made when it was confirmed. */
+  customerId?: string;
+}
+
+/** What a trail entry records. The last four are written by the app, not chosen. */
+export type LeadLogKind =
+  | 'visit'
+  | 'call'
+  | 'message'
+  | 'meeting'
+  | 'note'
+  | 'comment'
+  | 'request'
+  | 'confirmed'
+  | 'declined';
+
+/** One entry on a lead's trail. A comment answers another entry (`replyTo`). */
+export interface LeadLog {
+  id: string;
+  kind: LeadLogKind;
+  text: string;
+  by: string;
+  byName: string;
+  at: string;
+  replyTo?: string;
 }
 
 /* finance */
