@@ -205,7 +205,7 @@ const SIGNERS: Role[] = ['super_admin', 'admin', 'staff', 'finance_manager', 'op
 const DEPOT: Role[] = ['super_admin', 'admin', 'warehouse_manager', 'operations_manager'];
 const MONEY: Role[] = ['super_admin', 'admin', 'finance_manager'];
 const EVERYONE: Role[] = [
-  'super_admin', 'admin', 'staff', 'sales_rep', 'distributor', 'warehouse_manager', 'finance_manager', 'operations_manager',
+  'super_admin', 'admin', 'staff', 'sales_rep', 'distributor', 'warehouse_manager', 'finance_manager', 'operations_manager', 'hr',
 ];
 
 const HOW_TO: HowTo[] = [

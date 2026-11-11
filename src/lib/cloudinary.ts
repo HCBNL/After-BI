@@ -213,3 +213,39 @@ export async function shrinkImage(file: File, max = 640, quality = 0.86): Promis
     URL.revokeObjectURL(url);
   }
 }
+
+/**
+ * A hosted image, fetched back as a JPEG data URL, square and centre-cropped.
+ *
+ * jsPDF cannot take a URL: it needs the bytes. The crop is Cloudinary's
+ * (`c_fill,g_face`), which frames a head properly rather than cutting the top
+ * off it, and the redraw onto a canvas is what turns whatever came back into
+ * the baseline JPEG that jsPDF's `addImage` handles.
+ *
+ * Resolves to an empty string on any failure, which is the useful answer: a
+ * card with initials instead of a photograph is a card, a thrown error is a
+ * download that does not happen.
+ */
+export async function imageAsDataUrl(url: string | undefined, size = 480): Promise<string> {
+  if (!url) return '';
+  const square = url.includes('/upload/')
+    ? url.replace('/upload/', `/upload/f_jpg,q_auto,w_${size},h_${size},c_fill,g_face/`)
+    : url;
+  try {
+    const response = await fetch(square, { mode: 'cors' });
+    if (!response.ok) return '';
+    const blob = await response.blob();
+    const bitmap = await createImageBitmap(blob);
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.drawImage(bitmap, 0, 0, size, size);
+    return canvas.toDataURL('image/jpeg', 0.9);
+  } catch {
+    return '';
+  }
+}

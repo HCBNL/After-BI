@@ -70,7 +70,7 @@ export interface Feature {
 
 export const FEATURES = [
   { key: 'hr', label: 'HR and payroll', description: 'Salaries, clock in, holidays, bonuses and running costs.', actions: ['hr', 'hr-manage'] },
-  { key: 'cards', label: 'ID and business cards', description: 'Staff ID cards and digital business cards.', actions: ['org-id-card', 'org-card'] },
+  { key: 'cards', label: 'ID and business cards', description: 'Staff ID cards and digital business cards.', actions: ['org-cards'] },
   { key: 'leads', label: 'Leads', description: 'The sales pipeline.', actions: ['leads'] },
   { key: 'targets', label: 'Targets', description: 'Monthly targets for reps, accounts and products.', actions: ['targets'] },
   { key: 'scorecards', label: 'Scorecards', description: 'Everyone against target, ranked.', actions: ['scorecards'] },

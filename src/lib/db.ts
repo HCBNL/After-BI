@@ -45,7 +45,7 @@ import {
 import { APPROVER_POOL } from './approvals';
 import { db } from './firebase';
 import { orgPath, requireOrg, TENANTS, type CollectionKey } from './tenant';
-import { naira, todayISO } from './format';
+import { nairaPlain, todayISO } from './format';
 import { kobo, summarise } from './pricing';
 import type {
   CreditNote,
@@ -1054,7 +1054,7 @@ export async function recordPayment(input: {
     const owed = current.total - paid;
     if (owed <= 0) throw new Error('That invoice is already paid in full.');
     if (input.amount > owed) {
-      throw new Error(`Only ${naira(owed)} is owed on ${current.invoiceNumber}. Record that amount, or put the rest on account.`);
+      throw new Error(`Only ${nairaPlain(owed)} is owed on ${current.invoiceNumber}. Record that amount, or put the rest on account.`);
     }
     const paidAfter = paid + input.amount;
 
@@ -1170,7 +1170,7 @@ export async function issueCreditNote(input: {
     const owed = kobo(invoice.total - (invoice.amountPaid ?? 0));
     if (owed <= 0) throw new Error('That invoice is already settled, so its price can no longer change.');
     if (total > owed + 0.009) {
-      throw new Error(`Only ${naira(owed, true)} is still owed on ${invoice.invoiceNumber}, so the credit cannot be ${naira(total, true)}.`);
+      throw new Error(`Only ${nairaPlain(owed, true)} is still owed on ${invoice.invoiceNumber}, so the credit cannot be ${nairaPlain(total, true)}.`);
     }
     const counter = await tx.get(counterRef);
     /* The order it came from carries the adjustment too, so analytics, the
@@ -1918,7 +1918,7 @@ export async function updateInvoice(
      * nobody can point at.
      */
     throw new Error(
-      `${naira(invoice.amountPaid)} has already been paid against this invoice. Raise a credit note instead of reducing it below that.`,
+      `${nairaPlain(invoice.amountPaid)} has already been paid against this invoice. Raise a credit note instead of reducing it below that.`,
     );
   }
 
@@ -1943,7 +1943,7 @@ export async function voidInvoice(
 
   if ((invoice.amountPaid ?? 0) > 0) {
     throw new Error(
-      `${naira(invoice.amountPaid)} has been paid against this invoice, so it cannot be voided. Raise a credit note.`,
+      `${nairaPlain(invoice.amountPaid)} has been paid against this invoice, so it cannot be voided. Raise a credit note.`,
     );
   }
 

@@ -21,11 +21,20 @@ export interface BusinessCard {
   website?: string;
   /** The organisation's logo URL. */
   logo?: string;
+  /**
+   * The holder's photograph: their profile picture's delivery URL.
+   *
+   * Only ever an https URL to an uploaded image, never the image itself. A
+   * card's whole state travels in its link, and a photograph inlined as data
+   * would run to tens of thousands of characters, which is past what some
+   * chat apps will carry and far past what a QR code can hold.
+   */
+  photo?: string;
 }
 
 /* New keys go on the END, so links already shared keep reading correctly. */
-const KEYS: (keyof BusinessCard)[] = ['name', 'position', 'location', 'phone', 'email', 'staffNo', 'company', 'website', 'logo'];
-const MAX: Partial<Record<keyof BusinessCard, number>> = { logo: 400 };
+const KEYS: (keyof BusinessCard)[] = ['name', 'position', 'location', 'phone', 'email', 'staffNo', 'company', 'website', 'logo', 'photo'];
+const MAX: Partial<Record<keyof BusinessCard, number>> = { logo: 400, photo: 400 };
 
 function toBase64Url(text: string): string {
   const bytes = new TextEncoder().encode(text);
@@ -52,8 +61,11 @@ export function readCardHash(hash: string): BusinessCard | null {
     const values = JSON.parse(fromBase64Url(hash.replace(/^#/, ''))) as unknown;
     if (!Array.isArray(values)) return null;
     const card = Object.fromEntries(KEYS.map((k, i) => [k, String(values[i] ?? '').slice(0, MAX[k] ?? 80)])) as unknown as BusinessCard;
-    /* Only an https logo is drawn: anything else in a link is ignored. */
+    /* Only https images are drawn: anything else in a link is ignored. A
+       link is attacker-controlled, so this is the gate that stops one
+       pointing the card's <img> at something it should not. */
     if (card.logo && !/^https:\/\//.test(card.logo)) card.logo = '';
+    if (card.photo && !/^https:\/\//.test(card.photo)) card.photo = '';
     return card.name ? card : null;
   } catch {
     return null;

@@ -154,6 +154,17 @@ const FINANCE: TourStep[] = [
   PROFILE,
 ];
 
+const PEOPLE: TourStep[] = [
+  {
+    id: 'shortcuts',
+    anchor: 'shortcuts',
+    title: 'Attendance, leave and reissues',
+    body: 'Open HR to see who clocked in, correct a day, and approve or decline leave and reissue requests.',
+  },
+  NAV,
+  PROFILE,
+];
+
 const OWNER: TourStep[] = [
   {
     id: 'shortcuts',
@@ -183,6 +194,8 @@ export function tourFor(role: Role): TourStep[] {
       return OPERATIONS;
     case 'finance_manager':
       return FINANCE;
+    case 'hr':
+      return PEOPLE;
     default:
       return ADMIN;
   }

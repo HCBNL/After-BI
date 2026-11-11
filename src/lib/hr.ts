@@ -35,14 +35,21 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { requireOrg } from './tenant';
+import { MONEY_MASK, moneyHidden } from './privacy';
 import { DEFAULT_CYCLE_START, DEFAULT_PAY_DAY, dayNumber, dayString, type PayRules } from './payroll';
 import type { Role, UserProfile } from '@/types';
 
-/** Who runs HR inside an organisation. */
+/** Who runs HR inside an organisation, money included. */
 export const HR_MANAGERS: Role[] = ['super_admin', 'admin', 'finance_manager'];
 
+/**
+ * Who runs the people side: attendance, reissues, leave, holidays. The
+ * managers plus the `hr` role. Same list as `hrOfficer()` in firestore.rules.
+ */
+export const HR_OFFICERS: Role[] = [...HR_MANAGERS, 'hr'];
+
 /** Who is on the payroll: everyone in the organisation except distributors (they are customers). */
-export const HR_PEOPLE: Role[] = ['super_admin', 'admin', 'staff', 'sales_rep', 'warehouse_manager', 'finance_manager', 'operations_manager'];
+export const HR_PEOPLE: Role[] = ['super_admin', 'admin', 'staff', 'sales_rep', 'warehouse_manager', 'finance_manager', 'operations_manager', 'hr'];
 
 export function onPayroll(person: Pick<UserProfile, 'role'>): boolean {
   return HR_PEOPLE.includes(person.role);
@@ -56,10 +63,12 @@ const C = {
   reissues: 'hrReissues',
   adjustments: 'hrAdjustments',
   costs: 'hrCosts',
+  leave: 'hrLeave',
 } as const;
 
-/** `hr/{activeOrg}/{collection}`. */
-const path = (key: keyof typeof C) => `hr/${requireOrg()}/${C[key]}`;
+/** `hr/{activeOrg}/{collection}`. Exported for `leave.ts`, which shares the subtree. */
+export const hrPath = (key: keyof typeof C) => `hr/${requireOrg()}/${C[key]}`;
+const path = hrPath;
 
 /* shapes */
 
@@ -109,6 +118,8 @@ export interface Attendance {
   edited: boolean;
   reissue: boolean;
   absent: boolean;
+  /** A paid day of approved leave. Counts as attended. */
+  leave: boolean;
 }
 
 export interface Reissue {
@@ -168,6 +179,7 @@ function asAttendance(id: string, data: Record<string, unknown>): Attendance {
     edited: Boolean(data.edited),
     reissue: Boolean(data.reissue),
     absent: Boolean(data.absent),
+    leave: Boolean(data.leave),
   };
 }
 
@@ -473,9 +485,10 @@ export function costsFor(month: string, list: Cost[]): Cost[] {
 
 export const hhmm = (d?: Date) => (d ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '');
 
-export const naira = (n: number) => `₦${Math.round(n).toLocaleString('en-NG')}`;
+export const naira = (n: number) => (moneyHidden() ? MONEY_MASK : `₦${Math.round(n).toLocaleString('en-NG')}`);
 
-export const nairaPrecise = (n: number) => `₦${n.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+export const nairaPrecise = (n: number) =>
+  moneyHidden() ? MONEY_MASK : `₦${n.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 
 export function timeOf(d?: Date): string {
   return d ? d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'Not yet';

@@ -8,6 +8,7 @@
  * trusting the screen.
  */
 import { dateLocale, screenLang, twentyFourHour } from './locale';
+import { MONEY_MASK, moneyHidden } from './privacy';
 
 /*
  * A French screen groups thousands with a space and puts the comma before the
@@ -42,6 +43,17 @@ const NAIRA_PRECISE = new Intl.NumberFormat(MONEY_LOCALE, {
  */
 export function naira(amount: number, precise = false): string {
   if (!Number.isFinite(amount)) return 'None';
+  if (moneyHidden()) return MONEY_MASK;
+  return (precise ? NAIRA_PRECISE : NAIRA).format(amount);
+}
+
+/**
+ * The same figure, never masked. For a message that is only useful with the
+ * number in it ("only ₦4,000 is owed, record that amount"): somebody who has
+ * hidden balances and typed an amount still has to be told what the limit is.
+ */
+export function nairaPlain(amount: number, precise = false): string {
+  if (!Number.isFinite(amount)) return 'None';
   return (precise ? NAIRA_PRECISE : NAIRA).format(amount);
 }
 
@@ -57,6 +69,7 @@ export function naira(amount: number, precise = false): string {
  */
 export function nairaShort(amount: number): string {
   if (!Number.isFinite(amount)) return 'None';
+  if (moneyHidden()) return MONEY_MASK;
   const sign = amount < 0 ? '-' : '';
   const n = Math.abs(amount);
   if (screenLang === 'zh') {

@@ -167,9 +167,13 @@ const EVERYONE: Role[] = [
 ];
 
 /** On the payroll: everyone inside the business except distributors, who are customers. */
-const PAYROLL: Role[] = ['super_admin', 'admin', 'staff', 'sales_rep', 'warehouse_manager', 'finance_manager', 'operations_manager'];
-/** Runs HR. Same list as `HR_MANAGERS` in lib/hr.ts and `hrManager()` in firestore.rules. */
-const HR_MANAGERS: Role[] = ['super_admin', 'admin', 'finance_manager'];
+const PAYROLL: Role[] = ['super_admin', 'admin', 'staff', 'sales_rep', 'warehouse_manager', 'finance_manager', 'operations_manager', 'hr'];
+/**
+ * Opens HR. Same list as `HR_OFFICERS` in lib/hr.ts and `hrOfficer()` in
+ * firestore.rules: the managers see all of it, the `hr` role sees attendance,
+ * reissues, leave and holidays.
+ */
+const HR_OFFICERS: Role[] = ['super_admin', 'admin', 'finance_manager', 'hr'];
 
 /* catalogue */
 
@@ -278,7 +282,7 @@ const ACTIONS: AppAction[] = [
     description: 'What is overdue, waiting or running out, read back from your own records.',
     icon: BellRing,
     to: 'reminders',
-    roles: EVERYONE,
+    roles: EVERYONE.concat('hr'),
     group: 'Daily',
   },
   {
@@ -287,7 +291,7 @@ const ACTIONS: AppAction[] = [
     description: 'Your own to do list, with due dates, plus suggestions the app works out from your records.',
     icon: ListTodo,
     to: 'tasks',
-    roles: EVERYONE,
+    roles: EVERYONE.concat('hr'),
     group: 'Daily',
   },
   {
@@ -516,10 +520,10 @@ const ACTIONS: AppAction[] = [
   {
     id: 'hr-manage',
     label: 'HR',
-    description: 'Salaries, attendance, bonuses, deductions and running costs, with the payroll for any month.',
+    description: 'Attendance, leave and reissues, and for HR managers salaries, bonuses and running costs.',
     icon: BriefcaseBusiness,
     to: 'hr',
-    roles: HR_MANAGERS,
+    roles: HR_OFFICERS,
     group: 'Team',
   },
   {
@@ -537,24 +541,22 @@ const ACTIONS: AppAction[] = [
     description: 'The company\'s bank account and contact details. Tap anything to copy it.',
     icon: Landmark,
     to: 'company',
-    roles: EVERYONE,
+    roles: EVERYONE.concat('hr'),
     group: 'Team',
   },
+  /*
+   * The ID card and the business card, as one screen with two tabs.
+   *
+   * They were two menu rows filled from the same details: a person typed their
+   * position and phone on one and was then sent to the other to see them used.
+   * One place to keep your details and both cards that come out of them.
+   */
   {
-    id: 'org-id-card',
-    label: 'My ID card',
-    description: 'Your staff ID card with the company logo, front and back. Download and print.',
+    id: 'org-cards',
+    label: 'My cards',
+    description: 'Your staff ID card and your business card, from the same details. Share, download and print.',
     icon: IdCard,
-    to: 'id-card',
-    roles: PAYROLL,
-    group: 'Team',
-  },
-  {
-    id: 'org-card',
-    label: 'Business card',
-    description: 'Your digital business card. Share the link or let people scan it.',
-    icon: Contact,
-    to: 'card',
+    to: 'cards',
     roles: PAYROLL,
     group: 'Team',
   },
@@ -622,6 +624,7 @@ export function actionById(id: string): AppAction | undefined {
  */
 export const PORTAL_ROOT: Record<Role, string> = {
   owner: '/portal/platform',
+  hr: '/portal/people',
   super_admin: '/portal/office',
   admin: '/portal/office',
   staff: '/portal/office',
@@ -759,6 +762,13 @@ export const BAR: Record<Role, BarSlot[]> = {
     { id: 'home', label: 'Home' },
     { id: 'invoices', label: 'Invoices' },
     { id: 'credit', label: 'Credit' },
+    { id: 'menu', label: 'Menu' },
+    { id: 'profile', label: 'Profile' },
+  ],
+  hr: [
+    { id: 'home', label: 'Home' },
+    { id: 'hr-manage', label: 'HR' },
+    { id: 'hr', label: 'My pay' },
     { id: 'menu', label: 'Menu' },
     { id: 'profile', label: 'Profile' },
   ],

@@ -549,6 +549,22 @@ export const PROMO = {
   link: { label: 'Compare plans', href: '/pricing' },
 };
 
+/**
+ * What customers say, on the front page, sliding one to the next.
+ * Real people only, with their permission: add a line here, the photo in
+ * `public/people/`, and it joins the carousel.
+ */
+export const TESTIMONIALS: { quote: string; name: string; role: string; company: string; photo: string }[] = [
+  {
+    quote:
+      'Orders, stock and collections used to live in three different places. Now our reps, depots and distributors work from one screen, and I can see the whole business from my phone.',
+    name: 'Collins C. Nwobodo',
+    role: 'Head of Operations',
+    company: 'HCBNL (Haiqing)',
+    photo: '/people/collins-nwobodo.webp',
+  },
+];
+
 export const HERO = {
   title: 'Your entire distribution, on autopilot',
   body: 'Orders, inventory, billing and partner sales on one platform, with automation that keeps every team in sync.',
@@ -557,8 +573,8 @@ export const HERO = {
 
 export type TabKey = 'sales' | 'operations' | 'finance' | 'intelligence';
 
-/** The tabbed "lead to revenue" section on the front page. One picture per tab. */
-export const TABS: { key: TabKey; label: string; title: string; points: string[]; link: string; image: SiteImageKey; art: string }[] = [
+/** The tabbed "lead to revenue" section on the front page. */
+export const TABS: { key: TabKey; label: string; title: string; points: string[]; link: string }[] = [
   {
     key: 'sales',
     label: 'Sales',
@@ -571,8 +587,6 @@ export const TABS: { key: TabKey; label: string; title: string; points: string[]
       'Track targets and scorecards for every rep',
     ],
     link: '/features/orders',
-    image: 'tab-sales',
-    art: 'orders',
   },
   {
     key: 'operations',
@@ -585,8 +599,6 @@ export const TABS: { key: TabKey; label: string; title: string; points: string[]
       'Returns matched to the original order',
     ],
     link: '/features/stock',
-    image: 'tab-operations',
-    art: 'stock',
   },
   {
     key: 'finance',
@@ -599,8 +611,6 @@ export const TABS: { key: TabKey; label: string; title: string; points: string[]
       'Self service statements for every customer',
     ],
     link: '/features/credit',
-    image: 'tab-finance',
-    art: 'credit',
   },
   {
     key: 'intelligence',
@@ -613,8 +623,6 @@ export const TABS: { key: TabKey; label: string; title: string; points: string[]
       'Smart reminders and automated workflows',
     ],
     link: '/features/sell-out',
-    image: 'tab-intelligence',
-    art: 'analytics',
   },
 ];
 
@@ -705,12 +713,9 @@ export const LOGOS: { name: string; src: string }[] = [];
  * lists them.
  *
  * Each one is uploaded from Platform, Website (stored on `site/home` as
- * `images[key]`). A file named `<key>.webp`, `.png` or `.jpg` in `public/site/`
- * still works as a second source. Until either exists, the slot draws its own
- * stand in, so the site is never broken while pictures are being added.
+ * `images[key]`). Until one is, the slot is empty space of the right shape.
  */
 export const SLOT_GROUPS = [
-  'Front page',
   'Industries',
   'Platform page',
   'Modules',
@@ -786,13 +791,6 @@ const DEMO_PHOTO = [
 
 function buildSlots(): Record<string, SiteSlot> {
   const slots: Record<string, SiteSlot> = {
-    hero: { group: 'Front page', label: 'Hero photo', size: '1200 × 1500', ratio: '4/5', what: 'The big picture at the top of the front page. A person using AfterBI on a phone or tablet, in a warehouse, depot or shop. Real, natural photo. The floating cards are added by the site.' },
-    'tab-sales': { group: 'Front page', label: 'Lifecycle tab: Sales', size: '1400 × 1000', ratio: '7/5', what: 'Shown when the Sales tab is picked. AfterBI order and pipeline screens on a light background (laptop plus phone).' },
-    'tab-operations': { group: 'Front page', label: 'Lifecycle tab: Operations', size: '1400 × 1000', ratio: '7/5', what: 'Shown when the Operations tab is picked. AfterBI stock and deliveries screens on a light background.' },
-    'tab-finance': { group: 'Front page', label: 'Lifecycle tab: Finance', size: '1400 × 1000', ratio: '7/5', what: 'Shown when the Finance tab is picked. AfterBI invoice, statement and credit screens on a light background.' },
-    'tab-intelligence': { group: 'Front page', label: 'Lifecycle tab: Intelligence', size: '1400 × 1000', ratio: '7/5', what: 'Shown when the Intelligence tab is picked. AfterBI analytics and sell out dashboards on a light background.' },
-    showcase: { group: 'Front page', label: 'In your pocket', size: '1200 × 1000', ratio: '6/5', what: 'The "Your whole business, in your pocket" section. A sales rep or store owner holding a phone or tablet with AfterBI on screen, in a store.' },
-    'home-faq': { group: 'Front page', label: 'Questions section', size: '1000 × 1250', ratio: '4/5', what: 'Beside the frequently asked questions. A friendly support person, or someone working at a laptop.' },
     'features-hero': { group: 'Platform page', label: 'Platform page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Platform page (/features). The whole product: laptop and phone with AfterBI, or a team at work.' },
     'solutions-hero': { group: 'Solutions', label: 'Solutions page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Solutions page. The value chain: factory, warehouse, truck and store in one picture.' },
     /* Slot keys are the plan *ids*, not their names: see `Plan.id`. A plan
