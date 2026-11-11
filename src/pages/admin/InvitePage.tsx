@@ -28,6 +28,7 @@ const ORDER: TeamRole[] = [
   'warehouse_manager',
   'operations_manager',
   'finance_manager',
+  'hr',
   'admin',
   'super_admin',
 ];

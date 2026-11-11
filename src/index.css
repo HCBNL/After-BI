@@ -1463,7 +1463,6 @@
     --site-accent: 200, 245, 49;
     --site-hero-from: #0a1526;
     --site-hero-mid: #12264a;
-    --site-hero-to: #1b3a6e;
     --site-hero-light: 63, 101, 150;
 
     background-color: #ffffff;
@@ -1511,15 +1510,14 @@
   }
 
   /*
-   * The front page hero: the structure colour at full depth, lit from the
-   * right by its own lighter steps. The one accent allowed on it is the
-   * button sitting on top, so the glow here is structure, not accent.
+   * The front page hero card: the structure colour deepening into a teal
+   * variant, lit from the top right by its own lighter step. The lemon is
+   * spent on the button and the glow under the bars, nothing else.
    */
-  .site-hero {
+  .site-card-hero {
     background-image:
-      radial-gradient(60rem 40rem at 85% 30%, rgba(var(--site-hero-light), 0.55), transparent 60%),
-      radial-gradient(40rem 30rem at 10% 110%, rgba(var(--site-accent), 0.14), transparent 60%),
-      linear-gradient(160deg, var(--site-hero-from) 0%, var(--site-hero-mid) 55%, var(--site-hero-to) 100%);
+      radial-gradient(46rem 30rem at 92% -10%, rgba(var(--site-hero-light), 0.6), transparent 60%),
+      linear-gradient(125deg, var(--site-hero-from) 0%, var(--site-hero-mid) 45%, #0e4a5c 100%);
   }
 
   /*
@@ -1532,15 +1530,6 @@
    */
   .site-panel {
     background-image: linear-gradient(135deg, var(--site-ground-deep) 0%, var(--site-ground) 100%);
-  }
-
-  @keyframes site-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-  .site-float { animation: site-float 6s ease-in-out infinite; }
-  @media (prefers-reduced-motion: reduce) {
-    .site-float { animation: none; }
   }
 
   .site-dark-dots {

@@ -24,11 +24,11 @@ export default function NotFoundPage() {
       <PublicShell closing={false}>
         <section className="site-wash pb-28 pt-20 sm:pb-36 sm:pt-28">
           <div className={container}>
-            <p className="tabular font-display text-[5rem] font-extrabold leading-none tracking-[-0.05em] text-navy-100 sm:text-[7rem]">404</p>
-            <h1 className="mt-4 max-w-2xl font-display text-[2.4rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.2rem]">
+            <p className="tabular font-display text-[4.2rem] font-semibold leading-none tracking-[-0.05em] text-navy-100 sm:text-[5.88rem]">404</p>
+            <h1 className="mt-4 max-w-2xl font-display text-[2.02rem] font-semibold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[2.69rem]">
               That page is not here
             </h1>
-            <p className="mt-5 max-w-xl text-[18px] leading-[1.65] text-navy-700/85">Check the address, or try one of these.</p>
+            <p className="mt-5 max-w-xl text-[16px] leading-[1.65] text-navy-700/85">Check the address, or try one of these.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link to="/" className={btn.accent}>
                 Front page
@@ -40,9 +40,9 @@ export default function NotFoundPage() {
                 Pricing
               </Link>
             </div>
-            <p className="mt-10 text-[15px] text-navy-500">
+            <p className="mt-10 text-[14px] text-navy-500">
               Broken link?{' '}
-              <a href={`mailto:${SUPPORT_EMAIL}?subject=Broken%20link`} className="font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
+              <a href={`mailto:${SUPPORT_EMAIL}?subject=Broken%20link`} className="font-semibold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
                 {SUPPORT_EMAIL}
               </a>
             </p>

@@ -55,7 +55,7 @@ function Body() {
               <a
                 key={m.slug}
                 href={`#${m.slug}`}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-navy-700 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-900 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-semibold text-navy-700 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-900 hover:text-white"
               >
                 <ModuleIcon slug={m.slug} size={15} /> {m.name}
               </a>
@@ -97,9 +97,9 @@ function Body() {
                       </IconBadge>
                     </div>
                     <div className="flex flex-1 flex-col p-7">
-                      <h3 className="font-display text-[1.4rem] font-extrabold tracking-[-0.03em] text-navy-900">{m.name}</h3>
-                      <p className="mt-3 flex-1 text-[16px] leading-relaxed text-navy-700/85">{m.blurb}</p>
-                      <span className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 group-hover:decoration-navy-900">
+                      <h3 className="font-display text-[1.29rem] font-semibold tracking-[-0.03em] text-navy-900">{m.name}</h3>
+                      <p className="mt-3 flex-1 text-[15px] leading-relaxed text-navy-700/85">{m.blurb}</p>
+                      <span className="mt-5 inline-flex items-center gap-1.5 text-[14px] font-semibold text-navy-900 underline decoration-navy-900/30 underline-offset-4 group-hover:decoration-navy-900">
                         Learn more <ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-1" />
                       </span>
                     </div>
@@ -123,13 +123,13 @@ function Body() {
                   width={480}
                   className="aspect-[16/10]"
                 />
-                <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900/90 font-display text-[1.05rem] font-extrabold text-white ring-1 ring-white/25 backdrop-blur-sm">
+                <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900/90 font-display text-[0.97rem] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm">
                   {index + 1}
                 </span>
               </div>
               <div className="p-6">
-                <h3 className="text-[18px] font-bold">{step.title}</h3>
-                <p className="mt-2 text-[15.5px] leading-relaxed text-white/70">{step.body}</p>
+                <h3 className="text-[16px] font-semibold">{step.title}</h3>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-white/70">{step.body}</p>
               </div>
             </li>
           ))}

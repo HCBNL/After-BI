@@ -119,11 +119,22 @@ export function useOrgStaffDetails() {
     company: orgName,
     website: settings?.website ?? '',
     logo: settings?.logoUrl ?? '',
+    /*
+     * The profile photograph, which is the one picture of this person the
+     * app actually hosts.
+     *
+     * Not the photograph cropped on this page: that one is deliberately kept
+     * in `localStorage` and never uploaded, so it exists on one browser and
+     * cannot be put on a card that other people open on their own phones.
+     * The profile picture is on Cloudinary and already carries this person's
+     * face everywhere else in the app, so it is the one the card can use.
+     */
+    photo: user?.photoURL ?? '',
   };
   return { user, settings, details, setDetails, save, saving, staffNo, card, orgName, publish };
 }
 
-export default function OrgIdCard() {
+export default function OrgIdCard({ embedded = false }: { embedded?: boolean } = {}) {
   const toast = useToast();
   const { user, settings, details, setDetails, save, saving, staffNo, orgName, publish } = useOrgStaffDetails();
   /* A real, scannable code on the preview too: it opens the public staff check. */
@@ -197,13 +208,15 @@ export default function OrgIdCard() {
 
   return (
     <>
-      <PageHeader
-        title="My ID card"
-        actions={
-          <Hint label="About your ID card">
-            {`Your ${orgName} staff ID card, front and back. Download it and print at 100%, or take the card size PDF to a print shop. Your photo is not uploaded anywhere.`}</Hint>
-        }
-      />
+      {!embedded && (
+        <PageHeader
+          title="My ID card"
+          actions={
+            <Hint label="About your ID card">
+              {`Your ${orgName} staff ID card, front and back. Download it and print at 100%, or take the card size PDF to a print shop. Your photo is not uploaded anywhere.`}</Hint>
+          }
+        />
+      )}
       {isAdmin && (!settings?.logoUrl || !settings?.signatoryName) && (
         <Alert tone="warning" className="mb-4" title="Finish the card in Settings">
           Add the company logo, the RC number, and who signs ID cards (with a signature image) in Settings, so every staff card is complete.

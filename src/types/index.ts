@@ -52,6 +52,13 @@ export const ROLES = [
   'finance_manager',
   'operations_manager',
   'agent',
+  /*
+   * Runs people rather than money: attendance, reissues, leave and the
+   * holiday list. Salaries, bonuses and running costs stay with the HR
+   * managers (super admin, admin, finance manager). See `hrOfficer` in
+   * firestore.rules.
+   */
+  'hr',
 ] as const;
 
 export type Role = (typeof ROLES)[number];
@@ -87,6 +94,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   finance_manager: 'Finance manager',
   operations_manager: 'Operations manager',
   agent: 'AfterBI staff',
+  hr: 'HR officer',
 };
 
 /** Short form, for a pill beside a name where the long label will not fit. */
@@ -101,6 +109,7 @@ export const ROLE_SHORT: Record<Role, string> = {
   finance_manager: 'Finance',
   operations_manager: 'Operations',
   agent: 'AfterBI staff',
+  hr: 'HR',
 };
 
 /* amendment trail */
@@ -218,6 +227,29 @@ export interface Product {
    * product takes four tiles is not a grid.
    */
   images?: string[];
+  /*
+   * WHAT A REP NEEDS TO ANSWER THE SECOND QUESTION.
+   *
+   * The first question is the price. The second is "how many in a carton",
+   * then "what does it do", then "what's the barcode for my till". A
+   * catalogue that answered only the first sent a rep back to the store to
+   * count. Every one of these is optional and shown only when filled.
+   */
+  /** How it is packed, as people say it: "144 pcs per CTN", "12 x 1L per crate". */
+  packSize?: string;
+  brand?: string;
+  /** EAN or UPC, for a customer setting up their own till. */
+  barcode?: string;
+  /** Selling points, one line each. */
+  features?: string[];
+  /** Label and value pairs: Colour Blue, Battery 1200mAh, Warranty 6 months. */
+  specs?: { label: string; value: string }[];
+  /**
+   * For whoever is selling it, not the customer: who buys it, what to pair
+   * it with, what to say. Folded away on the product sheet, because that
+   * sheet is turned round to face customers.
+   */
+  salesNote?: string;
   status: 'active' | 'inactive';
   createdAt?: string;
   updatedAt?: string;

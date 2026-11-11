@@ -44,11 +44,11 @@ export default function VerifyIdPage() {
               <img src={data.logo} alt="" className="max-h-full max-w-full object-contain" />
             </span>
           ) : null}
-          <span className="font-display text-[1.1rem] font-extrabold leading-tight">{data?.company ?? 'Staff check'}</span>
+          <span className="font-display text-[1.01rem] font-semibold leading-tight">{data?.company ?? 'Staff check'}</span>
         </div>
         <div className="px-6 py-7 text-center">
           {loading ? (
-            <p className="text-[15px] text-[#686e7e]">Checking…</p>
+            <p className="text-[14px] text-[#686e7e]">Checking…</p>
           ) : data ? (
             <>
               {active ? (
@@ -56,11 +56,11 @@ export default function VerifyIdPage() {
               ) : (
                 <ShieldAlert size={52} className="mx-auto text-[#d9534f]" aria-hidden />
               )}
-              <p className={`mt-3 text-[12.5px] font-bold uppercase tracking-[0.12em] ${active ? 'text-[#16a34a]' : 'text-[#d9534f]'}`}>
+              <p className={`mt-3 text-[12.5px] font-semibold uppercase tracking-[0.12em] ${active ? 'text-[#16a34a]' : 'text-[#d9534f]'}`}>
                 {active ? 'Verified staff member' : 'No longer active'}
               </p>
-              <h1 className="mt-3 font-display text-[1.6rem] font-extrabold leading-tight">{data.name}</h1>
-              {data.position && <p className="mt-1 text-[15px] font-bold text-[#ee6a00]">{data.position}</p>}
+              <h1 className="mt-3 font-display text-[1.34rem] font-semibold leading-tight">{data.name}</h1>
+              {data.position && <p className="mt-1 text-[14px] font-semibold text-[#ee6a00]">{data.position}</p>}
               <p className="mt-1 text-[13px] text-[#686e7e]">
                 {`${data.company} · Staff no. ${data.staffNo}`}
               </p>
@@ -82,7 +82,7 @@ export default function VerifyIdPage() {
                       <Mail size={17} className="text-[#ee6a00]" aria-hidden /> {data.email}
                     </a>
                   )}
-                  <button type="button" onClick={saveContact} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0f1f36] px-4 py-3 text-[14.5px] font-bold text-white">
+                  <button type="button" onClick={saveContact} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0f1f36] px-4 py-3 text-[14.5px] font-semibold text-white">
                     <Download size={17} aria-hidden /> Save contact
                   </button>
                 </div>
@@ -95,7 +95,7 @@ export default function VerifyIdPage() {
           ) : (
             <>
               <ShieldAlert size={52} className="mx-auto text-[#d9534f]" aria-hidden />
-              <h1 className="mt-3 font-display text-[1.4rem] font-extrabold">Not recognised</h1>
+              <h1 className="mt-3 font-display text-[1.29rem] font-semibold">Not recognised</h1>
               <p className="mt-2 text-[14px] text-[#686e7e]">This card could not be found. Contact the company directly before dealing with the holder.</p>
             </>
           )}

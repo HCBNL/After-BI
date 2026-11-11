@@ -50,7 +50,7 @@ function Body() {
               aria-checked={cycle === value}
               onClick={() => setCycle(value)}
               className={cn(
-                'rounded-full px-5 py-2.5 text-[15px] font-bold transition-colors',
+                'rounded-full px-5 py-2.5 text-[14px] font-semibold transition-colors',
                 cycle === value ? 'bg-navy-900 text-white' : 'text-navy-600 hover:text-navy-900',
               )}
             >
@@ -75,7 +75,7 @@ function Body() {
 
       <ul className={cn(container, 'mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3')}>
         {PRICING_NOTES.map((note) => (
-          <li key={note} className="flex items-center gap-2 text-[15px] font-semibold text-navy-600">
+          <li key={note} className="flex items-center gap-2 text-[14px] font-semibold text-navy-600">
             <Check size={17} strokeWidth={3} aria-hidden className="text-navy-400" />
             {note}
           </li>
@@ -91,9 +91,9 @@ function Price({ amount, size = 'lg' }: { amount: number; size?: 'lg' | 'sm' }) 
   const [whole, kobo] = fixed.split('.');
   const big = Number(whole).toLocaleString('en-NG');
   return size === 'lg' ? (
-    <span className="tabular font-display font-extrabold leading-none tracking-[-0.04em] text-navy-900">
-      <span className="text-[2.7rem]">₦{big}</span>
-      <span className="text-[1.1rem]">.{kobo}</span>
+    <span className="tabular font-display font-semibold leading-none tracking-[-0.04em] text-navy-900">
+      <span className="text-[2.27rem]">₦{big}</span>
+      <span className="text-[1.01rem]">.{kobo}</span>
     </span>
   ) : (
     <span className="tabular">
@@ -121,7 +121,7 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
       )}
     >
       {plan.featured && (
-        <span className="absolute -top-3.5 left-8 z-10 rounded-full bg-brand-500 px-3.5 py-1 text-[12px] font-bold uppercase tracking-[0.1em] text-navy-900 ring-1 ring-navy-900/20">
+        <span className="absolute -top-3.5 left-8 z-10 rounded-full bg-brand-500 px-3.5 py-1 text-[12px] font-semibold uppercase tracking-[0.1em] text-navy-900 ring-1 ring-navy-900/20">
           Most popular
         </span>
       )}
@@ -133,13 +133,13 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
         width={480}
         className="-mx-5 mb-6 aspect-[16/9] rounded-[1.1rem]"
       />
-      <h2 className="font-display text-[1.5rem] font-extrabold tracking-[-0.03em] text-navy-900">{plan.name}</h2>
-      <p className="mt-1.5 min-h-[3rem] text-[15px] text-navy-600">{plan.forWho}</p>
+      <h2 className="font-display text-[1.38rem] font-semibold tracking-[-0.03em] text-navy-900">{plan.name}</h2>
+      <p className="mt-1.5 min-h-[3rem] text-[14px] text-navy-600">{plan.forWho}</p>
 
-      <p className="mt-6 h-6 text-[16px] text-navy-400 line-through">{cycle === 'yearly' ? <Price amount={plan.perUser} size="sm" /> : null}</p>
+      <p className="mt-6 h-6 text-[15px] text-navy-400 line-through">{cycle === 'yearly' ? <Price amount={plan.perUser} size="sm" /> : null}</p>
       <p className="flex items-baseline gap-1.5">
         <Price amount={perUser} />
-        <span className="whitespace-nowrap text-[15px] font-semibold text-navy-500">/user/month</span>
+        <span className="whitespace-nowrap text-[14px] font-semibold text-navy-500">/user/month</span>
       </p>
       <p className="mt-2 min-h-[2.6rem] text-[14.5px] leading-snug text-navy-600">
         {cycle === 'yearly' ? (
@@ -159,11 +159,11 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
       <ul className="mt-7 flex-1 space-y-3 border-t border-navy-900/8 pt-7">
         {plan.includes.map((line) =>
           line.endsWith(':') ? (
-            <li key={line} className="text-[14.5px] font-bold text-navy-900">
+            <li key={line} className="text-[14.5px] font-semibold text-navy-900">
               {line}
             </li>
           ) : (
-            <li key={line} className="flex gap-2.5 text-[15px] text-navy-700">
+            <li key={line} className="flex gap-2.5 text-[14px] text-navy-700">
               <Check size={17} aria-hidden className="mt-[0.15em] shrink-0 text-navy-400" />
               {line}
             </li>

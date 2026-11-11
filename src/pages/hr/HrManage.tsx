@@ -1,5 +1,11 @@
 /**
- * HR (for HR managers: super admin, admin, finance manager).
+ * HR, for two kinds of person.
+ *
+ *   HR managers (super admin, admin, finance manager) see all of it.
+ *   HR officers (the `hr` role) see the people side only: who clocked in,
+ *   reissues, leave and holidays. Payroll, salaries, bonuses, running costs
+ *   and the salary day are not drawn for them, and not loaded either: the
+ *   rules refuse an officer those reads, so asking would only fail.
  *
  * Set each person's salary and resumption date, keep the holiday list, see who
  * clocked in today, approve reissue requests, add bonuses and deductions, keep
@@ -23,6 +29,7 @@ import {
   Download,
   Gift,
   MinusCircle,
+  Palmtree,
   Pencil,
   Plus,
   Receipt,
@@ -35,7 +42,9 @@ import {
   X,
 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Alert, Badge, Button, Card, EmptyState, Field, Input, Modal, SectionMenu, Select, StatTile, Switch, useToast } from '@/components/ui';
+import { Alert, Badge, Button, Card, EmptyState, Field, Input, Modal, SectionMenu, Select, StatTile, Switch, Textarea, useToast } from '@/components/ui';
+import { Hint } from '@/components/ui/Hint';
+import { useAuth } from '@/context/AuthContext';
 import { Loading } from '@/components/brand/Loader';
 import { useAsync } from '@/hooks/useAsync';
 import { listMembers } from '@/lib/db';
@@ -52,6 +61,7 @@ import {
   decideReissue,
   DEFAULT_SETTINGS,
   getHrSettings,
+  HR_MANAGERS,
   hhmm,
   hoursBetween,
   listAdjustments,
@@ -83,9 +93,13 @@ import {
 } from '@/lib/hr';
 import { computePay, currentPeriod, cycleWords, iso, isOffDay, ordinal, prettyIso, shiftPeriod, type PayPeriod } from '@/lib/payroll';
 import { ROLE_LABEL, type Role } from '@/types';
+import { ANNUAL_DAYS, cancelLeave, decideLeave, eligibleFrom, leaveDays, leaveProblem, listLeaveYear, pendingIn, recordLeave, usedIn, type Leave } from '@/lib/leave';
 import { AttendanceStrip, CountUp, PayCycle, PeriodNote } from './HrParts';
 
-type Tab = 'payroll' | 'reissues' | 'today' | 'staff' | 'bonuses' | 'costs' | 'holidays' | 'settings';
+type Tab = 'payroll' | 'reissues' | 'leave' | 'today' | 'staff' | 'bonuses' | 'costs' | 'holidays' | 'settings';
+
+/** The sections an HR officer (not a manager) gets. */
+const OFFICER_TABS: Tab[] = ['today', 'reissues', 'leave', 'holidays'];
 
 interface Person {
   uid: string;
@@ -98,9 +112,13 @@ interface Person {
 
 export default function HrManage() {
   const toast = useToast();
+  const { user } = useAuth();
   const { settings: org } = useOrg();
+  const manager = Boolean(user && HR_MANAGERS.includes(user.role));
+  const deciderName = user ? `${user.firstName} ${user.lastName}`.trim() : 'HR';
   const today = iso(new Date());
-  const [tab, setTab] = useState<Tab>('payroll');
+  const year = Number(today.slice(0, 4));
+  const [tab, setTab] = useState<Tab>(manager ? 'payroll' : 'today');
   const [offset, setOffset] = useState(0);
   const [tick, setTick] = useState(0);
   const [open, setOpen] = useState<Person | null>(null);
@@ -108,10 +126,16 @@ export default function HrManage() {
 
   const base = useAsync(
     async () => {
-      const [settings, holidays, users, hr, costs] = await Promise.all([getHrSettings(), listHolidays(), listMembers(), listHrStaff(), listCosts()]);
+      const [settings, holidays, users, hr, costs] = await Promise.all([
+        getHrSettings(),
+        listHolidays(),
+        listMembers(),
+        listHrStaff(),
+        manager ? listCosts() : Promise.resolve([] as Cost[]),
+      ]);
       return { settings, holidays, users, hr, costs };
     },
-    [tick],
+    [tick, manager],
     { handleError: true },
   );
 
@@ -123,7 +147,11 @@ export default function HrManage() {
   const att = useAsync(() => listAttendance(null, period.start, period.end), [period.start, period.end, tick], { handleError: true });
   const pending = useAsync(() => listPendingReissues(), [tick], { handleError: true });
   const todayAtt = useAsync(() => listAttendance(null, today, today), [today, tick], { handleError: true });
-  const adjustments = useAsync(() => listAdjustments(period.key), [period.key, tick], { handleError: true });
+  const adjustments = useAsync(() => (manager ? listAdjustments(period.key) : Promise.resolve([] as Adjustment[])), [period.key, tick, manager], {
+    handleError: true,
+  });
+  const leave = useAsync(() => listLeaveYear(year), [year, tick], { handleError: true });
+  const leaveWaiting = (leave.data ?? []).filter((l) => l.status === 'pending').length;
 
   const people: Person[] = useMemo(() => {
     if (!base.data) return [];
@@ -228,11 +256,17 @@ export default function HrManage() {
     <div className="space-y-5">
       <PageHeader
         title="HR"
-        description="Salaries, attendance, bonuses and running costs. Pay is the monthly salary divided by the working days, times the days actually worked."
         actions={
-          <Button variant="outline" icon={<RefreshCw size={16} />} onClick={reload} loading={att.loading}>
-            Refresh
-          </Button>
+          <>
+            <Hint label="About HR" align="right">
+              {manager
+                ? 'Salaries, attendance, leave, bonuses and running costs. Pay is the monthly salary divided by the working days, times the days actually worked. Approved leave days are paid as worked days.'
+                : 'Attendance, leave, reissues and holidays. You can mark or correct a day, approve or decline requests, and record leave for someone.'}
+            </Hint>
+            <Button variant="outline" icon={<RefreshCw size={16} />} onClick={reload} loading={att.loading}>
+              Refresh
+            </Button>
+          </>
         }
       />
 
@@ -243,8 +277,19 @@ export default function HrManage() {
         saturday={rules.saturday}
         footer={
           <p className="text-label text-white/65">
-            {`${current.label} payroll so far: `}<b className="text-white">{offset === 0 ? naira(totalNet) : 'open this month in Payroll'}</b>
-            {`, ${clockedToday.size} of ${people.filter((p) => !p.suspended).length} clocked in today`}
+            {manager && (
+              <>
+                {`${current.label} payroll so far: `}
+                <b className="text-white">{offset === 0 ? naira(totalNet) : 'open this month in Payroll'}</b>
+                {', '}
+              </>
+            )}
+            {`${clockedToday.size} of ${people.filter((p) => !p.suspended).length} clocked in today`}
+            {leaveWaiting > 0 && (
+              <button type="button" onClick={() => setTab('leave')} className="font-bold text-white underline-offset-2 hover:underline">
+                {leaveWaiting === 1 ? ', 1 leave request waiting' : `, ${leaveWaiting} leave requests waiting`}
+              </button>
+            )}
             {(pending.data?.length ?? 0) > 0 && (
               <button type="button" onClick={() => setTab('reissues')} className="font-bold text-gold-300 underline-offset-2 hover:underline">
                 {pending.data!.length === 1 ? ', 1 reissue request waiting' : `, ${pending.data!.length} reissue requests waiting`}</button>
@@ -264,15 +309,16 @@ export default function HrManage() {
           onChange={(id) => setTab(id as Tab)}
           className="w-full sm:w-auto sm:min-w-[16rem]"
           items={[
-            { id: 'payroll', label: 'Payroll', icon: <Banknote />, hint: 'Who is paid what this month' },
-            { id: 'reissues', label: 'Reissues', icon: <RotateCcw />, count: pending.data?.length ?? 0, hint: 'Payslip corrections waiting' },
-            { id: 'today', label: 'Today', icon: <Clock3 />, count: clockedToday.size, hint: 'Who has clocked in' },
-            { id: 'staff', label: 'Staff and salaries', icon: <Users />, count: people.length, hint: 'Pay, bank and status per person' },
-            { id: 'bonuses', label: 'Bonuses and deductions', icon: <Gift />, count: adjustments.data?.length ?? 0, hint: 'One off additions and cuts' },
-            { id: 'costs', label: 'Running costs', icon: <Receipt />, count: base.data.costs.length, hint: 'Rent, diesel, internet and the rest' },
-            { id: 'holidays', label: 'Holidays', icon: <CalendarPlus />, count: base.data.holidays.length, hint: 'Days off for everyone' },
-            { id: 'settings', label: 'Salary day', icon: <Settings2 />, hint: 'When the month starts and pay goes out' },
-          ]}
+            { id: 'payroll' as Tab, label: 'Payroll', icon: <Banknote />, hint: 'Who is paid what this month' },
+            { id: 'reissues' as Tab, label: 'Reissues', icon: <RotateCcw />, count: pending.data?.length ?? 0, hint: 'Payslip corrections waiting' },
+            { id: 'leave' as Tab, label: 'Leave', icon: <Palmtree />, count: leaveWaiting, hint: `Annual leave, ${ANNUAL_DAYS} days a year` },
+            { id: 'today' as Tab, label: 'Today', icon: <Clock3 />, count: clockedToday.size, hint: 'Who has clocked in' },
+            { id: 'staff' as Tab, label: 'Staff and salaries', icon: <Users />, count: people.length, hint: 'Pay, bank and status per person' },
+            { id: 'bonuses' as Tab, label: 'Bonuses and deductions', icon: <Gift />, count: adjustments.data?.length ?? 0, hint: 'One off additions and cuts' },
+            { id: 'costs' as Tab, label: 'Running costs', icon: <Receipt />, count: base.data.costs.length, hint: 'Rent, diesel, internet and the rest' },
+            { id: 'holidays' as Tab, label: 'Holidays', icon: <CalendarPlus />, count: base.data.holidays.length, hint: 'Days off for everyone' },
+            { id: 'settings' as Tab, label: 'Salary day', icon: <Settings2 />, hint: 'When the month starts and pay goes out' },
+          ].filter((item) => manager || OFFICER_TABS.includes(item.id))}
         />
 
         {(tab === 'payroll' || tab === 'bonuses' || tab === 'costs') && (
@@ -391,6 +437,20 @@ export default function HrManage() {
 
       {tab === 'reissues' && <Reissues list={pending.data} onChanged={reload} />}
 
+      {tab === 'leave' && (
+        <LeaveDesk
+          list={leave.data}
+          people={people}
+          today={today}
+          holidays={holidaySet}
+          saturday={rules.saturday}
+          decider={deciderName}
+          me={user?.id ?? ''}
+          manager={manager}
+          onChanged={reload}
+        />
+      )}
+
       {tab === 'today' && (
         <section className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -467,6 +527,7 @@ export default function HrManage() {
         holidays={holidaySet}
         rules={rules}
         records={open ? byPerson.get(open.uid) ?? [] : []}
+        showPay={manager}
         onClose={() => setOpen(null)}
         onChanged={reload}
       />
@@ -483,6 +544,7 @@ function PersonDays({
   holidays,
   rules,
   records,
+  showPay,
   onClose,
   onChanged,
 }: {
@@ -492,6 +554,8 @@ function PersonDays({
   holidays: Set<string>;
   rules: HrSettings;
   records: Attendance[];
+  /** Managers see what the days earned; an HR officer sees the days only. */
+  showPay: boolean;
   onClose: () => void;
   onChanged: () => void;
 }) {
@@ -535,10 +599,10 @@ function PersonDays({
       description={`${period.label}, resumed ${prettyIso(person.hr.resumption, { day: 'numeric', month: 'short', year: 'numeric' })}`}
     >
       <div className="space-y-5">
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-          <Mini label="Earned" value={naira(r.pay)} strong />
+        <div className={cn('grid grid-cols-2 gap-2.5', showPay && 'sm:grid-cols-4')}>
+          {showPay && <Mini label="Earned" value={naira(r.pay)} strong />}
           <Mini label="Worked" value={`${r.worked} / ${r.eligible}`} />
-          <Mini label="Daily rate" value={nairaPrecise(r.daily)} />
+          {showPay && <Mini label="Daily rate" value={nairaPrecise(r.daily)} />}
           <Mini label="Missed" value={String(r.missed)} />
         </div>
         <div className={cn(busy && 'pointer-events-none opacity-70')}>
@@ -1294,5 +1358,313 @@ function PaySettings({ value, onSaved }: { value: HrSettings; onSaved: () => voi
         </Button>
       </form>
     </Card>
+  );
+}
+
+/* leave */
+
+/**
+ * Leave, from HR's side: requests to decide, and leave to record.
+ *
+ * Every request shows how many of the person's ten days are already used this
+ * year before the Approve button, because that is the one check the database
+ * cannot make: a rule cannot add up a collection, so the approval is where
+ * somebody who has used their days is caught.
+ *
+ * "Record leave" is for the person who told HR in the corridor. It goes in
+ * approved, marks the days paid, and is labelled as recorded by HR so the
+ * person sees where it came from.
+ */
+function LeaveDesk({
+  list,
+  people,
+  today,
+  holidays,
+  saturday,
+  decider,
+  me,
+  manager,
+  onChanged,
+}: {
+  list: Leave[] | undefined;
+  people: Person[];
+  today: string;
+  holidays: Set<string>;
+  saturday: boolean;
+  decider: string;
+  /** Whoever is signed in, and whether they are an HR manager rather than an officer. */
+  me: string;
+  manager: boolean;
+  onChanged: () => void;
+}) {
+  const toast = useToast();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [cancelling, setCancelling] = useState<string | null>(null);
+  if (!list) return <Loading label="Fetching leave" />;
+
+  const year = Number(today.slice(0, 4));
+  const waiting = list.filter((l) => l.status === 'pending');
+  const decided = list.filter((l) => l.status !== 'pending');
+  const byUid = (uid: string) => list.filter((l) => l.uid === uid);
+
+  const decide = async (l: Leave, approve: boolean) => {
+    setBusy(l.id + (approve ? '+' : '-'));
+    try {
+      await decideLeave(l, approve, decider, leaveDays(l.from, l.to, holidays, saturday));
+      toast.success(approve ? 'Leave approved' : 'Leave declined', `${l.name}, ${l.days === 1 ? '1 day' : `${l.days} days`}`);
+      onChanged();
+    } catch (err) {
+      toast.error('Could not save that', err instanceof Error ? err.message : 'Try again.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const cancel = async (l: Leave) => {
+    setBusy(l.id + 'x');
+    try {
+      await cancelLeave(l, leaveDays(l.from, l.to, holidays, saturday));
+      toast.success('Leave cancelled', `${l.name}. The paid days were taken back.`);
+      onChanged();
+    } catch (err) {
+      toast.error('Could not cancel it', err instanceof Error ? err.message : 'Try again.');
+    } finally {
+      setBusy(null);
+      setCancelling(null);
+    }
+  };
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-label text-secondary">{`${ANNUAL_DAYS} working days a year, after a full year in the company.`}</p>
+        <Button size="sm" variant="outline" icon={<Palmtree size={15} />} onClick={() => setAdding(true)}>
+          Record leave
+        </Button>
+      </div>
+
+      {waiting.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={<Palmtree size={22} />}
+            title="No requests waiting"
+            description="People apply for leave on their My pay screen. Requests land here for you to approve or decline."
+          />
+        </Card>
+      ) : (
+        <ul className="grid gap-3 lg:grid-cols-2">
+          {waiting.map((l) => {
+            const used = usedIn(byUid(l.uid), l.year, l.id);
+            /* Counted from the calendar, not from what the request claims. */
+            const cost = leaveDays(l.from, l.to, holidays, saturday).length;
+            const over = used + cost > ANNUAL_DAYS;
+            /* An HR officer's own request waits for a manager. */
+            const own = l.uid === me && !manager;
+            return (
+              <li key={l.id} className="flex flex-col rounded-2xl border border-[#fab219]/50 surface-card p-4 shadow-card sm:p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-lead font-semibold text-primary">{l.name}</p>
+                    <p className="text-label text-secondary">
+                      {l.from === l.to ? prettyIso(l.from, { weekday: 'long', day: 'numeric', month: 'long' }) : `${prettyIso(l.from)} to ${prettyIso(l.to)}`}
+                    </p>
+                  </div>
+                  <Badge tone="warning">{l.days === 1 ? '1 day' : `${l.days} days`}</Badge>
+                </div>
+                <p className={cn('mt-3 rounded-xl surface-sunken px-3 py-2.5 text-body leading-relaxed', l.reason ? 'text-primary' : 'italic text-muted')}>
+                  {l.reason || 'No comment left.'}
+                </p>
+                <p className={cn('mt-2 text-label', over ? 'font-semibold text-status-critical' : 'text-muted')}>
+                  {over
+                    ? `Already used ${used} of ${ANNUAL_DAYS} days for ${l.year}. This would go over.`
+                    : `Used ${used} of ${ANNUAL_DAYS} days for ${l.year} before this.`}
+                  {own ? ' Your own request: a manager has to decide it.' : ''}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <Button size="sm" icon={<Check size={15} />} loading={busy === l.id + '+'} disabled={Boolean(busy) || over || own || cost < 1} onClick={() => void decide(l, true)} className="flex-1">
+                    Approve
+                  </Button>
+                  <Button size="sm" variant="outline" icon={<X size={15} />} loading={busy === l.id + '-'} disabled={Boolean(busy) || own} onClick={() => void decide(l, false)} className="flex-1">
+                    Decline
+                  </Button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {decided.length > 0 && (
+        <Card>
+          <p className="mb-3 text-lead font-semibold text-primary">{`Decided, ${year} onwards`}</p>
+          <ul className="divide-y divide-[var(--border-hairline)]">
+            {decided.map((l) => (
+              <li key={l.id} className="flex items-center justify-between gap-3 py-2.5">
+                <span className="min-w-0">
+                  <span className="block truncate text-body font-semibold text-primary">{l.name}</span>
+                  <span className="block text-label text-muted">
+                    {`${l.from === l.to ? prettyIso(l.from) : `${prettyIso(l.from)} to ${prettyIso(l.to)}`}, ${l.days === 1 ? '1 day' : `${l.days} days`}`}
+                    {l.byHr ? ', recorded by HR' : ''}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-2">
+                  {l.status === 'approved' && (l.uid !== me || manager) && (
+                    cancelling === l.id ? (
+                      <Button size="sm" variant="outline" loading={busy === l.id + 'x'} onClick={() => void cancel(l)}>
+                        Yes, cancel it
+                      </Button>
+                    ) : (
+                      <button type="button" onClick={() => setCancelling(l.id)} className="text-caption font-semibold text-muted hover:text-primary">
+                        Cancel
+                      </button>
+                    )
+                  )}
+                  <Badge tone={l.status === 'approved' ? 'good' : 'critical'}>{l.status === 'approved' ? 'Approved' : 'Declined'}</Badge>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      <RecordLeave
+        open={adding}
+        people={people.filter((p) => !p.suspended && (manager || p.uid !== me))}
+        list={list}
+        today={today}
+        holidays={holidays}
+        saturday={saturday}
+        decider={decider}
+        onClose={() => setAdding(false)}
+        onSaved={() => {
+          setAdding(false);
+          onChanged();
+        }}
+      />
+    </section>
+  );
+}
+
+function RecordLeave({
+  open,
+  people,
+  list,
+  today,
+  holidays,
+  saturday,
+  decider,
+  onClose,
+  onSaved,
+}: {
+  open: boolean;
+  people: Person[];
+  list: Leave[];
+  today: string;
+  holidays: Set<string>;
+  saturday: boolean;
+  decider: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const toast = useToast();
+  const [uid, setUid] = useState('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  if (!open) return null;
+
+  const person = people.find((p) => p.uid === uid);
+  const dates = leaveDays(from, to || from, holidays, saturday);
+  const year = Number((from || today).slice(0, 4));
+  const theirs = list.filter((l) => l.uid === uid);
+  const problem =
+    person && from
+      ? leaveProblem({
+          from,
+          to: to || from,
+          days: dates.length,
+          today,
+          resumption: person.hr?.resumption,
+          used: usedIn(theirs, year),
+          pending: pendingIn(theirs, year),
+          byHr: true,
+        })
+      : null;
+  const anniversary = person ? eligibleFrom(person.hr?.resumption) : null;
+
+  const save = async () => {
+    if (!person) return;
+    setBusy(true);
+    try {
+      await recordLeave({ uid: person.uid, name: person.name }, from, to || from, dates, reason, decider);
+      toast.success('Leave recorded', `${person.name}, ${dates.length === 1 ? '1 day' : `${dates.length} days`}`);
+      setUid('');
+      setFrom('');
+      setTo('');
+      setReason('');
+      onSaved();
+    } catch (err) {
+      toast.error('Could not record it', err instanceof Error ? err.message : 'Try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      size="sm"
+      title="Record leave"
+      description="Goes in approved, and the days are paid."
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button icon={<Palmtree size={15} />} loading={busy} disabled={!person || !from || Boolean(problem)} onClick={() => void save()}>
+            Record leave
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <Field label="Person">
+          <Select value={uid} onChange={(e) => setUid(e.target.value)}>
+            <option value="">Choose someone</option>
+            {people.map((p) => (
+              <option key={p.uid} value={p.uid}>
+                {p.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        {person && anniversary && (
+          <p className="text-label text-muted">
+            {`Eligible from ${prettyIso(anniversary, { day: 'numeric', month: 'long', year: 'numeric' })}. ${Math.max(0, ANNUAL_DAYS - usedIn(theirs, year))} of ${ANNUAL_DAYS} days left for ${year}.`}
+          </p>
+        )}
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="First day">
+            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </Field>
+          <Field label="Last day">
+            <Input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} />
+          </Field>
+        </div>
+        {from && (
+          <p className="rounded-2xl surface-sunken px-3.5 py-2.5 text-label text-secondary">
+            {dates.length === 1 ? '1 working day' : `${dates.length} working days`}
+            {', weekends and holidays not counted.'}
+          </p>
+        )}
+        {problem && <Alert tone="warning">{problem}</Alert>}
+        <Field label="Comment (optional)">
+          <Textarea rows={2} maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} />
+        </Field>
+      </div>
+    </Modal>
   );
 }

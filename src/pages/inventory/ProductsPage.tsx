@@ -14,7 +14,7 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Package, Plus } from 'lucide-react';
+import { Package, Plus, X } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge, Button, DataTable, Field, Hint, Input, Modal, SearchInput, SegmentedControl, Select, Switch, Textarea, type Column, useToast } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
@@ -258,6 +258,13 @@ function ProductModal({
         name: draft.name.trim(),
         category: draft.category?.trim() || 'Uncategorised',
         moq: Math.max(1, Number(draft.moq) || 1),
+        packSize: draft.packSize?.trim() ?? '',
+        brand: draft.brand?.trim() ?? '',
+        barcode: draft.barcode?.trim() ?? '',
+        salesNote: draft.salesNote?.trim() ?? '',
+        /* Blank lines and half-filled rows are dropped rather than saved as noise. */
+        features: (draft.features ?? []).map((f) => f.trim()).filter(Boolean).slice(0, 12),
+        specs: (draft.specs ?? []).map((x) => ({ label: x.label.trim(), value: x.value.trim() })).filter((x) => x.label && x.value).slice(0, 16),
       });
       onSaved();
     } catch (err) {
@@ -397,6 +404,51 @@ function ProductModal({
         </Field>
 
         {/*
+          The details a rep is asked for after the price. All optional; the
+          product sheet shows only what is filled, so an empty field costs
+          nothing on screen.
+        */}
+        {!draft.service && (
+          <fieldset className="space-y-4 rounded-xl border border-hairline surface-sunken px-4 py-3.5">
+            <legend className="flex items-center gap-1.5 px-1 text-label font-semibold text-secondary">
+              Product details
+              <Hint label="About product details">
+                What a sales rep is asked after the price. Everything here appears on the product sheet in the catalogue,
+                except the sales note, which is folded away because that sheet is shown to customers.
+              </Hint>
+            </legend>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Field label="Pack size" hint="As people say it">
+                <Input value={draft.packSize ?? ''} onChange={(e) => set('packSize', e.target.value)} placeholder="144 pcs per CTN" />
+              </Field>
+              <Field label="Brand">
+                <Input value={draft.brand ?? ''} onChange={(e) => set('brand', e.target.value)} />
+              </Field>
+              <Field label="Barcode" hint="EAN or UPC">
+                <Input value={draft.barcode ?? ''} inputMode="numeric" onChange={(e) => set('barcode', e.target.value)} />
+              </Field>
+            </div>
+            <Field label="Features" hint="One per line">
+              <Textarea
+                rows={4}
+                value={(draft.features ?? []).join('\n')}
+                onChange={(e) => set('features', e.target.value.split('\n'))}
+                placeholder={'Three speed settings\nUSB rechargeable, 6 hours a charge\nFolds flat for a handbag'}
+              />
+            </Field>
+            <SpecsEditor value={draft.specs ?? []} onChange={(specs) => set('specs', specs)} />
+            <Field label="Sales note" hint="For staff, folded away">
+              <Textarea
+                rows={2}
+                value={draft.salesNote ?? ''}
+                onChange={(e) => set('salesNote', e.target.value)}
+                placeholder="Sells fastest in March to May. Pair with the desk fan for supermarkets."
+              />
+            </Field>
+          </fieldset>
+        )}
+
+        {/*
           PICTURES ARE A SALES TOOL, NOT DECORATION.
 
           Before this, a rep standing in front of a customer who asked "what
@@ -475,5 +527,41 @@ function ProductModal({
         )}
       </div>
     </Modal>
+  );
+}
+
+/** Label and value rows: Colour Blue, Battery 1200mAh, Warranty 6 months. */
+function SpecsEditor({
+  value,
+  onChange,
+}: {
+  value: { label: string; value: string }[];
+  onChange: (next: { label: string; value: string }[]) => void;
+}) {
+  /* Always one empty row on the end, so adding a spec is just typing. */
+  const rows = value.length && !value[value.length - 1].label && !value[value.length - 1].value ? value : [...value, { label: '', value: '' }];
+  const put = (index: number, key: 'label' | 'value', text: string) =>
+    onChange(rows.map((row, i) => (i === index ? { ...row, [key]: text } : row)));
+  return (
+    <div>
+      <p className="mb-1.5 text-label font-semibold text-secondary">Specifications</p>
+      <div className="space-y-2">
+        {rows.map((row, index) => (
+          <div key={index} className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] gap-2">
+            <Input aria-label="Specification" value={row.label} onChange={(e) => put(index, 'label', e.target.value)} placeholder="Colour" />
+            <Input aria-label="Value" value={row.value} onChange={(e) => put(index, 'value', e.target.value)} placeholder="Blue, pink, white" />
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Remove"
+              disabled={!row.label && !row.value}
+              onClick={() => onChange(rows.filter((_, i) => i !== index))}
+            >
+              <X size={15} />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

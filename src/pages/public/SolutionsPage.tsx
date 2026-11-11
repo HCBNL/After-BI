@@ -61,7 +61,7 @@ function Body() {
                   className="aspect-[3/2]"
                   imgClassName="transition-transform duration-500 group-hover:scale-[1.05]"
                 />
-                <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/85 to-transparent px-4 pb-3 pt-10 text-left text-[14.5px] font-bold text-white">
+                <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/85 to-transparent px-4 pb-3 pt-10 text-left text-[14.5px] font-semibold text-white">
                   {s.name}
                 </span>
               </a>
@@ -81,11 +81,11 @@ function Body() {
               />
               <div>
                 <p className={eyebrow}>{s.name}</p>
-                <h2 className="mt-3 font-display text-[2rem] font-extrabold leading-[1.1] tracking-[-0.035em] text-navy-900 sm:text-[2.5rem]">
+                <h2 className="mt-3 font-display text-[1.68rem] font-semibold leading-[1.1] tracking-[-0.035em] text-navy-900 sm:text-[2.1rem]">
                   {s.blurb}
                 </h2>
                 <CheckList items={s.points} className="mt-6" />
-                <p className="mt-8 text-[13px] font-bold uppercase tracking-[0.12em] text-navy-400">Key capabilities</p>
+                <p className="mt-8 text-[13px] font-semibold uppercase tracking-[0.12em] text-navy-400">Key capabilities</p>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {s.modules.map((slug) => {
                     const m = MODULES.find((x) => x.slug === slug);
@@ -93,7 +93,7 @@ function Body() {
                       <li key={slug}>
                         <Link
                           to={`/features/${slug}`}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[14px] font-bold text-navy-800 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-900 hover:text-white"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[14px] font-semibold text-navy-800 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-900 hover:text-white"
                         >
                           <ModuleIcon slug={slug} size={15} /> {m.name}
                         </Link>

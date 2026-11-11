@@ -8,23 +8,16 @@
  *   Tiles  the panel with every shortcut, the "To do" card, and the three
  *          numbers as banners sitting on the bottom bar.
  *   Cards  the panel with the three numbers as cards, six shortcuts as a list,
- *          the "To do" card, and tips sitting on the bottom bar.
+ *          the "To do" card, and AfterBI's ads sitting on the bottom bar.
  *
  * A laptop gets the same screen with more room (`HomeDesk.tsx`).
  */
 import { useEffect, useMemo, useState } from 'react';
 import {
   ClipboardCheck,
-  FileText,
-  Package,
   Receipt,
-  RotateCcw,
-  Settings,
   ShoppingCart,
-  Target,
   TrendingUp,
-  Truck,
-  UserPlus,
   Wallet,
   Warehouse,
 } from 'lucide-react';
@@ -33,7 +26,8 @@ import { useBootDone } from '@/lib/boot';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
 import { HomeHero } from '@/components/home/HomeHero';
 import type { Kpi } from '@/components/home/HomeSlides';
-import { KpiBannerGrid, KpiBanners, TipSlides, type Tip } from '@/components/home/HomeSlides';
+import { AdSlides, KpiBannerGrid, KpiBanners } from '@/components/home/HomeSlides';
+import { useAppAds } from '@/hooks/useAppAds';
 import { QuickList } from '@/components/home/QuickList';
 import { SetupChecklist } from '@/components/home/SetupChecklist';
 import { TodoCard, type TodoItem } from '@/components/home/TodoCard';
@@ -79,176 +73,6 @@ const APPROVERS: Role[] = [
   'warehouse_manager',
 ];
 
-/** Three pointers per role, each to a screen that role has. */
-function tipsFor(role: Role, root: string): Tip[] {
-  if (isAdmin(role)) {
-    return [
-      {
-        id: 'people',
-        tone: 'brand',
-        icon: UserPlus,
-        title: 'Give your team their sign-ins',
-        body: 'Create an account for each rep, depot and distributor. You hand them the details; nothing is emailed.',
-        cta: { label: 'Add a person', to: `${root}/invite` },
-      },
-      {
-        id: 'threshold',
-        tone: 'ink',
-        icon: Settings,
-        title: 'Decide who signs big orders',
-        body: 'Set a threshold and choose who signs. Choose nobody and it comes to you.',
-        cta: { label: 'Open settings', to: `${root}/settings` },
-      },
-      {
-        id: 'tiers',
-        tone: 'amber',
-        icon: Package,
-        title: 'Price tiers do the discounting',
-        body: 'Each product carries OT, MT and SA prices. A distributor only ever sees their own tier.',
-        cta: { label: 'Open products', to: `${root}/products` },
-      },
-    ];
-  }
-  if (role === 'sales_rep') {
-    return [
-      {
-        id: 'order',
-        tone: 'brand',
-        icon: ShoppingCart,
-        title: 'Raise an order in under a minute',
-        body: 'Pick the distributor, add the lines. The price comes from their tier, not from a box you type in.',
-        cta: { label: 'New order', to: `${root}/orders?new=1` },
-      },
-      {
-        id: 'sellout',
-        tone: 'ink',
-        icon: TrendingUp,
-        title: 'Key sell-out every day',
-        body: 'What left the shelves is the number your target and scorecard are measured on.',
-        cta: { label: 'Record sell-out', to: `${root}/sell-out` },
-      },
-      {
-        id: 'target',
-        tone: 'amber',
-        icon: Target,
-        title: 'Know where you stand',
-        body: 'Your target for the month, and how far through it you are, on one screen.',
-        cta: { label: 'Open targets', to: `${root}/targets` },
-      },
-    ];
-  }
-  if (role === 'distributor') {
-    return [
-      {
-        id: 'statement',
-        tone: 'brand',
-        icon: FileText,
-        title: 'Your statement, any time',
-        body: 'Every invoice and payment to the balance carried forward. Print it or save it as a PDF.',
-        cta: { label: 'Open statement', to: `${root}/statement` },
-      },
-      {
-        id: 'catalogue',
-        tone: 'ink',
-        icon: Package,
-        title: 'Order from your own price list',
-        body: 'The catalogue shows your tier’s prices and the minimum order for each line.',
-        cta: { label: 'Open catalogue', to: `${root}/catalogue` },
-      },
-      {
-        id: 'returns',
-        tone: 'amber',
-        icon: RotateCcw,
-        title: 'Something wrong with a delivery?',
-        body: 'Raise a return for damage, shortage or expiry. The credit follows when it is approved.',
-        cta: { label: 'Open returns', to: `${root}/returns` },
-      },
-    ];
-  }
-  if (isFinance(role)) {
-    return [
-      {
-        id: 'payments',
-        tone: 'brand',
-        icon: Receipt,
-        title: 'Record payments as they land',
-        body: 'Part payments are fine. The invoice and the statement update together.',
-        cta: { label: 'View invoices', to: `${root}/invoices` },
-      },
-      {
-        id: 'credit',
-        tone: 'ink',
-        icon: Wallet,
-        title: 'Watch who is against their ceiling',
-        body: 'Credit limits show what each distributor may owe at once.',
-        cta: { label: 'Open credit limits', to: `${root}/credit` },
-      },
-      {
-        id: 'reports',
-        tone: 'amber',
-        icon: FileText,
-        title: 'Reports as spreadsheets',
-        body: 'Sales, stock and debtors, for whoever asked for it in Excel.',
-        cta: { label: 'Open reports', to: `${root}/reports` },
-      },
-    ];
-  }
-  if (isOperations(role)) {
-    return [
-      {
-        id: 'stock-in',
-        tone: 'brand',
-        icon: Truck,
-        title: 'Record stock in as it lands',
-        body: 'Every movement is kept with who made it and the balance after it.',
-        cta: { label: 'Open movements', to: `${root}/movements` },
-      },
-      {
-        id: 'low',
-        tone: 'ink',
-        icon: Warehouse,
-        title: 'Low stock turns amber',
-        body: 'Set a threshold per line and it shows on this screen before orders stall.',
-        cta: { label: 'Open stock', to: `${root}/stock` },
-      },
-      {
-        id: 'returns',
-        tone: 'amber',
-        icon: RotateCcw,
-        title: 'Returns put stock back',
-        body: 'Receiving a return writes the ledger and carries its credit.',
-        cta: { label: 'Open returns', to: `${root}/returns` },
-      },
-    ];
-  }
-  return [
-    {
-      id: 'orders',
-      tone: 'brand',
-      icon: ShoppingCart,
-      title: 'Every order, draft to delivered',
-      body: 'Who raised it, who still has to sign, and whether it has left the depot.',
-      cta: { label: 'Open orders', to: `${root}/orders` },
-    },
-    {
-      id: 'stock',
-      tone: 'ink',
-      icon: Warehouse,
-      title: 'Stock in every depot',
-      body: 'What is on hand right now, and what has fallen below its threshold.',
-      cta: { label: 'Open stock', to: `${root}/stock` },
-    },
-    {
-      id: 'distributors',
-      tone: 'amber',
-      icon: ClipboardCheck,
-      title: 'Your trading partners',
-      body: 'Tier, territory and credit for every distributor account.',
-      cta: { label: 'Open distributors', to: `${root}/distributors` },
-    },
-  ];
-}
-
 export default function PortalHome() {
   const { user } = useAuth();
   const { products, distributors, warehouses, settings } = useOrg();
@@ -261,7 +85,9 @@ export default function PortalHome() {
 
   const { data, loading, error, reload } = useAsync(
     async () => {
-      if (!user || user.role === 'owner') return null;
+      /* An HR officer has no orders, stock or invoices to summarise, and the
+         rules would refuse them the reads: their home is the shortcuts. */
+      if (!user || user.role === 'owner' || user.role === 'hr') return null;
       return withTimeout(getHomeSummary({ role: user.role, uid: user.id, distributorId: scope }));
     },
     [user?.id, role, scope],
@@ -315,6 +141,7 @@ export default function PortalHome() {
       key: 'sales',
       label: 'Sell-out this month',
       value: nairaShort(data.monthSales),
+      money: true,
       caption: 'What actually left the shelves, keyed so far this month.',
       icon: <TrendingUp size={17} />,
       tone: 'good',
@@ -337,6 +164,7 @@ export default function PortalHome() {
       key: 'money',
       label: data.overdue ? 'Overdue' : 'Outstanding',
       value: nairaShort(data.overdue || data.outstanding),
+      money: true,
       caption: data.overdue
         ? `Past its due date. ${nairaShort(data.outstanding)} outstanding in total.`
         : 'Issued and not yet paid. Nothing is past its due date.',
@@ -464,7 +292,7 @@ export default function PortalHome() {
     return items;
   }, [data, role, root]);
 
-  const tips = useMemo(() => (role ? tipsFor(role, root) : []), [role, root]);
+  const ads = useAppAds();
 
   /* The first visit plays the tour, once, after the screen has drawn. */
   const { startIfNew } = useTour();
@@ -530,11 +358,11 @@ export default function PortalHome() {
       )}
 
       <div className="hidden lg:col-span-12 lg:block">
-        <TipSlides tips={tips} bleed={false} slideClassName="lg:basis-[calc((100%_-_1.5rem)/3)]" />
+        <AdSlides ads={ads} bleed={false} slideClassName="lg:basis-[calc((100%_-_1.5rem)/3)]" />
       </div>
 
       {cards ? (
-        <TipSlides tips={tips} className="mt-auto lg:hidden" />
+        <AdSlides ads={ads} className="mt-auto lg:hidden" />
       ) : (
         <KpiBanners className="mt-auto lg:hidden" items={kpis} failed={failed} onRetry={reload} />
       )}

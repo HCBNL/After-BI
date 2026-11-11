@@ -52,6 +52,7 @@ import { SOCIAL_FIELDS } from '@/lib/social';
 import { VideoPicker } from './website/VideoPicker';
 import { CustomEditor } from './website/ProgrammeEditors';
 import { SiteImageSlots } from './website/SiteImageSlots';
+import { AdEditor } from './website/AdEditor';
 
 export default function WebsitePage() {
   const toast = useToast();
@@ -92,7 +93,7 @@ export default function WebsitePage() {
     <>
       <PageHeader
         title="Website"
-        description="Every picture on the public website, the demo videos, follow links and the Custom offer."
+        description="The ads in the app, every picture on the public website, the demo videos, follow links and the Custom offer."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -125,6 +126,14 @@ export default function WebsitePage() {
               These changes are only on this screen. Press Publish to put them on the landing page.
             </Alert>
           )}
+
+          <Card>
+            <CardHeader
+              title="Ads in the app"
+              subtitle="Slide on every customer's home screen. A tap opens the address in the browser."
+            />
+            <AdEditor ads={home?.appAds ?? []} onChange={(appAds) => seed({ appAds })} />
+          </Card>
 
           <Card>
             <CardHeader

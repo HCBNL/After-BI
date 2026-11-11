@@ -44,11 +44,11 @@ function Body() {
     <section className="site-wash">
       <div className={cn(container, 'grid gap-12 pb-20 pt-14 sm:pt-20 lg:grid-cols-2 lg:items-center lg:gap-16')}>
         <Reveal>
-          <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-navy-500">Book a demo</p>
-          <h1 className="mt-3 font-display text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.6rem]">
+          <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-navy-500">Book a demo</p>
+          <h1 className="mt-3 font-display text-[2.18rem] font-semibold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.02rem]">
             See AfterBI in action<span className="text-brand-700">.</span>
           </h1>
-          <p className="mt-5 max-w-xl text-[18px] leading-[1.65] text-navy-700/85">
+          <p className="mt-5 max-w-xl text-[16px] leading-[1.65] text-navy-700/85">
             A guided demo, configured around your products, partners and price lists.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -59,9 +59,9 @@ function Body() {
               WhatsApp us
             </a>
           </div>
-          <p className="mt-7 text-[15px] text-navy-500">
+          <p className="mt-7 text-[14px] text-navy-500">
             Prefer email?{' '}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-semibold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
               {SUPPORT_EMAIL}
             </a>
           </p>
@@ -78,13 +78,13 @@ function Body() {
                     width={420}
                     className="aspect-[16/10]"
                   />
-                  <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900/90 font-display text-[0.95rem] font-extrabold text-white ring-1 ring-white/25 backdrop-blur-sm">
+                  <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900/90 font-display text-[0.95rem] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm">
                     0{index + 1}
                   </span>
                 </div>
                 <div className="p-6">
-                  <h2 className="text-[18px] font-bold text-navy-900">{item.title}</h2>
-                  <p className="mt-1.5 text-[15px] leading-relaxed text-navy-600">{item.body}</p>
+                  <h2 className="text-[16px] font-semibold text-navy-900">{item.title}</h2>
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-navy-600">{item.body}</p>
                 </div>
               </li>
             ))}

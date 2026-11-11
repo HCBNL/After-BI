@@ -7,9 +7,9 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Banknote, CalendarCheck2, Gift, Hourglass, Info, MinusCircle, RotateCcw, TrendingUp, XCircle } from 'lucide-react';
+import { Banknote, CalendarCheck2, Gift, Hourglass, Info, MinusCircle, Palmtree, RotateCcw, TrendingUp, Undo2, XCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Alert, Badge, Button, Card, Field, Modal, Textarea, useToast } from '@/components/ui';
+import { Alert, Badge, Button, Card, Field, Input, Modal, Textarea, useToast } from '@/components/ui';
 import { Hint } from '@/components/ui/Hint';
 import { Loading } from '@/components/brand/Loader';
 import { useAuth } from '@/context/AuthContext';
@@ -29,7 +29,9 @@ import {
   type Reissue,
 } from '@/lib/hr';
 import { computePay, currentPeriod, cycleWords, iso, ordinal, prettyIso, workingDays } from '@/lib/payroll';
+import { ANNUAL_DAYS, applyLeave, eligibleFrom, leaveDays, leaveProblem, listMyLeave, pendingIn, usedIn, withdrawLeave, type Leave } from '@/lib/leave';
 import { AttendanceStrip, ClockCard, CountUp, PayCycle, PeriodNote } from './HrParts';
+import { MoneyFigure } from '@/components/MoneyToggle';
 
 export default function HrPage() {
   const { user } = useAuth();
@@ -38,6 +40,8 @@ export default function HrPage() {
   const today = iso(new Date());
   const [tick, setTick] = useState(0);
   const [asking, setAsking] = useState<string | null>(null);
+  const [applying, setApplying] = useState(false);
+  const year = Number(today.slice(0, 4));
 
   const base = useAsync(
     async () => {
@@ -63,6 +67,7 @@ export default function HrPage() {
   const adjustments = useAsync(() => (period ? listAdjustments(period.key, uid) : Promise.resolve([] as Adjustment[])), [uid, period?.key], {
     handleError: true,
   });
+  const leave = useAsync(() => (uid ? listMyLeave(uid) : Promise.resolve([] as Leave[])), [uid, tick], { handleError: true });
 
   if (base.error) {
     return (
@@ -131,9 +136,9 @@ export default function HrPage() {
             </Alert>
           ) : (
             <>
-              <p className="mt-3 font-display text-jumbo font-bold leading-none tracking-[-0.045em] text-primary tabular sm:text-jumbo">
+              <MoneyFigure className="mt-3 font-display text-jumbo font-bold leading-none tracking-[-0.045em] text-primary tabular">
                 <CountUp value={net} format={naira} />
-              </p>
+              </MoneyFigure>
               <p className="mt-1.5 text-label text-secondary">
                 {`of ${naira(me.salary)} monthly, ${pay!.worked} of ${pay!.eligible} working days`}</p>
               <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[var(--surface-sunken)]">
@@ -260,6 +265,31 @@ export default function HrPage() {
         )}
       </Card>
 
+      <LeaveCard
+        list={leave.data ?? []}
+        year={year}
+        today={today}
+        resumption={me?.resumption}
+        onApply={() => setApplying(true)}
+        onChanged={() => setTick((n) => n + 1)}
+      />
+
+      <LeaveDialog
+        open={applying}
+        uid={uid}
+        name={name}
+        today={today}
+        resumption={me?.resumption}
+        holidays={holidaySet}
+        saturday={saturday}
+        mine={leave.data ?? []}
+        onClose={() => setApplying(false)}
+        onSent={() => {
+          setApplying(false);
+          setTick((n) => n + 1);
+        }}
+      />
+
       <ReissueDialog
         date={asking}
         uid={uid}
@@ -357,5 +387,200 @@ function Line({ label, value, good, bad, strong }: { label: string; value: strin
         {value}
       </span>
     </p>
+  );
+}
+
+/* leave */
+
+/**
+ * Annual leave on My pay, beside the reissue requests it works like.
+ *
+ * Says plainly where the person stands: how many of the ten days are left,
+ * or, before their first anniversary, the date they can start taking them.
+ * A leave request is a reissue request for days not yet reached.
+ */
+function LeaveCard({
+  list,
+  year,
+  today,
+  resumption,
+  onApply,
+  onChanged,
+}: {
+  list: Leave[];
+  year: number;
+  today: string;
+  resumption?: string;
+  onApply: () => void;
+  onChanged: () => void;
+}) {
+  const toast = useToast();
+  const used = usedIn(list, year);
+  const waiting = pendingIn(list, year);
+  const left = Math.max(0, ANNUAL_DAYS - used - waiting);
+  const anniversary = eligibleFrom(resumption);
+  const notYet = !anniversary || anniversary > today;
+  /* This year's and anything ahead; older years are history, not a to-do. */
+  const recent = list.filter((l) => l.year >= year);
+
+  const withdraw = async (l: Leave) => {
+    try {
+      await withdrawLeave(l.id);
+      toast.success('Request withdrawn');
+      onChanged();
+    } catch (err) {
+      toast.error('Could not withdraw it', err instanceof Error ? err.message : 'Try again.');
+    }
+  };
+
+  return (
+    <Card>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="flex items-center gap-1.5 text-lead font-semibold text-primary">
+            <Palmtree size={17} aria-hidden /> Annual leave
+          </p>
+          <p className="mt-1 text-label text-secondary">
+            {!anniversary
+              ? 'HR has not set your resumption date yet, so your leave starts once they do.'
+              : notYet
+                ? `Annual leave starts after a full year with the company. You can take it from ${prettyIso(anniversary, { day: 'numeric', month: 'long', year: 'numeric' })}.`
+                : `${left} of ${ANNUAL_DAYS} working days left for ${year}.`}
+          </p>
+        </div>
+        <Button icon={<Palmtree size={15} />} onClick={onApply} disabled={notYet || left === 0}>
+          Apply for leave
+        </Button>
+      </div>
+
+      {!notYet && (
+        <div className="mt-4 flex h-2.5 overflow-hidden rounded-full bg-[var(--surface-sunken)]" aria-hidden>
+          <div className="h-full bg-brand-600" style={{ width: `${(used / ANNUAL_DAYS) * 100}%` }} />
+          <div className="h-full bg-brand-600/40" style={{ width: `${(waiting / ANNUAL_DAYS) * 100}%` }} />
+        </div>
+      )}
+
+      {recent.length > 0 && (
+        <ul className="mt-4 space-y-2 border-t border-hairline pt-4">
+          {recent.map((l) => (
+            <li key={l.id} className="flex items-start justify-between gap-3 rounded-2xl surface-sunken px-3.5 py-2.5">
+              <div className="min-w-0">
+                <p className="text-body font-semibold text-primary">
+                  {l.from === l.to ? prettyIso(l.from, { weekday: 'short', day: 'numeric', month: 'short' }) : `${prettyIso(l.from)} to ${prettyIso(l.to)}`}
+                  <span className="ml-1.5 font-normal text-muted">{l.days === 1 ? '1 day' : `${l.days} days`}</span>
+                </p>
+                {l.reason && <p className="mt-0.5 text-label text-secondary">{l.reason}</p>}
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-1.5">
+                <Badge
+                  tone={l.status === 'approved' ? 'good' : l.status === 'declined' ? 'critical' : 'warning'}
+                  icon={l.status === 'approved' ? <Palmtree size={11} /> : l.status === 'declined' ? <XCircle size={11} /> : <Hourglass size={11} />}
+                >
+                  {l.status === 'approved' ? 'Approved' : l.status === 'declined' ? 'Declined' : 'Waiting'}
+                </Badge>
+                {l.status === 'pending' && (
+                  <button type="button" onClick={() => void withdraw(l)} className="inline-flex items-center gap-1 text-caption font-semibold text-muted hover:text-primary">
+                    <Undo2 size={12} aria-hidden /> Withdraw
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+function LeaveDialog({
+  open,
+  uid,
+  name,
+  today,
+  resumption,
+  holidays,
+  saturday,
+  mine,
+  onClose,
+  onSent,
+}: {
+  open: boolean;
+  uid: string;
+  name: string;
+  today: string;
+  resumption?: string;
+  holidays: Set<string>;
+  saturday: boolean;
+  mine: Leave[];
+  onClose: () => void;
+  onSent: () => void;
+}) {
+  const toast = useToast();
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  if (!open) return null;
+
+  const dates = leaveDays(from, to || from, holidays, saturday);
+  const year = Number((from || today).slice(0, 4));
+  const problem = from
+    ? leaveProblem({ from, to: to || from, days: dates.length, today, resumption, used: usedIn(mine, year), pending: pendingIn(mine, year) })
+    : null;
+
+  const send = async () => {
+    setBusy(true);
+    try {
+      await applyLeave(uid, name, from, to || from, dates.length, reason);
+      toast.success('Leave requested', 'HR will review it. Approved days are paid as normal.');
+      setFrom('');
+      setTo('');
+      setReason('');
+      onSent();
+    } catch (err) {
+      toast.error('Could not send it', err instanceof Error ? err.message : 'Try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      size="sm"
+      title="Apply for leave"
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button icon={<Palmtree size={15} />} loading={busy} disabled={!from || Boolean(problem)} onClick={() => void send()}>
+            Send request
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="First day">
+            <Input type="date" value={from} min={today} onChange={(e) => setFrom(e.target.value)} />
+          </Field>
+          <Field label="Last day">
+            <Input type="date" value={to} min={from || today} onChange={(e) => setTo(e.target.value)} />
+          </Field>
+        </div>
+        {from && (
+          <p className="rounded-2xl surface-sunken px-3.5 py-2.5 text-label text-secondary">
+            {dates.length === 1 ? 'This takes 1 working day' : `This takes ${dates.length} working days`}
+            {', weekends and holidays not counted.'}
+          </p>
+        )}
+        {problem && <Alert tone="warning">{problem}</Alert>}
+        <Field label="Comment (optional)">
+          <Textarea rows={3} maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Family visit." />
+        </Field>
+      </div>
+    </Modal>
   );
 }

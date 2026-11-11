@@ -50,14 +50,14 @@ export default function LegalPage({ kind }: { kind: Kind }) {
       <Seo title={page.title} description={page.intro} path={`/${kind}`} />
       <section className="site-wash">
         <div className={cn(container, 'max-w-3xl pb-20 pt-14 sm:pt-20')}>
-          <h1 className="font-display text-[2.4rem] font-extrabold tracking-[-0.04em] text-navy-900 sm:text-[3rem]">{page.title}</h1>
+          <h1 className="font-display text-[2.02rem] font-semibold tracking-[-0.04em] text-navy-900 sm:text-[2.52rem]">{page.title}</h1>
           <p className="mt-2 text-[14px] text-navy-500">{`Last updated ${UPDATED}`}</p>
-          <p className="mt-6 text-[17px] leading-relaxed text-navy-700">{page.intro}</p>
+          <p className="mt-6 text-[15.5px] leading-relaxed text-navy-700">{page.intro}</p>
           <div className="mt-10 space-y-8">
             {page.sections.map((section) => (
               <section key={section.h}>
-                <h2 className="text-[19px] font-bold text-navy-900">{section.h}</h2>
-                <p className="mt-2 text-[16px] leading-relaxed text-navy-700">{section.p}</p>
+                <h2 className="text-[17px] font-semibold text-navy-900">{section.h}</h2>
+                <p className="mt-2 text-[15px] leading-relaxed text-navy-700">{section.p}</p>
               </section>
             ))}
           </div>

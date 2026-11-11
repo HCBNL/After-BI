@@ -5,12 +5,13 @@
  */
 import { useEffect, useMemo } from 'react';
 import { useTour } from '@/context/TourContext';
-import { AlertCircle, Building2, Plus, TrendingUp, Wallet } from 'lucide-react';
+import { AlertCircle, Building2, TrendingUp, Wallet } from 'lucide-react';
 import { Loading } from '@/components/brand/Loader';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
 import { HomeHero } from '@/components/home/HomeHero';
 import type { Kpi } from '@/components/home/HomeSlides';
-import { KpiBannerGrid, KpiBanners, TipSlides, type Tip } from '@/components/home/HomeSlides';
+import { AdSlides, KpiBannerGrid, KpiBanners } from '@/components/home/HomeSlides';
+import { useAppAds } from '@/hooks/useAppAds';
 import { QuickList } from '@/components/home/QuickList';
 import { TodoCard, type TodoItem } from '@/components/home/TodoCard';
 import { useShell } from '@/components/layout/ShellContext';
@@ -24,37 +25,11 @@ import { useBootDone } from '@/lib/boot';
 
 const ROOT = PORTAL_ROOT.owner;
 
-const TIPS: Tip[] = [
-  {
-    id: 'new-org',
-    tone: 'brand',
-    icon: Plus,
-    title: 'Add an organisation and its first admin',
-    body: 'One form. You get the sign-in details to hand over; nothing is emailed.',
-    cta: { label: 'New organisation', to: `${ROOT}/organisations?new=1` },
-  },
-  {
-    id: 'pricing',
-    tone: 'ink',
-    icon: Wallet,
-    title: 'Set what each organisation pays',
-    body: 'The monthly figure on this screen is the sum of what you typed on each one.',
-    cta: { label: 'Open pricing', to: `${ROOT}/pricing` },
-  },
-  {
-    id: 'suspend',
-    tone: 'amber',
-    icon: AlertCircle,
-    title: 'Suspending closes the portal',
-    body: 'Everyone in a suspended organisation is signed out. Their data stays exactly as it was.',
-    cta: { label: 'Open organisations', to: `${ROOT}/organisations` },
-  },
-];
-
 export default function PlatformHome() {
   const { user } = useAuth();
   const [layout] = useHomeLayout(user?.id);
   const { openMenu } = useShell();
+  const ads = useAppAds();
   const { data, loading, error, reload } = useAsync(() => listTenants(), [], { handleError: true });
   useBootDone(data !== undefined || Boolean(error));
 
@@ -84,6 +59,7 @@ export default function PlatformHome() {
         key: 'revenue',
         label: 'Monthly revenue',
         value: nairaShort(summary.mrr),
+        money: true,
         caption: 'Summed from what each active organisation pays.',
         icon: <Wallet size={17} />,
         tone: 'good',
@@ -198,11 +174,11 @@ export default function PlatformHome() {
       </div>
 
       <div className="hidden lg:col-span-12 lg:block">
-        <TipSlides tips={TIPS} bleed={false} slideClassName="lg:basis-[calc((100%_-_1.5rem)/3)]" />
+        <AdSlides ads={ads} bleed={false} slideClassName="lg:basis-[calc((100%_-_1.5rem)/3)]" />
       </div>
 
       {cards ? (
-        <TipSlides tips={TIPS} className="mt-auto lg:hidden" />
+        <AdSlides ads={ads} className="mt-auto lg:hidden" />
       ) : (
         <KpiBanners className="mt-auto lg:hidden" items={kpis} failed={failed} onRetry={reload} />
       )}

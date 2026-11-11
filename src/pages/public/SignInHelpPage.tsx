@@ -47,11 +47,11 @@ export default function SignInHelpPage() {
       <PublicShell closing={false}>
         <section className="site-wash pb-20 pt-14 sm:pt-20">
           <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
-            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-navy-500">Support</p>
-            <h1 className="mt-3 font-display text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[3.4rem]">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-navy-500">Support</p>
+            <h1 className="mt-3 font-display text-[2.18rem] font-semibold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[2.86rem]">
               Can’t get in?
             </h1>
-            <p className="mt-5 max-w-xl text-[18px] leading-[1.65] text-navy-700/85">Four things go wrong, in the order they are likely.</p>
+            <p className="mt-5 max-w-xl text-[16px] leading-[1.65] text-navy-700/85">Four things go wrong, in the order they are likely.</p>
 
             <div className="mt-10 rounded-2xl bg-white px-6 ring-1 ring-navy-900/10 sm:px-8">
               <Accordion items={TROUBLE} className="border-y-0" />
@@ -59,8 +59,8 @@ export default function SignInHelpPage() {
 
             <div className="mt-12 grid overflow-hidden rounded-2xl bg-navy-900 text-white sm:grid-cols-[1.3fr_1fr]">
              <div className="p-7 sm:p-10">
-              <h2 className="font-display text-[1.5rem] font-extrabold tracking-[-0.03em]">None of those?</h2>
-              <p className="mt-2 text-[16px] leading-relaxed text-white/70">
+              <h2 className="font-display text-[1.38rem] font-semibold tracking-[-0.03em]">None of those?</h2>
+              <p className="mt-2 text-[15px] leading-relaxed text-white/70">
                 Tell us the address you are trying and what the screen says. Nobody from AfterBI will ever ask for your password.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">

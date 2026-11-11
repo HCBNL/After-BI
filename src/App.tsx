@@ -123,8 +123,7 @@ const TasksPage = lazy(() => import('@/pages/shared/TasksPage'));
 const HrPage = lazy(() => import('@/pages/hr/HrPage'));
 const HrManage = lazy(() => import('@/pages/hr/HrManage'));
 const CompanyInfo = lazy(() => import('@/pages/team/CompanyInfo'));
-const OrgIdCard = lazy(() => import('@/pages/team/OrgIdCard'));
-const OrgCard = lazy(() => import('@/pages/team/OrgCard'));
+const MyCards = lazy(() => import('@/pages/team/MyCards'));
 
 /** The right shape of waiting for the address being opened. */
 const PUBLIC_PREFIXES = ['/features', '/product', '/solutions', '/pricing', '/demo', '/help', '/card', '/verify', '/terms', '/privacy'];
@@ -182,8 +181,8 @@ function AdminOnly({ children }: { children: React.ReactNode }) {
 
 const OFFICE: Role[] = ['super_admin', 'admin', 'staff'];
 const OPS: Role[] = ['warehouse_manager', 'operations_manager'];
-/** Same as `HR_MANAGERS` in lib/hr.ts and lib/tiles.ts. */
-const HR_MANAGERS: Role[] = ['super_admin', 'admin', 'finance_manager'];
+/** Same as `HR_OFFICERS` in lib/hr.ts and lib/tiles.ts, and `hrOfficer()` in the rules. */
+const HR_OFFICERS: Role[] = ['super_admin', 'admin', 'finance_manager', 'hr'];
 
 /**
  * The Team screens every portal inside an organisation shares: My pay, the
@@ -194,12 +193,15 @@ function teamRoutes(withHr: boolean) {
   return [
     ...(withHr
       ? [
-          <Route key="hr" path="hr" element={<RequireRole roles={HR_MANAGERS}><HrManage /></RequireRole>} />,
+          <Route key="hr" path="hr" element={<RequireRole roles={HR_OFFICERS}><HrManage /></RequireRole>} />,
         ]
       : []),
     <Route key="my-pay" path="my-pay" element={<HrPage />} />,
-    <Route key="id-card" path="id-card" element={<OrgIdCard />} />,
-    <Route key="card" path="card" element={<OrgCard />} />,
+    /* The ID card and business card, one screen. The two old addresses open
+       the matching tab, because both are in bookmarks and shared links. */
+    <Route key="cards" path="cards" element={<MyCards />} />,
+    <Route key="id-card" path="id-card" element={<Navigate to="../cards?tab=id" replace />} />,
+    <Route key="card" path="card" element={<Navigate to="../cards?tab=business" replace />} />,
     <Route key="company" path="company" element={<CompanyInfo />} />,
   ];
 }
@@ -540,6 +542,32 @@ export default function App() {
             <Route path="targets" element={<TargetsPage />} />
             <Route path="catalogue" element={<CataloguePage />} />
             <Route path="distributors" element={<DistributorsPage />} />
+            {teamRoutes(true)}
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="reminders" element={<RemindersPage />} />
+            <Route path="tasks" element={<TasksPage />} />
+            <Route path="guide" element={<GuidePage />} />
+            <Route path="*" element={<NotFoundPage inPortal />} />
+          </Route>
+
+          {/*
+            people: the HR officer.
+
+            Their own portal rather than a seat in the office one, because the
+            office portal routes orders, stock and invoices for everybody in it
+            and an HR officer should not land on a screen whose every read the
+            rules will refuse. Home, HR, and the team screens.
+          */}
+          <Route
+            path="/portal/people"
+            element={
+              <RequireRole roles={['hr']}>
+                <AppShell />
+              </RequireRole>
+            }
+          >
+            <Route index element={<PortalHome />} />
+            <Route path="all" element={<AllActions />} />
             {teamRoutes(true)}
             <Route path="profile" element={<ProfilePage />} />
             <Route path="reminders" element={<RemindersPage />} />
