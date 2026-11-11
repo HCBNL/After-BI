@@ -86,7 +86,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     Promise.all([
       getOrgSettings(),
       listProducts(),
-      scope ? listDistributorsById(scope) : listDistributors(),
+      /* An HR officer works on people, not accounts, and the rules refuse them the list. */
+      user.role === 'hr' ? Promise.resolve([]) : scope ? listDistributorsById(scope) : listDistributors(),
       listWarehouses(),
       /* A failed read of the plan must not stop the organisation opening: no plan, nothing locked. */
       getTenant().catch(() => null),

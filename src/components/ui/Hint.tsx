@@ -30,11 +30,32 @@
  * Keeping it mounted and hidden with CSS would preserve the card's height, which
  * is exactly what we do not want: the whole point is that a closed card is the
  * same compact size as every other closed card. It unmounts.
+ *
+ * WHY THE PANEL IS FIXED TO THE VIEWPORT RATHER THAN THE BUTTON
+ *
+ * It used to be `absolute` beside the (i), which is fine in the middle of a
+ * form and wrong everywhere else. A Hint at the end of a page header sits
+ * within a couple of hundred pixels of the right edge, so a panel opening
+ * rightward from it ran off the screen and all anybody saw was a sliver of
+ * text with no way to scroll to the rest. The `align="right"` prop was the
+ * patch for that, which only works if whoever adds the next Hint remembers to
+ * think about it, and it cannot help at all when an ancestor clips overflow,
+ * as the page header's banner does.
+ *
+ * Measuring and fixing to the viewport removes the judgement call: the panel
+ * opens under the button, is pulled back inside whichever edge it would have
+ * crossed, and flips above the button when there is more room up there. It
+ * cannot be clipped by an ancestor because it is not inside one. `align` is
+ * still accepted so no call site breaks, but it is only a starting preference
+ * now, not a promise.
  */
 
-import { useId, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Info, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
+
+/** Clearance from the window edge, so the panel never looks wedged in. */
+const MARGIN = 10;
 
 export function Hint({
   children,
@@ -51,10 +72,56 @@ export function Hint({
 }) {
   const [open, setOpen] = useState(false);
   const id = useId();
+  const btn = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLSpanElement>(null);
+  const [at, setAt] = useState<{ top: number; left: number } | null>(null);
+
+  /**
+   * Put the panel where it actually fits.
+   *
+   * Below the button by default, flipped above when the space below is too
+   * tight and there is more of it above, and pulled back inside whichever
+   * side edge it would have crossed. Measured from the rendered panel rather
+   * than a guess at its width, because the text decides how wide it is.
+   */
+  const place = useCallback(() => {
+    const b = btn.current?.getBoundingClientRect();
+    const p = panel.current?.getBoundingClientRect();
+    if (!b || !p) return;
+
+    const below = window.innerHeight - b.bottom - MARGIN;
+    const flip = p.height > below && b.top - MARGIN > below;
+
+    const preferred = align === 'right' ? b.right - p.width : b.left;
+    const left = Math.min(Math.max(MARGIN, preferred), window.innerWidth - p.width - MARGIN);
+    const top = flip ? b.top - p.height - 6 : b.bottom + 6;
+    setAt({ top, left });
+  }, [align]);
+
+  /* Measure once the panel exists, before the browser paints it. */
+  useLayoutEffect(() => {
+    if (open) place();
+  }, [open, place]);
+
+  /* Scrolling or resizing moves the button, so the panel follows or closes. */
+  useEffect(() => {
+    if (!open) return;
+    const onScroll = () => place();
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onScroll);
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onScroll);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, place]);
 
   return (
     <span className={cn('inline-flex', className)}>
       <button
+        ref={btn}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -73,34 +140,37 @@ export function Hint({
 
       {open && (
         /*
-         * Absolutely positioned, so opening it does not push the rest of the
-         * card down and shunt the button out from under the finger that just
-         * pressed it. `max-w` rather than a fixed width: on a phone it fills the
-         * column, on a desktop it stays a readable measure.
+         * Fixed, so opening it neither pushes the card's contents down nor
+         * lets an ancestor with hidden overflow cut it off. `max-w` rather
+         * than a fixed width: on a phone it fills the column, on a desktop it
+         * stays a readable measure.
+         *
+         * Hidden until placed. The first paint happens at 0,0 so the panel
+         * can be measured, and showing that frame would read as the tooltip
+         * jumping in from the corner of the screen.
          */
-        <span className="relative">
-          <span
-            id={id}
-            role="note"
-            className={cn(
-              'absolute top-6 z-20 block w-max max-w-[min(19rem,72vw)] rounded-xl border border-hairline',
-              /* `text-left` explicitly: a Hint inside a centred block (an empty
-                 state) would otherwise inherit `text-center` and set its
-                 paragraph ragged on both edges, which is hard to read. */
-              'surface-card p-3 pr-7 text-left text-caption leading-relaxed text-secondary shadow-card',
-              align === 'right' ? 'right-0' : 'left-0',
-            )}
+        <span
+          ref={panel}
+          id={id}
+          role="note"
+          style={{ top: at?.top ?? 0, left: at?.left ?? 0, visibility: at ? 'visible' : 'hidden' }}
+          className={cn(
+            'fixed z-50 block w-max max-w-[min(19rem,calc(100vw-1.25rem))] rounded-xl border border-hairline',
+            /* `text-left` explicitly: a Hint inside a centred block (an empty
+               state) would otherwise inherit `text-center` and set its
+               paragraph ragged on both edges, which is hard to read. */
+            'surface-card p-3 pr-7 text-left text-caption leading-relaxed text-secondary shadow-card',
+          )}
+        >
+          {children}
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Close"
+            className="absolute right-1.5 top-1.5 rounded-md p-1 text-muted transition-colors hover:bg-[var(--surface-sunken)]"
           >
-            {children}
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close"
-              className="absolute right-1.5 top-1.5 rounded-md p-1 text-muted transition-colors hover:bg-[var(--surface-sunken)]"
-            >
-              <X size={12} />
-            </button>
-          </span>
+            <X size={12} />
+          </button>
         </span>
       )}
     </span>

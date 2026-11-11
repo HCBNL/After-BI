@@ -225,11 +225,11 @@ function ClosingBand() {
         <div className="relative isolate grid overflow-hidden rounded-[2rem] bg-navy-900 text-white lg:grid-cols-[1.15fr_1fr]">
           <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 -z-10 h-80 w-80 rounded-full bg-navy-500/40 blur-3xl" />
           <div className="p-8 sm:p-12 lg:p-14">
-            <p className="text-[13px] font-bold uppercase tracking-[0.16em] text-navy-200">Book a demo</p>
-            <h2 className="mt-4 font-display text-[2rem] font-extrabold leading-[1.08] tracking-[-0.035em] sm:text-[2.8rem]">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-navy-200">Book a demo</p>
+            <h2 className="mt-4 font-display text-[1.68rem] font-semibold leading-[1.08] tracking-[-0.035em] sm:text-[2.35rem]">
               Ready to see AfterBI in action?
             </h2>
-            <p className="mt-4 max-w-md text-[17px] leading-relaxed text-white/80">
+            <p className="mt-4 max-w-md text-[15.5px] leading-relaxed text-white/80">
               A guided demo, configured around your products, partners and price lists.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">

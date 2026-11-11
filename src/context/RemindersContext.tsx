@@ -21,6 +21,7 @@ import { buildReminders, tally, thresholdsFrom, type Reminder } from '@/lib/remi
 import { buildBrief, type Brief } from '@/lib/brief';
 import { addTask, listTasks, removeTask, setTaskDone, sortTasks, updateTask, type Task } from '@/lib/tasks';
 import type { Invoice, Order } from '@/types';
+import { useMoneyHidden } from '@/lib/privacy';
 
 interface RemindersValue {
   reminders: Reminder[];
@@ -110,6 +111,11 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
   const { data, loading, reload } = useAsync(
     async () => {
       if (!live || !user || !role) return null;
+      /* An HR officer has no orders or invoices to be reminded of; only their own tasks. */
+      if (role === 'hr') {
+        setCheckedAt(new Date());
+        return { orders: [], invoices: [], stock: [], returns: [], sales: [] };
+      }
       const ops = isAdmin(role) || ['staff', 'operations_manager', 'warehouse_manager'].includes(role);
       const [orders, invoices, stock, returns, sales] = await Promise.all([
         listOrders({ distributorId: scope, max: 300 }),
@@ -219,6 +225,7 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
     };
   }, [live, checkedAt]);
 
+  const hidden = useMoneyHidden();
   const all = useMemo(() => {
     if (!data || !user || !role) return [];
     return buildReminders({
@@ -234,7 +241,8 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
       distributors: org?.distributors ?? [],
       tasks,
     });
-  }, [data, user, role, org?.settings?.reminders, org?.distributors, tasks]);
+    /* `hidden` is read by the money formatter inside, so flipping it has to rebuild the wording. */
+  }, [data, user, role, org?.settings?.reminders, org?.distributors, tasks, hidden]);
 
   const today = todayISO();
   const reminders = useMemo(() => all.filter((r) => snoozed[r.id] !== today), [all, snoozed, today]);

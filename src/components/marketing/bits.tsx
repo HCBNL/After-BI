@@ -122,10 +122,10 @@ export function Headline({
   return (
     <Tag
       className={cn(
-        'font-display font-extrabold tracking-[-0.04em] text-white',
-        size === 'sm' && 'text-[1.3rem] leading-[1.15] sm:text-[1.6rem]',
-        size === 'md' && 'text-[1.9rem] leading-[1.08] sm:text-[2.5rem]',
-        size === 'lg' && 'text-[2.2rem] leading-[1.03] tracking-[-0.045em] sm:text-[3.4rem]',
+        'font-display font-semibold tracking-[-0.04em] text-white',
+        size === 'sm' && 'text-[1.2rem] leading-[1.15] sm:text-[1.34rem]',
+        size === 'md' && 'text-[1.6rem] leading-[1.08] sm:text-[2.1rem]',
+        size === 'lg' && 'text-[1.85rem] leading-[1.03] tracking-[-0.045em] sm:text-[2.86rem]',
         align === 'center' && 'text-center',
         className,
       )}
@@ -198,7 +198,7 @@ export function Row({
     <section id={id} className="scroll-mt-24 py-6 sm:py-8">
       <div className={cn(container, 'flex items-center justify-between gap-4')}>
         <div className="flex min-w-0 items-baseline gap-4">
-          <h2 className="font-display text-[1.3rem] font-bold tracking-[-0.025em] text-primary sm:text-[1.6rem]">
+          <h2 className="font-display text-[1.2rem] font-semibold tracking-[-0.025em] text-primary sm:text-[1.34rem]">
             {title}
           </h2>
           {action}
@@ -277,7 +277,7 @@ export function Questions({ items, className }: { items: { q: string; a: string 
               aria-controls={panel}
               className="flex w-full items-center justify-between gap-6 px-5 py-5 text-left transition-colors hover:bg-night-3 sm:px-7 sm:py-6"
             >
-              <span className="text-[17px] font-semibold leading-snug text-white sm:text-[21px]">{item.q}</span>
+              <span className="text-[15.5px] font-semibold leading-snug text-white sm:text-[18px]">{item.q}</span>
               <span
                 aria-hidden
                 className={cn('relative block h-6 w-6 shrink-0 transition-transform duration-300', expanded && 'rotate-45')}
@@ -293,7 +293,7 @@ export function Questions({ items, className }: { items: { q: string; a: string 
               style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
             >
               <div className="overflow-hidden">
-                <p className="border-t border-night px-5 py-5 text-[15.5px] leading-[1.7] text-white/78 sm:px-7 sm:py-6 sm:text-[17.5px]">
+                <p className="border-t border-night px-5 py-5 text-[14.5px] leading-[1.7] text-white/78 sm:px-7 sm:py-6 sm:text-[16px]">
                   {item.a}
                 </p>
               </div>

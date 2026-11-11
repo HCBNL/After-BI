@@ -1,27 +1,32 @@
 /**
- * The cards that slide: the summary numbers in two dresses, and the tips.
+ * The cards that slide: the summary numbers in two dresses, and AfterBI's ads.
  *
  *   • `KpiBanners`: the three numbers as coloured banners at the foot of the
  *     Tiles screen, sitting on the bottom bar the way a banking app's
  *     "Featured" row does.
  *   • `KpiGlass`: the same numbers as frosted cards on the panel at the top
  *     of the Cards screen, where a bank puts the balance.
- *   • `TipSlides`: short pointers into the app, per role.
+ *   • `AdSlides`: AfterBI's own ads, published by the platform owner.
  *
- * All of them take the same `Kpi` objects, so a number can never say one thing
+ * The number cards take the same `Kpi` objects, so a number can never say one thing
  * on a phone and another on a laptop.
  */
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, type LucideIcon } from 'lucide-react';
+import { ChevronRight, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Slider } from './Slider';
 import { BrandBars } from './HomeArt';
+import { MoneyFigure } from '@/components/MoneyToggle';
+import { imageUrl } from '@/lib/cloudinary';
+import type { AppAd } from '@/lib/siteDoc';
 
 export interface Kpi {
   key: string;
   label: string;
   value: string;
+  /** A naira figure: tapping it hides or shows every balance. */
+  money?: boolean;
   caption: string;
   icon: ReactNode;
   progress?: number;
@@ -36,13 +41,6 @@ const GROUNDS = [
   'radial-gradient(120% 90% at 100% 0%, rgba(16, 185, 129, 0.34), transparent 55%), linear-gradient(140deg, #2b313b 0%, #14171c 60%, #0b0d10 100%)',
   'linear-gradient(140deg, #b45309 0%, #92400e 55%, #5c2406 100%)',
 ];
-
-const TIP_GROUNDS = {
-  brand: GROUNDS[0],
-  ink: GROUNDS[1],
-  amber: GROUNDS[2],
-  blue: 'linear-gradient(140deg, #1d63c7 0%, #174a93 52%, #0c2a57 100%)',
-} as const;
 
 /* The track runs to the screen edge so the next card can peek past it. */
 const BLEED = '-mx-3 px-3 scroll-px-3 sm:-mx-5 sm:px-5 sm:scroll-px-5';
@@ -136,7 +134,7 @@ function BannerCard({ item, index }: { item: Kpi; index: number }) {
           </span>
         )}
       </div>
-      <p className="tabular mt-1 font-display text-display font-bold leading-none tracking-[-0.02em]">{item.value}</p>
+      <Figure item={item} className="tabular mt-1 font-display text-display font-bold leading-none tracking-[-0.02em]" />
       <p className="mt-1.5 line-clamp-2 text-label leading-snug text-white/85">{item.caption}</p>
       <Progress value={item.progress} track="bg-white/20" fill="bg-white" />
       <Actions item={item} primary="bg-white text-[#14171c]" secondary="bg-white/15 text-white" />
@@ -173,6 +171,16 @@ export function KpiBanners({
   );
 }
 
+/* A KPI's number; a money one is a button that hides and shows balances. */
+function Figure({ item, className }: { item: Kpi; className: string }) {
+  if (!item.money) return <p className={className}>{item.value}</p>;
+  return (
+    <MoneyFigure className={className}>
+      <span>{item.value}</span>
+    </MoneyFigure>
+  );
+}
+
 /* glass, Cards */
 
 function GlassCard({ item }: { item: Kpi }) {
@@ -187,7 +195,7 @@ function GlassCard({ item }: { item: Kpi }) {
         )}
         <p className="min-w-0 flex-1 truncate text-body font-semibold text-white/85">{item.label}</p>
       </div>
-      <p className="tabular mt-3 font-display text-jumbo font-bold leading-none tracking-[-0.03em]">{item.value}</p>
+      <Figure item={item} className="tabular mt-3 font-display text-jumbo font-bold leading-none tracking-[-0.03em]" />
       <p className="mt-2 line-clamp-2 text-label leading-snug text-white/70">{item.caption}</p>
       <Progress value={item.progress} track="bg-white/15" fill="bg-white" />
       <Actions item={item} primary="bg-white text-[color:var(--hero)]" secondary="bg-white/[0.12] text-white" />
@@ -242,72 +250,72 @@ export function KpiBannerGrid({ items, failed = false, onRetry }: { items: Kpi[]
   );
 }
 
-/* tips */
+/* AfterBI's own ads, uploaded by the platform owner (Platform, Website) */
 
-export interface Tip {
-  id: string;
-  title: string;
-  body: string;
-  icon: LucideIcon;
-  tone: keyof typeof TIP_GROUNDS;
-  cta?: { label: string; to: string };
-}
-
-function TipCard({ tip }: { tip: Tip }) {
-  const Icon = tip.icon;
-  return (
-    <article
-      title={tip.body}
-      className="relative isolate flex min-h-[128px] w-full gap-3 overflow-hidden rounded-[22px] p-4 text-white shadow-card"
-      style={{ backgroundImage: TIP_GROUNDS[tip.tone] }}
-    >
-      <BrandBars className="pointer-events-none absolute -bottom-12 -right-10 -z-10 h-44 w-44 text-white/[0.07]" />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <h3 className="font-display text-title font-bold leading-[1.22] tracking-[-0.01em]">{tip.title}</h3>
-        {tip.cta && (
-          <div className="mt-auto pt-3">
-            <Link
-              to={tip.cta.to}
-              className="inline-flex h-8 items-center gap-0.5 rounded-full bg-white px-3.5 text-label font-semibold text-[#14171c] transition-opacity hover:opacity-90"
-            >
-              {tip.cta.label}
-              <ChevronRight size={14} aria-hidden />
-            </Link>
-          </div>
-        )}
-      </div>
-      <span
-        className="mt-0.5 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-inset ring-white/15"
-        aria-hidden
-      >
-        <Icon size={26} strokeWidth={1.8} />
+/** A picture with optional words; a tap opens the link in the browser. */
+function AdCard({ ad }: { ad: AppAd }) {
+  const words = Boolean(ad.title || ad.body);
+  const body = (
+    <>
+      <img
+        src={imageUrl(ad.image, { width: 1200 })}
+        alt={ad.title || 'AfterBI'}
+        loading="lazy"
+        decoding="async"
+        className="absolute inset-0 -z-20 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+      />
+      {words && <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />}
+      <span className="absolute left-3 top-3 rounded-full bg-black/45 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/90 backdrop-blur-sm">
+        AfterBI
       </span>
-    </article>
+      {(words || ad.url) && (
+        <span className="mt-auto flex items-end justify-between gap-3">
+          <span className="min-w-0">
+            {ad.title && <span className="block font-display text-title font-bold leading-tight">{ad.title}</span>}
+            {ad.body && <span className="mt-0.5 line-clamp-2 block text-label text-white/80">{ad.body}</span>}
+          </span>
+          {ad.url && (
+            <span className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full bg-white px-3.5 text-label font-semibold text-[#14171c]">
+              {ad.cta || 'Learn more'}
+              <ExternalLink size={13} aria-hidden />
+            </span>
+          )}
+        </span>
+      )}
+    </>
+  );
+  const frame =
+    'group relative isolate flex aspect-[16/7] min-h-[140px] w-full flex-col overflow-hidden rounded-[22px] bg-[var(--surface-sunken)] p-4 text-white shadow-card';
+  if (!ad.url) return <article className={frame}>{body}</article>;
+  return (
+    <a href={ad.url} target="_blank" rel="noopener noreferrer" className={frame}>
+      {body}
+    </a>
   );
 }
 
-export function TipSlides({
-  tips,
+export function AdSlides({
+  ads,
   className,
   bleed = true,
   slideClassName,
 }: {
-  tips: Tip[];
+  ads: AppAd[];
   className?: string;
   bleed?: boolean;
   slideClassName?: string;
 }) {
-  if (!tips.length) return null;
+  if (!ads.length) return null;
   return (
     <Slider
-      label="Tips"
+      label="From AfterBI"
       autoplay={6500}
       className={className}
       trackClassName={bleed ? BLEED : undefined}
       slideClassName={slideClassName}
     >
-      {tips.map((tip) => (
-        <TipCard key={tip.id} tip={tip} />
+      {ads.map((ad) => (
+        <AdCard key={ad.id} ad={ad} />
       ))}
     </Slider>
   );

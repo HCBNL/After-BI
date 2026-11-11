@@ -78,7 +78,7 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className={cn('relative scroll-mt-28 py-16 sm:py-24', TONES[tone], className)}>
+    <section id={id} className={cn('relative scroll-mt-28 py-20 sm:py-28', TONES[tone], className)}>
       <div className={cn(container, inner)}>{children}</div>
     </section>
   );
@@ -107,8 +107,8 @@ export function SectionHead({
       {kicker && <p className={onDark ? `${eyebrowBase} text-navy-200` : eyebrow}>{kicker}</p>}
       <Tag
         className={cn(
-          'font-display font-extrabold tracking-[-0.035em] text-balance',
-          big ? 'text-[2.4rem] leading-[1.05] sm:text-[3.6rem]' : 'text-[1.9rem] leading-[1.1] sm:text-[2.6rem]',
+          'font-display font-medium tracking-[-0.03em] text-balance',
+          big ? 'text-[2.02rem] leading-[1.05] sm:text-[3.02rem]' : 'text-[1.6rem] leading-[1.1] sm:text-[2.18rem]',
           kicker && 'mt-3',
           onDark ? 'text-white' : 'text-navy-900',
         )}
@@ -118,7 +118,7 @@ export function SectionHead({
       {body && (
         <p
           className={cn(
-            'mt-4 text-[17px] leading-[1.65] sm:text-[18px]',
+            'mt-4 text-[15.5px] leading-[1.65] sm:text-[16px]',
             align === 'center' && 'mx-auto',
             'max-w-2xl',
             onDark ? 'text-white/75' : 'text-navy-700/80',
@@ -133,8 +133,6 @@ export function SectionHead({
 
 /* -------------------------------------------------------------- the picture */
 
-const EXTENSIONS = ['webp', 'png', 'jpg'] as const;
-
 /** The owner's uploaded pictures, slot to address. Provided by PublicShell. */
 const SiteImagesContext = createContext<Record<string, string>>({});
 export const SiteImagesProvider = SiteImagesContext.Provider;
@@ -145,18 +143,19 @@ export function useSiteImages(): Record<string, string> {
 /**
  * A picture slot.
  *
- * Uses the picture uploaded for this slot in Platform, Website first (or an
- * explicit `override`), then `/site/<slot>.webp`, `.png`, `.jpg`.
+ * Draws the picture uploaded for this slot in Platform, Website (or an
+ * explicit `override`). That is the only source: the slot used to go on to
+ * try three file names under /site/ as well, which on a site with no files
+ * there meant three failed requests for every empty slot on every page view.
  *
  * THE SLOT IS ONLY A SHAPE
  *
  * No colour, no shadow, no padding, no border: the frame keeps its size and
  * place on the page, and the picture covers it edge to edge (object cover,
  * centred), so pictures of different sizes still fill matching tiles.
- * `fit="contain"` is for the rare slot that must show the whole picture,
- * such as the laptop and phone screens. Until something is uploaded the slot is simply
- * empty space of the right size: no stand in, no coloured card. `fallback` is
- * kept in the signature so older callers still compile; it is not drawn.
+ * `fit="contain"` is for the rare slot that must show the whole picture.
+ * Until something is uploaded the slot is simply empty space of the right
+ * size: no stand in, no coloured card.
  */
 export function SiteImage({
   slot,
@@ -181,29 +180,26 @@ export function SiteImage({
 }) {
   const uploaded = useSiteImages()[slot];
   const first = override || uploaded;
-  const sources = [...(first ? [imageUrl(first, { width })] : []), ...EXTENSIONS.map((ext) => `/site/${slot}.${ext}`)];
-  const [index, setIndex] = useState(0);
+  const source = first ? imageUrl(first, { width }) : '';
   const [loaded, setLoaded] = useState(false);
-  const key = sources.join('|');
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    setIndex(0);
     setLoaded(false);
-  }, [key]);
-
-  const failed = index >= sources.length;
+    setFailed(false);
+  }, [source]);
 
   return (
     <div className={cn('relative overflow-hidden bg-transparent', className, '!bg-none !shadow-none')}>
-      {!failed && (
+      {source && !failed && (
         <img
-          key={sources[index]}
-          src={sources[index]}
+          key={source}
+          src={source}
           alt={alt}
           loading={eager ? 'eager' : 'lazy'}
           decoding="async"
           onLoad={() => setLoaded(true)}
-          onError={() => setIndex((value) => value + 1)}
+          onError={() => setFailed(true)}
           className={cn(
             'relative h-full w-full object-center transition-opacity duration-500',
             fit === 'contain' ? 'object-contain' : 'object-cover',
@@ -234,7 +230,7 @@ export function Accordion({ items, className }: { items: { q: string; a: string 
                 aria-expanded={isOpen}
                 aria-controls={panel}
                 onClick={() => setOpen(isOpen ? null : index)}
-                className="flex w-full items-center justify-between gap-6 py-5 text-left text-[17px] font-bold text-navy-900 transition-colors hover:text-navy-600"
+                className="flex w-full items-center justify-between gap-6 py-5 text-left text-[15.5px] font-semibold text-navy-900 transition-colors hover:text-navy-600"
               >
                 {item.q}
                 <ChevronDown
@@ -244,7 +240,7 @@ export function Accordion({ items, className }: { items: { q: string; a: string 
                 />
               </button>
             </h3>
-            <div id={panel} hidden={!isOpen} className="pb-6 pr-10 text-[16px] leading-[1.7] text-navy-700/85">
+            <div id={panel} hidden={!isOpen} className="pb-6 pr-10 text-[15px] leading-[1.7] text-navy-700/85">
               {item.a}
             </div>
           </div>
@@ -260,7 +256,7 @@ export function CheckList({ items, onDark = false, className }: { items: string[
   return (
     <ul className={cn('space-y-3', className)}>
       {items.map((item) => (
-        <li key={item} className={cn('flex gap-3 text-[16px] leading-[1.55]', onDark ? 'text-white/85' : 'text-navy-800')}>
+        <li key={item} className={cn('flex gap-3 text-[15px] leading-[1.55]', onDark ? 'text-white/85' : 'text-navy-800')}>
           {/* A tick is information, not an invitation: structure, not accent.
               Twelve accent ticks beside a single accent button is eleven
               false signals and one real one. */}
@@ -341,8 +337,23 @@ export function IconBadge({ children, className }: { children: ReactNode; classN
   );
 }
 
-/** One category tile: the photo is the card, the icon a small badge, the name over a soft shade. */
+/**
+ * One category tile. With a photo uploaded the photo is the card, the icon a
+ * small badge and the name over a soft shade; without one it is a plain tile,
+ * icon and name, rather than an empty frame.
+ */
 export function IndustryCard({ icon, name, className }: { icon: IndustryKey; name: string; className?: string }) {
+  const photo = useSiteImages()[`industry-${icon}`];
+  if (!photo) {
+    return (
+      <div className={cn('flex h-full items-center gap-3 rounded-2xl border border-navy-900/10 bg-white p-4 sm:p-5', className)}>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-800">
+          <IndustryIcon icon={icon} size={18} />
+        </span>
+        <span className="text-[14px] font-medium leading-tight text-navy-900">{name}</span>
+      </div>
+    );
+  }
   return (
     <div className={cn('group relative overflow-hidden rounded-2xl', className)}>
       <SiteImage
@@ -356,7 +367,7 @@ export function IndustryCard({ icon, name, className }: { icon: IndustryKey; nam
         <IndustryIcon icon={icon} size={17} />
       </IconBadge>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/85 via-navy-950/35 to-transparent px-4 pb-3.5 pt-12">
-        <span className="text-[15px] font-bold leading-tight text-white">{name}</span>
+        <span className="text-[14px] font-semibold leading-tight text-white">{name}</span>
       </div>
     </div>
   );

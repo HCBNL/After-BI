@@ -68,9 +68,9 @@ function complain(step: WizardStep, value: string): string | null {
 }
 
 const PRIMARY =
-  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 text-[15px] font-bold text-navy-900 ring-1 ring-navy-900/20 transition-all hover:bg-brand-600 active:scale-[0.98] disabled:opacity-60';
+  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 text-[14px] font-semibold text-navy-900 ring-1 ring-navy-900/20 transition-all hover:bg-brand-600 active:scale-[0.98] disabled:opacity-60';
 const SECONDARY =
-  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--surface-card)] px-6 text-[15px] font-bold text-primary ring-1 ring-inset ring-[var(--border-hairline)] transition-colors hover:ring-[var(--border-strong)]';
+  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--surface-card)] px-6 text-[14px] font-semibold text-primary ring-1 ring-inset ring-[var(--border-hairline)] transition-colors hover:ring-[var(--border-strong)]';
 
 /* ------------------------------------------------------------- the choices */
 
@@ -115,7 +115,7 @@ function ChoiceList({
             onClick={() => (multi ? toggle(option) : onPick(option))}
             aria-pressed={active}
             className={cn(
-              'tap flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left text-[15px] font-semibold transition-all',
+              'tap flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-left text-[14px] font-semibold transition-all',
               /* A chosen answer is a control the reader has just used, so
                  the accent belongs here, but as an outline rather than a
                  filled card: six filled accent cards in a grid is the whole
@@ -223,7 +223,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
         className="flex shrink-0 flex-col items-center px-12 pb-2 pt-5 text-center sm:px-14"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
       >
-        <Wordmark className="text-[1.45rem] !text-navy-900" />
+        <Wordmark className="text-[1.33rem] !text-navy-900" />
         <p className="mt-3 text-[13px] font-semibold text-navy-500">
           {`Book a demo · ${sent ? 'All done' : reviewing ? 'One last look' : `Question ${index + 1} of ${WIZARD_STEPS.length}`}`}
         </p>
@@ -238,7 +238,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-navy-500/15">
               <CheckCircle2 size={32} className="text-navy-600" aria-hidden />
             </span>
-            <h2 className="mt-5 font-display text-[1.5rem] font-extrabold tracking-tight text-primary">
+            <h2 className="mt-5 font-display text-[1.38rem] font-semibold tracking-tight text-primary">
               That is on its way
             </h2>
             <p className="mx-auto mt-3 max-w-sm text-[14.5px] leading-relaxed text-secondary">
@@ -255,7 +255,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
           </div>
         ) : reviewing ? (
           <div className="py-2">
-            <h2 className="text-center font-display text-[1.7rem] font-extrabold leading-tight tracking-[-0.035em] text-primary">
+            <h2 className="text-center font-display text-[1.43rem] font-semibold leading-tight tracking-[-0.035em] text-primary">
               Is this right?
             </h2>
             <p className="mt-2 text-center text-[14px] leading-relaxed text-secondary">
@@ -270,7 +270,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
                     onClick={() => setIndex(entryIndex)}
                     className="grid w-full grid-cols-[6.5rem_1fr] items-baseline gap-4 px-4 py-3 text-left transition-colors hover:bg-[var(--surface-sunken)]"
                   >
-                    <span className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-muted">
+                    <span className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-muted">
                       {entry.label}
                     </span>
                     <span className="min-w-0 text-right text-[14px] font-semibold text-primary">
@@ -294,7 +294,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
             }}
             className="my-auto w-full py-4"
           >
-            <h2 className="text-center font-display text-[1.7rem] font-extrabold leading-[1.15] tracking-[-0.035em] text-primary sm:text-[1.95rem]">
+            <h2 className="text-center font-display text-[1.43rem] font-semibold leading-[1.15] tracking-[-0.035em] text-primary sm:text-[1.64rem]">
               {step.question}
             </h2>
             {step.hint && (
@@ -320,7 +320,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
                   maxLength={step.maxLength}
                   placeholder={step.placeholder}
                   onChange={(event) => set(event.target.value)}
-                  className="w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 py-3 text-[16px] leading-relaxed text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-700 focus:ring-2 focus:ring-brand-700/25"
+                  className="w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 py-3 text-[15px] leading-relaxed text-primary outline-none transition-colors placeholder:text-muted focus:border-brand-700 focus:ring-2 focus:ring-brand-700/25"
                 />
               ) : (
                 <input
@@ -332,7 +332,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
                   autoComplete={step.autoComplete}
                   inputMode={step.kind === 'tel' ? 'tel' : undefined}
                   onChange={(event) => set(event.target.value)}
-                  className="h-14 w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 text-[17px] font-semibold text-primary outline-none transition-colors placeholder:font-normal placeholder:text-muted focus:border-brand-700 focus:ring-2 focus:ring-brand-700/25"
+                  className="h-14 w-full rounded-xl border border-hairline bg-[var(--surface-card)] px-4 text-[15.5px] font-semibold text-primary outline-none transition-colors placeholder:font-normal placeholder:text-muted focus:border-brand-700 focus:ring-2 focus:ring-brand-700/25"
                 />
               )}
             </div>

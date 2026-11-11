@@ -40,17 +40,62 @@ import { HELP_TOPICS, helpWhatsApp } from '@/lib/help';
 /** How long the pointer may be off the card before it closes, in ms. */
 const CLOSE_DELAY = 220;
 
+/** Clearance between the top of the card and whatever is above it. */
+const TOP_GAP = 12;
+
+/** The gap the card leaves above the button (`mb-3`). */
+const CARD_GAP = 12;
+
 export function HelpBubble({ onBook }: { onBook: () => void }) {
   const [open, setOpen] = useState(false);
   /** Set by the first real interaction: from here on, hover cannot close it. */
   const [pinned, setPinned] = useState(false);
   const [asked, setAsked] = useState<number | null>(null);
   const [message, setMessage] = useState('');
+  /** How tall the card may be here, now. Measured; see `measure` below. */
+  const [roof, setRoof] = useState<number | null>(null);
   const { pathname } = useLocation();
   const panelId = useId();
   const root = useRef<HTMLDivElement>(null);
+  const launcher = useRef<HTMLButtonElement>(null);
   const box = useRef<HTMLTextAreaElement>(null);
   const closeTimer = useRef<number | undefined>(undefined);
+
+  /**
+   * The space actually available above the button.
+   *
+   * The card used to be capped at `100dvh - 7rem`, which assumed the only
+   * thing above it was the top of the window. It is not: the public header is
+   * `sticky top-0 z-50` and this bubble is `z-40`, so a tall card slid under
+   * the header and its first question or two were simply unreachable, with
+   * nothing on screen to say they were there.
+   *
+   * The header's height is not a constant to hard-code either, because the
+   * promotional strip above the navigation comes and goes and the whole bar
+   * changes height at the large breakpoint. So it is measured: the gap runs
+   * from the bottom of the header to the top of the button, less a little
+   * clearance, and the question list scrolls inside whatever that leaves.
+   */
+  const measure = useCallback(() => {
+    /*
+     * The BUTTON, not the wrapper around it.
+     *
+     * The wrapper holds the card as well, so once the card is open the
+     * wrapper's top IS the card's top. Measuring that and then sizing the
+     * card from it is a feedback loop: every scroll re-measures a little
+     * lower, the card shrinks, and within a few frames it has collapsed to
+     * whatever the minimum is. The button is the only part of this that
+     * stays put.
+     */
+    const button = launcher.current?.getBoundingClientRect();
+    if (!button) return;
+    const header = document.querySelector('.site header')?.getBoundingClientRect();
+    const ceiling = Math.max(header?.bottom ?? 0, 0) + TOP_GAP;
+    /* Less CARD_GAP as well: the card is that far above the button, so
+       without it the card's top lands flush on the header rather than
+       clear of it. */
+    setRoof(Math.max(220, button.top - ceiling - CARD_GAP));
+  }, []);
 
   const close = useCallback(() => {
     window.clearTimeout(closeTimer.current);
@@ -83,8 +128,25 @@ export function HelpBubble({ onBook }: { onBook: () => void }) {
     };
   }, [open, close]);
 
+  /*
+   * Re-measure while it is open. Scrolling matters as much as resizing here:
+   * the promotional strip leaves with the scroll on some pages, which hands
+   * the card back forty-odd pixels it should be allowed to use.
+   */
+  useEffect(() => {
+    if (!open) return;
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, true);
+    return () => {
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('scroll', measure, true);
+    };
+  }, [open, measure]);
+
   const openNow = () => {
     window.clearTimeout(closeTimer.current);
+    measure();
     setOpen(true);
   };
   const closeSoon = () => {
@@ -117,6 +179,7 @@ export function HelpBubble({ onBook }: { onBook: () => void }) {
       {open && (
         <Card
           id={panelId}
+          roof={roof}
           asked={asked}
           onAsk={ask}
           message={message}
@@ -136,6 +199,7 @@ export function HelpBubble({ onBook }: { onBook: () => void }) {
       )}
 
       <button
+        ref={launcher}
         type="button"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
@@ -170,6 +234,7 @@ export function HelpBubble({ onBook }: { onBook: () => void }) {
 
 function Card({
   id,
+  roof,
   asked,
   onAsk,
   message,
@@ -181,6 +246,8 @@ function Card({
   toPerson,
 }: {
   id: string;
+  /** Tallest the card may be, in px, measured against the sticky header. */
+  roof: number | null;
   asked: number | null;
   onAsk: (index: number) => void;
   message: string;
@@ -196,8 +263,11 @@ function Card({
       id={id}
       role="dialog"
       aria-label="Help and answers"
+      /* 37rem is the comfortable height; `roof` is what the window and the
+         sticky header actually allow, and the smaller of the two wins. */
+      style={{ maxHeight: Math.min(592, roof ?? 592) }}
       className={cn(
-        'mb-3 flex max-h-[min(37rem,calc(100dvh-7rem))] w-[min(23rem,calc(100vw-2.5rem))] flex-col',
+        'mb-3 flex w-[min(23rem,calc(100vw-2.5rem))] flex-col',
         'overflow-hidden rounded-[1.4rem] bg-white shadow-pop ring-1 ring-navy-900/10',
         'origin-bottom-right animate-scale-in',
       )}
@@ -210,7 +280,7 @@ function Card({
         on screen while this is open.
       */}
       <header className="relative shrink-0 bg-navy-900 px-5 pb-4 pt-4 text-white">
-        <p className="font-display text-[1.05rem] font-extrabold tracking-[-0.02em]">How can we help?</p>
+        <p className="font-display text-[0.97rem] font-semibold tracking-[-0.02em]">How can we help?</p>
         <p className="mt-1 pr-7 text-[13px] leading-snug text-white/70">Answers first. A person if you need one.</p>
         <button
           type="button"
@@ -255,14 +325,14 @@ function Card({
                       <button
                         type="button"
                         onClick={onBook}
-                        className="mt-2.5 inline-flex items-center gap-1.5 text-[13.5px] font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900"
+                        className="mt-2.5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900"
                       >
                         {topic.cta ?? 'Book a demo'} <ArrowRight size={14} aria-hidden />
                       </button>
                     ) : topic.to ? (
                       <Link
                         to={topic.to}
-                        className="mt-2.5 inline-flex items-center gap-1.5 text-[13.5px] font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900"
+                        className="mt-2.5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900"
                       >
                         {topic.cta ?? 'Read more'} <ArrowRight size={14} aria-hidden />
                       </Link>
@@ -306,7 +376,7 @@ function Card({
           rel="noreferrer noopener"
           className={cn(
             'tap mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl',
-            'bg-brand-500 text-[14.5px] font-bold text-navy-900 ring-1 ring-navy-900/20 transition-colors hover:bg-brand-600 active:scale-[0.99]',
+            'bg-brand-500 text-[14.5px] font-semibold text-navy-900 ring-1 ring-navy-900/20 transition-colors hover:bg-brand-600 active:scale-[0.99]',
           )}
         >
           {message.trim() ? (

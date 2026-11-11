@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, ChevronDown, Globe } from 'lucide-react';
 import { Flag } from '@/components/Flag';
 import { cn } from '@/lib/cn';
 import { LANGS, getLang, setLang } from '@/lib/i18n';
@@ -15,7 +15,7 @@ export function LanguageSwitch({
   className,
   onInk = false,
   full = false,
-  flags = false,
+  hover = false,
   up = false,
 }: {
   className?: string;
@@ -23,8 +23,8 @@ export function LanguageSwitch({
   onInk?: boolean;
   /** Both options side by side (menus, profile), instead of a dropdown. */
   full?: boolean;
-  /** All three flags in a row, for the strip at the very top of the public site. */
-  flags?: boolean;
+  /** The strip at the top of the public site: a globe, the three open on hover. */
+  hover?: boolean;
   /** Open the dropdown upwards. */
   up?: boolean;
 }) {
@@ -41,30 +41,58 @@ export function LanguageSwitch({
     return () => document.removeEventListener('mousedown', close);
   }, [open]);
 
-  if (flags) {
+  if (hover) {
+    /* The public strip: one globe and the current language; the three open on hover (or tap). */
     return (
-      <div translate="no" role="group" aria-label="Language" className={cn('notranslate flex items-center gap-1', className)}>
-        {LANGS.map((lang) => {
-          const on = lang.code === current;
-          return (
-            <button
-              key={lang.code}
-              type="button"
-              lang={lang.code === 'zh' ? 'zh-CN' : lang.code}
-              aria-pressed={on}
-              aria-label={lang.label}
-              title={lang.label}
-              onClick={() => !on && setLang(lang.code)}
-              className={cn(
-                'flex h-8 items-center gap-2 rounded-full px-2.5 text-label font-semibold transition-colors sm:px-3',
-                on ? 'bg-white text-navy-900' : 'text-white/80 hover:bg-white/10 hover:text-white',
-              )}
-            >
-              <Flag lang={lang.code} className="h-4 w-6" />
-              <span>{lang.short}</span>
-            </button>
-          );
-        })}
+      <div
+        ref={box}
+        translate="no"
+        className={cn('notranslate relative', className)}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      >
+        {/* Opens, never toggles: a tap on a phone fires the hover first, and a toggle would close it again. */}
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          aria-label="Language"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-[13px] font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <Globe size={15} aria-hidden />
+          <span>{LANGS.find((l) => l.code === current)?.label}</span>
+          <ChevronDown size={14} aria-hidden className={cn('transition-transform', open && 'rotate-180')} />
+        </button>
+        {open && (
+          <div className="absolute right-0 top-full z-[70] pt-1.5">
+            <div role="menu" className="min-w-[11rem] overflow-hidden rounded-xl bg-white py-1.5 text-[#0f1f36] shadow-[0_18px_40px_-16px_rgba(15,31,54,0.45)] ring-1 ring-black/10">
+              {LANGS.map((lang) => {
+                const on = lang.code === current;
+                return (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={on}
+                    lang={lang.code === 'zh' ? 'zh-CN' : lang.code}
+                    onClick={() => {
+                      setOpen(false);
+                      if (!on) setLang(lang.code);
+                    }}
+                    className={cn(
+                      'flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-[13.5px] transition-colors hover:bg-black/5',
+                      on ? 'font-semibold' : 'font-normal text-[#213d63]',
+                    )}
+                  >
+                    {lang.label}
+                    {on && <Check size={15} aria-hidden className="text-[#5f7a06]" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   }

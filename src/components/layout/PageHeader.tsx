@@ -3,14 +3,19 @@ import { cn } from '@/lib/cn';
 import { usePageHeading } from './PageHeading';
 import { PagePanel } from './PagePanel';
 import { useBootDone } from '@/lib/boot';
+import { Hint } from '@/components/ui/Hint';
 
 /**
  * The top of a portal page.
  *
- * Inside a shell every screen opens on the coloured panel, title, one line of
- * description and the page's buttons on it, anything else (`children`) under
- * it, so moving from home into any screen never means moving from a designed
- * page to a plain one. The quiet header below is for anywhere without a shell.
+ * Inside a shell every screen opens on the coloured panel, the title and the
+ * page's buttons on it, anything else (`children`) under it, so moving from
+ * home into any screen never means moving from a designed page to a plain
+ * one. The quiet header below is for anywhere without a shell.
+ *
+ * `description` is never printed under the title any more: it sits behind an
+ * (i) beside it. Pages keep passing it, so the sentence is written once and
+ * still there for anyone who taps. See `About` in PagePanel.
  */
 export function PageHeader({
   title,
@@ -50,7 +55,7 @@ export function PageHeader({
       <h2 className="sr-only">{title}</h2>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5">
         {description ? (
-          <p className="min-w-0 max-w-2xl text-body leading-relaxed text-secondary">{description}</p>
+          <Hint label={`About ${title}`}>{description}</Hint>
         ) : (
           <span />
         )}

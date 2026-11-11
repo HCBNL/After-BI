@@ -95,12 +95,12 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
     <header className="sticky top-0 z-50" onMouseLeave={closeSoon}>
       <div className="status-bar-fill" aria-hidden />
 
-      {/* The promo strip, with the language flags at the very top. */}
+      {/* The promo strip, with the language picker at the very top. */}
       <div className="bg-navy-900 text-white">
         <div className={cn(container, 'flex h-11 items-center justify-between gap-3 text-[13px]')}>
           <p className="hidden min-w-0 truncate sm:block">
             <span className="font-semibold">{PROMO.text}</span>{' '}
-            <Link to={PROMO.link.href} className="hidden font-bold text-white underline underline-offset-4 decoration-white/40 hover:decoration-white md:inline">
+            <Link to={PROMO.link.href} className="hidden font-semibold text-white underline underline-offset-4 decoration-white/40 hover:decoration-white md:inline">
               {PROMO.link.label}
             </Link>
           </p>
@@ -111,7 +111,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
             <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="hidden whitespace-nowrap text-white/75 hover:text-white lg:inline">
               WhatsApp us
             </a>
-            <LanguageSwitch flags />
+            <LanguageSwitch hover />
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
       >
         <div className={cn(container, 'flex h-16 items-center gap-6 sm:h-[4.5rem] lg:grid lg:grid-cols-[1fr_auto_1fr]')}>
           <Link to="/" aria-label="AfterBI home" className="shrink-0 lg:justify-self-start">
-            <Wordmark className="text-[1.35rem] !text-navy-900 sm:text-[1.5rem]" />
+            <Wordmark className="text-[1.24rem] !text-navy-900 sm:text-[1.38rem]" />
           </Link>
 
           <nav aria-label="Main" className="hidden items-center justify-center gap-1 lg:flex">
@@ -143,7 +143,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
                     onFocus={() => openSoon(key)}
                     onClick={() => setMenu(open ? null : key)}
                     className={cn(
-                      'inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors',
+                      'inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[14px] font-semibold transition-colors',
                       open || active ? 'bg-navy-50 text-navy-900' : 'text-navy-700 hover:bg-navy-50 hover:text-navy-900',
                     )}
                   >
@@ -159,7 +159,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
                   onMouseEnter={() => setMenu(null)}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'rounded-full px-3.5 py-2 text-[15px] font-semibold transition-colors',
+                    'rounded-full px-3.5 py-2 text-[14px] font-semibold transition-colors',
                     active ? 'bg-navy-50 text-navy-900' : 'text-navy-700 hover:bg-navy-50 hover:text-navy-900',
                   )}
                 >
@@ -172,7 +172,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5 lg:ml-0 lg:justify-self-end">
             <Link
               to={door.to}
-              className="tap inline-flex items-center whitespace-nowrap rounded-full px-3 text-[14.5px] font-bold text-navy-900 hover:bg-navy-50 sm:px-4"
+              className="tap inline-flex items-center whitespace-nowrap rounded-full px-3 text-[14.5px] font-semibold text-navy-900 hover:bg-navy-50 sm:px-4"
             >
               {door.label}
             </Link>
@@ -182,7 +182,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
             <button
               type="button"
               onClick={onBook}
-              className="tap hidden items-center whitespace-nowrap rounded-full bg-brand-500 px-5 text-[14.5px] font-bold text-navy-900 ring-1 ring-navy-900/20 transition-colors hover:bg-brand-600 sm:inline-flex"
+              className="tap hidden items-center whitespace-nowrap rounded-full bg-brand-500 px-5 text-[14.5px] font-semibold text-navy-900 ring-1 ring-navy-900/20 transition-colors hover:bg-brand-600 sm:inline-flex"
             >
               Book a demo
             </button>
@@ -230,7 +230,7 @@ function PanelLink({ to, title, body, icon }: { to: string; title: string; body?
         </span>
       )}
       <span>
-        <span className="block text-[15px] font-bold text-navy-900">{title}</span>
+        <span className="block text-[14px] font-semibold text-navy-900">{title}</span>
         {body && <span className="mt-0.5 block text-[13.5px] leading-snug text-navy-600">{body}</span>}
       </span>
     </Link>
@@ -238,7 +238,7 @@ function PanelLink({ to, title, body, icon }: { to: string; title: string; body?
 }
 
 function PanelTitle({ children }: { children: ReactNode }) {
-  return <p className="px-3 pb-2 text-[12px] font-bold uppercase tracking-[0.14em] text-navy-400">{children}</p>;
+  return <p className="px-3 pb-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-navy-400">{children}</p>;
 }
 
 function ProductsPanel({ onBook }: { onBook: () => void }) {
@@ -295,7 +295,7 @@ function SolutionsPanel() {
             </li>
           ))}
         </ul>
-        <Link to="/solutions" className="mt-4 inline-flex items-center gap-1.5 px-3 text-[14.5px] font-bold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
+        <Link to="/solutions" className="mt-4 inline-flex items-center gap-1.5 px-3 text-[14.5px] font-semibold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
           All solutions <ArrowRight size={16} aria-hidden />
         </Link>
       </div>
@@ -318,7 +318,7 @@ function SupportPanel({ onBook }: { onBook: () => void }) {
             <MessageCircle size={19} aria-hidden />
           </span>
           <span>
-            <span className="block text-[15px] font-bold text-navy-900">WhatsApp</span>
+            <span className="block text-[14px] font-semibold text-navy-900">WhatsApp</span>
             <span className="mt-0.5 block text-[13.5px] text-navy-600">Chat with our team directly.</span>
           </span>
         </a>
@@ -327,7 +327,7 @@ function SupportPanel({ onBook }: { onBook: () => void }) {
             <Mail size={19} aria-hidden />
           </span>
           <span>
-            <span className="block text-[15px] font-bold text-navy-900">Email</span>
+            <span className="block text-[14px] font-semibold text-navy-900">Email</span>
             <span className="mt-0.5 block text-[13.5px] text-navy-600">{SUPPORT_EMAIL}</span>
           </span>
         </a>
@@ -365,13 +365,13 @@ function PromoCard({
         className="-mx-6 -mt-6 mb-5 aspect-[16/9]"
       />
       <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-navy-400/30 blur-2xl" />
-      <p className="relative font-display text-[1.25rem] font-extrabold tracking-[-0.03em]">{title}</p>
+      <p className="relative font-display text-[1.15rem] font-semibold tracking-[-0.03em]">{title}</p>
       <p className="relative mt-2 text-[14px] leading-relaxed text-white/70">{body}</p>
       <div className="relative mt-5 flex flex-col gap-2">
         <button type="button" onClick={onBook} className={cn(btn.accent, 'h-11')}>
           Book a demo
         </button>
-        <Link to={link.to} className="inline-flex items-center justify-center gap-1.5 py-2 text-[14px] font-bold text-white/70 hover:text-white">
+        <Link to={link.to} className="inline-flex items-center justify-center gap-1.5 py-2 text-[14px] font-semibold text-white/70 hover:text-white">
           {link.label} <ArrowRight size={15} aria-hidden />
         </Link>
       </div>
@@ -419,7 +419,7 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
     <div role="dialog" aria-modal="true" aria-label="Menu" className="site fixed inset-0 z-[60] flex animate-fade-in flex-col overflow-y-auto lg:hidden">
       <div className="status-bar-fill" aria-hidden />
       <div className={cn(container, 'flex h-16 items-center justify-between border-b border-navy-900/10')}>
-        <Wordmark className="text-[1.35rem] !text-navy-900" />
+        <Wordmark className="text-[1.24rem] !text-navy-900" />
         <button
           type="button"
           onClick={onClose}
@@ -439,7 +439,7 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
                 key={item.label}
                 to={item.href}
                 onClick={onClose}
-                className="flex items-center justify-between border-b border-navy-900/8 py-4 text-[1.2rem] font-bold text-navy-900"
+                className="flex items-center justify-between border-b border-navy-900/8 py-4 text-[1.1rem] font-semibold text-navy-900"
               >
                 {item.label}
               </Link>
@@ -453,7 +453,7 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
                 type="button"
                 aria-expanded={isOpen}
                 onClick={() => setOpen(isOpen ? null : key)}
-                className="flex w-full items-center justify-between py-4 text-left text-[1.2rem] font-bold text-navy-900"
+                className="flex w-full items-center justify-between py-4 text-left text-[1.1rem] font-semibold text-navy-900"
               >
                 {item.label}
                 <ChevronDown size={20} aria-hidden className={cn('text-navy-400 transition-transform', isOpen && 'rotate-180')} />
@@ -463,11 +463,11 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
                   {sub(key).map((link) => (
                     <li key={link.label}>
                       {link.external ? (
-                        <a href={link.to} target="_blank" rel="noreferrer noopener" className="block py-2 pl-3 text-[15.5px] font-semibold text-navy-600">
+                        <a href={link.to} target="_blank" rel="noreferrer noopener" className="block py-2 pl-3 text-[14.5px] font-semibold text-navy-600">
                           {link.label}
                         </a>
                       ) : (
-                        <Link to={link.to} onClick={onClose} className="block py-2 pl-3 text-[15.5px] font-semibold text-navy-600">
+                        <Link to={link.to} onClick={onClose} className="block py-2 pl-3 text-[14.5px] font-semibold text-navy-600">
                           {link.label}
                         </Link>
                       )}
@@ -517,9 +517,9 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 lg:grid-cols-[1.5fr_2fr_1fr_1fr]">
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <Link to="/" aria-label="AfterBI home">
-              <Wordmark onInk className="text-[1.5rem]" />
+              <Wordmark onInk className="text-[1.38rem]" />
             </Link>
-            <p className="mt-5 max-w-[22rem] text-[15px] leading-[1.65] text-white/60">
+            <p className="mt-5 max-w-[22rem] text-[14px] leading-[1.65] text-white/60">
               The sales and distribution platform for consumer goods companies.
             </p>
             <ul className="mt-6 flex flex-wrap gap-2.5" aria-label="AfterBI elsewhere">
@@ -542,7 +542,7 @@ export function SiteFooter() {
 
           {/* Platform runs in two columns so every column is about the same height. */}
           <div className="col-span-2 lg:col-span-1">
-            <p className="text-[14px] font-bold uppercase tracking-[0.12em] text-white">Platform</p>
+            <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-white">Platform</p>
             <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5">
               {products.map((item) => (
                 <li key={item.label}>
@@ -612,7 +612,7 @@ export function SiteFooter() {
 function FooterColumn({ title, items }: { title: string; items: { label: string; to: string; external?: boolean }[] }) {
   return (
     <div>
-      <p className="text-[14px] font-bold uppercase tracking-[0.12em] text-white">{title}</p>
+      <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-white">{title}</p>
       <ul className="mt-4 space-y-2.5">
         {items.map((item) => (
           <li key={item.label}>

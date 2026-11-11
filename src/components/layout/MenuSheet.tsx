@@ -8,7 +8,6 @@ import {
   PORTAL_ROOT,
   type ActionGroup,
   type AppAction,
-  GROUP_ICON,
   GROUP_ORDER,
 } from '@/lib/tiles';
 import { Avatar } from '@/components/ui';
@@ -271,27 +270,21 @@ export function MenuSheet({
                 {`Nothing here matches “${query.trim()}”.`}</p>
             )
           ) : (
-            <div className="pb-4">
-              {grouped.map(([group, items]) => {
-                const GroupIcon = GROUP_ICON[group];
-                return (
-                  <section key={group} aria-labelledby={`menu-${group}`}>
-                    <h3
-                      id={`menu-${group}`}
-                      className="sticky top-0 z-10 flex items-center gap-2 border-y border-hairline bg-[var(--surface-sunken)] px-5 py-2.5 text-micro font-semibold uppercase tracking-[0.08em] text-muted"
-                    >
-                      <GroupIcon size={15} className="text-brand-700 dark:text-brand-400" aria-hidden />
-                      {group}
-                    </h3>
-                    <ul>
-                      {items.map((action) => (
-                        <ActionRow key={action.id} action={action} role={role} onClose={onClose} />
-                      ))}
-                    </ul>
-                  </section>
-                );
-              })}
-            </div>
+            /*
+              One plain list, no section headings.
+
+              The headings (Company, Finance, Stock and the rest) were sticky
+              bars between every few rows. On a phone they ate a third of the
+              sheet, slid over the first row of each group as it scrolled, and
+              told nobody anything the rows themselves do not: "Invoices" does
+              not need "Finance" above it. The sidebar keeps its groups, where
+              the room exists; this sheet is for finding a thing fast.
+            */
+            <ul className="py-1 pb-4">
+              {grouped.flatMap(([, items]) => items).map((action) => (
+                <ActionRow key={action.id} action={action} role={role} onClose={onClose} />
+              ))}
+            </ul>
           )}
         </div>
 

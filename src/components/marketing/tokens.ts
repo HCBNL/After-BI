@@ -24,7 +24,7 @@
 
 const base =
   'tap inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 ' +
-  'text-[15px] font-bold transition-colors active:scale-[0.98]';
+  'text-[14px] font-semibold transition-colors active:scale-[0.98]';
 
 export const btn = {
   /**
@@ -70,6 +70,6 @@ export const container = 'mx-auto w-full max-w-7xl px-5 sm:px-8';
  * caption. Set in the structure colour at a lighter step, it still reads as a
  * label and costs nothing from the ten.
  */
-export const eyebrowBase = 'text-[13px] font-bold uppercase tracking-[0.14em]';
+export const eyebrowBase = 'text-[13px] font-semibold uppercase tracking-[0.14em]';
 export const eyebrow = `${eyebrowBase} text-navy-500`;
 

@@ -1,5 +1,5 @@
 /**
- * Which home screen a person has chosen, Tiles or Cards, stored on the
+ * Which home screen a person has chosen, Cards (the default) or Tiles, stored on the
  * device per account (a shared depot phone should not change everybody's
  * screen), and whether the chooser has ever been opened.
  */
@@ -8,8 +8,8 @@ import { useCallback, useEffect, useState } from 'react';
 export type HomeLayout = 'tiles' | 'cards';
 
 export const HOME_LAYOUTS: { id: HomeLayout; name: string; description: string }[] = [
-  { id: 'tiles', name: 'Tiles', description: 'Every shortcut up front' },
   { id: 'cards', name: 'Cards', description: 'Your numbers up front' },
+  { id: 'tiles', name: 'Tiles', description: 'Every shortcut up front' },
 ];
 
 const CHANGED = 'afterbi:home-layout';
@@ -21,11 +21,11 @@ function announce() {
 }
 
 function readHomeLayout(uid: string | undefined): HomeLayout {
-  if (!uid) return 'tiles';
+  if (!uid) return 'cards';
   try {
-    return localStorage.getItem(keyFor(uid)) === 'cards' ? 'cards' : 'tiles';
+    return localStorage.getItem(keyFor(uid)) === 'tiles' ? 'tiles' : 'cards';
   } catch {
-    return 'tiles';
+    return 'cards';
   }
 }
 

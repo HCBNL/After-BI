@@ -28,7 +28,7 @@
  */
 
 import { useState } from 'react';
-import { Download, ShoppingCart } from 'lucide-react';
+import { Check, ChevronDown, Download, Lightbulb, Package2, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge, Button, Modal, useToast } from '@/components/ui';
 import { ProductShot } from './ProductShot';
@@ -52,6 +52,7 @@ export function ProductSheet({
   const toast = useToast();
   const [shown, setShown] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   /* Re-seed when a different product is opened, or the second product opened
      starts on the first one's fourth photograph. */
@@ -59,6 +60,7 @@ export function ProductSheet({
   if (product && product.id !== seed) {
     setSeed(product.id);
     setShown(0);
+    setNoteOpen(false);
   }
 
   if (!product) return null;
@@ -150,14 +152,24 @@ export function ProductSheet({
     >
       <div className="grid gap-5 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         {/* ------------------------------------------------------- pictures */}
-        <div>
+        {/*
+          A height the window can always afford, not an aspect ratio.
+
+          `aspect-[4/3]` at this width made the picture about 600px tall,
+          taller than the dialog has room for on a laptop, so the body
+          scrolled and the product was cut off at the knees: the one thing
+          this sheet exists to show, and you had to scroll to see all of it.
+          Capped by the viewport, with the photograph contained inside it, the
+          whole product is always in view.
+        */}
+        <div className="min-w-0">
           <ProductShot
             src={active}
             alt={product.name}
             width={820}
-            className="aspect-[4/3] w-full border border-hairline"
+            className="h-[min(46vh,26rem)] w-full border border-hairline"
             rounded="rounded-2xl"
-            imgClassName="p-5"
+            imgClassName="object-contain p-4"
           />
 
           {/* One shot is not a gallery, so it gets no strip to choose from. */}
@@ -185,7 +197,7 @@ export function ProductSheet({
         </div>
 
         {/* ---------------------------------------------------------- facts */}
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col">
           <div className="rounded-2xl border border-hairline surface-sunken px-4 py-3.5">
             <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">
               Your price
@@ -199,6 +211,14 @@ export function ProductSheet({
             </p>
           </div>
 
+          {(product.packSize || product.brand || product.barcode) && (
+            <dl className="mt-3 grid grid-cols-2 gap-2">
+              {product.packSize && <Fact label="Pack size" value={product.packSize} icon={<Package2 size={13} />} wide />}
+              {product.brand && <Fact label="Brand" value={product.brand} />}
+              {product.barcode && <Fact label="Barcode" value={product.barcode} mono />}
+            </dl>
+          )}
+
           {product.service && (
             <div className="mt-3">
               <Badge tone="info">Service · priced on the order</Badge>
@@ -210,8 +230,66 @@ export function ProductSheet({
               {product.description}
             </p>
           )}
+
+          {product.features && product.features.length > 0 && (
+            <ul className="mt-3.5 space-y-1.5">
+              {product.features.map((f) => (
+                <li key={f} className="flex gap-2 text-body leading-snug text-primary">
+                  <Check size={15} className="mt-[3px] shrink-0 text-brand-600 dark:text-brand-400" aria-hidden />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {product.specs && product.specs.length > 0 && (
+            <dl className="mt-3.5 divide-y divide-[var(--border-hairline)] rounded-2xl border border-hairline">
+              {product.specs.map((x) => (
+                <div key={x.label} className="flex justify-between gap-3 px-3.5 py-2 text-label">
+                  <dt className="text-muted">{x.label}</dt>
+                  <dd className="text-right font-semibold text-primary">{x.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+
+          {/*
+            The sales note is for the person holding the laptop, and this
+            sheet is built to be turned round. So it is folded until asked
+            for, and folds itself again when another product is opened.
+          */}
+          {product.salesNote && (
+            <div className="mt-3.5">
+              <button
+                type="button"
+                onClick={() => setNoteOpen((v) => !v)}
+                aria-expanded={noteOpen}
+                className="inline-flex items-center gap-1.5 text-label font-semibold text-muted hover:text-primary"
+              >
+                <Lightbulb size={14} aria-hidden /> Sales note
+                <ChevronDown size={14} className={cn('transition-transform', noteOpen && 'rotate-180')} aria-hidden />
+              </button>
+              {noteOpen && (
+                <p className="mt-2 whitespace-pre-line rounded-2xl bg-gold-400/15 px-3.5 py-2.5 text-label leading-relaxed text-primary">
+                  {product.salesNote}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </Modal>
+  );
+}
+
+function Fact({ label, value, icon, wide, mono }: { label: string; value: string; icon?: React.ReactNode; wide?: boolean; mono?: boolean }) {
+  return (
+    <div className={cn('rounded-xl border border-hairline px-3 py-2', wide && 'col-span-2')}>
+      <dt className="flex items-center gap-1 text-micro font-semibold uppercase tracking-[0.1em] text-muted">
+        {icon}
+        {label}
+      </dt>
+      <dd className={cn('mt-0.5 truncate text-body font-semibold text-primary', mono && 'font-mono tabular')}>{value}</dd>
+    </div>
   );
 }

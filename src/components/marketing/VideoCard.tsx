@@ -162,10 +162,10 @@ export function VideoCard({
 
           <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
             <span className="min-w-0">
-              <span className="block text-[10.5px] font-bold uppercase tracking-[0.14em] text-white/60">
+              <span className="block text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/60">
                 AfterBI
               </span>
-              <span className="mt-0.5 block truncate text-[15px] font-bold text-white">{label}</span>
+              <span className="mt-0.5 block truncate text-[14px] font-semibold text-white">{label}</span>
             </span>
           </span>
         </button>

@@ -18,6 +18,7 @@ import { KpiGlassGrid } from './HomeSlides';
 import { BrandBars } from './HomeArt';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
 import { HeroLanguageButton } from '@/components/HeroLanguageButton';
+import { HeroMoneyButton } from '@/components/MoneyToggle';
 import { displayName, greeting, LayoutButton, ProfilePhoto } from './HomeHero';
 import { dateLocale } from '@/lib/locale';
 
@@ -163,6 +164,7 @@ export function DeskHero({
           <p className="text-body font-medium text-white/65">{today}</p>
           <div className="flex items-center gap-2">
             <HeroLanguageButton />
+            <HeroMoneyButton />
             <HeroThemeButton />
             <LayoutButton />
           </div>
