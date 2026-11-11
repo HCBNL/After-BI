@@ -28,7 +28,6 @@ import {
   recordPayment,
   recordSale,
   saveDistributor,
-  saveLead,
   saveOrgSettings,
   saveProduct,
   saveTarget,
@@ -39,7 +38,8 @@ import {
   listWarehouses,
   updateProfile,
 } from './db';
-import type { Distributor, Invoice, LeadStage, PriceTier, Product, Role, UserProfile } from '@/types';
+import type { Distributor, Invoice, PriceTier, Product, Role, UserProfile } from '@/types';
+import { createLead } from './leads';
 
 /** The password on every walkthrough sign-in this makes. Shown in Settings. */
 export const DEMO_PASSWORD = 'DemoPass2026';
@@ -111,12 +111,12 @@ const OUTLETS = [
   'New Benin market',
 ];
 
-const PIPELINE: { company: string; contactName: string; location: string; stage: LeadStage; estimatedValue: number }[] = [
-  { company: 'Calabar Fresh Mart', contactName: 'Eno Effiong', location: 'Cross River', stage: 'new', estimatedValue: 1800000 },
-  { company: 'Jos Highland Stores', contactName: 'Dung Pam', location: 'Plateau', stage: 'contacted', estimatedValue: 1200000 },
-  { company: 'Ilorin Value Mart', contactName: 'Rasheed Lawal', location: 'Kwara', stage: 'qualified', estimatedValue: 2400000 },
-  { company: 'Warri Coastal Traders', contactName: 'Oghenero Tega', location: 'Delta', stage: 'won', estimatedValue: 3100000 },
-  { company: 'Maiduguri Grocers', contactName: 'Aisha Kolo', location: 'Borno', stage: 'lost', estimatedValue: 900000 },
+const PIPELINE: { company: string; contactName: string; location: string; note: string }[] = [
+  { company: 'Calabar Fresh Mart', contactName: 'Eno Effiong', location: 'Cross River', note: 'Met at the trade fair in Lagos.' },
+  { company: 'Jos Highland Stores', contactName: 'Dung Pam', location: 'Plateau', note: 'Referred by a distributor in Abuja.' },
+  { company: 'Ilorin Value Mart', contactName: 'Rasheed Lawal', location: 'Kwara', note: 'Asked for the price list.' },
+  { company: 'Warri Coastal Traders', contactName: 'Oghenero Tega', location: 'Delta', note: 'Stocks two competing brands.' },
+  { company: 'Maiduguri Grocers', contactName: 'Aisha Kolo', location: 'Borno', note: 'Called the office about cartons.' },
 ];
 
 /* --------------------------------------------------------------- helpers */
@@ -365,11 +365,9 @@ export async function seedDemo(actor: UserProfile, onProgress: (progress: DemoPr
       ),
     ),
     ...PIPELINE.map((lead, index) => () =>
-      saveLead({
-        ...lead,
-        ownerId: actor.id,
-        ownerName: `${REPS[index % REPS.length].firstName} ${REPS[index % REPS.length].lastName}`,
-        note: 'Met at the trade fair in Lagos',
+      createLead(lead, {
+        id: actor.id,
+        name: `${REPS[index % REPS.length].firstName} ${REPS[index % REPS.length].lastName}`,
       }),
     ),
   ], 5);

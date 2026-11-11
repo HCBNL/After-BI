@@ -35,7 +35,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { requireOrg } from './tenant';
-import { MONEY_MASK, moneyHidden } from './privacy';
+import { markMoney } from './privacy';
 import { DEFAULT_CYCLE_START, DEFAULT_PAY_DAY, dayNumber, dayString, type PayRules } from './payroll';
 import type { Role, UserProfile } from '@/types';
 
@@ -485,10 +485,10 @@ export function costsFor(month: string, list: Cost[]): Cost[] {
 
 export const hhmm = (d?: Date) => (d ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '');
 
-export const naira = (n: number) => (moneyHidden() ? MONEY_MASK : `₦${Math.round(n).toLocaleString('en-NG')}`);
+export const naira = (n: number) => markMoney(`₦${Math.round(n).toLocaleString('en-NG')}`);
 
 export const nairaPrecise = (n: number) =>
-  moneyHidden() ? MONEY_MASK : `₦${n.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  markMoney(`₦${n.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`);
 
 export function timeOf(d?: Date): string {
   return d ? d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'Not yet';

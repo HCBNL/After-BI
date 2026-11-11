@@ -52,7 +52,6 @@ import type {
   CreditNoteLine,
   Distributor,
   Invoice,
-  Lead,
   Order,
   OrderCredit,
   OrderLine,
@@ -896,28 +895,6 @@ export async function recordSale(input: {
     capturedBy: input.actor.id,
     capturedByName: `${input.actor.firstName} ${input.actor.lastName}`,
     createdAt: serverTimestamp(),
-  });
-  return ref.id;
-}
-
-/* leads */
-
-export function listLeads(ownerId?: string | null): Promise<Lead[]> {
-  return ownerId
-    ? list<Lead>('leads', where('ownerId', '==', ownerId)).then(newestFirst<Lead>('updatedAt'))
-    : list<Lead>('leads', orderBy('updatedAt', 'desc'));
-}
-
-export async function saveLead(lead: Partial<Lead> & { id?: string }): Promise<string> {
-  const { id, ...data } = lead;
-  if (id) {
-    await updateDoc(doc(db, orgPath('leads'), id), { ...data, updatedAt: serverTimestamp() });
-    return id;
-  }
-  const ref = await addDoc(collection(db, orgPath('leads')), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
   });
   return ref.id;
 }
