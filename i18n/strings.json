@@ -861,10 +861,29 @@
   ]
  },
  {
+  "text": "Could not tick it off",
+  "files": [
+   "src/components/home/BriefCard.tsx",
+   "src/pages/shared/RemindersPage.tsx"
+  ]
+ },
+ {
   "text": "Delivered, to invoice",
   "files": [
    "src/components/home/BriefCard.tsx",
    "src/lib/brief.ts"
+  ]
+ },
+ {
+  "text": "Dismiss: {0}",
+  "files": [
+   "src/components/home/BriefCard.tsx"
+  ]
+ },
+ {
+  "text": "Dismiss: dealt with. It comes back only if the figures change.",
+  "files": [
+   "src/components/home/BriefCard.tsx"
   ]
  },
  {
@@ -901,6 +920,19 @@
   "files": [
    "src/components/home/BriefCard.tsx",
    "src/pages/shared/RemindersPage.tsx"
+  ]
+ },
+ {
+  "text": "Mark done: {0}",
+  "files": [
+   "src/components/home/BriefCard.tsx",
+   "src/pages/shared/TasksPage.tsx"
+  ]
+ },
+ {
+  "text": "Mark this task done",
+  "files": [
+   "src/components/home/BriefCard.tsx"
   ]
  },
  {
@@ -961,6 +993,13 @@
   "text": "repeat({0}, minmax(0, 1fr))",
   "files": [
    "src/components/home/BriefCard.tsx"
+  ]
+ },
+ {
+  "text": "Task done",
+  "files": [
+   "src/components/home/BriefCard.tsx",
+   "src/pages/shared/RemindersPage.tsx"
   ]
  },
  {
@@ -1237,7 +1276,8 @@
   "files": [
    "src/components/home/HomeHero.tsx",
    "src/components/layout/MenuSheet.tsx",
-   "src/components/layout/NavRail.tsx"
+   "src/components/layout/NavRail.tsx",
+   "src/components/ui/Select.tsx"
   ]
  },
  {
@@ -1778,6 +1818,7 @@
    "src/pages/hr/HrManage.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
    "src/pages/platform/StaffPage.tsx",
+   "src/pages/shared/RemindersPage.tsx",
    "src/pages/shared/TasksPage.tsx"
   ]
  },
@@ -2564,7 +2605,8 @@
  {
   "text": "Dismiss",
   "files": [
-   "src/components/ui/overlay.tsx"
+   "src/components/ui/overlay.tsx",
+   "src/pages/shared/RemindersPage.tsx"
   ]
  },
  {
@@ -2589,6 +2631,30 @@
   "text": "Section",
   "files": [
    "src/components/ui/SectionMenu.tsx"
+  ]
+ },
+ {
+  "text": "(max-width: 639px)",
+  "files": [
+   "src/components/ui/Select.tsx"
+  ]
+ },
+ {
+  "text": "{0}-o{1}",
+  "files": [
+   "src/components/ui/Select.tsx"
+  ]
+ },
+ {
+  "text": "No matches",
+  "files": [
+   "src/components/ui/Select.tsx"
+  ]
+ },
+ {
+  "text": "Search the choices",
+  "files": [
+   "src/components/ui/Select.tsx"
   ]
  },
  {
@@ -2622,7 +2688,19 @@
   ]
  },
  {
-  "text": "{0} things need you today",
+  "text": "{0} new things need you",
+  "files": [
+   "src/context/RemindersContext.tsx"
+  ]
+ },
+ {
+  "text": "{0} tasks closed themselves",
+  "files": [
+   "src/context/RemindersContext.tsx"
+  ]
+ },
+ {
+  "text": "A task closed itself",
   "files": [
    "src/context/RemindersContext.tsx"
   ]
@@ -2634,13 +2712,25 @@
   ]
  },
  {
-  "text": "One thing needs you today",
+  "text": "No longer needed: {0}",
+  "files": [
+   "src/context/RemindersContext.tsx"
+  ]
+ },
+ {
+  "text": "One new thing needs you",
   "files": [
    "src/context/RemindersContext.tsx"
   ]
  },
  {
   "text": "Open Reminders to see them.",
+  "files": [
+   "src/context/RemindersContext.tsx"
+  ]
+ },
+ {
+  "text": "What they were about has been dealt with.",
   "files": [
    "src/context/RemindersContext.tsx"
   ]
@@ -9357,7 +9447,8 @@
   "files": [
    "src/pages/admin/InvitePage.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
-   "src/pages/sales/AnalyticsPage.tsx"
+   "src/pages/sales/AnalyticsPage.tsx",
+   "src/pages/shared/RemindersPage.tsx"
   ]
  },
  {
@@ -20756,9 +20847,21 @@
   ]
  },
  {
+  "text": "View your picture",
+  "files": [
+   "src/pages/shared/ProfilePage.tsx"
+  ]
+ },
+ {
   "text": "Visible to your administrators",
   "files": [
    "src/pages/shared/ProfilePage.tsx"
+  ]
+ },
+ {
+  "text": "{0} new",
+  "files": [
+   "src/pages/shared/RemindersPage.tsx"
   ]
  },
  {
@@ -20781,6 +20884,12 @@
  },
  {
   "text": "{0} things worth knowing",
+  "files": [
+   "src/pages/shared/RemindersPage.tsx"
+  ]
+ },
+ {
+  "text": "1 new",
   "files": [
    "src/pages/shared/RemindersPage.tsx"
   ]
@@ -20823,6 +20932,12 @@
  },
  {
   "text": "Checked {0}",
+  "files": [
+   "src/pages/shared/RemindersPage.tsx"
+  ]
+ },
+ {
+  "text": "Dealt with: remove it. It comes back only if the figures change.",
   "files": [
    "src/pages/shared/RemindersPage.tsx"
   ]
@@ -20889,6 +21004,12 @@
  },
  {
   "text": "Tell me on this device",
+  "files": [
+   "src/pages/shared/RemindersPage.tsx"
+  ]
+ },
+ {
+  "text": "Tick this task off",
   "files": [
    "src/pages/shared/RemindersPage.tsx"
   ]
@@ -21027,12 +21148,6 @@
  },
  {
   "text": "Keep",
-  "files": [
-   "src/pages/shared/TasksPage.tsx"
-  ]
- },
- {
-  "text": "Mark done: {0}",
   "files": [
    "src/pages/shared/TasksPage.tsx"
   ]
