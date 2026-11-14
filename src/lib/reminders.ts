@@ -124,7 +124,52 @@ export interface ReminderInput {
   tasks?: Task[];
 }
 
+/**
+ * Everything the records say needs somebody, plus their own tasks. A task
+ * kept from a reminder follows that reminder: it shows today's figures, not
+ * the ones from the day it was kept, and the two are one line, not two.
+ */
 export function buildReminders(input: ReminderInput): Reminder[] {
+  return withTasks(baseReminders(input), input);
+}
+
+/**
+ * Which kinds of reminder were worked out for this role, by the id prefix
+ * they carry (`credit` for `credit:abc`). A task kept from one of these whose
+ * reminder is no longer there has been dealt with; a task kept from a kind not
+ * checked here (another role's) says nothing either way.
+ */
+export function checkedKinds(role: Role): Set<string> {
+  const office = isAdmin(role) || role === 'staff';
+  const ops = office || role === 'operations_manager' || role === 'warehouse_manager';
+  const money = isAdmin(role) || role === 'finance_manager';
+  const partner = role === 'distributor' || role === 'sales_rep';
+  const kinds = ['approval', 'draft'];
+  if (ops) kinds.push('fulfil', 'stock', 'return');
+  if (money) kinds.push('invoice', 'credit', 'credit-unapplied');
+  if (money || partner) kinds.push('overdue');
+  if (office) kinds.push('dormant');
+  if (role === 'sales_rep') kinds.push('sellout');
+  return new Set(kinds);
+}
+
+/** The kind a reminder id belongs to: `credit-unapplied:x` → `credit-unapplied`. */
+export function kindOf(id: string): string {
+  return id.split(':')[0];
+}
+
+/**
+ * Tasks kept from a reminder that no longer applies: paid, delivered, limit
+ * raised. They can be ticked off; nobody needs to be told twice.
+ */
+export function resolvedTasks(base: Reminder[], tasks: Task[], role: Role): Task[] {
+  const live = new Set(base.map((r) => r.id));
+  const checked = checkedKinds(role);
+  return tasks.filter((t) => !t.done && t.source && checked.has(kindOf(t.source)) && !live.has(t.source));
+}
+
+/** The records' reminders alone, before the person's tasks are added. */
+export function baseReminders(input: ReminderInput): Reminder[] {
   const { role, uid, root, thresholds: t } = input;
   const office = isAdmin(role) || role === 'staff';
   const ops = office || role === 'operations_manager' || role === 'warehouse_manager';
@@ -364,29 +409,51 @@ export function buildReminders(input: ReminderInput): Reminder[] {
     }
   }
 
-  /* Your own tasks: due today, or late. */
+  return out;
+}
+
+/** The person's tasks that are due or late, merged with the reminders they came from. */
+export function withTasks(base: Reminder[], input: Pick<ReminderInput, 'role' | 'root' | 'tasks'>): Reminder[] {
+  const { root } = input;
+  const today = new Date().toISOString().slice(0, 10);
+  const byId = new Map(base.map((r) => [r.id, r]));
+  const checked = checkedKinds(input.role);
+  const merged = new Set<string>();
+  const out: Reminder[] = [];
+
   for (const task of input.tasks ?? []) {
     if (task.done || !task.due || task.due > today) continue;
+    const source = task.source ? byId.get(task.source) : undefined;
+    /* Kept from a reminder that has since cleared: nothing left to chase. */
+    if (task.source && !source && checked.has(kindOf(task.source))) continue;
     const days = daysSince(task.due);
+    /* Today's words and figures when it came from a reminder, never the day-it-was-kept copy. */
+    const what = source ? source.title : task.title;
+    if (source) merged.add(source.id);
+    const own = days >= 3 || (days >= 1 && task.priority === 'high') ? 'critical' : 'warning';
     out.push({
       id: `task:${task.id}`,
       key: 'task-due',
-      severity: days >= 3 || (days >= 1 && task.priority === 'high') ? 'critical' : 'warning',
+      severity: source && RANK[source.severity] < RANK[own] ? source.severity : own,
       title:
         days > 1
-          ? `Your task is ${count(days)} days late: ${task.title}`
+          ? `Your task is ${count(days)} days late: ${what}`
           : days === 1
-            ? `Your task is 1 day late: ${task.title}`
-            : `Due today: ${task.title}`,
-      detail: task.note || 'From your own to do list.',
-      to: task.to || `${root}/tasks`,
+            ? `Your task is 1 day late: ${what}`
+            : `Due today: ${what}`,
+      detail: source ? source.detail : task.note || 'From your own to do list.',
+      to: source?.to ?? (task.to || `${root}/tasks`),
       since: task.due,
       days,
+      amount: source?.amount,
     });
   }
 
-  return out.sort((a, b) => RANK[a.severity] - RANK[b.severity] || b.days - a.days);
+  return [...base.filter((r) => !merged.has(r.id)), ...out].sort(
+    (a, b) => RANK[a.severity] - RANK[b.severity] || b.days - a.days,
+  );
 }
+
 
 export function tally(reminders: Reminder[]) {
   const critical = reminders.filter((r) => r.severity === 'critical').length;

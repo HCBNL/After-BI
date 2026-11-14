@@ -23,9 +23,7 @@
  */
 
 import {
-  addDoc,
   collection,
-  deleteDoc,
   deleteField,
   doc,
   getDoc,
@@ -33,15 +31,14 @@ import {
   limit as fsLimit,
   orderBy,
   query,
-  runTransaction,
   serverTimestamp,
-  setDoc,
   Timestamp,
-  updateDoc,
   where,
   type DocumentData,
   type QueryConstraint,
 } from 'firebase/firestore';
+/* Writes go through here so every save tells the reminders to look again. */
+import { addDoc, deleteDoc, runTransaction, setDoc, updateDoc } from './changes';
 import { APPROVER_POOL } from './approvals';
 import { db } from './firebase';
 import { orgPath, requireOrg, TENANTS, type CollectionKey } from './tenant';
