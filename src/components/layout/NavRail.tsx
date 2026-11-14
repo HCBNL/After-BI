@@ -59,7 +59,8 @@ export function NavRail({
 }) {
   const root = PORTAL_ROOT[role];
   const { openMenu } = useShell();
-  const { counts } = useReminders();
+  /* Only what is new: seen reminders still stand, but they stop counting. */
+  const { fresh } = useReminders();
   const entitlements = useEntitlements();
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const location = useLocation();
@@ -162,7 +163,7 @@ export function NavRail({
         <div className="mt-2 space-y-0.5">
           <RailLink to={root} end icon={Home} label="Home" collapsed={collapsed} />
           {showReminders && (
-            <RailLink to={`${root}/reminders`} icon={BellRing} label="Reminders" collapsed={collapsed} badge={counts.action} />
+            <RailLink to={`${root}/reminders`} icon={BellRing} label="Reminders" collapsed={collapsed} badge={fresh.action} />
           )}
         </div>
         {groups.map(({ group, items }) => (

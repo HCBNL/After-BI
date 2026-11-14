@@ -13,6 +13,7 @@ import {
   ArrowRight,
   BadgeCheck,
   Check,
+  CircleCheck,
   ChevronRight,
   Clock,
   FilePen,
@@ -25,6 +26,7 @@ import {
   TrendingUp,
   Truck,
   Wallet,
+  X,
   type LucideIcon,
 } from 'lucide-react';
 import { useReminders } from '@/context/RemindersContext';
@@ -112,9 +114,12 @@ export function BriefCard({ root, className }: { root: string; className?: strin
   );
 }
 
-/** One of the three things to do first, with a one-tap "keep as a task". */
+/**
+ * One of the three things to do first. Keep it as a task, or dismiss it once
+ * dealt with (it comes back only if its figures change); a task is ticked off.
+ */
 function FocusRow({ item, rank, kept }: { item: FocusItem; rank?: number; kept: boolean }) {
-  const { keepAsTask } = useReminders();
+  const { keepAsTask, dismiss, toggleTask, markSeen } = useReminders();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(kept);
@@ -143,7 +148,11 @@ function FocusRow({ item, rank, kept }: { item: FocusItem; rank?: number; kept: 
         <span className={cn('mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full', DOT[item.severity])} aria-hidden />
       )}
       <div className="min-w-0 flex-1">
-        <Link to={item.to} className="block text-body font-semibold leading-snug text-primary hover:underline">
+        <Link
+          to={item.to}
+          onClick={() => item.reminder && markSeen([item.reminder.id])}
+          className="block text-body font-semibold leading-snug text-primary hover:underline"
+        >
           {item.title}
         </Link>
         <p className="mt-0.5 text-label leading-snug text-secondary">{item.detail}</p>
@@ -159,7 +168,9 @@ function FocusRow({ item, rank, kept }: { item: FocusItem; rank?: number; kept: 
           ))}
         </p>
       </div>
-      {item.reminder && item.reminder.key !== 'task-due' && (
+      {item.reminder && (
+        <div className="flex shrink-0 items-center">
+      {item.reminder.key !== 'task-due' && (
         <button
           type="button"
           onClick={() => void keep()}
@@ -170,6 +181,34 @@ function FocusRow({ item, rank, kept }: { item: FocusItem; rank?: number; kept: 
         >
           {saved ? <Check size={17} className="text-status-good" /> : <ListPlus size={18} />}
         </button>
+      )}
+      {item.reminder.key === 'task-due' ? (
+        <button
+          type="button"
+          onClick={() => {
+            const id = item.reminder!.id.slice('task:'.length);
+            void toggleTask(id, true)
+              .then(() => toast.success('Task done'))
+              .catch(() => toast.error('Could not tick it off', 'Check the connection and try again.'));
+          }}
+          title="Mark this task done"
+          aria-label={`Mark done: ${item.title}`}
+          className="tap flex shrink-0 items-center justify-center rounded-xl text-secondary transition-colors hover:bg-[var(--surface-card)] hover:text-status-good"
+        >
+          <CircleCheck size={18} />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => dismiss(item.reminder!.id)}
+          title="Dismiss: dealt with. It comes back only if the figures change."
+          aria-label={`Dismiss: ${item.title}`}
+          className="tap flex shrink-0 items-center justify-center rounded-xl text-secondary transition-colors hover:bg-[var(--surface-card)] hover:text-primary"
+        >
+          <X size={18} />
+        </button>
+      )}
+        </div>
       )}
     </li>
   );

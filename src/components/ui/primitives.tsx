@@ -6,7 +6,6 @@ import {
   type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
-  type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react';
 import { ChevronDown } from 'lucide-react';
@@ -326,46 +325,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
   function Textarea({ className, rows = 4, ...rest }, ref) {
     return <textarea ref={ref} rows={rows} className={cn(FIELD_BASE, 'py-2.5 leading-relaxed', className)} {...rest} />;
-  },
-);
-
-const LAYOUT = /^(?:[a-z0-9]+:)*-?(?:w|min-w|max-w|flex|basis|grow|shrink|m|mx|my|ml|mr|mt|mb|self|order|col|row|justify-self)(?:-|$)/;
-
-function splitLayout(className?: string): { outer: string; inner: string } {
-  const outer: string[] = [];
-  const inner: string[] = [];
-  for (const token of (className ?? '').split(/\s+/).filter(Boolean)) (LAYOUT.test(token) ? outer : inner).push(token);
-  return { outer: outer.join(' '), inner: inner.join(' ') };
-}
-
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
-  function Select({ className, children, ...rest }, ref) {
-    /*
-     * Width and placement classes (max-w-sm, w-40, ml-auto, flex-1...) belong
-     * on the wrapper, not the <select>: on the select alone the wrapper stayed
-     * full width and the arrow sat at the far edge of the row, away from the
-     * box it opens. Everything else (height, text) stays on the select.
-     */
-    const { outer, inner } = splitLayout(className);
-    return (
-      <div className={cn('relative', outer)}>
-        <select
-          ref={ref}
-          className={cn(FIELD_BASE, 'h-11 w-full appearance-none pr-9 cursor-pointer', inner)}
-          {...rest}
-        >
-          {children}
-        </select>
-        <svg
-          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]"
-          viewBox="0 0 20 20"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-    );
   },
 );
 

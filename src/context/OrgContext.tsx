@@ -45,6 +45,11 @@ interface OrgValue {
   loading: boolean;
   error: string | null;
   reload(): void;
+  /**
+   * Re-reads the accounts only, without the loading screen: after a save, so
+   * limits and statuses the reminders read are the current ones.
+   */
+  refreshAccounts(): Promise<void>;
   /** Resolve by id without every screen writing its own `.find`. */
   productById(id: string): Product | undefined;
   distributorById(id: string): Distributor | undefined;
@@ -69,6 +74,17 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const reload = useCallback(() => setNonce((n) => n + 1), []);
   /* A distributor or rep loads only the accounts it works on: the rules allow no more. */
   const scope = partnerScope(user);
+
+  const refreshAccounts = useCallback(async () => {
+    if (!user || user.role === 'owner' || user.role === 'hr' || !getActiveOrg()) return;
+    try {
+      setDistributors(await (scope ? listDistributorsById(scope) : listDistributors()));
+    } catch {
+      /* Keep what is on screen; the next full load will catch up. */
+    }
+    /* `scope` is the same array for the same accounts (see partnerScope). */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, user?.role, scope]);
 
   useEffect(() => {
     /* An owner has no organisation. The platform console reads tenants, not
@@ -154,6 +170,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       loading,
       error,
       reload,
+      refreshAccounts,
       productById: (id) => productMap.get(id),
       distributorById: (id) => distributorMap.get(id),
       warehouseById: (id) => warehouseMap.get(id),
@@ -162,7 +179,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
         warehouses.find((w) => w.kind === 'company') ??
         warehouses[0],
     };
-  }, [settings, tenant, products, distributors, warehouses, loading, error, reload]);
+  }, [settings, tenant, products, distributors, warehouses, loading, error, reload, refreshAccounts]);
 
   return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
 }
