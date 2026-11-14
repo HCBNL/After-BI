@@ -25,6 +25,7 @@ import { fullName, partnerScope } from '@/lib/roles';
 import { formatDate } from '@/lib/format';
 import { ROLE_LABEL, TIER_LABEL } from '@/types';
 import { OrgPlanBadge, PlanPill } from '@/components/brand/PlanBadge';
+import { PhotoViewer } from '@/components/PhotoViewer';
 import { useEntitlements } from '@/lib/plans';
 
 export default function ProfilePage() {
@@ -44,6 +45,7 @@ export default function ProfilePage() {
   const [title, setTitle] = useState(user?.title ?? '');
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [viewing, setViewing] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -115,26 +117,38 @@ export default function ProfilePage() {
       <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
         <div className="flex items-center gap-4">
           <div className="relative shrink-0">
+            {/* The picture opens it larger; only the camera changes it. */}
             <button
               type="button"
-              disabled={uploading || !cloudinaryConfigured}
-              onClick={() => photoInput.current?.click()}
-              aria-label="Change your picture"
-              title={cloudinaryConfigured ? 'Change your picture' : 'Picture uploads are not set up on this deployment'}
-              className="group relative block rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              disabled={!user.photoURL}
+              onClick={() => setViewing(true)}
+              aria-label="View your picture"
+              title={user.photoURL ? 'View your picture' : undefined}
+              className="block rounded-full enabled:cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               <Avatar
                 name={`${user.firstName} ${user.lastName}`}
                 src={user.photoURL ? imageUrl(user.photoURL, { width: 160 }) : undefined}
                 size="lg"
               />
-              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100">
-                {uploading ? <Spinner size={18} /> : <Camera size={18} aria-hidden />}
-              </span>
-              <span className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface-card)] bg-brand-600 text-white">
-                {uploading ? <Spinner size={11} /> : <Camera size={12} aria-hidden />}
-              </span>
             </button>
+            <button
+              type="button"
+              disabled={uploading || !cloudinaryConfigured}
+              onClick={() => photoInput.current?.click()}
+              aria-label="Change your picture"
+              title={cloudinaryConfigured ? 'Change your picture' : 'Picture uploads are not set up on this deployment'}
+              className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--surface-card)] bg-brand-600 text-white shadow-sm transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-60"
+            >
+              {uploading ? <Spinner size={13} /> : <Camera size={14} aria-hidden />}
+            </button>
+            {viewing && user.photoURL && (
+              <PhotoViewer
+                src={imageUrl(user.photoURL, { width: 960 })}
+                alt={`${user.firstName} ${user.lastName}`}
+                onClose={() => setViewing(false)}
+              />
+            )}
             <input
               ref={photoInput}
               type="file"

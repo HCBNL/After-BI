@@ -7,8 +7,8 @@
  * It is worked out from this organisation's own records every quarter of an
  * hour while the app is open. Nothing is sent to anybody.
  */
-import { useMemo, useState } from 'react';
-import { AlarmClock, BellRing, Check, ChevronDown, ListPlus, RefreshCw } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { AlarmClock, BellRing, Check, ChevronDown, CircleCheck, ListPlus, RefreshCw, X } from 'lucide-react';
 import { Insights, Pipeline, Sentences } from '@/components/home/BriefCard';
 import { useToast } from '@/components/ui';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -49,7 +49,23 @@ function countsLine(action: number, later: number): string {
 }
 
 export default function RemindersPage() {
-  const { reminders, counts, loading, checkedAt, reload, snooze, notify, setNotify, brief, tasks, keepAsTask } = useReminders();
+  const {
+    reminders, counts, loading, checkedAt, reload, snooze, dismiss, notify, setNotify, brief, tasks, keepAsTask, toggleTask, isNew, markSeen,
+  } = useReminders();
+
+  /*
+   * Opening this screen is seeing what is on it: everything listed is marked
+   * seen, and the menu count drops to what is new. What was new on arrival
+   * keeps a "New" tag for this visit so it can still be picked out.
+   */
+  const [newHere, setNewHere] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    if (loading) return;
+    const arriving = reminders.filter(isNew).map((r) => r.id);
+    if (!arriving.length) return;
+    setNewHere((current) => new Set([...current, ...arriving]));
+    markSeen(arriving);
+  }, [reminders, loading, isNew, markSeen]);
   const [view, setView] = useState('action');
   const toast = useToast();
   const kept = useMemo(() => new Set(tasks.filter((t) => !t.done && t.source).map((t) => t.source)), [tasks]);
@@ -95,6 +111,11 @@ export default function RemindersPage() {
  */}
         <p className="min-w-0 text-body font-semibold text-primary">
           <span>{countsLine(counts.action, counts.later)}</span>
+          {newHere.size > 0 && (
+            <span className="ml-2 rounded-full bg-brand-600 px-2 py-0.5 text-caption font-semibold text-white dark:bg-brand-500 dark:text-brand-950">
+              {newHere.size === 1 ? '1 new' : `${newHere.size} new`}
+            </span>
+          )}
           {checkedAt && (
             <span className="ml-2 text-caption font-normal text-muted">
               {`Checked ${checkedAt.toLocaleTimeString(dateLocale('en-NG'), { hour: '2-digit', minute: '2-digit' })}`}
@@ -138,6 +159,15 @@ export default function RemindersPage() {
               kept={kept.has(reminder.id)}
               onKeep={() => void keep(reminder.id)}
               onSnooze={() => snooze(reminder.id)}
+              fresh={newHere.has(reminder.id)}
+              isTask={reminder.key === 'task-due'}
+              onDismiss={() =>
+                reminder.key === 'task-due'
+                  ? void toggleTask(reminder.id.slice('task:'.length), true)
+                      .then(() => toast.success('Task done'))
+                      .catch(() => toast.error('Could not tick it off', 'Check the connection and try again.'))
+                  : dismiss(reminder.id)
+              }
             />
           ))}
         </ul>
@@ -192,6 +222,9 @@ function ReminderRow({
   kept,
   onKeep,
   onSnooze,
+  fresh,
+  isTask,
+  onDismiss,
 }: {
   title: string;
   detail: string;
@@ -202,6 +235,11 @@ function ReminderRow({
   kept: boolean;
   onKeep: () => void;
   onSnooze: () => void;
+  /** New when this screen was opened. */
+  fresh: boolean;
+  isTask: boolean;
+  /** Dismiss a reminder (until its figures change), or tick off a task. */
+  onDismiss: () => void;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -213,7 +251,10 @@ function ReminderRow({
         className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--surface-sunken)]"
       >
         <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', dot)} aria-hidden />
-        <span className={cn('min-w-0 flex-1 text-body font-semibold text-primary', !open && 'truncate')}>{title}</span>
+        <span className={cn('min-w-0 flex-1 text-body text-primary', fresh ? 'font-semibold' : 'font-medium', !open && 'truncate')}>{title}</span>
+        {fresh && (
+          <span className="shrink-0 rounded-full bg-brand-600 px-2 py-0.5 text-micro font-semibold text-white dark:bg-brand-500 dark:text-brand-950">New</span>
+        )}
         <span className="shrink-0 text-micro font-semibold uppercase tracking-[0.08em] text-muted">{when}</span>
         <ChevronDown size={17} aria-hidden className={cn('shrink-0 text-muted transition-transform', open && 'rotate-180')} />
       </button>
@@ -232,6 +273,21 @@ function ReminderRow({
             <Button variant="ghost" size="sm" icon={<AlarmClock size={15} />} onClick={onSnooze} title="Hide this until tomorrow">
               Snooze
             </Button>
+            {isTask ? (
+              <Button variant="ghost" size="sm" icon={<CircleCheck size={15} />} onClick={onDismiss} title="Tick this task off">
+                Done
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<X size={15} />}
+                onClick={onDismiss}
+                title="Dealt with: remove it. It comes back only if the figures change."
+              >
+                Dismiss
+              </Button>
+            )}
           </div>
         </div>
       )}
