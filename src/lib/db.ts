@@ -39,6 +39,7 @@ import {
 } from 'firebase/firestore';
 /* Writes go through here so every save tells the reminders to look again. */
 import { addDoc, deleteDoc, runTransaction, setDoc, updateDoc } from './changes';
+import { logAudit } from './audit';
 import { APPROVER_POOL } from './approvals';
 import { db } from './firebase';
 import { orgPath, requireOrg, TENANTS, type CollectionKey } from './tenant';
@@ -55,6 +56,7 @@ import type {
   OrderStatus,
   OrgSettings,
   Payment,
+  PaymentAmendment,
   Product,
   InvoiceStatus,
   ReturnRecord,
@@ -223,7 +225,15 @@ async function nextNumber(prefix: 'PO' | 'INV' | 'RET'): Promise<string> {
  * reload. A one-shot read would only have been a second, staler way to ask.
  */
 export async function updateProfile(uid: string, patch: Partial<UserProfile>): Promise<void> {
+  const before = patch.role ? await getDoc(doc(db, 'users', uid)).catch(() => null) : null;
   await updateDoc(doc(db, 'users', uid), { ...patch, updatedAt: serverTimestamp() });
+  const was = before?.exists() ? (before.data() as UserProfile) : null;
+  if (was) {
+    const name = `${was.firstName} ${was.lastName}`.trim();
+    if (patch.role && patch.role !== was.role) {
+      logAudit({ area: 'people', action: 'user.role-changed', summary: `Role changed for ${name}: ${was.role} → ${patch.role}`, ref: name });
+    }
+  }
 }
 
 /** Detach a login from the distributor account it used to belong to. */
@@ -291,6 +301,15 @@ export async function saveOrgSettings(patch: Partial<OrgSettings>): Promise<void
     { ...patch, updatedAt: serverTimestamp() },
     { merge: true },
   );
+  /* Only the settings that change who decides or what is owed; the logo and footer are not decisions. */
+  const weighty = Object.keys(patch).filter((k) => /approv|credit|limit|threshold|terms|tax|vat|price|discount|feature|role/i.test(k));
+  if (weighty.length) {
+    logAudit({
+      area: 'settings',
+      action: 'settings.changed',
+      summary: `Company settings changed: ${weighty.map((k) => k.replace(/([A-Z])/g, ' $1').toLowerCase()).join(', ')}`,
+    });
+  }
 }
 
 /* products */
@@ -304,7 +323,17 @@ export function listProducts(activeOnly = false): Promise<Product[]> {
 export async function saveProduct(product: Partial<Product> & { id?: string }): Promise<string> {
   const { id, ...data } = product;
   if (id) {
+    /* A price change is a decision worth a line in the audit log; other edits are not. */
+    const before = data.pricing ? await one<Product>('products', id).catch(() => null) : null;
     await updateDoc(doc(db, orgPath('products'), id), { ...data, updatedAt: serverTimestamp() });
+    if (before && data.pricing && JSON.stringify(before.pricing ?? {}) !== JSON.stringify(data.pricing)) {
+      logAudit({
+        area: 'catalogue',
+        action: 'product.repriced',
+        summary: `Prices changed on ${data.name ?? before.name}: ${priceList(before.pricing)} → ${priceList(data.pricing)}`,
+        ref: data.name ?? before.name,
+      });
+    }
     return id;
   }
   const ref = await addDoc(collection(db, orgPath('products')), {
@@ -312,7 +341,21 @@ export async function saveProduct(product: Partial<Product> & { id?: string }): 
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  logAudit({
+    area: 'catalogue',
+    action: 'product.added',
+    summary: `Product added: ${data.name ?? 'unnamed'}${data.pricing ? `, ${priceList(data.pricing)}` : ''}`,
+    ref: data.name,
+  });
   return ref.id;
+}
+
+/** "OT ₦3,000 · MT ₦2,800", for the audit log. */
+function priceList(pricing: Partial<Record<string, number>> | undefined): string {
+  const parts = Object.entries(pricing ?? {})
+    .filter(([, v]) => typeof v === 'number')
+    .map(([tier, v]) => `${tier} ${nairaPlain(v as number)}`);
+  return parts.length ? parts.join(' · ') : 'no price';
 }
 
 /**
@@ -329,6 +372,8 @@ export async function retireProduct(id: string): Promise<void> {
     status: 'inactive',
     updatedAt: serverTimestamp(),
   });
+  const product = await one<Product>('products', id).catch(() => null);
+  logAudit({ area: 'catalogue', action: 'product.retired', summary: `Product retired: ${product?.name ?? id}`, ref: product?.name });
 }
 
 /* distributors */
@@ -366,7 +411,17 @@ export async function saveDistributor(
 ): Promise<string> {
   const { id, ...data } = distributor;
   if (id) {
+    const before = data.creditLimit !== undefined ? await one<Distributor>('distributors', id).catch(() => null) : null;
     await updateDoc(doc(db, orgPath('distributors'), id), { ...data, updatedAt: serverTimestamp() });
+    if (before && data.creditLimit !== undefined && (before.creditLimit ?? 0) !== data.creditLimit) {
+      logAudit({
+        area: 'finance',
+        action: 'credit-limit.changed',
+        summary: `Credit limit for ${data.company ?? before.company}: ${nairaPlain(before.creditLimit ?? 0)} → ${nairaPlain(data.creditLimit ?? 0)}`,
+        ref: data.company ?? before.company,
+        amount: data.creditLimit ?? 0,
+      });
+    }
     return id;
   }
   const ref = await addDoc(collection(db, orgPath('distributors')), {
@@ -559,11 +614,13 @@ export async function decideOrder(
   note?: string,
 ): Promise<OrderStatus> {
   const ref = doc(db, orgPath('orders'), orderId);
+  let seen: Order | null = null;
 
-  return runTransaction(db, async (tx) => {
+  const result = await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error('That order no longer exists.');
     const order = snap.data() as Order;
+    seen = order;
 
     const approvals = [
       ...(order.approvals ?? []).filter((a) => a.uid !== approver.id),
@@ -591,6 +648,18 @@ export async function decideOrder(
 
     return status;
   });
+  const order = seen as Order | null;
+  if (order) {
+    logAudit({
+      area: 'sales',
+      action: decision === 'approved' ? 'order.approved' : 'order.rejected',
+      summary: `${decision === 'approved' ? 'Approved' : 'Rejected'} order ${order.orderNumber} for ${order.distributorName}`,
+      ref: order.orderNumber,
+      amount: order.netTotal ?? order.total,
+      reason: note,
+    });
+  }
+  return result;
 }
 
 /**
@@ -934,8 +1003,11 @@ export function listOpenInvoices(max = 3000): Promise<Invoice[]> {
 
 /** Payments (cash, credit notes and return credits) on or after `fromISO`. */
 export function listPaymentsSince(fromISO: string, max = 5000): Promise<Payment[]> {
-  return list<Payment>('payments', where('paidOn', '>=', fromISO), orderBy('paidOn', 'desc'), fsLimit(max));
+  return list<Payment>('payments', where('paidOn', '>=', fromISO), orderBy('paidOn', 'desc'), fsLimit(max)).then(standing);
 }
+
+/** A reversed payment was posted in error: it stays on record, not on any list or total. */
+const standing = (rows: Payment[]) => rows.filter((p) => !p.reversed);
 
 /** The live (not void) invoice raised from an order, if any. Read for the proforma's payment status. */
 export async function invoiceForOrder(order: Pick<Order, 'id' | 'distributorId'>): Promise<Invoice | null> {
@@ -958,7 +1030,9 @@ export function listPayments(invoiceId: string, distributorId?: string): Promise
     'payments',
     where('invoiceId', '==', invoiceId),
     ...(distributorId ? [where('distributorId', '==', distributorId)] : []),
-  ).then(newestFirst<Payment>('paidOn'));
+  )
+    .then(standing)
+    .then(newestFirst<Payment>('paidOn'));
 }
 
 /**
@@ -980,7 +1054,142 @@ export function listAccountPayments(distributorId: string, max = 500): Promise<P
     where('distributorId', '==', distributorId),
     orderBy('paidOn', 'desc'),
     fsLimit(max),
-  );
+  ).then(standing);
+}
+
+/** Who may correct or reverse a posted payment. Nobody else, not even an admin. */
+export const PAYMENT_CORRECTORS: Role[] = ['super_admin', 'finance_manager'];
+
+/** An invoice's status from what has been paid against it. */
+function paidStatus(invoice: Invoice, paid: number): Invoice['status'] {
+  if (paid >= invoice.total - 0.009) return 'paid';
+  if (paid > 0.009) return 'part_paid';
+  return invoice.dueOn && invoice.dueOn < todayISO() ? 'overdue' : 'issued';
+}
+
+/**
+ * Correct a posted payment: amount, date, method or reference, with the
+ * reason. Or reverse it (`reverse: true`) when it was posted in error: its
+ * amount becomes 0, it leaves the statement and every total, and the record
+ * stays.
+ *
+ * ONE TRANSACTION, like posting it: the payment, its correction history, and
+ * the invoice's paid amount and status move together, so the statement and
+ * the invoice can never disagree. The history is appended, never rewritten:
+ * every correction keeps what the payment said before, who changed it and why.
+ *
+ * Credits (from a return or a credit note) are not corrected here: they come
+ * from their own documents and are put right there.
+ */
+export async function amendPayment(input: {
+  payment: Pick<Payment, 'id'>;
+  changes?: { amount: number; paidOn: string; method: Payment['method']; reference: string };
+  reverse?: boolean;
+  reason: string;
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>;
+}): Promise<void> {
+  if (!PAYMENT_CORRECTORS.includes(input.actor.role)) {
+    throw new Error('Only a super admin or the finance manager can correct a payment.');
+  }
+  const reason = input.reason.trim();
+  if (!reason) throw new Error('Say why it is being corrected. It is kept with the payment.');
+  if (!input.reverse) {
+    if (!input.changes) throw new Error('Nothing to change.');
+    if (!(input.changes.amount > 0)) throw new Error('A payment must be for more than nothing. To take it back, reverse it.');
+    if (input.changes.method === 'credit') throw new Error('Choose how the money came in.');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.changes.paidOn)) throw new Error('Choose the date it was paid.');
+  }
+
+  const paymentRef = doc(db, orgPath('payments'), input.payment.id);
+  let trail: unknown = null;
+  await runTransaction(db, async (tx) => {
+    const paySnap = await tx.get(paymentRef);
+    if (!paySnap.exists()) throw new Error('That payment no longer exists.');
+    const payment = { ...(paySnap.data() as Payment), id: paySnap.id };
+    if (payment.reversed) throw new Error('That payment has already been reversed.');
+    if (payment.method === 'credit') {
+      throw new Error('Credits come from a return or a credit note and are corrected there, not here.');
+    }
+    const invoiceRef = doc(db, orgPath('invoices'), payment.invoiceId);
+    const invSnap = await tx.get(invoiceRef);
+    if (!invSnap.exists()) throw new Error('The invoice this payment is against no longer exists.');
+    const invoice = invSnap.data() as Invoice;
+
+    const from = {
+      amount: payment.amount,
+      paidOn: payment.paidOn,
+      method: payment.method,
+      reference: payment.reference ?? null,
+    };
+    const to = input.reverse
+      ? { ...from, amount: 0 }
+      : {
+          amount: kobo(input.changes!.amount),
+          paidOn: input.changes!.paidOn,
+          method: input.changes!.method,
+          reference: input.changes!.reference.trim() || null,
+        };
+    if (
+      !input.reverse &&
+      to.amount === from.amount &&
+      to.paidOn === from.paidOn &&
+      to.method === from.method &&
+      to.reference === from.reference
+    ) {
+      throw new Error('Nothing has changed.');
+    }
+
+    const paidAfter = kobo((invoice.amountPaid ?? 0) - from.amount + to.amount);
+    if (paidAfter > invoice.total + 0.009) {
+      const room = kobo(invoice.total - (invoice.amountPaid ?? 0) + from.amount);
+      throw new Error(
+        `${invoice.invoiceNumber} is for ${nairaPlain(invoice.total, true)}, so this payment can be at most ${nairaPlain(room, true)}.`,
+      );
+    }
+
+    const amendment: PaymentAmendment = {
+      at: new Date().toISOString(),
+      by: input.actor.id,
+      byName: `${input.actor.firstName} ${input.actor.lastName}`,
+      reason: reason.slice(0, 500),
+      from,
+      to,
+      ...(input.reverse ? { reversed: true } : {}),
+    };
+
+    tx.update(paymentRef, {
+      amount: to.amount,
+      paidOn: to.paidOn,
+      method: to.method,
+      reference: to.reference,
+      amendments: [...(payment.amendments ?? []), amendment],
+      ...(input.reverse ? { reversed: true } : {}),
+      updatedAt: serverTimestamp(),
+    });
+    if (paidAfter !== kobo(invoice.amountPaid ?? 0)) {
+      tx.update(invoiceRef, {
+        amountPaid: paidAfter,
+        status: paidStatus(invoice, paidAfter),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    trail = { invoiceNumber: invoice.invoiceNumber, customer: invoice.distributorName, from, to };
+  });
+
+  const t = trail as { invoiceNumber: string; customer: string; from: PaymentAmendment['from']; to: PaymentAmendment['to'] } | null;
+  if (t) {
+    const said = (x: PaymentAmendment['from']) => `${nairaPlain(x.amount)} on ${x.paidOn}${x.reference ? ` (${x.reference})` : ''}`;
+    logAudit({
+      area: 'finance',
+      action: input.reverse ? 'payment.reversed' : 'payment.corrected',
+      summary: input.reverse
+        ? `Reversed a payment of ${said(t.from)} on ${t.invoiceNumber} for ${t.customer}`
+        : `Corrected a payment on ${t.invoiceNumber} for ${t.customer}: ${said(t.from)} → ${said(t.to)}`,
+      ref: t.invoiceNumber,
+      amount: input.reverse ? t.from.amount : t.to.amount,
+      reason,
+    });
+  }
 }
 
 /**
@@ -1136,6 +1345,7 @@ export async function issueCreditNote(input: {
   const counterRef = doc(db, orgPath('counters'), `CN-${ym}`);
   const actorName = `${input.actor.firstName} ${input.actor.lastName}`;
 
+  let seenInvoice: Invoice | null = null;
   const creditNumber = await runTransaction(db, async (tx) => {
     const snap = await tx.get(invoiceRef);
     if (!snap.exists()) throw new Error('That invoice no longer exists.');
@@ -1206,9 +1416,19 @@ export async function issueCreditNote(input: {
       status: paidAfter >= invoice.total - 0.009 ? 'paid' : 'part_paid',
       updatedAt: serverTimestamp(),
     });
+    seenInvoice = invoice;
     return number;
   });
 
+  const inv = seenInvoice as Invoice | null;
+  logAudit({
+    area: 'finance',
+    action: 'credit-note.issued',
+    summary: `Credit note ${creditNumber} on ${inv?.invoiceNumber ?? 'an invoice'}${inv ? ` for ${inv.distributorName}` : ''}`,
+    ref: creditNumber,
+    amount: total,
+    reason: input.reason,
+  });
   return { id: noteRef.id, creditNumber };
 }
 
@@ -1546,11 +1766,13 @@ export async function cancelOrder(
   reason?: string,
 ): Promise<void> {
   const ref = doc(db, orgPath('orders'), orderId);
+  let seen: Order | null = null;
 
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error('That order no longer exists.');
     const order = snap.data() as Order;
+    seen = order;
 
     if (order.status === 'fulfilled') {
       throw new Error(
@@ -1567,6 +1789,17 @@ export async function cancelOrder(
     });
   });
 
+  const order = seen as Order | null;
+  if (order) {
+    logAudit({
+      area: 'sales',
+      action: 'order.cancelled',
+      summary: `Cancelled order ${order.orderNumber} for ${order.distributorName}`,
+      ref: order.orderNumber,
+      amount: order.netTotal ?? order.total,
+      reason,
+    });
+  }
 }
 
 /* returns */
@@ -1628,10 +1861,12 @@ export async function decideReturn(
   const ref = doc(db, orgPath('returns'), returnId);
   const actorName = `${actor.firstName} ${actor.lastName}`;
 
+  let seenReturn: ReturnRecord | null = null;
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error('That return no longer exists.');
     const record = shape<ReturnRecord>(snap.id, snap.data());
+    seenReturn = record;
 
     const legal =
       (record.status === 'requested' && (status === 'approved' || status === 'rejected')) ||
@@ -1690,6 +1925,17 @@ export async function decideReturn(
       updatedAt: serverTimestamp(),
     });
   });
+
+  const decided = seenReturn as ReturnRecord | null;
+  if (decided && (status === 'approved' || status === 'rejected')) {
+    logAudit({
+      area: 'sales',
+      action: status === 'approved' ? 'return.approved' : 'return.rejected',
+      summary: `${status === 'approved' ? 'Approved' : 'Rejected'} return ${decided.returnNumber}: ${decided.quantity} × ${decided.productName} from ${decided.distributorName}${status === 'approved' && options.creditValue ? `, credit ${nairaPlain(options.creditValue)}` : ''}`,
+      ref: decided.returnNumber,
+      amount: status === 'approved' ? options.creditValue : undefined,
+    });
+  }
 
   if (status === 'approved' && (options.creditValue ?? 0) > 0 && MONEY_ROLES.includes(actor.role)) {
     await applyReturnCredit(returnId, actor);
@@ -1902,6 +2148,21 @@ export async function updateInvoice(
     updatedAt: serverTimestamp(),
   });
 
+  /* Edits to what it says (lines, total, dates) are decisions; moving its status along is not. */
+  const what: string[] = [];
+  if (patch.total !== undefined && patch.total !== invoice.total) what.push(`total ${nairaPlain(invoice.total)} → ${nairaPlain(patch.total)}`);
+  else if (patch.lines) what.push('lines');
+  if (patch.issuedOn && patch.issuedOn !== invoice.issuedOn) what.push(`issued ${invoice.issuedOn} → ${patch.issuedOn}`);
+  if (patch.dueOn && patch.dueOn !== invoice.dueOn) what.push(`due ${invoice.dueOn} → ${patch.dueOn}`);
+  if (what.length) {
+    logAudit({
+      area: 'finance',
+      action: 'invoice.edited',
+      summary: `Edited invoice ${invoice.invoiceNumber} for ${invoice.distributorName}: ${what.join(', ')}`,
+      ref: invoice.invoiceNumber,
+      amount: patch.total ?? invoice.total,
+    });
+  }
 }
 
 /** Void rather than delete, for the same reason an order is cancelled. */
@@ -1928,6 +2189,14 @@ export async function voidInvoice(
     updatedAt: serverTimestamp(),
   });
 
+  logAudit({
+    area: 'finance',
+    action: 'invoice.voided',
+    summary: `Voided invoice ${invoice.invoiceNumber} for ${invoice.distributorName}`,
+    ref: invoice.invoiceNumber,
+    amount: invoice.total,
+    reason,
+  });
 }
 
 /* sales */

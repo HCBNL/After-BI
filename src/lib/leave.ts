@@ -28,6 +28,7 @@
 
 import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, limit, query, setDoc, where, writeBatch } from 'firebase/firestore';
 import { db } from './firebase';
+import { logAudit } from './audit';
 import { attendanceId, hrPath } from './hr';
 import { dayNumber, dayString, workingDays } from './payroll';
 
@@ -216,6 +217,12 @@ export async function decideLeave(l: Leave, approve: boolean, decidedBy: string,
   });
   if (approve) markDays(batch, l.uid, l.name, dates);
   await batch.commit();
+  logAudit({
+    area: 'people',
+    action: approve ? 'leave.approved' : 'leave.declined',
+    summary: `${approve ? 'Approved' : 'Declined'} leave for ${l.name}: ${l.from} to ${l.to}${approve ? `, ${dates.length} working ${dates.length === 1 ? 'day' : 'days'}` : ''}`,
+    ref: l.name,
+  });
 }
 
 /** HR recording leave on someone's behalf: approved as it is written. */
@@ -245,6 +252,13 @@ export async function recordLeave(
   );
   markDays(batch, person.uid, person.name, dates);
   await batch.commit();
+  logAudit({
+    area: 'people',
+    action: 'leave.recorded',
+    summary: `Leave recorded for ${person.name}: ${from} to ${to}, ${dates.length} working ${dates.length === 1 ? 'day' : 'days'}`,
+    ref: person.name,
+    reason,
+  });
 }
 
 /**

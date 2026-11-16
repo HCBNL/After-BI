@@ -32,6 +32,7 @@ import {
 import { db } from './firebase';
 import { orgPath } from './tenant';
 import { saveDistributor, setRepDistributors } from './db';
+import { logAudit } from './audit';
 import type { Lead, LeadLog, LeadLogKind, LeadStatus, PriceTier } from '@/types';
 
 /** The kinds a rep picks from when logging. */
@@ -264,6 +265,7 @@ export async function withdrawRequest(lead: Lead, by: Person): Promise<void> {
 export async function declineLead(lead: Lead, reason: string, by: Person): Promise<void> {
   await updateDoc(leadRef(lead.id), { status: 'open', updatedAt: serverTimestamp() });
   await addLog(lead, { kind: 'declined', text: reason }, by);
+  logAudit({ area: 'sales', action: 'lead.declined', summary: `Did not confirm lead ${lead.company} as a customer yet`, ref: lead.company, reason });
 }
 
 /**
@@ -298,6 +300,12 @@ export async function confirmLead(lead: Lead, tier: PriceTier, by: Person): Prom
     updatedAt: serverTimestamp(),
   });
   await addLog(lead, { kind: 'confirmed', text: `Customer account opened for ${lead.company}.` }, by);
+  logAudit({
+    area: 'sales',
+    action: 'lead.confirmed',
+    summary: `Confirmed lead ${lead.company} as a customer (${tier}), rep ${lead.ownerName || 'none'}`,
+    ref: lead.company,
+  });
   return customerId;
 }
 

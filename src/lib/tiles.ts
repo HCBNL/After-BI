@@ -26,6 +26,7 @@
 
 import {
   LayoutDashboard,
+  ShieldCheck,
   BarChart3,
   BellRing,
   Boxes,
@@ -596,6 +597,15 @@ const ACTIONS: AppAction[] = [
     icon: Settings,
     to: 'settings',
     roles: ADMINS,
+    group: 'Company',
+  },
+  {
+    id: 'audit',
+    label: 'Audit log',
+    description: 'Who made each major decision and when: payment corrections, invoice edits, credit notes, approvals, limits, roles and prices.',
+    icon: ShieldCheck,
+    to: 'audit',
+    roles: ['super_admin', 'admin'],
     group: 'Company',
   },
 ];
