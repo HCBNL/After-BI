@@ -14,7 +14,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { FileText, Printer, Receipt, Wallet } from 'lucide-react';
+import { FileText, Pencil, Printer, Receipt, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button, EmptyState, useToast } from '@/components/ui';
 import { AccountPicker } from '@/components/finance/AccountPicker';
@@ -29,6 +29,8 @@ import { partnerScope } from '@/lib/roles';
 import { useBrand } from '@/lib/brand';
 import { formatDate, naira, todayISO } from '@/lib/format';
 import { printDocument } from '@/lib/print';
+import { AmendPaymentModal, canCorrectPayment } from '@/components/finance/AmendPayment';
+import type { Payment } from '@/types';
 
 interface Line {
   id: string;
@@ -38,6 +40,8 @@ interface Line {
   debit: number;
   credit: number;
   balance: number;
+  /** The payment behind a credit line, so it can be corrected. */
+  payment?: Payment;
 }
 
 /** How a payment came in, as the line the statement shows. */
@@ -84,7 +88,8 @@ export default function StatementPage() {
 
   const distributor = distributors.find((d) => d.id === distributorId);
 
-  const { data, loading } = useAsync(
+  const [correcting, setCorrecting] = useState<Payment | null>(null);
+  const { data, loading, reload } = useAsync(
     async () => {
       if (!distributorId) return null;
       /*
@@ -130,6 +135,7 @@ export default function StatementPage() {
             : RECEIVED[p.method] ?? 'Payment received',
         debit: 0,
         credit: p.amount,
+        payment: p,
       })),
     ].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
 
@@ -295,7 +301,24 @@ export default function StatementPage() {
                 {lines.map((line) => (
                   <tr key={line.id} className="border-b border-hairline last:border-0">
                     <td className="px-4 py-2.5 text-label text-muted">{formatDate(line.date)}</td>
-                    <td className="tabular px-4 py-2.5 text-label font-semibold text-primary">{line.reference}</td>
+                    <td className="tabular px-4 py-2.5 text-label font-semibold text-primary">
+                      <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+                        {line.reference}
+                        {(line.payment?.amendments?.length ?? 0) > 0 && (
+                          <span className="rounded-full bg-[var(--surface-sunken)] px-2 py-0.5 text-micro font-semibold text-muted">Corrected</span>
+                        )}
+                        {line.payment && canCorrectPayment(user?.role, line.payment) && (
+                          <button
+                            type="button"
+                            onClick={() => setCorrecting(line.payment!)}
+                            className="no-print inline-flex h-7 items-center gap-1 rounded-full border border-hairline px-2.5 text-caption font-semibold text-secondary transition-colors hover:border-[var(--border-strong)] hover:text-primary"
+                            aria-label={`Correct payment ${line.reference}`}
+                          >
+                            <Pencil size={12} aria-hidden /> Correct
+                          </button>
+                        )}
+                      </span>
+                    </td>
                     <td className="hidden px-4 py-2.5 text-label text-secondary sm:table-cell">{line.description}</td>
                     <td className="tabular px-4 py-2.5 text-right text-label text-secondary">
                       {line.debit ? naira(line.debit, true) : ''}
@@ -322,6 +345,17 @@ export default function StatementPage() {
             </table>
           </div>
         </div>
+      )}
+
+      {correcting && (
+        <AmendPaymentModal
+          payment={correcting}
+          onClose={() => setCorrecting(null)}
+          onDone={() => {
+            setCorrecting(null);
+            reload();
+          }}
+        />
       )}
     </div>
   );

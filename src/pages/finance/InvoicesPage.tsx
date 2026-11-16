@@ -15,7 +15,8 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Ban, CalendarDays, Plus, Printer, Receipt, ReceiptText } from 'lucide-react';
+import { Ban, CalendarDays, Pencil, Plus, Printer, Receipt, ReceiptText } from 'lucide-react';
+import { AmendPaymentModal, canCorrectPayment } from '@/components/finance/AmendPayment';
 import { AdjustPriceModal } from './AdjustPriceModal';
 import { PageHeader } from '@/components/layout/PageHeader';
 import {
@@ -530,6 +531,8 @@ function PaymentModal({
     async () => (invoice ? listCreditNotes({ invoiceId: invoice.id, distributorId: invoice.distributorId }) : []),
     [invoice?.id, invoice?.amountPaid],
   );
+  /* A posted payment being corrected (super admin and finance manager only). */
+  const [correcting, setCorrecting] = useState<Payment | null>(null);
 
   if (invoice && invoice.id !== seed) {
     setSeed(invoice.id);
@@ -823,15 +826,39 @@ function PaymentModal({
                       <p className="truncate text-caption text-muted">{payment.reference}</p>
                     )}
                   </div>
-                  <p className="tabular shrink-0 text-label font-bold text-primary">
-                    {naira(payment.amount)}
-                  </p>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {(payment.amendments?.length ?? 0) > 0 && (
+                      <span className="rounded-full bg-[var(--surface-sunken)] px-2 py-0.5 text-micro font-semibold text-muted">Corrected</span>
+                    )}
+                    <p className="tabular text-label font-bold text-primary">{naira(payment.amount)}</p>
+                    {canCorrectPayment(user?.role, payment) && (
+                      <button
+                        type="button"
+                        onClick={() => setCorrecting(payment)}
+                        aria-label={`Correct this payment of ${naira(payment.amount)}`}
+                        title="Correct this payment"
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-secondary transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary"
+                      >
+                        <Pencil size={14} aria-hidden />
+                      </button>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
         )}
       </div>
+      {correcting && (
+        <AmendPaymentModal
+          payment={correcting}
+          onClose={() => setCorrecting(null)}
+          onDone={() => {
+            setCorrecting(null);
+            onSaved();
+          }}
+        />
+      )}
     </Modal>
   );
 }

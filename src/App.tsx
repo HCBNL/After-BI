@@ -123,6 +123,7 @@ const TasksPage = lazy(() => import('@/pages/shared/TasksPage'));
 const HrPage = lazy(() => import('@/pages/hr/HrPage'));
 const HrManage = lazy(() => import('@/pages/hr/HrManage'));
 const CompanyInfo = lazy(() => import('@/pages/team/CompanyInfo'));
+const AuditLogPage = lazy(() => import('@/pages/admin/AuditLogPage'));
 const MyCards = lazy(() => import('@/pages/team/MyCards'));
 
 /** The right shape of waiting for the address being opened. */
@@ -405,6 +406,7 @@ export default function App() {
             <Route path="users" element={<AdminOnly><UsersPage /></AdminOnly>} />
             <Route path="invite" element={<AdminOnly><InvitePage /></AdminOnly>} />
             <Route path="settings" element={<AdminOnly><SettingsPage /></AdminOnly>} />
+            <Route path="audit" element={<AdminOnly><AuditLogPage /></AdminOnly>} />
             {teamRoutes(true)}
 
             <Route path="profile" element={<ProfilePage />} />

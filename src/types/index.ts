@@ -689,6 +689,21 @@ export interface Payment {
   recordedBy: string;
   recordedByName: string;
   createdAt: string;
+  /** Corrections made after it was posted, oldest first. Never removed. */
+  amendments?: PaymentAmendment[];
+  /** Taken back as posted in error: its amount is 0 and it leaves the statement. */
+  reversed?: boolean;
+}
+
+/** What a payment said before and after one correction, and who made it and why. */
+export interface PaymentAmendment {
+  at: string;
+  by: string;
+  byName: string;
+  reason: string;
+  from: Pick<Payment, 'amount' | 'paidOn' | 'method'> & { reference: string | null };
+  to: Pick<Payment, 'amount' | 'paidOn' | 'method'> & { reference: string | null };
+  reversed?: boolean;
 }
 
 /* returns */
