@@ -500,6 +500,203 @@
   ]
  },
  {
+  "text": "{0} comes off {1} and the statement, as if it had not been posted. The record and the reason stay.",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "{0}. The invoice and statement are updated.",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Against {0}. Posted {1} by {2}, {3}.",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Amount (₦)",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Bank transfer",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "Cancel",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/components/ui/overlay.tsx",
+   "src/pages/admin/UsersPage.tsx",
+   "src/pages/finance/AdjustPriceModal.tsx",
+   "src/pages/finance/InvoicesPage.tsx",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx",
+   "src/pages/inventory/ProductsPage.tsx",
+   "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/inventory/StockPage.tsx",
+   "src/pages/inventory/WarehousesPage.tsx",
+   "src/pages/partners/DistributorsPage.tsx",
+   "src/pages/platform/BanksPage.tsx",
+   "src/pages/platform/OrganisationsPage.tsx",
+   "src/pages/platform/StaffPage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
+   "src/pages/sales/SellOutPage.tsx",
+   "src/pages/sales/TargetsPage.tsx"
+  ]
+ },
+ {
+  "text": "Card",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "Cash",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "Cheque",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "Correct payment",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Corrected before",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Date paid",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Kept with the payment for anyone who checks it later.",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Method",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "Not corrected",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Not reversed",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Payment corrected",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Payment reversed",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Posted ₦250,000 instead of ₦25,000.",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Reference",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/finance/InvoicesPage.tsx",
+   "src/pages/finance/StatementPage.tsx"
+  ]
+ },
+ {
+  "text": "Reverse",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Reverse payment",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Reverse this payment?",
+  "files": [
+   "src/components/finance/AmendPayment.tsx"
+  ]
+ },
+ {
+  "text": "Save correction",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/sales/SellOutPage.tsx"
+  ]
+ },
+ {
+  "text": "Teller or transfer reference",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "Try again.",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx",
+   "src/pages/platform/BanksPage.tsx",
+   "src/pages/platform/StaffPage.tsx",
+   "src/pages/staff/StaffIdCard.tsx",
+   "src/pages/team/CompanyInfo.tsx",
+   "src/pages/team/OrgIdCard.tsx"
+  ]
+ },
+ {
+  "text": "Why",
+  "files": [
+   "src/components/finance/AmendPayment.tsx",
+   "src/pages/inventory/ReturnsPage.tsx"
+  ]
+ },
+ {
   "text": "compared with {0}",
   "files": [
    "src/components/finance/FinanceCards.tsx"
@@ -2575,28 +2772,6 @@
   ]
  },
  {
-  "text": "Cancel",
-  "files": [
-   "src/components/ui/overlay.tsx",
-   "src/pages/admin/UsersPage.tsx",
-   "src/pages/finance/AdjustPriceModal.tsx",
-   "src/pages/finance/InvoicesPage.tsx",
-   "src/pages/hr/HrManage.tsx",
-   "src/pages/hr/HrPage.tsx",
-   "src/pages/inventory/ProductsPage.tsx",
-   "src/pages/inventory/ReturnsPage.tsx",
-   "src/pages/inventory/StockPage.tsx",
-   "src/pages/inventory/WarehousesPage.tsx",
-   "src/pages/partners/DistributorsPage.tsx",
-   "src/pages/platform/BanksPage.tsx",
-   "src/pages/platform/OrganisationsPage.tsx",
-   "src/pages/platform/StaffPage.tsx",
-   "src/pages/sales/LeadsPage.tsx",
-   "src/pages/sales/SellOutPage.tsx",
-   "src/pages/sales/TargetsPage.tsx"
-  ]
- },
- {
   "text": "Confirm",
   "files": [
    "src/components/ui/overlay.tsx"
@@ -3042,6 +3217,48 @@
   "text": "You can keep the contact details right. The tier and credit limit are set by the office.",
   "files": [
    "src/lib/amend.ts"
+  ]
+ },
+ {
+  "text": "Finance",
+  "files": [
+   "src/lib/audit.ts",
+   "src/lib/site.ts",
+   "src/lib/tiles.ts",
+   "src/pages/finance/FinanceDashboardPage.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "People",
+  "files": [
+   "src/lib/audit.ts",
+   "src/lib/tiles.ts",
+   "src/pages/admin/UsersPage.tsx",
+   "src/pages/platform/OrganisationsPage.tsx"
+  ]
+ },
+ {
+  "text": "Products",
+  "files": [
+   "src/lib/audit.ts",
+   "src/lib/tiles.ts",
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "Sales and approvals",
+  "files": [
+   "src/lib/audit.ts"
+  ]
+ },
+ {
+  "text": "Settings",
+  "files": [
+   "src/lib/audit.ts",
+   "src/lib/tiles.ts",
+   "src/pages/admin/SettingsPage.tsx",
+   "src/pages/team/CompanyInfo.tsx"
   ]
  },
  {
@@ -3520,6 +3737,12 @@
   ]
  },
  {
+  "text": ", credit {0}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "{0} has already been paid against this invoice. Raise a credit note instead of reducing it below that.",
   "files": [
    "src/lib/db.ts"
@@ -3556,6 +3779,30 @@
   ]
  },
  {
+  "text": "{0} is for {1}, so this payment can be at most {2}.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "{0} on {1}{2}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "{0} order {1} for {2}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "{0} return {1}: {2} × {3} from {4}{5}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "A movement must be for at least one unit.",
   "files": [
    "src/lib/db.ts"
@@ -3563,6 +3810,12 @@
  },
  {
   "text": "A payment must be for more than nothing.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "A payment must be for more than nothing. To take it back, reverse it.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -3587,7 +3840,43 @@
   ]
  },
  {
+  "text": "an invoice",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "An invoice needs at least one priced line.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Approved",
+  "files": [
+   "src/lib/db.ts",
+   "src/lib/leave.ts",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx",
+   "src/pages/sales/OrderDrawer.tsx",
+   "src/pages/sales/OrdersPage.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "Cancelled order {0} for {1}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Choose how the money came in.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Choose the date it was paid.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -3611,6 +3900,36 @@
   ]
  },
  {
+  "text": "Company settings changed: {0}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Corrected a payment on {0} for {1}: {2} → {3}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Credit limit for {0}: {1} → {2}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Credit note {0} on {1}{2}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Credits come from a return or a credit note and are corrected there, not here.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "DN-{0}",
   "files": [
    "src/lib/db.ts"
@@ -3623,13 +3942,55 @@
   ]
  },
  {
+  "text": "due {0} → {1}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Edited invoice {0} for {1}: {2}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "for {0}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "issued {0} → {1}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "Lower at least one price to raise a credit note.",
   "files": [
    "src/lib/db.ts"
   ]
  },
  {
+  "text": "no price",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "Not enough stock in this depot for {0}.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Nothing has changed.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Nothing to change.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -3660,6 +4021,12 @@
  },
  {
   "text": "Only a return that is waiting for a decision can be rejected.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Only a super admin or the finance manager can correct a payment.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -3701,7 +4068,51 @@
   ]
  },
  {
+  "text": "Prices changed on {0}: {1} → {2}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Product added: {0}{1}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Product retired: {0}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Rejected",
+  "files": [
+   "src/lib/db.ts",
+   "src/pages/sales/OrderDrawer.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
   "text": "Return {0}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Reversed a payment of {0} on {1} for {2}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Role changed for {0}: {1} → {2}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Say why it is being corrected. It is kept with the payment.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -3743,6 +4154,18 @@
   ]
  },
  {
+  "text": "That payment has already been reversed.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "That payment no longer exists.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "That record no longer exists.",
   "files": [
    "src/lib/db.ts"
@@ -3750,6 +4173,12 @@
  },
  {
   "text": "That return no longer exists.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "The invoice this payment is against no longer exists.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -3768,6 +4197,18 @@
  },
  {
   "text": "This return has already been decided, so it cannot go back to waiting.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "total {0} → {1}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Voided invoice {0} for {1}",
   "files": [
    "src/lib/db.ts"
   ]
@@ -5600,7 +6041,19 @@
   ]
  },
  {
+  "text": "Confirmed lead {0} as a customer ({1}), rep {2}",
+  "files": [
+   "src/lib/leads.ts"
+  ]
+ },
+ {
   "text": "Customer account opened for {0}.",
+  "files": [
+   "src/lib/leads.ts"
+  ]
+ },
+ {
+  "text": "Did not confirm lead {0} as a customer yet",
   "files": [
    "src/lib/leads.ts"
   ]
@@ -5648,6 +6101,18 @@
   ]
  },
  {
+  "text": ", {0} working {1}",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "{0} leave for {1}: {2} to {3}{4}",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
   "text": "All {0} days for {1} are used or already requested.",
   "files": [
    "src/lib/leave.ts"
@@ -5666,6 +6131,14 @@
   ]
  },
  {
+  "text": "Declined",
+  "files": [
+   "src/lib/leave.ts",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/hr/HrPage.tsx"
+  ]
+ },
+ {
   "text": "HR has not set your resumption date yet, so your leave cannot be worked out. Ask HR to add it.",
   "files": [
    "src/lib/leave.ts"
@@ -5673,6 +6146,12 @@
  },
  {
   "text": "Leave has to start from tomorrow onwards.",
+  "files": [
+   "src/lib/leave.ts"
+  ]
+ },
+ {
+  "text": "Leave recorded for {0}: {1} to {2}, {3} working {4}",
   "files": [
    "src/lib/leave.ts"
   ]
@@ -7196,15 +7675,6 @@
   ]
  },
  {
-  "text": "Finance",
-  "files": [
-   "src/lib/site.ts",
-   "src/lib/tiles.ts",
-   "src/pages/finance/FinanceDashboardPage.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
   "text": "First, what is your name?",
   "files": [
    "src/lib/site.ts"
@@ -8643,6 +9113,13 @@
   ]
  },
  {
+  "text": "Audit log",
+  "files": [
+   "src/lib/tiles.ts",
+   "src/pages/admin/AuditLogPage.tsx"
+  ]
+ },
+ {
   "text": "Bank names and logos organisations pick from when they add their accounts.",
   "files": [
    "src/lib/tiles.ts"
@@ -8911,24 +9388,9 @@
   ]
  },
  {
-  "text": "People",
-  "files": [
-   "src/lib/tiles.ts",
-   "src/pages/admin/UsersPage.tsx",
-   "src/pages/platform/OrganisationsPage.tsx"
-  ]
- },
- {
   "text": "Plans in naira, per seat per month, and what every organisation actually pays.",
   "files": [
    "src/lib/tiles.ts"
-  ]
- },
- {
-  "text": "Products",
-  "files": [
-   "src/lib/tiles.ts",
-   "src/pages/inventory/ProductsPage.tsx"
   ]
  },
  {
@@ -8974,14 +9436,6 @@
   "text": "Sell-out by month, the lines and accounts carrying it, and who covers where.",
   "files": [
    "src/lib/tiles.ts"
-  ]
- },
- {
-  "text": "Settings",
-  "files": [
-   "src/lib/tiles.ts",
-   "src/pages/admin/SettingsPage.tsx",
-   "src/pages/team/CompanyInfo.tsx"
   ]
  },
  {
@@ -9095,6 +9549,12 @@
   "files": [
    "src/lib/tiles.ts",
    "src/pages/admin/UsersPage.tsx"
+  ]
+ },
+ {
+  "text": "Who made each major decision and when: payment corrections, invoice edits, credit notes, approvals, limits, roles and prices.",
+  "files": [
+   "src/lib/tiles.ts"
   ]
  },
  {
@@ -9330,6 +9790,59 @@
   "text": "?h={0}",
   "files": [
    "src/lib/video.ts"
+  ]
+ },
+ {
+  "text": "All",
+  "files": [
+   "src/pages/admin/AuditLogPage.tsx",
+   "src/pages/finance/InvoicesPage.tsx",
+   "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/sales/CataloguePage.tsx",
+   "src/pages/sales/LeadsPage.tsx",
+   "src/pages/sales/OrdersPage.tsx"
+  ]
+ },
+ {
+  "text": "Could not load more",
+  "files": [
+   "src/pages/admin/AuditLogPage.tsx"
+  ]
+ },
+ {
+  "text": "Could not load the audit log",
+  "files": [
+   "src/pages/admin/AuditLogPage.tsx"
+  ]
+ },
+ {
+  "text": "Filter by area",
+  "files": [
+   "src/pages/admin/AuditLogPage.tsx"
+  ]
+ },
+ {
+  "text": "Load older",
+  "files": [
+   "src/pages/admin/AuditLogPage.tsx"
+  ]
+ },
+ {
+  "text": "Major decisions appear here as they are made, from now on.",
+  "files": [
+   "src/pages/admin/AuditLogPage.tsx"
+  ]
+ },
+ {
+  "text": "Nothing logged yet",
+  "files": [
+   "src/pages/admin/AuditLogPage.tsx"
+  ]
+ },
+ {
+  "text": "Who made each major decision, and when: payments corrected or reversed, invoices edited or voided, credit notes, approvals and rejections, returns, credit limits, roles, products and prices, leave, and leads confirmed as customers. Nothing here can be edited or deleted.",
+  "files": [
+   "src/pages/admin/AuditLogPage.tsx"
   ]
  },
  {
@@ -11297,16 +11810,6 @@
   ]
  },
  {
-  "text": "All",
-  "files": [
-   "src/pages/finance/InvoicesPage.tsx",
-   "src/pages/inventory/ReturnsPage.tsx",
-   "src/pages/sales/CataloguePage.tsx",
-   "src/pages/sales/LeadsPage.tsx",
-   "src/pages/sales/OrdersPage.tsx"
-  ]
- },
- {
   "text": "Amount",
   "files": [
    "src/pages/finance/InvoicesPage.tsx"
@@ -11326,31 +11829,7 @@
   ]
  },
  {
-  "text": "Bank transfer",
-  "files": [
-   "src/pages/finance/InvoicesPage.tsx"
-  ]
- },
- {
-  "text": "Card",
-  "files": [
-   "src/pages/finance/InvoicesPage.tsx"
-  ]
- },
- {
-  "text": "Cash",
-  "files": [
-   "src/pages/finance/InvoicesPage.tsx"
-  ]
- },
- {
   "text": "Changed by {0}.",
-  "files": [
-   "src/pages/finance/InvoicesPage.tsx"
-  ]
- },
- {
-  "text": "Cheque",
   "files": [
    "src/pages/finance/InvoicesPage.tsx"
   ]
@@ -11359,6 +11838,25 @@
   "text": "Correct the issue or due date",
   "files": [
    "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "Correct this payment",
+  "files": [
+   "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "Correct this payment of {0}",
+  "files": [
+   "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "Corrected",
+  "files": [
+   "src/pages/finance/InvoicesPage.tsx",
+   "src/pages/finance/StatementPage.tsx"
   ]
  },
  {
@@ -11488,12 +11986,6 @@
  },
  {
   "text": "Longest anything has been overdue",
-  "files": [
-   "src/pages/finance/InvoicesPage.tsx"
-  ]
- },
- {
-  "text": "Method",
   "files": [
    "src/pages/finance/InvoicesPage.tsx"
   ]
@@ -11648,13 +12140,6 @@
   ]
  },
  {
-  "text": "Reference",
-  "files": [
-   "src/pages/finance/InvoicesPage.tsx",
-   "src/pages/finance/StatementPage.tsx"
-  ]
- },
- {
   "text": "Save dates",
   "files": [
    "src/pages/finance/InvoicesPage.tsx"
@@ -11672,12 +12157,6 @@
    "src/pages/platform/ProposalsPage.tsx",
    "src/pages/sales/LeadsPage.tsx",
    "src/pages/sales/OrdersPage.tsx"
-  ]
- },
- {
-  "text": "Teller or transfer reference",
-  "files": [
-   "src/pages/finance/InvoicesPage.tsx"
   ]
  },
  {
@@ -11947,6 +12426,19 @@
  },
  {
   "text": "Balance owed",
+  "files": [
+   "src/pages/finance/StatementPage.tsx"
+  ]
+ },
+ {
+  "text": "Correct",
+  "files": [
+   "src/pages/finance/StatementPage.tsx",
+   "src/pages/hr/HrManage.tsx"
+  ]
+ },
+ {
+  "text": "Correct payment {0}",
   "files": [
    "src/pages/finance/StatementPage.tsx"
   ]
@@ -12608,12 +13100,6 @@
   ]
  },
  {
-  "text": "Amount (₦)",
-  "files": [
-   "src/pages/hr/HrManage.tsx"
-  ]
- },
- {
   "text": "Annual leave, {0} days a year",
   "files": [
    "src/pages/hr/HrManage.tsx"
@@ -12625,16 +13111,6 @@
    "src/pages/hr/HrManage.tsx",
    "src/pages/inventory/ReturnsPage.tsx",
    "src/pages/sales/OrderDrawer.tsx"
-  ]
- },
- {
-  "text": "Approved",
-  "files": [
-   "src/pages/hr/HrManage.tsx",
-   "src/pages/hr/HrPage.tsx",
-   "src/pages/sales/OrderDrawer.tsx",
-   "src/pages/sales/OrdersPage.tsx",
-   "src/types/index.ts"
   ]
  },
  {
@@ -12729,12 +13205,6 @@
   "files": [
    "src/pages/hr/HrManage.tsx",
    "src/pages/hr/HrPage.tsx"
-  ]
- },
- {
-  "text": "Correct",
-  "files": [
-   "src/pages/hr/HrManage.tsx"
   ]
  },
  {
@@ -12877,13 +13347,6 @@
   "text": "Decline",
   "files": [
    "src/pages/hr/HrManage.tsx"
-  ]
- },
- {
-  "text": "Declined",
-  "files": [
-   "src/pages/hr/HrManage.tsx",
-   "src/pages/hr/HrPage.tsx"
   ]
  },
  {
@@ -13572,18 +14035,6 @@
   "text": "Total monthly cost",
   "files": [
    "src/pages/hr/HrManage.tsx"
-  ]
- },
- {
-  "text": "Try again.",
-  "files": [
-   "src/pages/hr/HrManage.tsx",
-   "src/pages/hr/HrPage.tsx",
-   "src/pages/platform/BanksPage.tsx",
-   "src/pages/platform/StaffPage.tsx",
-   "src/pages/staff/StaffIdCard.tsx",
-   "src/pages/team/CompanyInfo.tsx",
-   "src/pages/team/OrgIdCard.tsx"
   ]
  },
  {
@@ -15627,12 +16078,6 @@
  },
  {
   "text": "What the person deciding this will read",
-  "files": [
-   "src/pages/inventory/ReturnsPage.tsx"
-  ]
- },
- {
-  "text": "Why",
   "files": [
    "src/pages/inventory/ReturnsPage.tsx"
   ]
@@ -19999,13 +20444,6 @@
   ]
  },
  {
-  "text": "Rejected",
-  "files": [
-   "src/pages/sales/OrderDrawer.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
   "text": "Say what has to change.",
   "files": [
    "src/pages/sales/OrderDrawer.tsx"
@@ -20391,12 +20829,6 @@
  },
  {
   "text": "Sale recorded",
-  "files": [
-   "src/pages/sales/SellOutPage.tsx"
-  ]
- },
- {
-  "text": "Save correction",
   "files": [
    "src/pages/sales/SellOutPage.tsx"
   ]

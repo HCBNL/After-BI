@@ -517,13 +517,31 @@ service cloud.firestore {
       allow update, delete: if immutable();
     }
 
-    /* Append-only, like the stock ledger. */
+    /*
+      Payments are never deleted. A super admin or the finance manager can
+      correct one posted with a mistake (amount, date, method, reference) or
+      reverse it (amount 0, marked reversed), and every correction appends to
+      its history: what it said before, who changed it and why. Credits from
+      returns and credit notes are not corrected here.
+    */
     match /orgs/{orgId}/payments/{paymentId} {
       allow read: if partnerOf(orgId, resource.data.distributorId);
       allow create: if hasRole(orgId, ['super_admin', 'admin', 'finance_manager'])
         && request.resource.data.recordedBy == request.auth.uid
         && request.resource.data.amount > 0;
-      allow update, delete: if immutable();
+      allow update: if hasRole(orgId, ['super_admin', 'finance_manager'])
+        && resource.data.method != 'credit'
+        && resource.data.get('reversed', false) == false
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['amount', 'paidOn', 'method', 'reference', 'amendments', 'reversed', 'updatedAt'])
+        && request.resource.data.method in ['transfer', 'cash', 'cheque', 'card']
+        && request.resource.data.amendments is list
+        && request.resource.data.amendments.size() == resource.data.get('amendments', []).size() + 1
+        && (
+          (request.resource.data.get('reversed', false) == true && request.resource.data.amount == 0)
+          || (request.resource.data.get('reversed', false) == false && request.resource.data.amount > 0)
+        );
+      allow delete: if immutable();
     }
 
     match /orgs/{orgId}/returns/{returnId} {
@@ -607,6 +625,24 @@ service cloud.firestore {
 
     function isoDateOrEmpty(value) {
       return value is string && (value == '' || value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'));
+    }
+
+    /*
+      The audit log: one line per major decision (lib/audit). Outside the
+      organisation's tree so the broad staff read rule does not reach it.
+      Read by super admins and admins; written by the person who made the
+      decision, as themselves; never edited or deleted by anyone.
+    */
+    match /audit/{orgId}/log/{id} {
+      allow read: if hasRole(orgId, ['super_admin', 'admin']);
+      allow create: if member(orgId)
+        && request.resource.data.by == request.auth.uid
+        && request.resource.data.keys().hasOnly(['at', 'by', 'byName', 'role', 'area', 'action', 'summary', 'ref', 'amount', 'reason'])
+        && request.resource.data.at == request.time
+        && request.resource.data.area in ['finance', 'sales', 'catalogue', 'people', 'settings']
+        && request.resource.data.action is string && request.resource.data.action.size() <= 60
+        && request.resource.data.summary is string && request.resource.data.summary.size() <= 400;
+      allow update, delete: if false;
     }
 
     match /hr/{orgId}/hrSettings/{id} {
