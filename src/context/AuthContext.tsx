@@ -19,6 +19,7 @@ import { hadSession, isPublicPath, rememberSession } from '@/lib/session';
 import { setActiveOrg, TENANTS } from '@/lib/tenant';
 import { PORTAL_ROOT } from '@/lib/tiles';
 import { setEntitlements } from '@/lib/plans';
+import { setAuditActor } from '@/lib/audit';
 import { tierOf, type Role, type UserProfile } from '@/types';
 
 export type AuthProblem =
@@ -86,6 +87,8 @@ export const HOME_FOR_ROLE: Record<Role, string> = PORTAL_ROOT;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  /* The audit log names whoever is signed in; see lib/audit. */
+  useEffect(() => setAuditActor(user), [user]);
   const [loading, setLoading] = useState(true);
   const [problem, setProblem] = useState<AuthProblem | null>(null);
 
