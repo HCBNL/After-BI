@@ -4091,5 +4091,12 @@
 "Best month: {0}, {1}": "Meilleur mois : {0}, {1}",
 "{0}: sold {1}, collected {2}": "{0} : vendu {1}, encaissé {2}",
 "Six months of sales: blue is sold, green is collected, and the amber gap between them is still owed. Hover or tap a month for its figures.": "Six mois de ventes : le bleu est vendu, le vert est encaissé, et l’écart ambré entre les deux reste dû. Survolez ou touchez un mois pour voir ses chiffres.",
-"Sales by month: sold and collected": "Ventes par mois : vendu et encaissé"
+"Sales by month: sold and collected": "Ventes par mois : vendu et encaissé",
+"{0} owed": "{0} dû",
+"{0} owed, {1} overdue": "{0} dû, dont {1} en retard",
+"Quick settings": "Réglages rapides",
+"Close quick settings": "Fermer les réglages rapides",
+"Quick settings: language, balances, theme, home screen": "Réglages rapides : langue, soldes, thème, écran d’accueil",
+"Light mode": "Mode clair",
+"Dark mode": "Mode sombre"
 }

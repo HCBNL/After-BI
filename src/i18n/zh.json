@@ -4091,5 +4091,12 @@
 "Best month: {0}, {1}": "最佳月份：{0}，{1}",
 "{0}: sold {1}, collected {2}": "{0}：已售 {1}，已收款 {2}",
 "Six months of sales: blue is sold, green is collected, and the amber gap between them is still owed. Hover or tap a month for its figures.": "六个月的销售：蓝线为已售，绿线为已收款，两线之间的琥珀色区域为仍欠款。悬停或点按某个月份查看数据。",
-"Sales by month: sold and collected": "按月销售：已售与已收款"
+"Sales by month: sold and collected": "按月销售：已售与已收款",
+"{0} owed": "欠款 {0}",
+"{0} owed, {1} overdue": "欠款 {0}，其中逾期 {1}",
+"Quick settings": "快捷设置",
+"Close quick settings": "关闭快捷设置",
+"Quick settings: language, balances, theme, home screen": "快捷设置：语言、余额、主题、首页",
+"Light mode": "浅色模式",
+"Dark mode": "深色模式"
 }
