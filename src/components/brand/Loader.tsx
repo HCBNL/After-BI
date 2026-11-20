@@ -143,10 +143,13 @@ export function ShellSkeleton() {
 export function QuietLoader({
   label = 'Loading',
   fullscreen = false,
+  inline = false,
 }: {
   label?: string;
   /** Only before the shell exists. Inside it, this puts the mark off-centre. */
   fullscreen?: boolean;
+  /** In the page's own content, under its header panel: the logo centred in the space the list will fill. */
+  inline?: boolean;
 }) {
   const mark = (
     <img
@@ -158,6 +161,15 @@ export function QuietLoader({
       draggable={false}
     />
   );
+
+  if (inline) {
+    return (
+      <div role="status" aria-label={label} className="ab-quiet flex min-h-[42vh] items-center justify-center">
+        {mark}
+        <span className="sr-only">{label}</span>
+      </div>
+    );
+  }
 
   if (fullscreen) {
     return (
