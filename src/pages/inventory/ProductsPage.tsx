@@ -23,6 +23,9 @@ import { PORTAL_ROOT } from '@/lib/tiles';
 import { LinkButton } from '@/components/ui';
 import { useOrg } from '@/context/OrgContext';
 import { listProducts, retireProduct, saveProduct } from '@/lib/db';
+import { deleteField } from 'firebase/firestore';
+import { piecesFromPack } from '@/lib/packs';
+import { displayCode } from '@/lib/countCode';
 import { naira, count } from '@/lib/format';
 import { cloudinaryConfigured } from '@/lib/cloudinary';
 import { ImagePicker } from '@/components/ImagePicker';
@@ -262,6 +265,8 @@ function ProductModal({
         brand: draft.brand?.trim() ?? '',
         barcode: draft.barcode?.trim() ?? '',
         salesNote: draft.salesNote?.trim() ?? '',
+        /* A blank field falls back to the pack size; a number below 1 is no number. */
+        piecesPerUnit: Number(draft.piecesPerUnit) >= 1 ? Math.round(Number(draft.piecesPerUnit)) : draft.id ? (deleteField() as unknown as number) : undefined,
         /* Blank lines and half-filled rows are dropped rather than saved as noise. */
         features: (draft.features ?? []).map((f) => f.trim()).filter(Boolean).slice(0, 12),
         specs: (draft.specs ?? []).map((x) => ({ label: x.label.trim(), value: x.value.trim() })).filter((x) => x.label && x.value).slice(0, 16),
@@ -303,6 +308,11 @@ function ProductModal({
           {draft.id && draft.status === 'active' && root && !draft.service && (
             <LinkButton to={`${root}/stock?add=${draft.id}`} variant="outline">
               Add to a depot
+            </LinkButton>
+          )}
+          {draft.id && draft.countCode && root && !draft.service && (
+            <LinkButton to={`${root}/stickers?q=${encodeURIComponent(draft.countCode)}`} variant="outline">
+              Sticker
             </LinkButton>
           )}
           <Button variant="ghost" onClick={onClose} disabled={busy}>
@@ -417,10 +427,22 @@ function ProductModal({
                 except the sales note, which is folded away because that sheet is shown to customers.
               </Hint>
             </legend>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Pack size" hint="As people say it">
                 <Input value={draft.packSize ?? ''} onChange={(e) => set('packSize', e.target.value)} placeholder="144 pcs per CTN" />
               </Field>
+              <Field label="Pieces per carton" hint="For stock counts">
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  value={draft.piecesPerUnit ?? ''}
+                  onChange={(e) => set('piecesPerUnit', e.target.value === '' ? undefined : Number(e.target.value))}
+                  placeholder={piecesFromPack(draft.packSize) ? `${piecesFromPack(draft.packSize)} (from pack size)` : 'e.g. 144'}
+                />
+              </Field>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Brand">
                 <Input value={draft.brand ?? ''} onChange={(e) => set('brand', e.target.value)} />
               </Field>
@@ -436,6 +458,14 @@ function ProductModal({
                 placeholder={'Three speed settings\nUSB rechargeable, 6 hours a charge\nFolds flat for a handbag'}
               />
             </Field>
+            {draft.countCode && (
+              <p className="text-caption text-muted">
+                Stock count sticker code{' '}
+                <span className="notranslate font-mono font-bold tracking-[0.1em] text-primary" translate="no">
+                  {displayCode(draft.countCode)}
+                </span>
+              </p>
+            )}
             <SpecsEditor value={draft.specs ?? []} onChange={(specs) => set('specs', specs)} />
             <Field label="Sales note" hint="For staff, folded away">
               <Textarea

@@ -16,7 +16,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AlertTriangle, ArrowDownUp, Boxes, Plus } from 'lucide-react';
+import { AlertTriangle, ArrowDownUp, Boxes, Plus, Scale } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import {
   Badge,
@@ -38,12 +38,16 @@ import { useOrg } from '@/context/OrgContext';
 import { listStock, moveStock, setThreshold } from '@/lib/db';
 import { isOperations, warehouseScope } from '@/lib/roles';
 import { count, formatDate } from '@/lib/format';
+import { balanceLabel, piecesOf } from '@/lib/packs';
+import { AdjustmentModal, type AdjustmentPreset } from '@/components/stock/AdjustmentModal';
+import { ADJUSTMENT_RAISERS } from '@/lib/adjustments';
 import type { MovementType, StockPosition } from '@/types';
 
 export default function StockPage() {
   const { user } = useAuth();
-  const { warehouses, defaultWarehouse } = useOrg();
+  const { warehouses, defaultWarehouse, productById } = useOrg();
   const toast = useToast();
+  const [adjust, setAdjust] = useState<AdjustmentPreset | null>(null);
 
   const allowed = warehouseScope(user);
   const [depot, setDepot] = useState<string>(defaultWarehouse?.id ?? '');
@@ -108,6 +112,7 @@ export default function StockPage() {
 
   const lowCount = (data ?? []).filter((r) => r.threshold > 0 && r.quantity <= r.threshold).length;
   const canMove = user ? isOperations(user.role) : false;
+  const canAdjust = Boolean(user && ADJUSTMENT_RAISERS.includes(user.role));
 
   const columns: Column<StockPosition>[] = [
     {
@@ -142,7 +147,7 @@ export default function StockPage() {
                 : 'tabular text-body font-bold text-primary'
             }
           >
-            {count(row.quantity)}
+            {balanceLabel(row.quantity, piecesOf(productById(row.productId)))}
           </span>
         );
       },
@@ -186,18 +191,27 @@ export default function StockPage() {
         title="Stock"
         description="What is in each depot right now, and what has fallen below its threshold."
         actions={
-          canMove && (
-            <Button
-              size="sm"
-              icon={<Plus size={16} />}
-              onClick={() => {
-                setMoving(null);
-                setAddProduct(undefined);
-                setMovingOpen(true);
-              }}
-            >
-              Add stock
-            </Button>
+          (canMove || canAdjust) && (
+            <div className="flex flex-wrap gap-2">
+              {canAdjust && (
+                <Button size="sm" variant="outline" icon={<Scale size={15} />} onClick={() => setAdjust({ warehouseId: depot || defaultWarehouse?.id })}>
+                  Adjust
+                </Button>
+              )}
+              {canMove && (
+                <Button
+                  size="sm"
+                  icon={<Plus size={16} />}
+                  onClick={() => {
+                    setMoving(null);
+                    setAddProduct(undefined);
+                    setMovingOpen(true);
+                  }}
+                >
+                  Add stock
+                </Button>
+              )}
+            </div>
           )
         }
       >
@@ -286,6 +300,26 @@ export default function StockPage() {
           reload();
           toast.success('Stock updated');
         }}
+        onAdjust={
+          canAdjust
+            ? (preset) => {
+                setMovingOpen(false);
+                setMoving(null);
+                setAddProduct(undefined);
+                setAdjust(preset);
+              }
+            : undefined
+        }
+      />
+
+      <AdjustmentModal
+        open={Boolean(adjust)}
+        preset={adjust}
+        onClose={() => setAdjust(null)}
+        onDone={() => {
+          setAdjust(null);
+          toast.success('Sent for approval', 'Finance and operations both have to approve it. Stock moves only after the second approval.');
+        }}
       />
     </div>
   );
@@ -308,6 +342,7 @@ function MovementModal({
   open,
   onClose,
   onDone,
+  onAdjust,
 }: {
   position: StockPosition | null;
   initialProductId?: string;
@@ -315,6 +350,8 @@ function MovementModal({
   open: boolean;
   onClose: () => void;
   onDone: () => void;
+  /** Corrections go through an approved adjustment, not a movement. */
+  onAdjust?: (preset: AdjustmentPreset) => void;
 }) {
   const { user } = useAuth();
   const { products, warehouses } = useOrg();
@@ -436,7 +473,7 @@ function MovementModal({
               value={direction}
               onChange={(next) => {
                 setDirection(next);
-                setType(next === 'in' ? 'stock_in' : 'adjustment');
+                setType(next === 'in' ? 'stock_in' : 'transfer');
               }}
               options={[
                 { value: 'in', label: 'In' },
@@ -449,7 +486,6 @@ function MovementModal({
             <Select value={type} onChange={(e) => setType(e.target.value as MovementType)}>
               <option value="stock_in">Stock in</option>
               <option value="transfer">Transfer</option>
-              <option value="adjustment">Adjustment</option>
               <option value="return">Return</option>
             </Select>
           </Field>
@@ -487,9 +523,24 @@ function MovementModal({
             rows={2}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Waybill number, who delivered it, why it was adjusted"
+            placeholder="Waybill number, who delivered it, where it went"
           />
         </Field>
+
+        {/* A correction (damage, loss, a count) is not a movement: it needs two approvals. */}
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-hairline surface-sunken px-3.5 py-2.5">
+          <p className="text-caption text-muted">Correcting a balance (damage, loss, a stock count)? That is an adjustment, approved by finance and operations.</p>
+          {onAdjust && (
+            <Button
+              size="sm"
+              variant="outline"
+              icon={<Scale size={14} />}
+              onClick={() => onAdjust({ warehouseId: depot, productId: productId || position?.productId })}
+            >
+              Raise an adjustment
+            </Button>
+          )}
+        </div>
       </div>
     </Modal>
   );

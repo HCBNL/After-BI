@@ -59,6 +59,9 @@ const CostingPage = lazy(() => import('@/pages/inventory/CostingPage'));
 const MovementsPage = lazy(() => import('@/pages/inventory/MovementsPage'));
 const WarehousesPage = lazy(() => import('@/pages/inventory/WarehousesPage'));
 const ReturnsPage = lazy(() => import('@/pages/inventory/ReturnsPage'));
+const StockCountPage = lazy(() => import('@/pages/inventory/StockCountPage'));
+const AdjustmentsPage = lazy(() => import('@/pages/inventory/AdjustmentsPage'));
+const StickersPage = lazy(() => import('@/pages/inventory/StickersPage'));
 
 const DistributorsPage = lazy(() => import('@/pages/partners/DistributorsPage'));
 
@@ -383,6 +386,9 @@ export default function App() {
             <Route path="targets" element={<TargetsPage />} />
 
             <Route path="stock" element={<StockPage />} />
+            <Route path="stock-count" element={<StockCountPage />} />
+            <Route path="adjustments" element={<RequireRole roles={['super_admin', 'admin']}><AdjustmentsPage /></RequireRole>} />
+            <Route path="stickers" element={<AdminOnly><StickersPage /></AdminOnly>} />
             <Route path="movements" element={<MovementsPage />} />
             <Route path="returns" element={<ReturnsPage />} />
 
@@ -457,6 +463,8 @@ export default function App() {
             <Route path="approvals" element={<ApprovalsPage />} />
             <Route path="deliveries" element={<DeliveriesPage />} />
             <Route path="stock" element={<StockPage />} />
+            <Route path="stock-count" element={<StockCountPage />} />
+            <Route path="adjustments" element={<AdjustmentsPage />} />
             <Route path="movements" element={<MovementsPage />} />
             <Route path="returns" element={<ReturnsPage />} />
             <Route path="catalogue" element={<CataloguePage />} />
@@ -540,6 +548,8 @@ export default function App() {
             <Route path="statement" element={<StatementPage />} />
             <Route path="credit" element={<CreditPage />} />
             <Route path="returns" element={<ReturnsPage />} />
+            <Route path="stock-count" element={<StockCountPage />} />
+            <Route path="adjustments" element={<AdjustmentsPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="targets" element={<TargetsPage />} />
             <Route path="catalogue" element={<CataloguePage />} />

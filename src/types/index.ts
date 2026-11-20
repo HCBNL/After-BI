@@ -237,6 +237,19 @@ export interface Product {
    */
   /** How it is packed, as people say it: "144 pcs per CTN", "12 x 1L per crate". */
   packSize?: string;
+  /**
+   * Pieces in one carton (or one of whatever `unit` is), as a number. What a
+   * stock count turns loose pieces into cartons with. When it is not set,
+   * `piecesOf()` in lib/packs.ts reads it from `packSize` ("144 pcs per CTN").
+   */
+  piecesPerUnit?: number;
+  /**
+   * The AfterBI stock count code printed on this product's carton sticker as
+   * a Code 128 barcode: `AB` then six characters then a check character
+   * worked out from the organisation, e.g. `ABK7M2QX4`. Unique inside the
+   * organisation, and refused by every other one. See lib/countCode.ts.
+   */
+  countCode?: string;
   brand?: string;
   /** EAN or UPC, for a customer setting up their own till. */
   barcode?: string;
@@ -488,6 +501,155 @@ export interface StockMovement {
   createdBy: string;
   createdByName: string;
   createdAt: string;
+}
+
+/* stock count */
+
+/**
+ * What the system said one product held in the depot when the count began.
+ * Taken once, at the start, so a delivery received halfway through the count
+ * does not move the line the counters are being measured against.
+ */
+export interface CountSnapshotLine {
+  productName: string;
+  unit: string;
+  /** In `unit`s (cartons). May carry a fraction: loose pieces. */
+  quantity: number;
+  /** Pieces in one unit when the count began; 1 when the product has none. */
+  piecesPerUnit: number;
+}
+
+export type StockCountStatus = 'open' | 'closed' | 'cancelled';
+
+/** Totals worked out when a count is closed, so a list never has to read every entry. */
+export interface StockCountSummary {
+  lines: number;
+  matched: number;
+  short: number;
+  over: number;
+  notCounted: number;
+  notInSystem: number;
+}
+
+/**
+ * One physical stock count of one depot.
+ *
+ * A REPORT, NEVER A MOVEMENT. Nothing about a count changes a stock balance.
+ * The variance it shows is corrected, if at all, by a stock adjustment that a
+ * finance manager and an operations manager both sign (`StockAdjustment`).
+ */
+export interface StockCount {
+  id: string;
+  /** `SC202611001`: year, month, the count that month. */
+  number: string;
+  warehouseId: string;
+  warehouseName: string;
+  status: StockCountStatus;
+  note?: string;
+  /** Keyed by product id. */
+  snapshot: Record<string, CountSnapshotLine>;
+  startedBy: string;
+  startedByName: string;
+  startedAt: string;
+  closedAt?: string;
+  closedBy?: string;
+  closedByName?: string;
+  cancelledAt?: string;
+  cancelledBy?: string;
+  cancelReason?: string;
+  summary?: StockCountSummary;
+  updatedAt?: string;
+}
+
+/**
+ * One stack counted at one place: Row E, 6 lines of 25 cartons, 2 more
+ * cartons on top, 12 loose pieces. A product counted in four rows has four
+ * entries, added up for the variance.
+ */
+export interface CountEntry {
+  id: string;
+  productId: string;
+  productName: string;
+  /** Row E, Shelf 3, Bay 2: where it was counted. */
+  location: string;
+  /** How many lines (stacks) in this place. */
+  lines: number;
+  /** Cartons in each line. */
+  perLine: number;
+  /** Cartons over and above the full lines (a part line, a few on top). */
+  extra: number;
+  /** Loose pieces, not in a full carton. */
+  loose: number;
+  /** Pieces in one carton, as the counter saw it on the product. */
+  piecesPerUnit: number;
+  countedBy: string;
+  countedByName: string;
+  createdAt: string;
+  updatedAt?: string;
+  /** Struck out rather than deleted: the trail stays. */
+  void?: boolean;
+  voidedBy?: string;
+  voidedAt?: string;
+}
+
+/* stock adjustments */
+
+export type AdjustmentSide = 'finance' | 'operations';
+
+export type AdjustmentStatus = 'pending' | 'applied' | 'declined' | 'cancelled';
+
+export interface AdjustmentSignature {
+  uid: string;
+  name: string;
+  at: string;
+}
+
+/**
+ * A correction to a stock balance that waits for two signatures.
+ *
+ * Nothing moves until a finance signer AND an operations signer have both
+ * approved. The second signature applies it: the position and an
+ * `adjustment` movement are written in the same transaction that marks it
+ * applied, and the security rules refuse an adjustment movement that does not
+ * come with one.
+ */
+export interface StockAdjustment {
+  id: string;
+  /** `ADJ202611001`. */
+  number: string;
+  warehouseId: string;
+  warehouseName: string;
+  productId: string;
+  productName: string;
+  unit: string;
+  piecesPerUnit: number;
+  direction: 'in' | 'out';
+  /** In units (cartons), always positive; may carry a fraction for loose pieces. */
+  quantity: number;
+  reason: string;
+  /** The stock count it came from, when it did. */
+  countId?: string;
+  countNumber?: string;
+  status: AdjustmentStatus;
+  /** Who may sign each side, fixed when it was raised. */
+  signers: Record<AdjustmentSide, { uid: string; name: string }[]>;
+  /** Every uid in `signers`, flat, for the security rules. */
+  signerIds: string[];
+  signatures: Partial<Record<AdjustmentSide, AdjustmentSignature>>;
+  requestedBy: string;
+  requestedByName: string;
+  createdAt: string;
+  appliedAt?: string;
+  appliedBy?: string;
+  appliedByName?: string;
+  /** The depot balance the adjustment left. */
+  balanceAfter?: number;
+  declinedAt?: string;
+  declinedBy?: string;
+  declinedByName?: string;
+  declineReason?: string;
+  cancelledAt?: string;
+  updatedAt?: string;
 }
 
 /* sales */

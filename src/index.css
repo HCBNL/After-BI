@@ -1811,3 +1811,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+/* The stock count scanner's sweeping line: it moves, so a counter knows the camera is reading. */
+@keyframes scan-sweep {
+  0%, 100% { transform: translateY(-34px); }
+  50% { transform: translateY(34px); }
+}
+.scan-line {
+  animation: scan-sweep 1.8s ease-in-out infinite;
+  box-shadow: 0 0 12px 2px var(--color-brand-400);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scan-line { animation: none; }
+}

@@ -13,9 +13,9 @@
  */
 import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarDays, Check, Flag, ListPlus, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { Check, Flag, ListPlus, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Alert, Button, EmptyState, Input, SegmentedControl, useToast } from '@/components/ui';
+import { Alert, Button, DateField, EmptyState, Input, SegmentedControl, useToast } from '@/components/ui';
 import { Loading } from '@/components/brand/Loader';
 import { useReminders } from '@/context/RemindersContext';
 import { dueLabel, taskTiming, type Task, type TaskPriority } from '@/lib/tasks';
@@ -150,16 +150,14 @@ export default function TasksPage() {
               </button>
             );
           })}
-          <label className="flex h-8 items-center gap-1.5 rounded-full surface-sunken px-3 text-label text-secondary">
-            <CalendarDays size={14} aria-hidden />
-            <input
-              type="date"
-              value={due}
-              onChange={(event) => setDue(event.target.value)}
-              aria-label="Due date"
-              className="bg-transparent text-title text-primary outline-none sm:text-label"
-            />
-          </label>
+          <DateField
+            inline
+            value={due}
+            onChange={(event) => setDue(event.target.value)}
+            aria-label="Due date"
+            placeholder="Pick a day"
+            className="h-8 gap-1.5 rounded-full border-transparent surface-sunken pl-3 pr-3 text-label"
+          />
           <button
             type="button"
             onClick={() => setPriority(priority === 'high' ? 'normal' : 'high')}

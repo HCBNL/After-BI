@@ -15,13 +15,15 @@
  */
 
 import { useMemo } from 'react';
-import { ClipboardCheck } from 'lucide-react';
+import { ClipboardCheck, Scale } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge, EmptyState } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
-import { listOrders } from '@/lib/db';
+import { listOrders, listPendingAdjustments } from '@/lib/db';
+import { ADJUSTMENT_SIGNERS, sidesToSign, SIDE_LABEL, waitingLine } from '@/lib/adjustments';
+import { packLabel, unitsToPieces } from '@/lib/packs';
 import { formatDate, naira, count } from '@/lib/format';
 import { orderNet, summarise } from '@/lib/pricing';
 import { PORTAL_ROOT } from '@/lib/tiles';
@@ -45,6 +47,18 @@ export default function ApprovalsPage() {
    * organisation is already an emergency, so the client-side filter is not the
    * thing that will fall over.
  */
+  /* Stock adjustments waiting on this person's signature (finance or operations). */
+  const signer = Boolean(user && ADJUSTMENT_SIGNERS.includes(user.role));
+  const { data: adjustments } = useAsync(
+    () => (signer ? listPendingAdjustments() : Promise.resolve([])),
+    [signer],
+    { handleError: true },
+  );
+  const adjWaiting = useMemo(
+    () => (adjustments ?? []).filter((a) => user && sidesToSign(a, user.id, user.role).length > 0),
+    [adjustments, user],
+  );
+
   const mine = useMemo(
     () => (data ?? []).filter(
         (order) => user && ((order.approvers ?? []).includes(user.id) || user.role === 'super_admin'),
@@ -80,11 +94,41 @@ export default function ApprovalsPage() {
         description="Everything waiting on your signature. Nothing here can move until you decide."
       />
 
-      {waiting.length === 0 ? (
+      {adjWaiting.length > 0 && (
+        <ul className="mb-2.5 space-y-2.5">
+          {adjWaiting.map((a) => (
+            <li key={a.id}>
+              <Link
+                to={`${root}/adjustments`}
+                className="flex items-start gap-3 rounded-2xl border border-hairline surface-card p-4 shadow-card transition-colors hover:bg-[var(--surface-sunken)]"
+              >
+                <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-50 text-gold-800 dark:bg-gold-900/30 dark:text-gold-300">
+                  <Scale size={18} aria-hidden />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline gap-x-2">
+                    <p className="tabular text-body font-bold text-primary">{a.number}</p>
+                    <p className="truncate text-label text-secondary">{`Stock adjustment · ${a.productName}`}</p>
+                  </div>
+                  <p className="mt-0.5 text-label text-muted">
+                    {`${a.direction === 'out' ? 'Remove' : 'Add'} ${packLabel(unitsToPieces(a.quantity, a.piecesPerUnit), a.piecesPerUnit, a.unit)} at ${a.warehouseName}, raised by ${a.requestedByName} on ${formatDate(a.createdAt)}`}
+                  </p>
+                  <p className="mt-1 text-caption text-muted">{waitingLine(a)}</p>
+                </div>
+                <Badge tone="gold" className="shrink-0">
+                  {`Sign for ${user ? sidesToSign(a, user.id, user.role).map((s) => SIDE_LABEL[s]).join(' and ') : ''}`}
+                </Badge>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {waiting.length === 0 && adjWaiting.length > 0 ? null : waiting.length === 0 ? (
         <EmptyState
           icon={<ClipboardCheck size={22} />}
           title="Nothing waiting"
-          description="When an order needs your signature it appears here, and on your home screen."
+          description="When an order or a stock adjustment needs your signature it appears here, and on your home screen."
         />
       ) : (
         <ul className="space-y-2.5">

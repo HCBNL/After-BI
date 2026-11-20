@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from 'react';
 import type { QueryDocumentSnapshot } from 'firebase/firestore';
-import { Banknote, Package, Settings, ShieldCheck, ShoppingCart, Users, type LucideIcon } from 'lucide-react';
+import { Banknote, Boxes, Package, Settings, ShieldCheck, ShoppingCart, Users, type LucideIcon } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button, EmptyState, useToast } from '@/components/ui';
 import { AUDIT_AREA_LABEL, listAudit, type AuditArea, type AuditEntry } from '@/lib/audit';
@@ -13,11 +13,12 @@ import { formatDateTime, naira } from '@/lib/format';
 import { ROLE_LABEL, type Role } from '@/types';
 import { cn } from '@/lib/cn';
 
-const AREAS: AuditArea[] = ['finance', 'sales', 'catalogue', 'people', 'settings'];
+const AREAS: AuditArea[] = ['finance', 'sales', 'catalogue', 'stock', 'people', 'settings'];
 const AREA_ICON: Record<AuditArea, LucideIcon> = {
   finance: Banknote,
   sales: ShoppingCart,
   catalogue: Package,
+  stock: Boxes,
   people: Users,
   settings: Settings,
 };
