@@ -75,7 +75,7 @@ export function PinPad({
   }, [listen, disabled, onDigit, onBack]);
 
   const size = fit
-    ? 'h-[clamp(48px,8.4dvh,74px)] w-[clamp(48px,8.4dvh,74px)] text-[clamp(1.25rem,3.1dvh,1.65rem)]'
+    ? 'h-[clamp(48px,8.4dvh,74px)] w-[clamp(48px,8.4dvh,74px)] text-[clamp(1.25rem,3.1dvh,1.65rem)] lg:h-[clamp(64px,11.5dvh,104px)] lg:w-[clamp(64px,11.5dvh,104px)] lg:text-[clamp(1.6rem,4dvh,2.3rem)] lg:font-bold'
     : 'h-[68px] w-[68px] text-[1.65rem] sm:h-[74px] sm:w-[74px]';
   const keyClass = cn(
     'flex select-none items-center justify-center rounded-full font-semibold transition-[transform,background-color] duration-100 active:scale-95 disabled:opacity-50',
@@ -96,7 +96,9 @@ export function PinPad({
     <div
       className={cn(
         'grid grid-cols-3 justify-items-center',
-        fit ? 'gap-x-[clamp(1.25rem,3.2dvh,1.75rem)] gap-y-[clamp(0.5rem,1.8dvh,1rem)]' : 'gap-x-6 gap-y-4 sm:gap-x-7',
+        fit
+          ? 'gap-x-[clamp(1.25rem,3.2dvh,1.75rem)] gap-y-[clamp(0.5rem,1.8dvh,1rem)] lg:gap-x-[clamp(1.5rem,3.6dvh,2.25rem)] lg:gap-y-[clamp(0.75rem,2dvh,1.25rem)]'
+          : 'gap-x-6 gap-y-4 sm:gap-x-7',
       )}
     >
       {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(digit)}
@@ -109,7 +111,9 @@ export function PinPad({
         onClick={onBack}
         className={cn(
           'flex items-center justify-center rounded-full transition-colors disabled:opacity-40 focus:outline-none focus-visible:ring-2',
-          fit ? 'h-[clamp(48px,8.4dvh,74px)] w-[clamp(48px,8.4dvh,74px)]' : 'h-[68px] w-[68px] sm:h-[74px] sm:w-[74px]',
+          fit
+            ? 'h-[clamp(48px,8.4dvh,74px)] w-[clamp(48px,8.4dvh,74px)] lg:h-[clamp(64px,11.5dvh,104px)] lg:w-[clamp(64px,11.5dvh,104px)] lg:[&_svg]:h-8 lg:[&_svg]:w-8'
+            : 'h-[68px] w-[68px] sm:h-[74px] sm:w-[74px]',
           tone === 'hero' ? 'text-white hover:bg-white/10 focus-visible:ring-white' : 'text-primary hover:bg-[var(--surface-sunken)] focus-visible:ring-brand-500',
         )}
       >

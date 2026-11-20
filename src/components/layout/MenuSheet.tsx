@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, House, LayoutGrid, LogOut, PanelsTopLeft, Search, UserRound, X } from 'lucide-react';
+import { ChevronRight, House, LayoutGrid, LogOut, PanelsTopLeft, Search, UserRound } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { IconArt } from '@/components/ui/IconArt';
 import {
@@ -67,7 +67,6 @@ export function MenuSheet({
 }) {
   const [query, setQuery] = useState('');
   const panelRef = useRef<HTMLDivElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const root = PORTAL_ROOT[role];
@@ -98,7 +97,7 @@ export function MenuSheet({
     if (!open) return;
     setQuery('');
     if (focusSearch) searchRef.current?.focus();
-    else closeRef.current?.focus();
+    else panelRef.current?.focus();
   }, [open, focusSearch]);
 
   useEffect(() => {
@@ -110,11 +109,20 @@ export function MenuSheet({
       }
     };
     document.addEventListener('keydown', onKey);
-    const previous = document.body.style.overflow;
+    /*
+     * iPhone: overflow hidden on <body> alone does not stop Safari from
+     * rubber-banding the page behind a fixed sheet (the green showing below
+     * the white, the sheet "dragging"). Pinning <html> and <body> does.
+     */
+    const html = document.documentElement;
+    const before = { body: document.body.style.overflow, html: html.style.overflow, touch: document.body.style.touchAction };
     document.body.style.overflow = 'hidden';
+    html.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = previous;
+      document.body.style.overflow = before.body;
+      html.style.overflow = before.html;
+      document.body.style.touchAction = before.touch;
     };
   }, [open, onClose]);
 
@@ -147,7 +155,7 @@ export function MenuSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:p-6 sm:backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center overscroll-none bg-black/50 sm:items-center sm:p-6 sm:backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="Menu"
@@ -156,26 +164,19 @@ export function MenuSheet({
       <div
         ref={panelRef}
         onClick={(e) => e.stopPropagation()}
+        tabIndex={-1}
         className={cn(
-          'flex h-dvh w-full flex-col surface-card',
+          /* A phone: pinned to all four edges (not a height), so Safari's toolbar coming and going never leaves a gap. */
+          'absolute inset-0 flex w-full flex-col overscroll-none surface-card outline-none sm:relative sm:inset-auto',
           'sm:h-auto sm:max-h-[88dvh] sm:max-w-lg sm:overflow-hidden sm:rounded-3xl sm:shadow-pop',
           'animate-[slide-up_0.24s_cubic-bezier(0.16,1,0.3,1)_both]',
         )}
       >
-        <div className="ab-hero relative isolate shrink-0 overflow-hidden px-4 pb-11 pt-2 text-white">
+        <div className="ab-hero relative isolate shrink-0 touch-none overflow-hidden px-4 pb-11 pt-2 text-white">
           <BrandBars className="pointer-events-none absolute -right-12 -top-10 -z-10 h-56 w-56 text-white/[0.05]" />
           <div aria-hidden className="sm:hidden" style={{ height: 'var(--safe-top)' }} />
 
           <div className="relative flex h-11 items-center justify-center">
-            <button
-              ref={closeRef}
-              type="button"
-              onClick={onClose}
-              aria-label="Close menu"
-              className="tap absolute -left-1 flex items-center justify-center rounded-full text-white/85 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              <X size={21} aria-hidden />
-            </button>
             <p className="text-title font-semibold">Menu</p>
           </div>
 
@@ -256,7 +257,7 @@ export function MenuSheet({
         </div>
 
         {/* Colour, light/dark and language live on Profile: the list gets the room, at least three results in view. */}
-        <div className="min-h-[15rem] flex-1 overflow-y-auto pb-safe-4 scrollbar-thin">
+        <div className="min-h-[15rem] flex-1 overflow-y-auto overscroll-contain pb-safe-4 scrollbar-thin">
           {needle ? (
             matches.length ? (
               <ul className="py-1">

@@ -27,13 +27,30 @@ export function Mark({ className }: { className?: string }) {
   return <img src="/brand/afterbi-mark-128.png" alt="" aria-hidden width={128} height={128} className={cn('shrink-0 object-contain', className)} />;
 }
 
+/** The four rising bars drawn in the text colour: for the one colour logo on the public site's bar. */
+export function MarkSolid({ className }: { className?: string }) {
+  return (
+    <svg viewBox="-8 -14 146 146" aria-hidden focusable="false" className={cn('shrink-0', className)} fill="currentColor">
+      <g transform="skewX(-9) translate(14 0)">
+        <rect x="3" y="78" width="25" height="36" rx="12.5" />
+        <rect x="35" y="55" width="25" height="59" rx="12.5" />
+        <rect x="67" y="37" width="25" height="77" rx="12.5" />
+        <rect x="99" y="20" width="25" height="94" rx="12.5" />
+      </g>
+    </svg>
+  );
+}
+
 export function Wordmark({
   className,
   onInk,
+  mono,
 }: {
   className?: string;
   /** White on the dark pages; the theme's own ink everywhere else. */
   onInk?: boolean;
+  /** Mark and word in one colour (the text colour), as on the public site's bar. */
+  mono?: boolean;
 }) {
   return (
     <span
@@ -43,7 +60,7 @@ export function Wordmark({
         className,
       )}
     >
-      <Mark className="h-[1.15em] w-[1.15em]" />
+      {mono ? <MarkSolid className="h-[1.15em] w-[1.15em]" /> : <Mark className="h-[1.15em] w-[1.15em]" />}
       AfterBI
     </span>
   );

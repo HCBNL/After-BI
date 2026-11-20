@@ -37,11 +37,12 @@ import {
   Target,
   Truck,
   Wheat,
+  Image as ImageIcon,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { imageUrl } from '@/lib/cloudinary';
-import type { IndustryIcon as IndustryKey, SiteImageKey } from '@/lib/site';
+import { SITE_IMAGES, type IndustryIcon as IndustryKey, type SiteImageKey } from '@/lib/site';
 import { container, eyebrow, eyebrowBase } from './tokens';
 
 /* ------------------------------------------------------------------ section */
@@ -107,7 +108,7 @@ export function SectionHead({
       {kicker && <p className={onDark ? `${eyebrowBase} text-navy-200` : eyebrow}>{kicker}</p>}
       <Tag
         className={cn(
-          'font-display font-medium tracking-[-0.03em] text-balance',
+          'font-display font-semibold tracking-[-0.03em] text-balance',
           big ? 'text-[2.02rem] leading-[1.05] sm:text-[3.02rem]' : 'text-[1.6rem] leading-[1.1] sm:text-[2.18rem]',
           kicker && 'mt-3',
           onDark ? 'text-white' : 'text-navy-900',
@@ -166,6 +167,7 @@ export function SiteImage({
   fit = 'cover',
   eager = false,
   width = 1000,
+  placeholder = false,
 }: {
   slot: SiteImageKey;
   override?: string;
@@ -177,8 +179,13 @@ export function SiteImage({
   eager?: boolean;
   /** Widest it will draw, in CSS pixels, so Cloudinary sends no more than that. */
   width?: number;
+  /** Keep the frame when empty (a clean outline). Otherwise an empty slot draws nothing at all. */
+  placeholder?: boolean;
 }) {
-  const uploaded = useSiteImages()[slot];
+  /* A retired slot draws nothing, even if a picture was uploaded to it once. */
+  const images = useSiteImages();
+  const known = slot in SITE_IMAGES;
+  const uploaded = known ? images[slot] : undefined;
   const first = override || uploaded;
   const source = first ? imageUrl(first, { width }) : '';
   const [loaded, setLoaded] = useState(false);
@@ -188,6 +195,16 @@ export function SiteImage({
     setLoaded(false);
     setFailed(false);
   }, [source]);
+
+  if ((!source || failed) && !placeholder) return null;
+  if (!source || failed) {
+    /* The one designed empty state: a clean frame waiting for its picture. */
+    return (
+      <div className={cn('relative flex items-center justify-center overflow-hidden', className)} aria-hidden>
+        <ImageIcon size={30} strokeWidth={1.4} className="opacity-35" />
+      </div>
+    );
+  }
 
   return (
     <div className={cn('relative overflow-hidden bg-transparent', className, '!bg-none !shadow-none')}>

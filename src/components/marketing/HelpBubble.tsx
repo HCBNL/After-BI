@@ -327,7 +327,7 @@ function Card({
                         onClick={onBook}
                         className="mt-2.5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900"
                       >
-                        {topic.cta ?? 'Book a demo'} <ArrowRight size={14} aria-hidden />
+                        {topic.cta ?? 'Create account'} <ArrowRight size={14} aria-hidden />
                       </button>
                     ) : topic.to ? (
                       <Link

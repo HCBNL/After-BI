@@ -1,3 +1,5 @@
+/* The public site's headline face, served from the app itself (no Google request). See `.site-heavy` in index.css. */
+import '@fontsource-variable/archivo/wdth.css';
 /**
  * Everything around a public page, so a page is only its own content.
  *
@@ -168,7 +170,7 @@ export function PublicShell({
      * is written out rather than read from a token because this runs before
      * paint, when `.site` has not been mounted to compute a variable from.
      */
-    meta?.setAttribute('content', '#0f1f36');
+    meta?.setAttribute('content', '#f3f7f6');
     return () => {
       delete root.dataset.surface;
       if (meta && before) meta.setAttribute('content', before);
@@ -243,15 +245,15 @@ function ClosingBand() {
         <img src="/brand/afterbi-mark.png" alt="AfterBI" width={44} height={44} className="h-11 w-11 object-contain" />
       </span>
       <h2 className="mx-auto mt-7 max-w-xl font-display text-[1.75rem] font-semibold leading-[1.08] tracking-[-0.035em] text-balance sm:text-[2.6rem]">
-        Ready to see AfterBI in action?
+        Ready when you are
       </h2>
       <p className="mx-auto mt-4 max-w-md text-[15.5px] leading-relaxed text-white/80">
-        A guided demo, configured around your products, partners and price lists.
+        Create your account. We call you, load your products and price lists, and you are live.
       </p>
       {/* The two choices in one dashed frame, as in the owner's pattern. */}
       <div className="mx-auto mt-9 inline-flex flex-col gap-2 rounded-[1.6rem] border border-dashed border-white/25 p-2 sm:flex-row">
-        <button type="button" onClick={book} className={btn.accent}>
-          Book a demo
+        <button type="button" onClick={book} className={btn.white}>
+          Create account
         </button>
         <Link to="/pricing" className={btn.lineWhite}>
           See plans and pricing

@@ -19,7 +19,7 @@ import { useBootDone } from '@/lib/boot';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, ChevronDown, LifeBuoy, Mail, MessageCircle, Menu, PlayCircle, X } from 'lucide-react';
+import { ArrowRight, ChevronDown, LifeBuoy, Mail, MessageCircle, PlayCircle, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
@@ -27,11 +27,9 @@ import { useAuth, HOME_FOR_ROLE } from '@/context/AuthContext';
 import {
   COMPANY,
   COMPANY_URL,
-  INDUSTRIES,
   MODULES,
   NAV,
   PRODUCT_GROUPS,
-  PROMO,
   SOCIAL,
   SOLUTIONS,
   SUPPORT_EMAIL,
@@ -95,37 +93,16 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
     <header className="sticky top-0 z-50" onMouseLeave={closeSoon}>
       <div className="status-bar-fill" aria-hidden />
 
-      {/* The promo strip, with the language picker at the very top. */}
-      <div className="bg-navy-900 text-white">
-        <div className={cn(container, 'flex h-11 items-center justify-between gap-3 text-[13px]')}>
-          <p className="hidden min-w-0 truncate sm:block">
-            <span className="font-semibold">{PROMO.text}</span>{' '}
-            <Link to={PROMO.link.href} className="hidden font-semibold text-white underline underline-offset-4 decoration-white/40 hover:decoration-white md:inline">
-              {PROMO.link.label}
-            </Link>
-          </p>
-          <div className="flex shrink-0 items-center gap-5 max-sm:w-full max-sm:justify-center">
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="hidden text-white/75 hover:text-white xl:inline">
-              {SUPPORT_EMAIL}
-            </a>
-            <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="hidden whitespace-nowrap text-white/75 hover:text-white lg:inline">
-              WhatsApp us
-            </a>
-            <LanguageSwitch hover />
-          </div>
-        </div>
-      </div>
-
       {/* The bar. */}
       <div
         className={cn(
-          'border-b bg-white/95 backdrop-blur-xl transition-shadow',
+          'border-b bg-[var(--site-top)]/95 backdrop-blur-xl transition-shadow',
           lifted || menu ? 'border-navy-900/10 shadow-[0_6px_24px_-16px_rgba(15,31,54,0.4)]' : 'border-transparent',
         )}
       >
-        <div className={cn(container, 'flex h-16 items-center gap-6 sm:h-[4.5rem] lg:grid lg:grid-cols-[1fr_auto_1fr]')}>
+        <div className={cn(container, 'flex h-[4.5rem] items-center gap-6 sm:h-[5rem] lg:grid lg:grid-cols-[1fr_auto_1fr]')}>
           <Link to="/" aria-label="AfterBI home" className="shrink-0 lg:justify-self-start">
-            <Wordmark className="text-[1.24rem] !text-navy-900 sm:text-[1.38rem]" />
+            <Wordmark mono className="text-[1.4rem] !text-navy-900 sm:text-[1.55rem]" />
           </Link>
 
           <nav aria-label="Main" className="hidden items-center justify-center gap-1 lg:flex">
@@ -143,8 +120,8 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
                     onFocus={() => openSoon(key)}
                     onClick={() => setMenu(open ? null : key)}
                     className={cn(
-                      'inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-[14px] font-semibold transition-colors',
-                      open || active ? 'bg-navy-50 text-navy-900' : 'text-navy-700 hover:bg-navy-50 hover:text-navy-900',
+                      'inline-flex items-center gap-1 px-3.5 py-2 text-[15px] font-medium transition-colors',
+                      open || active ? 'text-navy-900' : 'text-navy-600 hover:text-navy-900',
                     )}
                   >
                     {item.label}
@@ -159,8 +136,8 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
                   onMouseEnter={() => setMenu(null)}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
-                    'rounded-full px-3.5 py-2 text-[14px] font-semibold transition-colors',
-                    active ? 'bg-navy-50 text-navy-900' : 'text-navy-700 hover:bg-navy-50 hover:text-navy-900',
+                    'px-3.5 py-2 text-[15px] font-medium transition-colors',
+                    active ? 'text-navy-900 underline decoration-2 underline-offset-[10px]' : 'text-navy-600 hover:text-navy-900',
                   )}
                 >
                   {item.label}
@@ -169,32 +146,36 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
             })}
           </nav>
 
-          <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5 lg:ml-0 lg:justify-self-end">
-            <Link
-              to={door.to}
-              className="tap inline-flex items-center whitespace-nowrap rounded-full px-3 text-[14.5px] font-semibold text-navy-900 hover:bg-navy-50 sm:px-4"
-            >
-              {door.label}
-            </Link>
-            {/* The accent on the header, and the only one above the fold.
-                Everything else on this bar is structure so that this button
-                is the brightest thing on the page from any scroll position. */}
+          <div className="ml-auto flex items-center gap-2.5 lg:ml-0 lg:justify-self-end">
+            <LanguageSwitch className="hidden lg:block" />
+            {/* PiggyVest's pair: the dark one opens the create account form, the outlined one signs in. Laptops only; on a phone both live in the menu. */}
             <button
               type="button"
               onClick={onBook}
-              className="tap hidden items-center whitespace-nowrap rounded-full bg-brand-500 px-5 text-[14.5px] font-semibold text-navy-900 ring-1 ring-navy-900/20 transition-colors hover:bg-brand-600 sm:inline-flex"
+              className="hidden h-12 items-center whitespace-nowrap rounded-xl bg-navy-900 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-navy-800 lg:inline-flex"
             >
-              Book a demo
+              Create account
             </button>
+            <Link
+              to={door.to}
+              className="hidden h-12 items-center whitespace-nowrap rounded-xl border-[1.5px] border-navy-900 px-6 text-[15px] font-semibold text-navy-900 transition-colors hover:bg-navy-900 hover:text-white lg:inline-flex"
+            >
+              {door.label}
+            </Link>
             <button
               type="button"
               onClick={() => setSheet(true)}
               aria-label="Open the menu"
               aria-expanded={sheet}
               aria-haspopup="dialog"
-              className="tap inline-flex items-center justify-center rounded-full px-2.5 text-navy-900 hover:bg-navy-50 lg:hidden"
+              className="tap inline-flex items-center justify-center rounded-full px-1.5 text-navy-900 lg:hidden"
             >
-              <Menu size={24} aria-hidden />
+              {/* Long, thick bars in the ink colour: the way a confident app draws its menu. */}
+              <span aria-hidden className="flex w-[30px] flex-col gap-[6px]">
+                <span className="h-[3px] w-full rounded-full bg-current" />
+                <span className="h-[3px] w-full rounded-full bg-current" />
+                <span className="h-[3px] w-full rounded-full bg-current" />
+              </span>
             </button>
           </div>
         </div>
@@ -285,16 +266,10 @@ function SolutionsPanel() {
         </div>
       </div>
       <div>
-        <PanelTitle>By category</PanelTitle>
-        <ul className="grid grid-cols-2 gap-x-4 px-3">
-          {INDUSTRIES.map((item) => (
-            <li key={item.name}>
-              <Link to="/solutions#industries" className="block py-2 text-[14.5px] font-semibold text-navy-700 hover:text-navy-900 hover:underline hover:underline-offset-4">
-                {item.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <PanelTitle>Every business</PanelTitle>
+        <p className="px-3 text-[14.5px] leading-relaxed text-navy-600">
+          One platform, configured to how you sell: your products, your price tiers, your depots and your partners.
+        </p>
         <Link to="/solutions" className="mt-4 inline-flex items-center gap-1.5 px-3 text-[14.5px] font-semibold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900">
           All solutions <ArrowRight size={16} aria-hidden />
         </Link>
@@ -309,7 +284,7 @@ function SupportPanel({ onBook }: { onBook: () => void }) {
       <div>
         <PanelTitle>Get help</PanelTitle>
         <PanelLink to="/help/sign-in" title="Sign in help" body="Reset a password or find your workspace." icon={<LifeBuoy size={19} />} />
-        <PanelLink to="/demo" title="Book a demo" body="A guided tour, configured around your business." icon={<PlayCircle size={19} />} />
+        <PanelLink to="/?demo=1" title="Create account" body="Leave your details and we will call you to set it up." icon={<PlayCircle size={19} />} />
       </div>
       <div>
         <PanelTitle>Talk to us</PanelTitle>
@@ -368,8 +343,8 @@ function PromoCard({
       <p className="relative font-display text-[1.15rem] font-semibold tracking-[-0.03em]">{title}</p>
       <p className="relative mt-2 text-[14px] leading-relaxed text-white/70">{body}</p>
       <div className="relative mt-5 flex flex-col gap-2">
-        <button type="button" onClick={onBook} className={cn(btn.accent, 'h-11')}>
-          Book a demo
+        <button type="button" onClick={onBook} className={cn(btn.white, 'h-11')}>
+          Create account
         </button>
         <Link to={link.to} className="inline-flex items-center justify-center gap-1.5 py-2 text-[14px] font-semibold text-white/70 hover:text-white">
           {link.label} <ArrowRight size={15} aria-hidden />
@@ -409,7 +384,6 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
       return [...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions#${s.slug}` })), { label: 'All solutions', to: '/solutions' }];
     return [
       { label: 'Sign in help', to: '/help/sign-in' },
-      { label: 'Book a demo', to: '/demo' },
       { label: 'WhatsApp us', to: WHATSAPP_URL, external: true },
       { label: SUPPORT_EMAIL, to: `mailto:${SUPPORT_EMAIL}`, external: true },
     ];
@@ -419,7 +393,7 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
     <div role="dialog" aria-modal="true" aria-label="Menu" className="site fixed inset-0 z-[60] flex animate-fade-in flex-col overflow-y-auto lg:hidden">
       <div className="status-bar-fill" aria-hidden />
       <div className={cn(container, 'flex h-16 items-center justify-between border-b border-navy-900/10')}>
-        <Wordmark className="text-[1.24rem] !text-navy-900" />
+        <Wordmark mono className="text-[1.4rem] !text-navy-900" />
         <button
           type="button"
           onClick={onClose}
@@ -487,11 +461,11 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
             onClose();
             onBook();
           }}
-          className={btn.accent}
+          className={cn(btn.navy, '!rounded-xl')}
         >
-          Book a demo
+          Create account
         </button>
-        <Link to={door.to} onClick={onClose} className={btn.outline}>
+        <Link to={door.to} onClick={onClose} className={cn(btn.outline, '!rounded-xl')}>
           {door.label}
         </Link>
       </div>
@@ -551,7 +525,7 @@ export function SiteFooter() {
             items={[
               { label: 'Platform overview', to: '/features' },
               { label: 'Pricing', to: '/pricing' },
-              { label: 'Book a demo', to: '/demo' },
+              { label: 'Create account', to: '/?demo=1' },
               { label: 'Sign in', to: '/login' },
             ]}
           />

@@ -193,7 +193,7 @@ export default function ScreenLock({ hidden }: { hidden?: boolean }) {
         size here follows the screen's height (dvh) between a floor and a cap,
         and the keypad takes whatever room is left in the middle.
       */}
-      <div className="relative mx-auto flex h-full w-full max-w-[420px] flex-col px-6 pb-[max(env(safe-area-inset-bottom),clamp(0.75rem,3dvh,2rem))] pt-[max(env(safe-area-inset-top),clamp(1rem,5dvh,3.5rem))]">
+      <div className="relative mx-auto flex h-full w-full max-w-[420px] flex-col px-6 lg:max-w-[520px] pb-[max(env(safe-area-inset-bottom),clamp(0.75rem,3dvh,2rem))] pt-[max(env(safe-area-inset-top),clamp(1rem,5dvh,3.5rem))]">
         <div className="flex items-center gap-4">
           <Avatar
             name={`${user.firstName} ${user.lastName}`}
@@ -214,7 +214,8 @@ export default function ScreenLock({ hidden }: { hidden?: boolean }) {
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
+        {/* Phone: centred in the room left. Laptop: drawn up under the name, so no band of empty blue sits above the dots. */}
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center lg:justify-start lg:pt-[clamp(1.5rem,6dvh,4.5rem)]">
           <PinDots count={pin.length} tone="hero" shake={shake} />
           <p className="mt-[clamp(0.25rem,1dvh,0.75rem)] flex min-h-[1.4rem] items-center justify-center gap-2 text-center text-label font-semibold text-white" aria-live="assertive">
             {checking ? <Spinner size={15} /> : error}
@@ -232,27 +233,48 @@ export default function ScreenLock({ hidden }: { hidden?: boolean }) {
   );
 }
 
-/** Faint, slow artwork behind the keypad: the pinwheel and the four petals. */
+/**
+ * The artwork behind the keypad: the four petals at the top right, the daisy
+ * at the bottom left, and on a laptop a scalloped flower at the top left and
+ * four round petals at the bottom right as well, so the wide blue never sits empty.
+ * Each is pinned to its own corner (never stretched with the screen) and turns
+ * very slowly; reduced motion holds them still.
+ */
 function LockArt() {
   return (
-    <svg
-      aria-hidden
-      viewBox="0 0 400 800"
-      preserveAspectRatio="xMidYMid slice"
-      className="pointer-events-none absolute inset-0 h-full w-full"
-    >
-      <g className="art-spin" style={{ transformOrigin: '350px 120px', transformBox: 'view-box' }} opacity="0.09" fill="#fff">
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* four petals, top right */}
+      <svg viewBox="0 0 100 100" className="lock-art lock-spin absolute -right-[9vmin] -top-[7vmin] h-[34vmin] w-[34vmin] min-h-[170px] min-w-[170px] lg:-right-[4vmin] lg:-top-[6vmin] lg:h-[46vmin] lg:w-[46vmin]" fill="#fff">
         {[0, 90, 180, 270].map((r) => (
-          <path key={r} d="M350 120 Q300 60 350 40 Q400 60 350 120 Z" transform={`rotate(${r} 350 120)`} />
+          <path key={r} d="M50 50 Q22 18 50 4 Q78 18 50 50 Z" transform={`rotate(${r} 50 50)`} opacity="0.1" />
         ))}
-      </g>
-      <g className="art-spin-back" style={{ transformOrigin: '30px 640px', transformBox: 'view-box' }} opacity="0.07" fill="#fff">
+      </svg>
+      {/* daisy, bottom left */}
+      <svg viewBox="0 0 100 100" className="lock-art lock-spin-back absolute -bottom-[10vmin] -left-[12vmin] h-[48vmin] w-[48vmin] min-h-[230px] min-w-[230px] lg:-bottom-[12vmin] lg:-left-[6vmin] lg:h-[58vmin] lg:w-[58vmin]" fill="#fff" opacity="0.08">
         {[0, 60, 120, 180, 240, 300].map((r) => (
-          <ellipse key={r} cx="30" cy="560" rx="34" ry="62" transform={`rotate(${r} 30 640)`} />
+          <ellipse key={r} cx="50" cy="26" rx="14" ry="24" transform={`rotate(${r} 50 50)`} />
         ))}
-        <circle cx="30" cy="640" r="40" />
-      </g>
-      <circle cx="380" cy="520" r="90" fill="none" stroke="#fff" strokeOpacity="0.08" strokeWidth="2" strokeDasharray="6 10" />
-    </svg>
+        <circle cx="50" cy="50" r="22" />
+      </svg>
+      {/* laptop only: scalloped flower, top left */}
+      <svg viewBox="0 0 100 100" className="lock-art lock-spin-back absolute left-[7vw] top-[12dvh] hidden h-[22vmin] w-[22vmin] lg:block" fill="#fff" opacity="0.07">
+        <circle cx="50" cy="50" r="36" />
+        {Array.from({ length: 8 }, (_, i) => {
+          const a = (i / 8) * Math.PI * 2;
+          return <circle key={i} cx={50 + 33 * Math.cos(a)} cy={50 + 33 * Math.sin(a)} r="15" />;
+        })}
+      </svg>
+      {/* laptop only: four round petals, bottom right */}
+      <svg viewBox="0 0 100 100" className="lock-art lock-spin absolute bottom-[9dvh] right-[8vw] hidden h-[26vmin] w-[26vmin] lg:block" fill="#fff" opacity="0.08">
+        {[0, 90, 180, 270].map((r) => (
+          <ellipse key={r} cx="50" cy="27" rx="18" ry="25" transform={`rotate(${r} 50 50)`} />
+        ))}
+        <circle cx="50" cy="50" r="22" />
+      </svg>
+      {/* one dashed ring, for a little movement in the eye */}
+      <svg viewBox="0 0 100 100" className="lock-art absolute -right-[6vmin] top-[52%] h-[30vmin] w-[30vmin] min-h-[150px] min-w-[150px] lg:right-[22vw] lg:top-[8dvh] lg:h-[14vmin] lg:w-[14vmin]" fill="none">
+        <circle cx="50" cy="50" r="46" stroke="#fff" strokeOpacity="0.12" strokeWidth="1.2" strokeDasharray="4 6" className="lock-spin" style={{ transformOrigin: '50px 50px' }} />
+      </svg>
+    </div>
   );
 }

@@ -216,7 +216,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
   };
 
   return (
-    <Sheet open={open} onClose={onClose} label="Book a demo of AfterBI" progress={progress}>
+    <Sheet open={open} onClose={onClose} label="Create your AfterBI account" progress={progress}>
       {/* ------------------------------------------------------------ head */}
       {/* The wordmark in the middle, as on the front page, and where you are under it. */}
       <header
@@ -225,7 +225,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
       >
         <Wordmark className="text-[1.33rem] !text-navy-900" />
         <p className="mt-3 text-[13px] font-semibold text-navy-500">
-          {`Book a demo · ${sent ? 'All done' : reviewing ? 'One last look' : `Question ${index + 1} of ${WIZARD_STEPS.length}`}`}
+          {`Create your account · ${sent ? 'All done' : reviewing ? 'One last look' : `Question ${index + 1} of ${WIZARD_STEPS.length}`}`}
         </p>
       </header>
 
@@ -242,8 +242,8 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
               That is on its way
             </h2>
             <p className="mx-auto mt-3 max-w-sm text-[14.5px] leading-relaxed text-secondary">
-              Send the message that just opened and somebody will come back to you within one working day, with a
-              time and with your own price list already loaded.
+              Send the message that just opened and we will call you within one working day to set up your
+              account.
             </p>
             <p className="mt-4 text-[13px] text-muted">
               Nothing opened? Write to{' '}
@@ -282,7 +282,7 @@ export function BookDemo({ open, onClose }: { open: boolean; onClose: () => void
             </ul>
 
             <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
-              We use this to prepare the demo and to call you back. We do not sell it, and we do not add you
+              We use this to set up your account and to call you back. We do not sell it, and we do not add you
               to a mailing list.
             </p>
           </div>
