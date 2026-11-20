@@ -8,10 +8,11 @@
  */
 
 import { useMemo, useState } from 'react';
-import { CheckCircle2, ClipboardCheck, FileMinus2, FilePlus2, Plus, XCircle } from 'lucide-react';
+import { CheckCircle2, ClipboardCheck, FileMinus2, FilePlus2, Plus, RefreshCw, XCircle } from 'lucide-react';
+import { QuietLoader } from '@/components/brand/Loader';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Badge, Button, EmptyState, Field, Modal, SegmentedControl, Textarea, useToast } from '@/components/ui';
+import { Alert, Badge, Button, EmptyState, Field, Modal, SegmentedControl, Textarea, useToast } from '@/components/ui';
 import { AdjustmentModal } from '@/components/stock/AdjustmentModal';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
@@ -41,7 +42,7 @@ export default function AdjustmentsPage() {
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const { data, loading, reload } = useAsync(() => listAdjustments(300), [], { handleError: true });
+  const { data, loading, error, reload } = useAsync(() => listAdjustments(300), [], { handleError: true });
   const allowed = warehouseScope(user);
   const mineOnly = useMemo(() => (data ?? []).filter((a) => !allowed || allowed.includes(a.warehouseId)), [data, allowed]);
   const waiting = mineOnly.filter((a) => a.status === 'pending');
@@ -120,12 +121,15 @@ export default function AdjustmentsPage() {
         />
       </PageHeader>
 
-      {loading ? (
-        <div className="space-y-2.5">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton h-20 w-full rounded-2xl" />
-          ))}
-        </div>
+      {loading && !data ? (
+        <QuietLoader inline label="Loading adjustments" />
+      ) : error && !data ? (
+        <Alert tone="warning" title="Adjustments could not be loaded" defaultOpen>
+          <p>{error.message}</p>
+          <Button size="sm" variant="secondary" className="mt-3" icon={<RefreshCw size={14} />} onClick={reload}>
+            Try again
+          </Button>
+        </Alert>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<ClipboardCheck size={22} />}

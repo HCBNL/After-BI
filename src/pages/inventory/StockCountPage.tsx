@@ -20,9 +20,10 @@
 
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ClipboardList, Play } from 'lucide-react';
+import { ClipboardList, Play, RefreshCw } from 'lucide-react';
+import { QuietLoader } from '@/components/brand/Loader';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Badge, Button, EmptyState, Field, Modal, Select, Textarea, useToast } from '@/components/ui';
+import { Alert, Badge, Button, EmptyState, Field, Modal, Select, Textarea, useToast } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
@@ -52,7 +53,7 @@ export default function StockCountPage() {
 
 function CountList({ onOpen }: { onOpen: (id: string) => void }) {
   const { user } = useAuth();
-  const { warehouses, defaultWarehouse } = useOrg();
+  const { warehouses, defaultWarehouse, products } = useOrg();
   const toast = useToast();
   const allowed = warehouseScope(user);
   const [depot, setDepot] = useState('');
@@ -64,7 +65,7 @@ function CountList({ onOpen }: { onOpen: (id: string) => void }) {
   const canStart = Boolean(user && COUNT_MANAGERS.includes(user.role) && (!allowed || allowed.length > 0));
   const myDepots = warehouses.filter((w) => !allowed || allowed.includes(w.id));
 
-  const { data, loading } = useAsync(() => listCounts(allowed), [allowed], { handleError: true });
+  const { data, loading, error, reload } = useAsync(() => listCounts(allowed), [allowed], { handleError: true });
 
   const rows = useMemo(() => (data ?? []).filter((c) => !depot || c.warehouseId === depot), [data, depot]);
 
@@ -77,7 +78,7 @@ function CountList({ onOpen }: { onOpen: (id: string) => void }) {
     }
     setBusy(true);
     try {
-      const id = await startCount({ warehouse, note, actor: user });
+      const id = await startCount({ warehouse, note, actor: user, products });
       setStarting(false);
       onOpen(id);
     } catch (err) {
@@ -120,12 +121,15 @@ function CountList({ onOpen }: { onOpen: (id: string) => void }) {
         )}
       </PageHeader>
 
-      {loading ? (
-        <div className="space-y-2.5">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton h-20 w-full rounded-2xl" />
-          ))}
-        </div>
+      {loading && !data ? (
+        <QuietLoader inline label="Loading stock counts" />
+      ) : error && !data ? (
+        <Alert tone="warning" title="Stock counts could not be loaded" defaultOpen>
+          <p>{error.message}</p>
+          <Button size="sm" variant="secondary" className="mt-3" icon={<RefreshCw size={14} />} onClick={reload}>
+            Try again
+          </Button>
+        </Alert>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={<ClipboardList size={22} />}

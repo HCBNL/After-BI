@@ -8,7 +8,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Ban, Boxes, CheckCircle2, Download, Lock, Printer, ScanLine, Search } from 'lucide-react';
+import { ArrowLeft, Ban, Boxes, CheckCircle2, Download, Lock, Printer, RefreshCw, ScanLine, Search } from 'lucide-react';
+import { QuietLoader } from '@/components/brand/Loader';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Badge, Button, ConfirmDialog, EmptyState, Field, Modal, SearchInput, SegmentedControl, Textarea, useToast } from '@/components/ui';
 import { ProductShot } from '@/components/catalogue/ProductShot';
@@ -57,16 +58,23 @@ export function CountSession({ countId, onBack }: { countId: string; onBack: () 
   const [moved, setMoved] = useState<Map<string, Moved>>(new Map());
   const [adjust, setAdjust] = useState<AdjustmentPreset | null>(null);
   const [search, setSearch] = useState('');
+  const [attempt, setAttempt] = useState(0);
+  const [slow, setSlow] = useState(false);
 
   useEffect(() => {
     setStockCount(undefined);
+    setFailed(null);
+    setSlow(false);
     const offCount = watchCount(countId, setStockCount, (err) => setFailed(err.message));
     const offEntries = watchCountEntries(countId, setEntries, (err) => setFailed(err.message));
+    /* Never a loader for ever: after 12 seconds with nothing, say so and offer a retry. */
+    const timer = window.setTimeout(() => setSlow(true), 12000);
     return () => {
+      window.clearTimeout(timer);
       offCount();
       offEntries();
     };
-  }, [countId]);
+  }, [countId, attempt]);
 
   const role = user?.role;
   const scoped = role === 'warehouse_manager' ? (user?.warehouseIds ?? []) : null;
@@ -115,12 +123,20 @@ export function CountSession({ countId, onBack }: { countId: string; onBack: () 
     if (stockCount && stockCount.status !== 'open') setTab('variance');
   }, [stockCount?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (failed) {
+  if (failed || (stockCount === undefined && slow)) {
     return (
       <div>
         <PageHeader title="Stock count" />
-        <Alert tone="critical" title="This count could not be opened" defaultOpen>
-          {failed}
+        <Alert tone="warning" title="This count could not be opened" defaultOpen>
+          <p>{failed ?? 'AfterBI could not reach the server. Check the connection (or close other AfterBI tabs on this phone) and try again.'}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" variant="secondary" icon={<RefreshCw size={14} />} onClick={() => setAttempt((n) => n + 1)}>
+              Try again
+            </Button>
+            <Button size="sm" variant="ghost" icon={<ArrowLeft size={14} />} onClick={onBack}>
+              All counts
+            </Button>
+          </div>
         </Alert>
       </div>
     );
@@ -129,11 +145,7 @@ export function CountSession({ countId, onBack }: { countId: string; onBack: () 
     return (
       <div>
         <PageHeader title="Stock count" />
-        <div className="space-y-2.5">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton h-16 w-full rounded-2xl" />
-          ))}
-        </div>
+        <QuietLoader inline label="Opening the count" />
       </div>
     );
   }
