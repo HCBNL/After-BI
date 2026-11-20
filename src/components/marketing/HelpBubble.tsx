@@ -376,7 +376,7 @@ function Card({
           rel="noreferrer noopener"
           className={cn(
             'tap mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl',
-            'bg-brand-500 text-[14.5px] font-semibold text-navy-900 ring-1 ring-navy-900/20 transition-colors hover:bg-brand-600 active:scale-[0.99]',
+            'bg-brand-500 text-[14.5px] font-semibold text-white transition-colors hover:bg-brand-600 active:scale-[0.99]',
           )}
         >
           {message.trim() ? (

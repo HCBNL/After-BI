@@ -8,7 +8,7 @@
  * HOW THEY BEHAVE (the house style, see `.art-*` in index.css)
  *
  *   colour   the main colour walks through the palette, holding each for
- *            about seven and a half seconds: blue, pink, gold, lime, soft
+ *            about seven and a half seconds: blue, pink, gold, soft blue, pink
  *            blue. `shift` starts a shape at a different point of the walk so
  *            two shapes side by side are never the same colour.
  *   motion   spin (a slow fan), spin back, float, sway, twinkle, orbit (the

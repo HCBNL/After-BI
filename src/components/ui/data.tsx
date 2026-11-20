@@ -3,6 +3,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Input, EmptyState, Skeleton } from './primitives';
+import { Select } from './Select';
 
 /* Table */
 
@@ -198,92 +199,47 @@ export function Tabs({
   onChange: (id: string) => void;
   className?: string;
 }) {
-  /* Past five sections a row of tabs runs off the screen: use the drop down. */
-  if (items.length > 5) return <SectionMenu items={items} active={active} onChange={onChange} className={className} />;
-  return (
-    <div className={cn('scrollbar-thin -mb-px flex gap-1 overflow-x-auto border-b border-hairline', className)} role="tablist">
-      {items.map((tab) => {
-        const isActive = tab.id === active;
-        return (
-          <button
-            key={tab.id}
-            role="tab"
-            aria-selected={isActive}
-            onClick={() => onChange(tab.id)}
-            className={cn(
-              'relative flex shrink-0 items-center gap-2 whitespace-nowrap px-3.5 py-2.5 text-label font-semibold transition-colors',
-              isActive ? 'text-brand-700 dark:text-brand-300' : 'text-muted hover:text-primary',
-            )}
-          >
-            {tab.icon}
-            {tab.label}
-            {tab.count !== undefined && (
-              <span
-                className={cn(
-                  'rounded-full px-1.5 py-0.5 text-micro font-bold tabular',
-                  isActive
-                    ? 'bg-brand-100 text-brand-800 dark:bg-brand-900/60 dark:text-brand-200'
-                    : 'bg-[var(--surface-sunken)] text-muted',
-                )}
-              >
-                {tab.count}
-              </span>
-            )}
-            {isActive && (
-              <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-600 dark:bg-brand-400" />
-            )}
-          </button>
-        );
-      })}
-    </div>
-  );
+  /* Sections are picked from one dropdown, never a row of tabs. */
+  return <SectionMenu items={items} active={active} onChange={onChange} className={className} />;
 }
 
 /* SegmentedControl */
 
+/*
+ * One choice out of a few (a period, a view, a source). It used to be a row of
+ * pills; it is now the same custom dropdown as every filter, so a page's
+ * choices sit side by side looking alike. The name and props stay so every
+ * caller keeps working.
+ */
 export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
-  size = 'md',
   className,
+  label,
 }: {
   options: { value: T; label: string; icon?: ReactNode }[];
   value: T;
   onChange: (next: T) => void;
+  /** Kept for old callers; the dropdown has one size. */
   size?: 'sm' | 'md';
   className?: string;
+  /** Read out by screen readers. */
+  label?: string;
 }) {
   return (
-    <div
-      className={cn(
-        'inline-flex items-center gap-0.5 rounded-xl border border-hairline surface-sunken p-1',
-        className,
-      )}
-      role="group"
+    <Select
+      value={value}
+      onChange={(e) => onChange(e.target.value as T)}
+      className={cn('w-auto min-w-[9.5rem]', className)}
+      aria-label={label}
     >
-      {options.map((option) => {
-        const isActive = option.value === value;
-        return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={isActive}
-            onClick={() => onChange(option.value)}
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-lg font-semibold transition-all',
-              size === 'sm' ? 'px-2.5 py-1 text-caption' : 'px-3 py-1.5 text-label',
-              isActive
-                ? 'surface-card text-primary shadow-sm'
-                : 'text-muted hover:text-primary',
-            )}
-          >
-            {option.icon}
-            {option.label}
-          </button>
-        );
-      })}
-    </div>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </Select>
   );
 }
 

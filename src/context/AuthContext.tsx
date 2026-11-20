@@ -189,6 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             title: data.title as string | undefined,
             role,
             phone: data.phone as string | undefined,
+            employeeCode: typeof data.employeeCode === 'string' && data.employeeCode.trim() ? data.employeeCode.trim() : undefined,
             photoURL: (data.photoURL as string) ?? undefined,
             orgId: orgId ?? undefined,
             distributorId: data.distributorId as string | undefined,

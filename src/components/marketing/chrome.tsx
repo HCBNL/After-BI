@@ -264,7 +264,7 @@ function SolutionsPanel() {
         <PanelTitle>By business</PanelTitle>
         <div className="grid grid-cols-2">
           {SOLUTIONS.map((item) => (
-            <PanelLink key={item.slug} to={`/solutions#${item.slug}`} title={item.name} body={item.blurb} />
+            <PanelLink key={item.slug} to={`/solutions/${item.slug}`} title={item.name} body={item.blurb} />
           ))}
         </div>
       </div>
@@ -384,7 +384,7 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
     if (key === 'products')
       return [...MODULES.map((m) => ({ label: m.name, to: `/features/${m.slug}` })), { label: 'Platform overview', to: '/features' }];
     if (key === 'solutions')
-      return [...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions#${s.slug}` })), { label: 'All solutions', to: '/solutions' }];
+      return [...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions/${s.slug}` })), { label: 'All solutions', to: '/solutions' }];
     return [
       { label: 'Sign in help', to: '/help/sign-in' },
       { label: 'WhatsApp us', to: WHATSAPP_URL, external: true },
@@ -484,7 +484,7 @@ export function SiteFooter() {
 
   const products = MODULES.map((m) => ({ label: m.name, to: `/features/${m.slug}` }));
   const solutions = [
-    ...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions#${s.slug}` })),
+    ...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions/${s.slug}` })),
     { label: 'All solutions', to: '/solutions' },
   ];
 

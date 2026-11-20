@@ -68,7 +68,7 @@ function complain(step: WizardStep, value: string): string | null {
 }
 
 const PRIMARY =
-  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 text-[14px] font-semibold text-navy-900 ring-1 ring-navy-900/20 transition-all hover:bg-brand-600 active:scale-[0.98] disabled:opacity-60';
+  'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 text-[14px] font-semibold text-white transition-all hover:bg-brand-600 active:scale-[0.98] disabled:opacity-60';
 const SECONDARY =
   'tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--surface-card)] px-6 text-[14px] font-semibold text-primary ring-1 ring-inset ring-[var(--border-hairline)] transition-colors hover:ring-[var(--border-strong)]';
 
@@ -130,7 +130,7 @@ function ChoiceList({
             <span
               className={cn(
                 'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors',
-                active ? 'border-brand-700 bg-brand-500 text-navy-900' : 'border-[var(--border-strong)]',
+                active ? 'border-brand-700 bg-brand-500 text-white' : 'border-[var(--border-strong)]',
               )}
             >
               {active && <Check size={12} strokeWidth={3} />}

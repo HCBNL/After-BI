@@ -42,7 +42,7 @@ export const btn = {
    * its text defines it; the ring gives it a boundary on paper and is
    * invisible where it sits on the navy hero.
    */
-  accent: `${base} bg-brand-500 text-navy-900 ring-1 ring-navy-900/20 hover:bg-brand-600`,
+  accent: `${base} bg-navy-900 text-white hover:bg-navy-800`,
   /** Second choice on paper: structure, outlined. */
   outline: `${base} border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white`,
   /** Structure, solid. The quiet primary where the accent is already spent. */
