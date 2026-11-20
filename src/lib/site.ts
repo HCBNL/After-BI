@@ -13,6 +13,7 @@
  * walkthrough: no invented customer counts, logos or testimonials.
  */
 
+import { FEATURE_STORIES, SOLUTION_STORIES } from './featureStories';
 import { SUPPORT_EMAIL, WHATSAPP_URL } from './siteMeta';
 
 export { SUPPORT_EMAIL, WHATSAPP_URL } from './siteMeta';
@@ -82,10 +83,10 @@ export const MODULES: Module[] = [
     blurb: 'Track every prospect from first contact to signed account.',
     headline: 'A pipeline your whole sales team can see',
     points: [
-      'Visual pipeline stages from new lead to won account',
-      'Deal value and next steps on every opportunity',
-      'Ownership by rep, with managers seeing the full board',
-      'Won accounts convert straight into trading customers',
+      'A dated trail of visits, calls and notes on every lead',
+      'Managers comment on each log and coach in place',
+      'Reps work their own leads; managers see the full list',
+      'Confirmed leads become trading customers after approval',
     ],
   },
   {
@@ -741,7 +742,7 @@ export const LOGOS: { name: string; src: string }[] = [{ name: 'Haiqing', src: '
  * Each one is uploaded from Platform, Website (stored on `site/home` as
  * `images[key]`). Until one is, the slot is empty space of the right shape.
  */
-export const SLOT_GROUPS = ['Front page', 'Platform page', 'Solutions', 'Product screenshots'] as const;
+export const SLOT_GROUPS = ['Front page', 'Platform page', 'Feature pages', 'Solutions', 'Product screenshots'] as const;
 export type SlotGroup = (typeof SLOT_GROUPS)[number];
 
 export interface SiteSlot {
@@ -790,6 +791,14 @@ function buildSlots(): Record<string, SiteSlot> {
     'features-hero': { group: 'Platform page', label: 'Platform page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Platform page (/features). The whole product: laptop and phone with AfterBI.' },
     'solutions-hero': { group: 'Solutions', label: 'Solutions page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Solutions page. The value chain in one picture.' },
   };
+  const stories = [
+    ...Object.entries(FEATURE_STORIES).map(([slug, st]) => ({ key: st.key, name: MODULES.find((m) => m.slug === slug)?.name ?? st.eyebrow })),
+    ...Object.values(SOLUTION_STORIES).map((st) => ({ key: st.key, name: st.eyebrow })),
+  ];
+  for (const { key, name } of stories) {
+    slots[`feature-${key}-1`] = { group: 'Feature pages', label: `${name}: person in the strip`, size: '800 × 800', ratio: '1/1', what: `One person at work for the ${name} page, in the strip of tiles under the headline. A real face, smiling or busy. Empty shows an illustration.` };
+    slots[`feature-${key}-2`] = { group: 'Feature pages', label: `${name}: person in the grid`, size: '900 × 900', ratio: '1/1', what: `A second person for the ${name} page, in the card grid lower down. Empty shows an illustration.` };
+  }
   for (const m of MODULES) {
     slots[`module-${m.slug}`] = { group: 'Product screenshots', label: m.name, size: '1600 × 1000', ratio: '16/10', what: `The ${m.name} picture: its card on the Platform page and the top of its own page. ${MODULE_PHOTO[m.slug] ?? 'A screenshot of this part of AfterBI.'}` };
   }
