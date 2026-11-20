@@ -77,7 +77,7 @@ export const FEATURES = [
   { key: 'analytics', label: 'Analytics', description: 'Sell out by month and the territory map.', actions: ['analytics'] },
   { key: 'sellout', label: 'Sell out', description: 'What left the shelves, by outlet and day.', actions: ['sell-out'] },
   { key: 'deliveries', label: 'Deliveries', description: 'Confirming what arrived.', actions: ['deliveries'] },
-  { key: 'stock', label: 'Stock and depots', description: 'Stock levels, movements and depots.', actions: ['stock', 'movements', 'warehouses'] },
+  { key: 'stock', label: 'Stock and depots', description: 'Stock levels, movements, depots, stock counts, stickers and adjustments.', actions: ['stock', 'movements', 'warehouses', 'stock-count', 'adjustments', 'stickers'] },
   { key: 'returns', label: 'Returns', description: 'Goods coming back and the credit they raise.', actions: ['returns'] },
   { key: 'invoices', label: 'Invoices and statements', description: 'Billing and account statements.', actions: ['invoices', 'statement'] },
   { key: 'credit', label: 'Credit limits', description: 'Credit management per distributor.', actions: ['credit'] },

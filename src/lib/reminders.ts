@@ -12,11 +12,13 @@
 import { isAdmin } from './roles';
 import { count, naira } from './format';
 import { orderNet } from './pricing';
-import type { Distributor, Invoice, Order, ReturnRecord, Role, Sale, StockPosition } from '@/types';
+import type { Distributor, Invoice, Order, ReturnRecord, Role, Sale, StockAdjustment, StockPosition } from '@/types';
+import { ADJUSTMENT_SIGNERS, SIDE_LABEL, sidesToSign } from './adjustments';
 import type { Task } from './tasks';
 
 export type ReminderKey =
   | 'approval-waiting'
+  | 'adjustment-waiting'
   | 'order-unfulfilled'
   | 'order-uninvoiced'
   | 'invoice-overdue'
@@ -122,6 +124,8 @@ export interface ReminderInput {
   distributors: Distributor[];
   /** The person's own to do list. A task due today or late is a reminder too. */
   tasks?: Task[];
+  /** Stock adjustments waiting for a signature. */
+  adjustments?: StockAdjustment[];
 }
 
 /**
@@ -145,6 +149,7 @@ export function checkedKinds(role: Role): Set<string> {
   const money = isAdmin(role) || role === 'finance_manager';
   const partner = role === 'distributor' || role === 'sales_rep';
   const kinds = ['approval', 'draft'];
+  if (ADJUSTMENT_SIGNERS.includes(role)) kinds.push('adjustment');
   if (ops) kinds.push('fulfil', 'stock', 'return');
   if (money) kinds.push('invoice', 'credit', 'credit-unapplied');
   if (money || partner) kinds.push('overdue');
@@ -194,6 +199,23 @@ export function baseReminders(input: ReminderInput): Reminder[] {
       since: order.createdAt,
       days: Math.floor(hours / 24),
       amount: orderNet(order),
+    });
+  }
+
+  /* A stock adjustment waiting for your signature: stock cannot be corrected without it. */
+  for (const adj of input.adjustments ?? []) {
+    const sides = sidesToSign(adj, uid, role);
+    if (!sides.length) continue;
+    const hours = hoursSince(adj.createdAt);
+    out.push({
+      id: `adjustment:${adj.id}`,
+      key: 'adjustment-waiting',
+      severity: hours >= 48 ? 'critical' : 'warning',
+      title: `${adj.number} needs your ${sides.map((s) => SIDE_LABEL[s].toLowerCase()).join(' and ')} approval`,
+      detail: `${adj.direction === 'out' ? 'Remove' : 'Add'} ${adj.productName} at ${adj.warehouseName}, raised by ${adj.requestedByName} ${ageLabel(adj.createdAt)}.`,
+      to: `${root}/adjustments`,
+      since: adj.createdAt,
+      days: Math.floor(hours / 24),
     });
   }
 

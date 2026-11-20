@@ -40,12 +40,13 @@ import { db } from './firebase';
 import { getActiveOrg } from './tenant';
 import type { Role, UserProfile } from '@/types';
 
-export type AuditArea = 'finance' | 'sales' | 'catalogue' | 'people' | 'settings';
+export type AuditArea = 'finance' | 'sales' | 'catalogue' | 'stock' | 'people' | 'settings';
 
 export const AUDIT_AREA_LABEL: Record<AuditArea, string> = {
   finance: 'Finance',
   sales: 'Sales and approvals',
   catalogue: 'Products',
+  stock: 'Stock counts and adjustments',
   people: 'People',
   settings: 'Settings',
 };

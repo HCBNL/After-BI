@@ -25,6 +25,7 @@
 import {
   collection,
   deleteField,
+  onSnapshot,
   doc,
   getDoc,
   getDocs,
@@ -45,7 +46,14 @@ import { db } from './firebase';
 import { orgPath, requireOrg, TENANTS, type CollectionKey } from './tenant';
 import { nairaPlain, todayISO } from './format';
 import { kobo, summarise } from './pricing';
+import { newCountCode } from './countCode';
+import { piecesOf } from './packs';
 import type {
+  AdjustmentSide,
+  CountEntry,
+  StockAdjustment,
+  StockCount,
+  StockCountSummary,
   CreditNote,
   CreditNoteLine,
   Distributor,
@@ -161,6 +169,8 @@ const MONTHLY = {
   PI: (ym: string, seq: number) => `PI-${ym}${String(seq).padStart(3, '0')}`,
   DN: (ym: string, seq: number) => `DN${ym}${String(seq).padStart(3, '0')}`,
   CN: (ym: string, seq: number) => `CN${ym}${String(seq).padStart(3, '0')}`,
+  SC: (ym: string, seq: number) => `SC${ym}${String(seq).padStart(3, '0')}`,
+  ADJ: (ym: string, seq: number) => `ADJ${ym}${String(seq).padStart(3, '0')}`,
 } as const;
 
 async function nextMonthly(prefix: keyof typeof MONTHLY): Promise<string> {
@@ -335,6 +345,11 @@ export async function saveProduct(product: Partial<Product> & { id?: string }): 
       });
     }
     return id;
+  }
+  /* Goods get their stock count sticker code the moment they exist; services are never counted. */
+  if (!data.service && !data.countCode) {
+    const taken = (await list<Product>('products').catch(() => [] as Product[])).map((p) => p.countCode ?? '');
+    data.countCode = newCountCode(requireOrg(), taken);
   }
   const ref = await addDoc(collection(db, orgPath('products')), {
     ...data,
@@ -2256,3 +2271,384 @@ export async function deleteSale(
 }
 
 
+
+/* sticker codes */
+
+/**
+ * Give every goods product without a stock count code one. Administrators
+ * only (the rules refuse anyone else a product write). Returns how many were
+ * given a code.
+ */
+export async function assignMissingCountCodes(): Promise<number> {
+  const products = await list<Product>('products');
+  const taken = products.map((p) => p.countCode ?? '').filter(Boolean);
+  const org = requireOrg();
+  let given = 0;
+  for (const product of products) {
+    if (product.service || product.countCode) continue;
+    const code = newCountCode(org, taken);
+    taken.push(code);
+    await updateDoc(doc(db, orgPath('products'), product.id), { countCode: code, updatedAt: serverTimestamp() });
+    given += 1;
+  }
+  return given;
+}
+
+/** A new code for one product, replacing a lost or damaged sticker run. The old stickers stop working. */
+export async function reissueCountCode(productId: string): Promise<string> {
+  const products = await list<Product>('products');
+  const code = newCountCode(requireOrg(), products.map((p) => p.countCode ?? '').filter(Boolean));
+  await updateDoc(doc(db, orgPath('products'), productId), { countCode: code, updatedAt: serverTimestamp() });
+  const product = products.find((p) => p.id === productId);
+  logAudit({ area: 'stock', action: 'sticker.reissued', summary: `New sticker code for ${product?.name ?? productId}. Old stickers for it no longer scan.`, ref: product?.name });
+  return code;
+}
+
+/* stock counts */
+
+type Actor = Pick<UserProfile, 'id' | 'firstName' | 'lastName'>;
+const actorName = (a: Actor) => `${a.firstName} ${a.lastName}`.trim();
+
+/** Counts, newest first. `warehouseIds` limits them to those depots (a warehouse manager's). */
+export async function listCounts(warehouseIds?: string[] | null, max = 100): Promise<StockCount[]> {
+  const rows = await list<StockCount>('stockCounts', orderBy('startedAt', 'desc'), fsLimit(max));
+  return warehouseIds ? rows.filter((c) => warehouseIds.includes(c.warehouseId)) : rows;
+}
+
+export const getCount = (id: string) => one<StockCount>('stockCounts', id);
+
+/** Live: the count itself, as other counters and the closing manager change it. */
+export function watchCount(id: string, onChange: (count: StockCount | null) => void, onError?: (err: Error) => void): () => void {
+  return onSnapshot(
+    doc(db, orgPath('stockCounts'), id),
+    (snap) => onChange(snap.exists() ? shape<StockCount>(snap.id, snap.data()) : null),
+    (err) => onError?.(err),
+  );
+}
+
+/** Live: every entry in a count, as each counter saves one. Oldest first. */
+export function watchCountEntries(countId: string, onChange: (entries: CountEntry[]) => void, onError?: (err: Error) => void): () => void {
+  return onSnapshot(
+    query(collection(db, `${orgPath('stockCounts')}/${countId}/entries`), orderBy('createdAt', 'asc')),
+    (snap) => onChange(snap.docs.map((d) => shape<CountEntry>(d.id, d.data()))),
+    (err) => onError?.(err),
+  );
+}
+
+export async function listCountEntries(countId: string): Promise<CountEntry[]> {
+  const snap = await getDocs(query(collection(db, `${orgPath('stockCounts')}/${countId}/entries`), orderBy('createdAt', 'asc')));
+  return snap.docs.map((d) => shape<CountEntry>(d.id, d.data()));
+}
+
+/**
+ * Open a count of one depot, with the system's figures as they stand now.
+ *
+ * Only one open count per depot: two would split the counters between them
+ * and neither would be complete.
+ */
+export async function startCount(input: { warehouse: Warehouse; note?: string; actor: Actor }): Promise<string> {
+  const open = await list<StockCount>('stockCounts', where('warehouseId', '==', input.warehouse.id)).catch(() => [] as StockCount[]);
+  const running = open.find((c) => c.status === 'open');
+  if (running) throw new Error(`${running.number} is still open for ${input.warehouse.name}. Close or cancel it first.`);
+
+  const [positions, products] = await Promise.all([listStock(input.warehouse.id), list<Product>('products')]);
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const snapshot: StockCount['snapshot'] = {};
+  for (const pos of positions) {
+    const product = byId.get(pos.productId);
+    if (product?.service) continue;
+    snapshot[pos.productId] = {
+      productName: product?.name ?? pos.productName,
+      unit: product?.unit ?? pos.unit,
+      quantity: Number(pos.quantity) || 0,
+      piecesPerUnit: piecesOf(product),
+    };
+  }
+
+  const number = await nextMonthly('SC');
+  const ref = await addDoc(collection(db, orgPath('stockCounts')), {
+    number,
+    warehouseId: input.warehouse.id,
+    warehouseName: input.warehouse.name,
+    status: 'open',
+    note: input.note?.trim() || null,
+    snapshot,
+    startedBy: input.actor.id,
+    startedByName: actorName(input.actor),
+    startedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  logAudit({ area: 'stock', action: 'count.started', summary: `Stock count ${number} started at ${input.warehouse.name}`, ref: number });
+  return ref.id;
+}
+
+export interface EntryInput {
+  productId: string;
+  productName: string;
+  location: string;
+  lines: number;
+  perLine: number;
+  extra: number;
+  loose: number;
+  piecesPerUnit: number;
+}
+
+function cleanEntry(input: EntryInput) {
+  const whole = (n: number) => Math.max(0, Math.round(Number(n) || 0));
+  return {
+    productId: input.productId,
+    productName: input.productName,
+    location: input.location.trim().slice(0, 40) || 'Unspecified',
+    lines: whole(input.lines),
+    perLine: whole(input.perLine),
+    extra: whole(input.extra),
+    loose: whole(input.loose),
+    piecesPerUnit: Math.max(1, whole(input.piecesPerUnit)),
+  };
+}
+
+export async function addCountEntry(countId: string, input: EntryInput, actor: Actor): Promise<string> {
+  const ref = await addDoc(collection(db, `${orgPath('stockCounts')}/${countId}/entries`), {
+    ...cleanEntry(input),
+    countedBy: actor.id,
+    countedByName: actorName(actor),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateCountEntry(countId: string, entryId: string, input: EntryInput): Promise<void> {
+  await updateDoc(doc(db, `${orgPath('stockCounts')}/${countId}/entries`, entryId), {
+    ...cleanEntry(input),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/** Struck out, not deleted: a count's trail is part of the report. */
+export async function voidCountEntry(countId: string, entryId: string, actor: Actor): Promise<void> {
+  await updateDoc(doc(db, `${orgPath('stockCounts')}/${countId}/entries`, entryId), {
+    void: true,
+    voidedBy: actorName(actor),
+    voidedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/** Close a count. From here it is a report: nothing in it can change, and it changes nothing. */
+export async function closeCount(countId: string, summary: StockCountSummary, actor: Actor): Promise<void> {
+  const ref = doc(db, orgPath('stockCounts'), countId);
+  const number = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('That count no longer exists.');
+    const data = snap.data() as StockCount;
+    if (data.status !== 'open') throw new Error('That count is already closed.');
+    tx.update(ref, {
+      status: 'closed',
+      summary,
+      closedAt: serverTimestamp(),
+      closedBy: actor.id,
+      closedByName: actorName(actor),
+      updatedAt: serverTimestamp(),
+    });
+    return data.number;
+  });
+  const issues = summary.short + summary.over + summary.notCounted + summary.notInSystem;
+  logAudit({
+    area: 'stock',
+    action: 'count.closed',
+    summary: `Stock count ${number} closed: ${summary.lines} lines, ${summary.matched} matched, ${issues} with a variance`,
+    ref: number,
+  });
+}
+
+export async function cancelCount(countId: string, reason: string, actor: Actor): Promise<void> {
+  const ref = doc(db, orgPath('stockCounts'), countId);
+  const before = await one<StockCount>('stockCounts', countId);
+  if (!before || before.status !== 'open') throw new Error('Only an open count can be cancelled.');
+  await updateDoc(ref, {
+    status: 'cancelled',
+    cancelReason: reason.trim() || 'No reason given',
+    cancelledAt: serverTimestamp(),
+    cancelledBy: actorName(actor),
+    updatedAt: serverTimestamp(),
+  });
+  logAudit({ area: 'stock', action: 'count.cancelled', summary: `Stock count ${before.number} cancelled`, ref: before.number, reason });
+}
+
+/* stock adjustments */
+
+export function listAdjustments(max = 200): Promise<StockAdjustment[]> {
+  return list<StockAdjustment>('stockAdjustments', orderBy('createdAt', 'desc'), fsLimit(max));
+}
+
+export function listPendingAdjustments(): Promise<StockAdjustment[]> {
+  return list<StockAdjustment>('stockAdjustments', where('status', '==', 'pending')).then(newestFirst<StockAdjustment>('createdAt'));
+}
+
+/**
+ * Ask for a stock balance to be corrected. Nothing moves yet: it waits for a
+ * finance signature and an operations signature (lib/adjustments.ts).
+ */
+export async function raiseAdjustment(input: {
+  warehouse: Pick<Warehouse, 'id' | 'name'>;
+  product: Product;
+  direction: 'in' | 'out';
+  /** In units; may carry a fraction for loose pieces. */
+  quantity: number;
+  reason: string;
+  count?: Pick<StockCount, 'id' | 'number'> | null;
+  signers: Record<AdjustmentSide, { uid: string; name: string }[]>;
+  actor: Actor;
+}): Promise<string> {
+  if (!(input.quantity > 0)) throw new Error('An adjustment needs a quantity.');
+  if (input.product.service) throw new Error(`${input.product.name} is a service, so it has no stock.`);
+  if (!input.reason.trim()) throw new Error('Say why the stock needs adjusting.');
+  if (!input.signers.finance.length || !input.signers.operations.length) {
+    throw new Error('Nobody can sign this yet. The organisation needs a finance manager, an operations manager or a super admin.');
+  }
+  const number = await nextMonthly('ADJ');
+  const signerIds = [...new Set([...input.signers.finance, ...input.signers.operations].map((s) => s.uid))];
+  const ref = await addDoc(collection(db, orgPath('stockAdjustments')), {
+    number,
+    warehouseId: input.warehouse.id,
+    warehouseName: input.warehouse.name,
+    productId: input.product.id,
+    productName: input.product.name,
+    unit: input.product.unit,
+    piecesPerUnit: piecesOf(input.product),
+    direction: input.direction,
+    quantity: Math.round(input.quantity * 1e6) / 1e6,
+    reason: input.reason.trim().slice(0, 500),
+    countId: input.count?.id ?? null,
+    countNumber: input.count?.number ?? null,
+    status: 'pending',
+    signers: input.signers,
+    signerIds,
+    signatures: {},
+    requestedBy: input.actor.id,
+    requestedByName: actorName(input.actor),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  logAudit({
+    area: 'stock',
+    action: 'adjustment.raised',
+    summary: `${number}: ${input.direction === 'in' ? 'add' : 'remove'} ${input.product.name} at ${input.warehouse.name}, waiting for finance and operations`,
+    ref: number,
+    reason: input.reason.trim().slice(0, 300),
+  });
+  return ref.id;
+}
+
+/**
+ * Sign the sides given. When this completes both sides the adjustment is
+ * applied in the same transaction: the position, an `adjustment` movement and
+ * the request marked applied, or none of them.
+ */
+export async function signAdjustment(id: string, sides: AdjustmentSide[], actor: Actor): Promise<'signed' | 'applied'> {
+  if (!sides.length) throw new Error('You are not a signer on this adjustment.');
+  const ref = doc(db, orgPath('stockAdjustments'), id);
+  const name = actorName(actor);
+  const outcome = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('That adjustment no longer exists.');
+    const adj = shape<StockAdjustment>(snap.id, snap.data());
+    if (adj.status !== 'pending') throw new Error('That adjustment has already been decided.');
+    const signatures = { ...(adj.signatures ?? {}) } as StockAdjustment['signatures'];
+    const at = new Date().toISOString();
+    for (const side of sides) {
+      if (signatures[side]) continue;
+      if (!(adj.signers?.[side] ?? []).some((s) => s.uid === actor.id)) throw new Error('You are not a signer on this adjustment.');
+      signatures[side] = { uid: actor.id, name, at };
+    }
+    const complete = Boolean(signatures.finance && signatures.operations);
+    if (!complete) {
+      tx.update(ref, { signatures, updatedAt: serverTimestamp() });
+      return { state: 'signed' as const, adj };
+    }
+
+    const posRef = doc(db, orgPath('stock'), `${adj.warehouseId}_${adj.productId}`);
+    const pos = await tx.get(posRef);
+    const held = pos.exists() ? Number(pos.data().quantity) || 0 : 0;
+    const per = Math.max(1, adj.piecesPerUnit || 1);
+    /* In pieces, so a fraction of a carton never leaves 0.000001 behind. */
+    const afterPieces = Math.round(held * per) + (adj.direction === 'in' ? 1 : -1) * Math.round(adj.quantity * per);
+    if (afterPieces < 0) throw new Error(`Only ${held} in this depot now. Removing that much would leave a negative balance.`);
+    const balanceAfter = Math.round((afterPieces / per) * 1e6) / 1e6;
+
+    tx.set(
+      posRef,
+      {
+        warehouseId: adj.warehouseId,
+        productId: adj.productId,
+        productName: adj.productName,
+        unit: adj.unit,
+        quantity: balanceAfter,
+        threshold: pos.exists() ? pos.data().threshold ?? 0 : 0,
+        lastAdjustmentId: adj.id,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+    tx.set(doc(collection(db, orgPath('movements'))), {
+      warehouseId: adj.warehouseId,
+      productId: adj.productId,
+      productName: adj.productName,
+      type: 'adjustment',
+      direction: adj.direction,
+      quantity: adj.quantity,
+      balanceAfter,
+      referenceId: adj.id,
+      note: `${adj.number}: ${adj.reason}`.slice(0, 300),
+      createdBy: actor.id,
+      createdByName: name,
+      createdAt: serverTimestamp(),
+    });
+    tx.update(ref, {
+      signatures,
+      status: 'applied',
+      appliedAt: serverTimestamp(),
+      appliedBy: actor.id,
+      appliedByName: name,
+      balanceAfter,
+      updatedAt: serverTimestamp(),
+    });
+    return { state: 'applied' as const, adj };
+  });
+
+  logAudit({
+    area: 'stock',
+    action: outcome.state === 'applied' ? 'adjustment.applied' : 'adjustment.signed',
+    summary:
+      outcome.state === 'applied'
+        ? `${outcome.adj.number} applied: ${outcome.adj.productName} at ${outcome.adj.warehouseName}`
+        : `${outcome.adj.number} signed for ${sides.join(' and ')}`,
+    ref: outcome.adj.number,
+  });
+  return outcome.state;
+}
+
+export async function declineAdjustment(id: string, reason: string, actor: Actor): Promise<void> {
+  const ref = doc(db, orgPath('stockAdjustments'), id);
+  const adj = await one<StockAdjustment>('stockAdjustments', id);
+  if (!adj || adj.status !== 'pending') throw new Error('That adjustment has already been decided.');
+  await updateDoc(ref, {
+    status: 'declined',
+    declineReason: reason.trim() || 'No reason given',
+    declinedAt: serverTimestamp(),
+    declinedBy: actor.id,
+    declinedByName: actorName(actor),
+    updatedAt: serverTimestamp(),
+  });
+  logAudit({ area: 'stock', action: 'adjustment.declined', summary: `${adj.number} declined`, ref: adj.number, reason });
+}
+
+/** The person who raised it takes it back before anyone decides. */
+export async function cancelAdjustment(id: string): Promise<void> {
+  await updateDoc(doc(db, orgPath('stockAdjustments'), id), {
+    status: 'cancelled',
+    cancelledAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}

@@ -166,6 +166,8 @@ export const COLLECTIONS = {
   returns: 'returns',
   creditNotes: 'creditNotes',
   targets: 'targets',
+  stockCounts: 'stockCounts',
+  stockAdjustments: 'stockAdjustments',
   counters: 'counters',
   settings: 'settings',
 } as const;

@@ -65,6 +65,9 @@ import {
   Calculator,
   Landmark,
   UsersRound,
+  ScanLine,
+  Scale,
+  Barcode,
 } from 'lucide-react';
 import type { Role } from '@/types';
 import { isActionLocked } from './plans';
@@ -414,6 +417,24 @@ const ACTIONS: AppAction[] = [
     group: 'Stock',
   },
   {
+    id: 'stock-count',
+    label: 'Stock count',
+    description: 'Count a depot by scanning the sticker on each carton, then see the variance against the system.',
+    icon: ScanLine,
+    to: 'stock-count',
+    roles: OPS.concat('staff', 'finance_manager'),
+    group: 'Stock',
+  },
+  {
+    id: 'adjustments',
+    label: 'Adjustments',
+    description: 'Corrections to a stock balance. Each needs finance and operations to approve before stock moves.',
+    icon: Scale,
+    to: 'adjustments',
+    roles: OPS.concat('finance_manager'),
+    group: 'Stock',
+  },
+  {
     id: 'products',
     label: 'Products',
     description: 'The catalogue itself: names, units, the three price tiers, minimum order.',
@@ -428,6 +449,15 @@ const ACTIONS: AppAction[] = [
     description: 'Landed cost per unit from product, freight, clearance and delivery, then your price at any margin.',
     icon: Calculator,
     to: 'costing',
+    roles: ADMINS,
+    group: 'Stock',
+  },
+  {
+    id: 'stickers',
+    label: 'Stickers',
+    description: 'Print the barcode sticker for each product, to put on its cartons for stock counts.',
+    icon: Barcode,
+    to: 'stickers',
     roles: ADMINS,
     group: 'Stock',
   },

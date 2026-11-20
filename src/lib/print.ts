@@ -1042,3 +1042,85 @@ function fallbackWindow(title: string, html: string): void {
     win.print();
   }, 400);
 }
+
+/* stock count report */
+
+export interface CountReportLine {
+  productName: string;
+  system: string;
+  counted: string;
+  variance: string;
+  variancePieces: number;
+  state: string;
+  issue: boolean;
+  places: number;
+  movedNote?: string;
+}
+
+/**
+ * A closed (or live) stock count as a printed report: the system's figure,
+ * what was counted and the variance for every line, problems first, each in
+ * red. A report, so there is no customer signature: the counter and the
+ * manager who closed it sign.
+ */
+export function printCountReport(input: {
+  settings: OrgSettings;
+  number: string;
+  depot: string;
+  status: string;
+  startedAt?: string;
+  closedAt?: string;
+  startedBy: string;
+  closedBy?: string;
+  counters: string[];
+  lines: CountReportLine[];
+  totals: { lines: number; matched: number; issues: number };
+  preparedBy?: string;
+}): void {
+  const { settings } = input;
+  const brand = /^#[0-9a-f]{6}$/i.test(settings.brandColor ?? '') ? settings.brandColor! : '#10b981';
+  const red = '#b42318';
+  const meta = [
+    `<b>${esc(input.number)}</b>`,
+    esc(input.depot),
+    `Started ${esc(printDate(input.startedAt))}`,
+    input.closedAt ? `Closed ${esc(printDate(input.closedAt))}` : esc(input.status),
+  ].join('<br/>');
+
+  const rows = input.lines
+    .map(
+      (l, i) => `<tr${l.issue ? ` style="color:${red}"` : ''}>
+        <td class="num">${i + 1}</td>
+        <td>${esc(l.productName)}${l.movedNote ? `<div style="font-size:9.5px;color:#5b6167">${esc(l.movedNote)}</div>` : ''}</td>
+        <td class="num">${esc(l.system)}</td>
+        <td class="num">${esc(l.counted)}</td>
+        <td class="num" style="font-weight:800">${esc(l.variance)}</td>
+        <td style="font-weight:${l.issue ? 800 : 500}">${esc(l.state)}</td>
+      </tr>`,
+    )
+    .join('');
+
+  const body = `${header(settings, 'STOCK COUNT', meta)}
+    <div class="grid">
+      <div class="row"><span class="k">Depot</span><span>${esc(input.depot)}</span></div>
+      <div class="row"><span class="k">Lines</span><span>${input.totals.lines}, ${input.totals.matched} matched, <b style="color:${input.totals.issues ? red : 'inherit'}">${input.totals.issues} with a variance</b></span></div>
+      <div class="row"><span class="k">Started by</span><span>${esc(input.startedBy)}</span></div>
+      <div class="row"><span class="k">Counted by</span><span>${esc(input.counters.join(', ') || 'Nobody yet')}</span></div>
+    </div>
+    <table class="items">
+      <colgroup><col style="width:5%"/><col style="width:33%"/><col style="width:16%"/><col style="width:16%"/><col style="width:16%"/><col style="width:14%"/></colgroup>
+      <thead><tr><th class="num">#</th><th>PRODUCT</th><th class="num">SYSTEM</th><th class="num">COUNTED</th><th class="num">VARIANCE</th><th>STATUS</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="6">Nothing counted and nothing held.</td></tr>'}</tbody>
+    </table>
+    <p class="notes">The system figure is what AfterBI held for this depot when the count began. This report changes no stock: any correction is a separate stock adjustment, approved by finance and operations.</p>
+    <div class="sig">
+      <div><div class="sig-line">COUNTED BY</div><div class="sig-sub">${esc(input.counters.join(', '))}</div></div>
+      <div><div class="sig-line">CHECKED BY</div><div class="sig-sub">${esc(input.closedBy ?? input.preparedBy ?? '')}</div></div>
+    </div>
+    ${footer(settings, input.number)}`;
+
+  printHtml(
+    input.number,
+    `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><title>${esc(input.number)}</title><style>${BASE_CSS(brand)}</style></head><body>${watermark(settings)}<div class="page">${body}</div></body></html>`,
+  );
+}
