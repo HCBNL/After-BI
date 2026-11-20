@@ -184,10 +184,32 @@ service cloud.firestore {
           )
         );
 
-      /* Your own name, phone, title and photograph: never your role, organisation, accounts or active flag. */
+      /*
+        Yourself: your photograph only (and an AfterBI staff member's position
+        and base). NEVER your name, title, phone or employee code: those are
+        who the audit log says acted, so only an administrator sets them. A
+        person who could rename themselves could act under another name.
+      */
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['firstName', 'lastName', 'title', 'phone', 'photoURL', 'position', 'location', 'updatedAt', 'lastSeenAt']);
+             .hasOnly(['photoURL', 'position', 'location', 'updatedAt', 'lastSeenAt']);
+
+      /*
+        The one exception, once: a super admin who has no employee code yet
+        (the account was made before codes existed, and nobody above them can
+        edit them) may set their code, with their name and phone, one time.
+        After that it is locked to them like everybody else.
+      */
+      allow update: if signedIn() && request.auth.uid == uid
+        && resource.data.get('role', '') == 'super_admin'
+        && resource.data.get('employeeCode', '') == ''
+        && request.resource.data.employeeCode is string
+        && request.resource.data.employeeCode.size() >= 2
+        && request.resource.data.employeeCode.size() <= 24
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['employeeCode', 'firstName', 'lastName', 'title', 'phone', 'updatedAt']);
 
       /* An administrator, on anybody in their own organisation except themselves.
          Only a super admin may change a super admin, or make one. */
@@ -730,7 +752,9 @@ service cloud.firestore {
       allow read: if hasRole(orgId, ['super_admin', 'admin']);
       allow create: if member(orgId)
         && request.resource.data.by == request.auth.uid
-        && request.resource.data.keys().hasOnly(['at', 'by', 'byName', 'role', 'area', 'action', 'summary', 'ref', 'amount', 'reason'])
+        && request.resource.data.keys().hasOnly(['at', 'by', 'byName', 'byCode', 'role', 'area', 'action', 'summary', 'ref', 'amount', 'reason'])
+        /* The employee code on the line is the writer's own, read from their profile: it cannot be borrowed. */
+        && request.resource.data.get('byCode', null) == profile().get('employeeCode', null)
         && request.resource.data.at == request.time
         && request.resource.data.area in ['finance', 'sales', 'catalogue', 'stock', 'people', 'settings']
         && request.resource.data.action is string && request.resource.data.action.size() <= 60

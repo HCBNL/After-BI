@@ -30,7 +30,6 @@ function seoFiles(mode: string): Plugin {
         ...modules.map((slug) => ({ loc: `/features/${slug}`, priority: '0.8' })),
         { loc: '/solutions', priority: '0.8' },
         { loc: '/pricing', priority: '0.8' },
-        { loc: '/demo', priority: '0.6' },
         { loc: '/terms', priority: '0.3' },
         { loc: '/privacy', priority: '0.3' },
       ];
