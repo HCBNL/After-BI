@@ -4143,5 +4143,14 @@
 "Create your account. We call you, load your products and price lists, and you are live.": "Créez votre compte. Nous vous appelons, chargeons vos produits et listes de prix, et vous êtes en ligne.",
 "Create your account": "Créez votre compte",
 "Leave your details and we will call you to set it up.": "Laissez vos coordonnées et nous vous appellerons pour l’ouvrir.",
-"We use this to set up your account and to call you back. We do not sell it, and we do not add you": "Nous l’utilisons pour ouvrir votre compte et vous rappeler. Nous ne le vendons pas et ne vous ajoutons pas"
+"We use this to set up your account and to call you back. We do not sell it, and we do not add you": "Nous l’utilisons pour ouvrir votre compte et vous rappeler. Nous ne le vendons pas et ne vous ajoutons pas",
+"The number you are carrying, and how far through it you are. Measured on what is invoiced, paid or not.": "Votre objectif et votre avancement. Mesuré sur ce qui est facturé, payé ou non.",
+"Set one per rep, per distributor or per product line, and it is measured against invoiced sales automatically.": "Fixez-en un par commercial, par distributeur ou par ligne de produits ; il est mesuré automatiquement sur les ventes facturées.",
+"Measured on sales invoiced in the month (accrual): an invoice counts the day it is issued, whether or not it is paid yet.": "Mesuré sur les ventes facturées du mois (comptabilité d’engagement) : une facture compte le jour de son émission, payée ou non.",
+"Business owners who run on AfterBI": "Des chefs d'entreprise qui font tourner leur activité sur AfterBI",
+"Measured on what is invoiced, paid or not.": "Mesuré sur ce qui est facturé, payé ou non.",
+"Assigned in order of joining, ending in the role.": "Attribué dans l'ordre d'arrivée, terminé par le code du rôle.",
+"Assigned: the company letters, 001, then SA for super admin.": "Attribué : les lettres de l'entreprise, 001, puis SA pour super administrateur.",
+"Company letters, staff number, then the role (SA, FN, OP, WH, SR, HR, ST). Changing the role changes the ending.": "Lettres de l'entreprise, numéro d'employé, puis le rôle (SA, FN, OP, WH, SR, HR, ST). Changer de rôle change la fin.",
+"Assigned on save": "Attribué à l'enregistrement"
 }

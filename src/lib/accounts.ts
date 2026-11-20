@@ -38,6 +38,72 @@ export function normaliseEmployeeCode(code?: string): string {
   return (code ?? '').toUpperCase().replace(/\s+/g, '').slice(0, 24);
 }
 
+/*
+ * How an employee code is made: the company's letters, the staff number in
+ * order of joining, then the role.
+ *
+ *   HCB 001 SA   Haiqing Classic Brands, first employee, super admin
+ *   HCB 002 FN   the second employee, in finance
+ *
+ * Nobody types it. It is assigned when the account is made; an administrator
+ * can still correct it on the Users page. A change of role changes only the
+ * last letters, never the number.
+ */
+export const ROLE_CODE: Partial<Record<Role, string>> = {
+  super_admin: 'SA',
+  admin: 'AD',
+  finance_manager: 'FN',
+  operations_manager: 'OP',
+  warehouse_manager: 'WH',
+  sales_rep: 'SR',
+  hr: 'HR',
+  staff: 'ST',
+};
+
+const CODE_SHAPE = /^([A-Z]+)(\d+)([A-Z]*)$/;
+const NOISE = new Set(['LTD', 'LIMITED', 'PLC', 'NIG', 'NIGERIA', 'THE', 'AND', 'OF', 'CO', 'COMPANY', 'INC', 'ENTERPRISES', 'ENTERPRISE', 'GROUP']);
+
+/** "Haiqing Classic Brands Nigeria Ltd" → HCB; "Bella Foods" → BEF; "Corie" → COR. */
+export function codePrefix(name?: string): string {
+  const words = (name ?? '')
+    .toUpperCase()
+    .replace(/[^A-Z ]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w && !NOISE.has(w));
+  if (words.length >= 3) return words.slice(0, 3).map((w) => w[0]).join('');
+  if (words.length === 2) return `${words[0].slice(0, 2)}${words[1][0]}`;
+  if (words.length === 1) return words[0].slice(0, 3).padEnd(3, 'X');
+  return 'EMP';
+}
+
+/** The same code with the role letters for `role`: HCB004ST made finance is HCB004FN. */
+export function withRoleSuffix(code: string, role: Role): string {
+  const m = normaliseEmployeeCode(code).match(CODE_SHAPE);
+  const suffix = ROLE_CODE[role] ?? 'ST';
+  return m ? `${m[1]}${m[2]}${suffix}` : normaliseEmployeeCode(code);
+}
+
+/** The next code in the organisation, for a new member with `role`. */
+export async function nextEmployeeCode(orgId: string, role: Role, orgName?: string): Promise<string> {
+  let max = 0;
+  const prefixes = new Map<string, number>();
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), where('orgId', '==', orgId)));
+    for (const d of snap.docs) {
+      const m = normaliseEmployeeCode((d.data() as UserProfile).employeeCode).match(CODE_SHAPE);
+      if (!m) continue;
+      prefixes.set(m[1], (prefixes.get(m[1]) ?? 0) + 1);
+      max = Math.max(max, Number(m[2]));
+    }
+  } catch {
+    /* A brand new organisation, or not readable from here: start at 001. */
+  }
+  /* The letters the company already uses win over the ones guessed from its name. */
+  const used = [...prefixes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const prefix = used ?? codePrefix(orgName);
+  return `${prefix}${String(max + 1).padStart(3, '0')}${ROLE_CODE[role] ?? 'ST'}`;
+}
+
 /** Refuses a code somebody else in the organisation already has. */
 export async function assertCodeFree(orgId: string, code: string, exceptUid?: string): Promise<void> {
   const snap = await getDocs(
@@ -60,8 +126,10 @@ export interface NewAccount {
   lastName: string;
   title?: string;
   phone?: string;
-  /** Required for every member of staff (not a distributor login). Unique within the organisation. */
+  /** Left out, it is assigned: see `nextEmployeeCode`. Unique within the organisation. */
   employeeCode?: string;
+  /** The organisation's name, for the code's letters when nobody has a code yet. */
+  orgName?: string;
   distributorId?: string;
   distributorCategory?: PriceTier;
   /** Sales reps: the distributor accounts they manage. */
@@ -99,9 +167,9 @@ export async function createAccount(input: NewAccount): Promise<{ uid: string; p
   /* AfterBI's own staff belong to no organisation. */
   const orgId = input.role === 'agent' ? '' : input.orgId ?? requireOrg();
 
-  const employeeCode = normaliseEmployeeCode(input.employeeCode);
-  if (needsEmployeeCode(input.role) && !employeeCode) {
-    throw new Error('An employee code is needed. It is what the audit log uses to know who did what.');
+  let employeeCode = normaliseEmployeeCode(input.employeeCode);
+  if (needsEmployeeCode(input.role) && !employeeCode && orgId) {
+    employeeCode = await nextEmployeeCode(orgId, input.role, input.orgName);
   }
   if (employeeCode && orgId) await assertCodeFree(orgId, employeeCode);
 

@@ -4143,5 +4143,14 @@
 "Create your account. We call you, load your products and price lists, and you are live.": "创建您的账户。我们会致电给您，导入您的产品和价目表，您即可上线。",
 "Create your account": "创建您的账户",
 "Leave your details and we will call you to set it up.": "留下您的信息，我们会致电为您开通。",
-"We use this to set up your account and to call you back. We do not sell it, and we do not add you": "我们仅用这些信息为您开通账户并回电。我们不会出售这些信息，也不会把您"
+"We use this to set up your account and to call you back. We do not sell it, and we do not add you": "我们仅用这些信息为您开通账户并回电。我们不会出售这些信息，也不会把您",
+"The number you are carrying, and how far through it you are. Measured on what is invoiced, paid or not.": "您承担的目标数字以及完成进度。按已开票金额计算，无论是否已付款。",
+"Set one per rep, per distributor or per product line, and it is measured against invoiced sales automatically.": "可按销售代表、分销商或产品线设置，系统自动按已开票销售额计算。",
+"Measured on sales invoiced in the month (accrual): an invoice counts the day it is issued, whether or not it is paid yet.": "按当月已开票销售额计算（权责发生制）：发票开出当天即计入，无论是否已付款。",
+"Business owners who run on AfterBI": "运行在 AfterBI 上的企业主",
+"Measured on what is invoiced, paid or not.": "按已开票金额计算，无论是否已付款。",
+"Assigned in order of joining, ending in the role.": "按入职顺序分配，结尾为岗位代码。",
+"Assigned: the company letters, 001, then SA for super admin.": "自动分配：公司字母、001，再加超级管理员代码 SA。",
+"Company letters, staff number, then the role (SA, FN, OP, WH, SR, HR, ST). Changing the role changes the ending.": "公司字母、员工编号，再加岗位代码（SA、FN、OP、WH、SR、HR、ST）。更改岗位会改变结尾。",
+"Assigned on save": "保存时分配"
 }

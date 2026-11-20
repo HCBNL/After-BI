@@ -17,6 +17,9 @@ import { SUPPORT_EMAIL, WHATSAPP_URL } from './siteMeta';
 
 export { SUPPORT_EMAIL, WHATSAPP_URL } from './siteMeta';
 
+/** The phone number on the public site (Contoric, AfterBI's company). */
+export const CONTACT_PHONE = '+234 817 974 8650';
+
 /* ------------------------------------------------------------- the company */
 
 /** The company behind AfterBI, written the way it signs: one word. */
@@ -577,7 +580,7 @@ export const LEADER_QUOTES: { quote: string; name: string; role: string; company
     quote:
       'Before AfterBI we chased orders on WhatsApp and reconciled payments at month end. Now every order, delivery and payment is in one place, and I know where we stand each morning.',
     name: 'Caleb Onyebuchi',
-    role: 'Owner',
+    role: 'CEO',
     company: 'Corie Agro',
     photo: '',
   },
