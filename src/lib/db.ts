@@ -236,13 +236,27 @@ async function nextNumber(prefix: 'PO' | 'INV' | 'RET'): Promise<string> {
  * reload. A one-shot read would only have been a second, staler way to ask.
  */
 export async function updateProfile(uid: string, patch: Partial<UserProfile>): Promise<void> {
-  const before = patch.role ? await getDoc(doc(db, 'users', uid)).catch(() => null) : null;
+  const watched = patch.role || patch.firstName !== undefined || patch.lastName !== undefined || patch.employeeCode !== undefined;
+  const before = watched ? await getDoc(doc(db, 'users', uid)).catch(() => null) : null;
   await updateDoc(doc(db, 'users', uid), { ...patch, updatedAt: serverTimestamp() });
   const was = before?.exists() ? (before.data() as UserProfile) : null;
   if (was) {
     const name = `${was.firstName} ${was.lastName}`.trim();
+    const ref = was.employeeCode || name;
     if (patch.role && patch.role !== was.role) {
-      logAudit({ area: 'people', action: 'user.role-changed', summary: `Role changed for ${name}: ${was.role} → ${patch.role}`, ref: name });
+      logAudit({ area: 'people', action: 'user.role-changed', summary: `Role changed for ${name}: ${was.role} → ${patch.role}`, ref });
+    }
+    const newName = `${patch.firstName ?? was.firstName} ${patch.lastName ?? was.lastName}`.trim();
+    if (newName !== name) {
+      logAudit({ area: 'people', action: 'user.renamed', summary: `Name changed: ${name} → ${newName}`, ref });
+    }
+    if (patch.employeeCode !== undefined && patch.employeeCode !== (was.employeeCode ?? '')) {
+      logAudit({
+        area: 'people',
+        action: 'user.code-changed',
+        summary: `Employee code for ${newName}: ${was.employeeCode || 'none'} → ${patch.employeeCode}`,
+        ref: patch.employeeCode,
+      });
     }
   }
 }

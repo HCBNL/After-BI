@@ -127,6 +127,12 @@ export interface SiteHome {
   /** AfterBI's own ads, sliding on every customer's home screen. See `AppAd`. */
   appAds?: AppAd[];
 
+  /**
+   * What real customers say, shown as cards on the front page (up to six).
+   * Added by the owner from Platform, Website. Empty shows the built in one.
+   */
+  testimonials?: SiteTestimonial[];
+
   updatedAt?: string;
 }
 
@@ -168,6 +174,25 @@ export function liveAds(home: SiteHome | null | undefined): AppAd[] {
     .filter((ad) => ad?.live && typeof ad.image === 'string' && /^https:\/\//i.test(ad.image))
     .slice(0, MAX_APP_ADS)
     .map((ad) => ({ ...ad, title: ad.title ?? '', body: ad.body ?? '', cta: ad.cta ?? '', url: adLink(ad.url) }));
+}
+
+/** One customer's words on the front page. Every field is written, empty rather than missing. */
+export interface SiteTestimonial {
+  quote: string;
+  name: string;
+  role: string;
+  company: string;
+  /** Their photograph or the company logo. Empty draws their initials. */
+  photo: string;
+}
+
+export const MAX_TESTIMONIALS = 6;
+
+/** The testimonials worth drawing: with words and a name. */
+export function homeTestimonials(home: SiteHome | null | undefined): SiteTestimonial[] {
+  return (home?.testimonials ?? [])
+    .filter((t) => t?.quote?.trim() && t?.name?.trim())
+    .slice(0, MAX_TESTIMONIALS);
 }
 
 /** One walkthrough on the front page. */

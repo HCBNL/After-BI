@@ -529,13 +529,13 @@ function composeNote(answers: WizardAnswers): string {
  */
 export function bookingMailto(answers: WizardAnswers): string {
   const who = (answers.company || answers.name || '').trim();
-  const subject = `Demo request${who ? `: ${who}` : ''}`;
+  const subject = `Account request${who ? `: ${who}` : ''}`;
   return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(composeNote(answers))}`;
 }
 
 /** The same answers, as a WhatsApp message. */
 export function bookingWhatsApp(answers: WizardAnswers): string {
-  const text = `Hello AfterBI, I would like to book a demo.\n\n${composeNote(answers)}`;
+  const text = `Hello AfterBI, I would like to create an account.\n\n${composeNote(answers)}`;
   return `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
 }
 
@@ -562,6 +562,24 @@ export const TESTIMONIALS: { quote: string; name: string; role: string; company:
     role: 'Head of Operations',
     company: 'HCBNL (Haiqing)',
     photo: '/people/collins-nwobodo.webp',
+  },
+];
+
+/**
+ * Heads of other companies, on the front page's "What business owners say"
+ * cards. Owner-added testimonials (Platform, Website) are shown first; these
+ * follow. Photo empty until uploaded: the card shows initials.
+ *
+ * Wording here is a draft for the person named to approve before it goes live.
+ */
+export const LEADER_QUOTES: { quote: string; name: string; role: string; company: string; photo: string }[] = [
+  {
+    quote:
+      'Before AfterBI we chased orders on WhatsApp and reconciled payments at month end. Now every order, delivery and payment is in one place, and I know where we stand each morning.',
+    name: 'Caleb Onyebuchi',
+    role: 'Owner',
+    company: 'Corie Agro',
+    photo: '',
   },
 ];
 
@@ -720,15 +738,7 @@ export const LOGOS: { name: string; src: string }[] = [{ name: 'Haiqing', src: '
  * Each one is uploaded from Platform, Website (stored on `site/home` as
  * `images[key]`). Until one is, the slot is empty space of the right shape.
  */
-export const SLOT_GROUPS = [
-  'Industries',
-  'Platform page',
-  'Modules',
-  'Solutions',
-  'Pricing',
-  'Book a demo and support',
-  'Menus and closing band',
-] as const;
+export const SLOT_GROUPS = ['Front page', 'Platform page', 'Solutions', 'Product screenshots'] as const;
 export type SlotGroup = (typeof SLOT_GROUPS)[number];
 
 export interface SiteSlot {
@@ -743,20 +753,6 @@ export interface SiteSlot {
   what: string;
 }
 
-const INDUSTRY_PHOTO: Record<IndustryIcon, string> = {
-  food: 'Packaged foods and snacks on a shelf or in a warehouse.',
-  drinks: 'Soft drinks, water or juice: crates, bottles or a cold room.',
-  care: 'Personal care and beauty products: soaps, creams, cosmetics.',
-  home: 'Home care products: detergents, cleaners, tissue.',
-  baby: 'Baby food, formula or diapers on a store shelf.',
-  agro: 'Agribusiness: grain bags, farm produce, a farm or an agro store.',
-  pharma: 'Health and wellness: pharmacy shelves or supplements.',
-  build: 'Building materials: cement bags, paint, tiles or a hardware store.',
-  electronics: 'Consumer electronics: phones, TVs or appliances in a store.',
-  spirits: 'Wines and spirits: bottles on a shelf or in a cellar.',
-  stationery: 'Stationery and office supplies: books, paper, pens.',
-  fashion: 'Fashion and textiles: fabric rolls, clothing racks or shoes.',
-};
 
 const MODULE_PHOTO: Record<string, string> = {
   leads: 'Screenshot: the Leads pipeline board.',
@@ -773,56 +769,27 @@ const MODULE_PHOTO: Record<string, string> = {
   access: 'Screenshot: the Users screen showing roles.',
 };
 
-const SOLUTION_PHOTO: Record<string, string> = {
-  manufacturers: 'A modern factory or production line.',
-  importers: 'A modern warehouse with racking and pallets.',
-  distributors: 'A distribution centre with a delivery van loading.',
-  'modern-trade': 'A supermarket aisle with stocked shelves.',
-};
 
-const STEP_PHOTO = [
-  'Someone setting things up at a desk: price lists, a laptop, a planning board.',
-  'A team being onboarded: people with phones and laptops, a short meeting.',
-  'Goods moving on their own: a loaded van leaving, a forklift, a busy depot.',
-  'Growing: a manager reading a dashboard, a full store shelf, a handshake.',
-];
 
-const DEMO_PHOTO = [
-  'Tailored: someone preparing a product list or price list on a laptop.',
-  '30 minutes: a short video call or a screen being shown to a client.',
-  'Your team: sales, operations and finance people around one screen.',
-  'No pressure: a relaxed conversation, a proposal on a table, a handshake.',
-];
 
+/*
+ * Only a few pictures on the whole site, each where a picture earns its place.
+ * Every slot is optional: an empty one draws nothing at all (no grey box),
+ * except the front page's hero frame, which shows a clean empty frame until a
+ * picture is added. Earlier slots (industries, plan cards, menu cards, steps,
+ * demo boxes, solution photos) were removed: their old uploads no longer show.
+ */
 function buildSlots(): Record<string, SiteSlot> {
   const slots: Record<string, SiteSlot> = {
-    'features-hero': { group: 'Platform page', label: 'Platform page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Platform page (/features). The whole product: laptop and phone with AfterBI, or a team at work.' },
-    'solutions-hero': { group: 'Solutions', label: 'Solutions page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Solutions page. The value chain: factory, warehouse, truck and store in one picture.' },
-    /* Slot keys are the plan *ids*, not their names: see `Plan.id`. A plan
-       renamed on the card keeps the picture already uploaded for it. */
-    'plan-starter': { group: 'Pricing', label: 'Sole Trader plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Sole Trader plan card. An owner-run business: a single shop or a small team getting started.' },
-    'plan-growth': { group: 'Pricing', label: 'SME plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the SME plan card. A busy distributor with several reps and a depot.' },
-    'plan-premium': { group: 'Pricing', label: 'Enterprise plan card', size: '1200 × 675', ratio: '16/9', what: 'Top of the Enterprise plan card. A large operation: big warehouse, fleet, many people.' },
-    'help-contact': { group: 'Book a demo and support', label: 'Sign in help: contact box', size: '1000 × 750', ratio: '4/3', what: 'Beside "None of those?" on the sign in help page. A friendly support person on a phone or headset.' },
-    'menu-platform': { group: 'Menus and closing band', label: 'Platform menu card', size: '800 × 450', ratio: '16/9', what: 'The dark card in the Platform drop down menu ("Explore the platform"). AfterBI on a laptop.' },
-    'menu-support': { group: 'Menus and closing band', label: 'Support menu card', size: '800 × 450', ratio: '16/9', what: 'The dark card in the Support drop down menu ("Already a customer?"). Someone signing in on a phone or laptop.' },
-    'cta-team': { group: 'Menus and closing band', label: 'Closing band', size: '1200 × 900', ratio: '4/3', what: 'The green "Ready to see AfterBI in action?" band at the bottom of every page. A professional on a video call or a team at work, smiling.' },
+    'hero-catalogue': { group: 'Front page', label: 'Left tall card: Product catalogue', size: '900 × 1300', ratio: '9/13', what: 'The tall card on the left under the headline. Products on shelves, or the catalogue on a phone. Empty shows a drawn catalogue.' },
+    'hero-finance': { group: 'Front page', label: 'Middle bottom card: Finance', size: '1100 × 800', ratio: '11/8', what: 'The lower card in the middle. A person smiling at a laptop or phone, or a chart. Empty shows a drawn chart.' },
+    'hero-stock': { group: 'Front page', label: 'Right tall card: Stock', size: '900 × 1300', ratio: '9/13', what: 'The tall card on the right. A warehouse or cartons on racks. Empty shows the drawn flowers.' },
+    'features-hero': { group: 'Platform page', label: 'Platform page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Platform page (/features). The whole product: laptop and phone with AfterBI.' },
+    'solutions-hero': { group: 'Solutions', label: 'Solutions page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Solutions page. The value chain in one picture.' },
   };
-  for (const item of INDUSTRIES) {
-    slots[`industry-${item.icon}`] = { group: 'Industries', label: item.name, size: '800 × 600', ratio: '4/3', what: `The ${item.name} card in "Built for every consumer goods category" (front page and Solutions page). ${INDUSTRY_PHOTO[item.icon]}` };
-  }
-  MONTH_STEPS.forEach((step, index) => {
-    slots[`step-${index + 1}`] = { group: 'Platform page', label: `Step ${index + 1}: ${step.title}`, size: '800 × 500', ratio: '16/10', what: `Box ${index + 1} of "Live in four steps" on the Platform page. ${STEP_PHOTO[index]}` };
-  });
   for (const m of MODULES) {
-    slots[`module-${m.slug}`] = { group: 'Modules', label: m.name, size: '1600 × 1000', ratio: '16/10', what: `The ${m.name} picture: its card on the Platform page, the top of its own page, and the related capability cards. ${MODULE_PHOTO[m.slug] ?? 'A screenshot of this part of AfterBI.'}` };
+    slots[`module-${m.slug}`] = { group: 'Product screenshots', label: m.name, size: '1600 × 1000', ratio: '16/10', what: `The ${m.name} picture: its card on the Platform page and the top of its own page. ${MODULE_PHOTO[m.slug] ?? 'A screenshot of this part of AfterBI.'}` };
   }
-  for (const s of SOLUTIONS) {
-    slots[s.image] = { group: 'Solutions', label: s.name, size: '1200 × 800', ratio: '3/2', what: `The ${s.name} section of the Solutions page, its tile at the top, and the "Who it is built for" cards. ${SOLUTION_PHOTO[s.slug] ?? ''}`.trim() };
-  }
-  DEMO_PHOTO.forEach((what, index) => {
-    slots[`demo-${index + 1}`] = { group: 'Book a demo and support', label: `Demo page box ${index + 1}`, size: '800 × 500', ratio: '16/10', what: `Box ${index + 1} on the Book a demo page. ${what}` };
-  });
   return slots;
 }
 

@@ -82,30 +82,30 @@ export function initTheme(): ResolvedTheme {
  * coloured panels and the first banner, in light and dark alike. See the
  * `[data-accent]` blocks at the end of index.css.
  */
-/* Red is not a theme colour: in this app red means "pending", so it is kept for that alone. */
-export type Preset = 'green' | 'blue' | 'gold';
+/* The three primary colours, blue, red and green (the bright side), plus any colour from the palette. */
+export type Preset = 'green' | 'blue' | 'red';
 
 /** A preset's id, or any colour as `#rrggbb` chosen from the palette. */
 export type Accent = Preset | `#${string}`;
 
 export const ACCENTS: { id: Preset; label: string; swatch: string }[] = [
-  { id: 'green', label: 'Green', swatch: '#12BF6A' },
   { id: 'blue', label: 'Blue', swatch: '#2F6BFF' },
-  { id: 'gold', label: 'Yellow', swatch: '#FFB21E' },
+  { id: 'red', label: 'Red', swatch: '#E5383B' },
+  { id: 'green', label: 'Green', swatch: '#12BF6A' },
 ];
 
 const ACCENT_KEY = 'afterbi.accent';
 const HEX = /^#[0-9a-f]{6}$/i;
 
 export function isPreset(accent: Accent): accent is Preset {
-  return accent === 'green' || accent === 'blue' || accent === 'gold';
+  return accent === 'green' || accent === 'blue' || accent === 'red';
 }
 
 export function getStoredAccent(): Accent {
   try {
     const stored = localStorage.getItem(ACCENT_KEY) ?? '';
-    /* A device that had chosen the old orange falls back to the default green. */
-    if (stored === 'blue' || stored === 'gold') return stored;
+    /* A device that had chosen the old orange or yellow falls back to the default green. */
+    if (stored === 'blue' || stored === 'red') return stored;
     if (HEX.test(stored)) return stored.toLowerCase() as Accent;
   } catch {
     /* blocked storage: the default */

@@ -56,7 +56,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     q: 'Can I see it before I commit?',
     a: 'Yes. A guided walkthrough runs about 30 minutes and we load your own products, partners and price list into it first, so you are looking at your business rather than a sample one.',
     book: true,
-    cta: 'Book a demo',
+    cta: 'Create account',
   },
   {
     q: 'Will it fit the way we already sell?',

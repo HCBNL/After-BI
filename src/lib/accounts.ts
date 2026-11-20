@@ -14,7 +14,7 @@
  */
 import { deleteApp, initializeApp, type FirebaseApp } from 'firebase/app';
 import { createUserWithEmailAndPassword, getAuth, signOut, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, limit, query, setDoc, where } from 'firebase/firestore';
 import { app, db } from './firebase';
 import { requireOrg } from './tenant';
 import type { PriceTier, Role, UserProfile } from '@/types';
@@ -28,6 +28,28 @@ export function suggestPassword(length = 10): string {
   return [...bytes].map((b) => ALPHABET[b % ALPHABET.length]).join('');
 }
 
+/** Staff need an employee code; a distributor's own login (a customer) and AfterBI staff do not. */
+export function needsEmployeeCode(role: Role): boolean {
+  return role !== 'distributor' && role !== 'agent' && role !== 'owner';
+}
+
+/** Upper case, no spaces: "hcb 0042" and "HCB0042" are the same code. */
+export function normaliseEmployeeCode(code?: string): string {
+  return (code ?? '').toUpperCase().replace(/\s+/g, '').slice(0, 24);
+}
+
+/** Refuses a code somebody else in the organisation already has. */
+export async function assertCodeFree(orgId: string, code: string, exceptUid?: string): Promise<void> {
+  const snap = await getDocs(
+    query(collection(db, 'users'), where('orgId', '==', orgId), where('employeeCode', '==', code), limit(2)),
+  );
+  const taken = snap.docs.find((d) => d.id !== exceptUid);
+  if (taken) {
+    const v = taken.data() as UserProfile;
+    throw new Error(`Employee code ${code} already belongs to ${`${v.firstName} ${v.lastName}`.trim()}. Each code is one person.`);
+  }
+}
+
 export interface NewAccount {
   email: string;
   password: string;
@@ -38,6 +60,8 @@ export interface NewAccount {
   lastName: string;
   title?: string;
   phone?: string;
+  /** Required for every member of staff (not a distributor login). Unique within the organisation. */
+  employeeCode?: string;
   distributorId?: string;
   distributorCategory?: PriceTier;
   /** Sales reps: the distributor accounts they manage. */
@@ -75,6 +99,12 @@ export async function createAccount(input: NewAccount): Promise<{ uid: string; p
   /* AfterBI's own staff belong to no organisation. */
   const orgId = input.role === 'agent' ? '' : input.orgId ?? requireOrg();
 
+  const employeeCode = normaliseEmployeeCode(input.employeeCode);
+  if (needsEmployeeCode(input.role) && !employeeCode) {
+    throw new Error('An employee code is needed. It is what the audit log uses to know who did what.');
+  }
+  if (employeeCode && orgId) await assertCodeFree(orgId, employeeCode);
+
   let secondary: FirebaseApp | null = null;
   let uid: string;
 
@@ -103,6 +133,7 @@ export async function createAccount(input: NewAccount): Promise<{ uid: string; p
     createdAt: new Date().toISOString(),
     ...(input.title?.trim() ? { title: input.title.trim() } : {}),
     ...(input.phone?.trim() ? { phone: input.phone.trim() } : {}),
+    ...(employeeCode ? { employeeCode } : {}),
     ...(input.distributorId ? { distributorId: input.distributorId } : {}),
     ...(input.distributorCategory ? { distributorCategory: input.distributorCategory } : {}),
     ...(input.distributorIds?.length ? { distributorIds: input.distributorIds } : {}),

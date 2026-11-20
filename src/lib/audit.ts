@@ -56,6 +56,8 @@ export interface AuditEntry {
   at: string;
   by: string;
   byName: string;
+  /** The person's employee code: what identifies them, whatever their name says. */
+  byCode?: string;
   role: Role | '';
   area: AuditArea;
   /** A stable name for what happened: `payment.corrected`, `order.approved`. */
@@ -71,8 +73,8 @@ export interface AuditEntry {
 }
 
 /* Who is signed in, set by AuthContext, so no caller has to pass it. */
-let actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'> | null = null;
-export function setAuditActor(user: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'> | null): void {
+let actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role' | 'employeeCode'> | null = null;
+export function setAuditActor(user: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role' | 'employeeCode'> | null): void {
   actor = user;
 }
 
@@ -93,6 +95,7 @@ export function logAudit(entry: {
     at: serverTimestamp(),
     by: actor.id,
     byName: `${actor.firstName} ${actor.lastName}`.trim().slice(0, 120),
+    byCode: actor.employeeCode ?? null,
     role: actor.role ?? '',
     area: entry.area,
     action: entry.action.slice(0, 60),
@@ -133,6 +136,7 @@ export async function listAudit(area?: AuditArea, after?: QueryDocumentSnapshot 
       at: v.at?.toDate?.().toISOString() ?? '',
       by: String(v.by ?? ''),
       byName: String(v.byName ?? ''),
+      byCode: v.byCode ? String(v.byCode) : undefined,
       role: (v.role ?? '') as Role | '',
       area: v.area as AuditArea,
       action: String(v.action ?? ''),
