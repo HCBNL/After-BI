@@ -9,10 +9,12 @@ import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
 import { IconArt } from '@/components/ui/IconArt';
-import { IconBadge, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { IconBadge, ModuleIcon, Section, SectionHead, SiteImage, useSiteImages } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
 import { MODULES, MONTH_STEPS, PRODUCT_GROUPS, type SiteImageKey } from '@/lib/site';
+import { Scene } from '@/components/marketing/scenes';
+import { FEATURE_STORIES } from '@/lib/featureStories';
 
 export default function ProductPage() {
   return (
@@ -88,11 +90,7 @@ function Body() {
                     className="group flex h-full scroll-mt-32 flex-col overflow-hidden rounded-[1.6rem] bg-white ring-1 ring-navy-900/10 transition-shadow hover:shadow-[0_24px_50px_-24px_rgba(15,31,54,0.35)]"
                   >
                     <div className="relative min-h-[4.75rem]">
-                      <SiteImage
-                        slot={`module-${slug}` as SiteImageKey}
-                        alt={`${m.name} in AfterBI`}
-                        className="aspect-[16/10]"
-                      />
+                      <ModuleVisual slug={slug} name={m.name} />
                       <IconBadge className="left-6 top-6" id={slug}>
                         <ModuleIcon slug={slug} size={17} />
                       </IconBadge>
@@ -129,5 +127,18 @@ function Body() {
         </ol>
       </Section>
     </>
+  );
+}
+
+/* The module's screenshot when one is uploaded; until then, its illustration. */
+function ModuleVisual({ slug, name }: { slug: string; name: string }) {
+  const images = useSiteImages();
+  const key = `module-${slug}` as SiteImageKey;
+  const scene = FEATURE_STORIES[slug]?.scenes[0];
+  if (images[key] || !scene) return <SiteImage slot={key} alt={`${name} in AfterBI`} className="aspect-[16/10]" />;
+  return (
+    <div className="relative aspect-[16/8]" style={{ background: 'repeating-linear-gradient(0deg, #d6eafb 0 3px, #f3f9ff 3px 7px)' }}>
+      <Scene name={scene} className="absolute bottom-[4%] right-[6%] aspect-square h-[88%] w-auto" />
+    </div>
   );
 }

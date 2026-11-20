@@ -36,7 +36,6 @@ import { cn } from '@/lib/cn';
 
 const KIND_LABEL: Record<StepKind, string> = { times: '× multiple', percent: '% of total', amount: '₦ per unit' };
 const QUICK_VALUES: Record<StepKind, number[]> = { times: [2, 2.5, 3], percent: [5, 10, 15], amount: [50, 100, 200] };
-const PROFITS = [30, 50, 100];
 const ROUNDING = [0, 10, 50, 100, 500];
 
 const num = (v: string) => {
@@ -47,23 +46,6 @@ const num = (v: string) => {
 const foreign = (value: number, currency: QuickCurrency) =>
   `${QUICK_SIGN[currency]}${value.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        'tabular rounded-full border px-2.5 py-1 text-caption font-semibold transition-colors',
-        active
-          ? 'border-brand-500 bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-200'
-          : 'border-hairline text-secondary hover:text-primary',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 export function ImportCalculator() {
   const { user } = useAuth();
@@ -295,11 +277,6 @@ export function ImportCalculator() {
                     </Select>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    {QUICK_VALUES[st.kind].map((v) => (
-                      <Chip key={v} active={st.value === v} onClick={() => setStep(st.id, { value: v })}>
-                        {st.kind === 'times' ? `×${v}` : st.kind === 'percent' ? `${v}%` : `₦${v}`}
-                      </Chip>
-                    ))}
                     {ready && row && (
                       <span className="tabular ml-auto text-caption text-muted">
                         +{naira(row.added, true)} <ArrowRight size={11} className="inline" aria-hidden />{' '}
@@ -358,13 +335,6 @@ export function ImportCalculator() {
                 </option>
               ))}
             </Select>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {PROFITS.map((p) => (
-              <Chip key={p} active={s.profit === p} onClick={() => patch({ profit: p })}>
-                {p}%
-              </Chip>
-            ))}
           </div>
           {s.basis === 'margin' && s.profit >= 100 && (
             <p className="mt-2 text-caption text-status-critical">A margin must be under 100%. For double your cost, choose On cost at 100%.</p>

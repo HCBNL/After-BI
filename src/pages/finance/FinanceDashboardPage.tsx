@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, BadgePercent, Clock3, FileText, PieChart, Receipt, RotateCcw, TrendingUp, Users, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Loading } from '@/components/brand/Loader';
-import { Hint } from '@/components/ui';
+import { Hint, Select } from '@/components/ui';
 import {
   AccentArrow,
   AccentBadge,
@@ -87,22 +87,13 @@ export default function FinanceDashboardPage() {
           <div className="grid gap-4 lg:grid-cols-12">
             <QuietCard className="lg:col-span-7">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div role="group" aria-label="Period" className="inline-flex rounded-full surface-sunken p-1">
+                <Select value={period} onChange={(e) => setPeriod(e.target.value as typeof period)} className="w-auto min-w-[10rem]" aria-label="Period">
                   {PERIODS.map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      aria-pressed={period === p}
-                      onClick={() => setPeriod(p)}
-                      className={cn(
-                        'rounded-full px-3.5 py-1.5 text-label font-semibold transition-colors',
-                        period === p ? 'surface-card text-primary shadow-sm' : 'text-muted hover:text-primary',
-                      )}
-                    >
+                    <option key={p} value={p}>
                       {PERIOD_LABEL[p]}
-                    </button>
+                    </option>
                   ))}
-                </div>
+                </Select>
                 <div className="text-right">
                   <p className="text-caption text-muted">Invoices raised</p>
                   <p className="tabular text-lead font-semibold text-primary">{sum.invoiceCount.toLocaleString('en-NG')}</p>

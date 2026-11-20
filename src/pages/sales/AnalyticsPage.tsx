@@ -218,12 +218,7 @@ export default function AnalyticsPage() {
             ? `${period.label}, ${formatDate(period.from)}, against ${formatDate(period.prevFrom)}.`
             : `${period.label}: ${formatDate(period.from)} to ${formatDate(period.to)}, against ${formatDate(period.prevFrom)} to ${formatDate(period.prevTo)}.`
         }
-      >
-        <div className="flex flex-wrap gap-2">
-          <SegmentedControl size="sm" value={source} onChange={setSource} options={SOURCES} />
-          <SegmentedControl size="sm" value={periodKey} onChange={setPeriodKey} options={PERIODS} />
-        </div>
-      </PageHeader>
+      />
 
       {/* ---------------------------------------------------------- filters */}
       <div className="mb-5 flex flex-wrap items-center gap-2">
@@ -251,6 +246,8 @@ export default function AnalyticsPage() {
             </option>
           ))}
         </Select>
+        <SegmentedControl value={source} onChange={setSource} options={SOURCES} label="Sell-in or sell-out" />
+        <SegmentedControl value={periodKey} onChange={setPeriodKey} options={PERIODS} label="Period" className="min-w-[10rem]" />
         {active.length > 0 && (
           <Button variant="ghost" size="sm" icon={<X size={14} />} onClick={() => setFilters({})}>
             Clear filters

@@ -1439,18 +1439,18 @@
  */
 @layer components {
   .site {
-    /* ACCENT, the 10: lemon green. See the ramp note above before using a step. */
-    --color-brand-50: #fbffe8;
-    --color-brand-100: #f3ffc2;
-    --color-brand-200: #e8ff8d;
-    --color-brand-300: #dcfb57;
-    --color-brand-400: #d2f93f;
-    --color-brand-500: #c8f531; /* THE FILL. Navy on it: 13:1. */
-    --color-brand-600: #b2e000; /* hover and pressed */
-    --color-brand-700: #5f7a06; /* ink and strokes on paper: 4.9:1 on white */
-    --color-brand-800: #4b5f0b;
-    --color-brand-900: #3b4a0c;
-    --color-brand-950: #212b05;
+    /* ACCENT, the 10: the bright AfterBI blue (lime retired, Nov 2026). White on 500 and up. */
+    --color-brand-50: #eef3ff;
+    --color-brand-100: #dbe5ff;
+    --color-brand-200: #bccdff;
+    --color-brand-300: #8eaaff;
+    --color-brand-400: #5b80ff;
+    --color-brand-500: #1d4ef5; /* THE FILL. White on it. */
+    --color-brand-600: #1740d6; /* hover and pressed */
+    --color-brand-700: #1433b0; /* ink and strokes on paper */
+    --color-brand-800: #13308c;
+    --color-brand-900: #142b6e;
+    --color-brand-950: #0d1a43;
 
     /* STRUCTURE, the 30: deep corporate navy. */
     --color-navy-50: #f2f6fb;
@@ -1465,11 +1465,11 @@
     --color-navy-900: #0f1f36;
     --color-navy-950: #0a1526;
 
-    /* GROUND, the 60: warm cream under white cards. */
-    --site-ground: #fbf8f4;
-    --site-ground-deep: #f4efe8;
+    /* GROUND, the 60: the front page's cool mist, on every page (no cream). */
+    --site-ground: #f3f7f6;
+    --site-ground-deep: #e8eff0;
     --site-ink: 15, 31, 54;
-    --site-accent: 200, 245, 49;
+    --site-accent: 29, 78, 245;
     --site-hero-from: #0a1526;
     --site-hero-mid: #12264a;
     --site-hero-light: 63, 101, 150;
@@ -1838,7 +1838,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 /*
  * The owner's shapes (components/marketing/art.tsx) in motion.
  *
- * COLOUR: each shape's main colour walks blue, pink, gold, lime, soft blue,
+ * COLOUR: each shape's main colour walks blue, pink, gold, soft blue, pink,
  * holding each for about seven and a half seconds and easing into the next.
  * `--shift` starts a shape further along the walk; the second and third
  * colours of a shape run one and two steps behind the first, so a shape is
@@ -1858,16 +1858,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
     0%, 16% { fill: #0866f5; }
     20%, 36% { fill: #ff78a8; }
     40%, 56% { fill: #ffbe45; }
-    60%, 76% { fill: #c8f531; }
-    80%, 96% { fill: #7c9cff; }
+    60%, 76% { fill: #7c9cff; }
+    80%, 96% { fill: #ff78a8; }
     100% { fill: #0866f5; }
   }
   @keyframes art-stroke {
     0%, 16% { stroke: #0866f5; }
     20%, 36% { stroke: #ff78a8; }
     40%, 56% { stroke: #ffbe45; }
-    60%, 76% { stroke: #c8f531; }
-    80%, 96% { stroke: #7c9cff; }
+    60%, 76% { stroke: #7c9cff; }
+    80%, 96% { stroke: #ff78a8; }
     100% { stroke: #0866f5; }
   }
 
@@ -2026,3 +2026,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 /* The sign-in and password screens' panel: blue, in both themes (a touch deeper at night). */
 .auth-blue { background-color: #1238e6 !important; }
 [data-theme='dark'] .auth-blue { background-color: #1532c4 !important; }
+
+/* The owner's illustrations drift a little, like the art. */
+@layer components {
+  .scene-float { animation: scene-float 8s ease-in-out infinite; transform-origin: 50% 90%; }
+  @keyframes scene-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scene-float { animation: none; }
+  }
+}

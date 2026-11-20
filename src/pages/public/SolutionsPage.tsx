@@ -3,6 +3,8 @@
  * Each business type has an anchor, so the menu can link straight to it.
  */
 
+import { Scene } from '@/components/marketing/scenes';
+import { SOLUTION_STORIES } from '@/lib/featureStories';
 import { Link } from 'react-router-dom';
 import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
@@ -49,13 +51,13 @@ function Body() {
           />
           <div className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-2.5">
             {SOLUTIONS.map((s) => (
-              <a
+              <Link
                 key={s.slug}
-                href={`#${s.slug}`}
+                to={`/solutions/${s.slug}`}
                 className="rounded-full bg-white px-5 py-2.5 text-[14.5px] font-semibold text-navy-900 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-900 hover:text-white"
               >
                 {s.name}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -65,11 +67,19 @@ function Body() {
         <Section key={s.slug} id={s.slug} tone={index % 2 ? 'mist' : 'white'}>
           <Reveal>
             <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-              <SiteImage
-                slot={s.image}
-                alt={s.name}
-                className={cn('aspect-[3/2] rounded-[2rem]', index % 2 === 1 && 'lg:order-2')}
-              />
+              <Link
+                to={`/solutions/${s.slug}`}
+                aria-label={s.name}
+                className={cn(
+                  'relative block aspect-[3/2] overflow-hidden rounded-[2rem] rounded-tr-[5rem]',
+                  index % 2 === 1 && 'lg:order-2 rounded-tl-[5rem] rounded-tr-[2rem]',
+                )}
+                style={{ background: index % 2 ? '#fff4d6' : 'repeating-linear-gradient(0deg, #d6eafb 0 3px, #f3f9ff 3px 7px)' }}
+              >
+                {SOLUTION_STORIES[s.slug] && (
+                  <Scene name={SOLUTION_STORIES[s.slug].scenes[0]} className="absolute bottom-[5%] left-1/2 h-[88%] w-[88%] -translate-x-1/2" />
+                )}
+              </Link>
               <div>
                 <p className={eyebrow}>{s.name}</p>
                 <h2 className="mt-3 font-display text-[1.68rem] font-semibold leading-[1.1] tracking-[-0.035em] text-navy-900 sm:text-[2.1rem]">
@@ -92,9 +102,17 @@ function Body() {
                     ) : null;
                   })}
                 </ul>
-                <button type="button" onClick={book} className={cn(btn.accent, 'mt-8')}>
-                  Create account
-                </button>
+                <div className="mt-8 flex flex-wrap items-center gap-5">
+                  <button type="button" onClick={book} className={btn.accent}>
+                    Create account
+                  </button>
+                  <Link
+                    to={`/solutions/${s.slug}`}
+                    className="inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-navy-900 underline decoration-navy-900/30 underline-offset-4 hover:decoration-navy-900"
+                  >
+                    See the solution
+                  </Link>
+                </div>
               </div>
             </div>
           </Reveal>

@@ -7,11 +7,10 @@ import { useEffect, useState } from 'react';
 import type { QueryDocumentSnapshot } from 'firebase/firestore';
 import { Banknote, Boxes, Package, Settings, ShieldCheck, ShoppingCart, Users, type LucideIcon } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Button, EmptyState, useToast } from '@/components/ui';
+import { Button, EmptyState, Select, useToast } from '@/components/ui';
 import { AUDIT_AREA_LABEL, listAudit, type AuditArea, type AuditEntry } from '@/lib/audit';
 import { formatDateTime, naira } from '@/lib/format';
 import { ROLE_LABEL, type Role } from '@/types';
-import { cn } from '@/lib/cn';
 
 const AREAS: AuditArea[] = ['finance', 'sales', 'catalogue', 'stock', 'people', 'settings'];
 const AREA_ICON: Record<AuditArea, LucideIcon> = {
@@ -68,26 +67,13 @@ export default function AuditLogPage() {
         description="Who made each major decision, and when: payments corrected or reversed, invoices edited or voided, credit notes, approvals and rejections, returns, credit limits, roles, products and prices, leave, and leads confirmed as customers. Nothing here can be edited or deleted."
       />
 
-      <div role="tablist" aria-label="Filter by area" className="scrollbar-none -mx-3 flex gap-2 overflow-x-auto px-3 sm:-mx-5 sm:px-5 lg:mx-0 lg:px-0">
-        {(['all', ...AREAS] as const).map((a) => {
-          const on = a === area;
-          return (
-            <button
-              key={a}
-              type="button"
-              role="tab"
-              aria-selected={on}
-              onClick={() => setArea(a)}
-              className={cn(
-                'inline-flex h-9 shrink-0 items-center rounded-full px-3.5 text-label font-semibold transition-colors',
-                on ? 'bg-[var(--text-primary)] text-[var(--surface-page)]' : 'border border-hairline text-secondary hover:text-primary',
-              )}
-            >
-              {a === 'all' ? 'All' : AUDIT_AREA_LABEL[a]}
-            </button>
-          );
-        })}
-      </div>
+      <Select value={area} onChange={(e) => setArea(e.target.value as typeof area)} className="w-full sm:w-auto sm:min-w-[13rem]" aria-label="Filter by area">
+        {(['all', ...AREAS] as const).map((a) => (
+          <option key={a} value={a}>
+            {a === 'all' ? 'All areas' : AUDIT_AREA_LABEL[a]}
+          </option>
+        ))}
+      </Select>
 
       <div className="mt-4">
         {loading ? (

@@ -37,7 +37,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
 import { naira, count } from '@/lib/format';
 import { PORTAL_ROOT } from '@/lib/tiles';
-import { cn } from '@/lib/cn';
 import { PRICE_TIERS, TIER_LABEL, type PriceTier, type Product } from '@/types';
 
 type View = 'gallery' | 'list';
@@ -197,6 +196,22 @@ export default function CataloguePage() {
                 </Select>
               )}
               {locked && <Badge tone="brand">{TIER_LABEL[shown]}</Badge>}
+              {/* Two categories is a catalogue with two sections, not something to filter. */}
+              {categories.length > 2 && (
+                <Select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="min-w-0 flex-1 sm:max-w-[220px] sm:flex-none"
+                  aria-label="Category"
+                >
+                  <option value="all">All categories ({priced.length})</option>
+                  {categories.map(([name, tally]) => (
+                    <option key={name} value={name}>
+                      {name} ({tally})
+                    </option>
+                  ))}
+                </Select>
+              )}
 
               {/* Pushed to the far end: it changes how the page looks, not
                   what is on it, so it does not belong among the filters. */}
@@ -213,27 +228,6 @@ export default function CataloguePage() {
             </div>
           </div>
 
-          {/* Two categories is a catalogue with two sections, not something
-              that needs filtering down. */}
-          {categories.length > 2 && (
-            <div className="scrollbar-thin -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-              <CategoryPill
-                label="All"
-                tally={priced.length}
-                active={category === 'all'}
-                onClick={() => setCategory('all')}
-              />
-              {categories.map(([name, tally]) => (
-                <CategoryPill
-                  key={name}
-                  label={name}
-                  tally={tally}
-                  active={category === name}
-                  onClick={() => setCategory(name)}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </PageHeader>
 
@@ -300,41 +294,6 @@ export default function CataloguePage() {
 
 /* ------------------------------------------------------------------ pieces */
 
-function CategoryPill({
-  label,
-  tally,
-  active,
-  onClick,
-}: {
-  label: string;
-  tally: number;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        'inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-caption font-semibold transition-colors',
-        active
-          ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-500 dark:bg-brand-500 dark:text-brand-950'
-          : 'border-hairline surface-card text-secondary hover:text-primary hover:border-[var(--border-strong)]',
-      )}
-    >
-      {label}
-      <span
-        className={cn(
-          'tabular rounded-full px-1.5 text-micro font-semibold',
-          active ? 'bg-white/20 dark:bg-brand-950/20' : 'surface-sunken text-muted',
-        )}
-      >
-        {tally}
-      </span>
-    </button>
-  );
-}
 
 /**
  * The brochure card.

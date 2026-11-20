@@ -121,7 +121,7 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
       )}
     >
       {plan.featured && (
-        <span className="absolute -top-3.5 left-8 z-10 rounded-full bg-brand-500 px-3.5 py-1 text-[12px] font-semibold uppercase tracking-[0.1em] text-navy-900 ring-1 ring-navy-900/20">
+        <span className="absolute -top-3.5 left-8 z-10 rounded-full bg-brand-500 px-3.5 py-1 text-[12px] font-semibold uppercase tracking-[0.1em] text-white">
           Most popular
         </span>
       )}

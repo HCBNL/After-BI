@@ -15,7 +15,6 @@ import {
   CalendarClock,
   CheckCircle2,
   ChevronRight,
-  Clock,
   Mail,
   MapPin,
   MessageCircle,
@@ -202,32 +201,19 @@ export default function LeadsPage() {
       ) : (
         <>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <div role="tablist" aria-label="Filter leads" className="scrollbar-none -mx-3 flex gap-2 overflow-x-auto px-3 sm:-mx-5 sm:px-5 lg:mx-0 lg:flex-1 lg:px-0">
-              {chips.map((f) => {
-                const on = f === active;
-                const warn = f === 'quiet' || f === 'due';
-                return (
-                  <button
-                    key={f}
-                    type="button"
-                    role="tab"
-                    aria-selected={on}
-                    onClick={() => setFilter(f)}
-                    className={cn(
-                      'inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-3.5 text-label font-semibold transition-colors',
-                      on
-                        ? 'bg-[var(--text-primary)] text-[var(--surface-page)]'
-                        : 'border border-hairline text-secondary hover:text-primary',
-                    )}
-                  >
-                    {f !== 'all' && !warn && <span className={cn('h-2 w-2 rounded-full', STATUS_DOT[f as LeadStatus])} aria-hidden />}
-                    {warn && <Clock size={14} aria-hidden className={on ? '' : 'text-status-warning'} />}
-                    {chipLabel(f)}
-                    <span className={cn('tabular text-caption', on ? 'opacity-70' : 'text-muted')}>{counts[f]}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <Select
+              value={active}
+              onChange={(e) => setFilter(e.target.value as typeof active)}
+              className="w-full lg:w-auto lg:min-w-[13rem]"
+              aria-label="Filter leads"
+            >
+              {chips.map((f) => (
+                <option key={f} value={f}>
+                  {`${chipLabel(f)} (${counts[f]})`}
+                </option>
+              ))}
+            </Select>
+            <div className="lg:flex-1" />
             <SearchInput value={search} onChange={setSearch} placeholder="Search leads" className="lg:w-72" />
           </div>
 

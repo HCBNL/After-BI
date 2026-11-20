@@ -15,7 +15,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Flag, ListPlus, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Alert, Button, DateField, EmptyState, Input, SegmentedControl, useToast } from '@/components/ui';
+import { Alert, Button, DateField, EmptyState, Input, SegmentedControl, Select, useToast } from '@/components/ui';
 import { Loading } from '@/components/brand/Loader';
 import { useReminders } from '@/context/RemindersContext';
 import { dueLabel, taskTiming, type Task, type TaskPriority } from '@/lib/tasks';
@@ -130,26 +130,18 @@ export default function TasksPage() {
           </Button>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {(['today', 'tomorrow', 'week', 'none'] as const).map((which) => {
-            const value = quickDue(which);
-            const active = due === value;
-            return (
-              <button
-                key={which}
-                type="button"
-                onClick={() => setDue(value)}
-                aria-pressed={active}
-                className={cn(
-                  'h-8 rounded-full px-3 text-label font-semibold transition-colors',
-                  active
-                    ? 'bg-brand-600 text-white dark:bg-brand-500 dark:text-brand-950'
-                    : 'surface-sunken text-secondary hover:text-primary',
-                )}
-              >
-                {which === 'today' ? 'Today' : which === 'tomorrow' ? 'Tomorrow' : which === 'week' ? 'In a week' : 'No date'}
-              </button>
-            );
-          })}
+          <Select
+            value={(['today', 'tomorrow', 'week', 'none'] as const).find((w) => quickDue(w) === due) ?? ''}
+            onChange={(e) => e.target.value && setDue(quickDue(e.target.value as 'today' | 'tomorrow' | 'week' | 'none'))}
+            className="w-auto min-w-[9rem]"
+            aria-label="When"
+          >
+            <option value="">Due</option>
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+            <option value="week">In a week</option>
+            <option value="none">No date</option>
+          </Select>
           <DateField
             inline
             value={due}

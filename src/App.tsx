@@ -105,6 +105,7 @@ const SignInHelpPage = lazy(() => import('@/pages/public/SignInHelpPage'));
 const PublicNotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const SolutionsPage = lazy(() => import('@/pages/public/SolutionsPage'));
+const SolutionPage = lazy(() => import('@/pages/public/SolutionPage'));
 const CardPage = lazy(() => import('@/pages/public/CardPage'));
 const LegalPage = lazy(() => import('@/pages/public/LegalPage'));
 const VerifyStaffPage = lazy(() => import('@/pages/public/VerifyStaffPage'));
@@ -279,6 +280,7 @@ export default function App() {
           <Route path="/product" element={<Navigate to="/features" replace />} />
           <Route path="/product/:slug" element={<ProductRedirect />} />
           <Route path="/solutions" element={<SolutionsPage />} />
+          <Route path="/solutions/:slug" element={<SolutionPage />} />
           <Route path="/card" element={<CardPage />} />
           <Route path="/terms" element={<LegalPage kind="terms" />} />
           <Route path="/privacy" element={<LegalPage kind="privacy" />} />

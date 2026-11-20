@@ -526,7 +526,7 @@ const VALUE_FACES: { bg: string; ink: string; art: ArtName }[] = [
   { bg: '#0866F5', ink: '#ffffff', art: 'bloom' },
   { bg: '#FF78A8', ink: '#07142E', art: 'daisy' },
   { bg: '#FFBE45', ink: '#07142E', art: 'pinwheel' },
-  { bg: '#C8F531', ink: '#07142E', art: 'leaf' },
+  { bg: '#FFE39A', ink: '#07142E', art: 'leaf' },
   { bg: '#7C9CFF', ink: '#07142E', art: 'orbit' },
   { bg: '#ffffff', ink: '#07142E', art: 'kite' },
 ];

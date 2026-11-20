@@ -28,7 +28,6 @@ import {
   ChevronRight,
   Download,
   Gift,
-  MinusCircle,
   Palmtree,
   Pencil,
   Plus,
@@ -925,23 +924,12 @@ function Bonuses({ period, people, list, onChanged }: { period: PayPeriod; peopl
               ))}
             </Select>
           </Field>
-          <div className="grid grid-cols-2 gap-2">
-            {(['bonus', 'deduction'] as const).map((k) => (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setKind(k)}
-                aria-pressed={kind === k}
-                className={cn(
-                  'flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-body font-semibold',
-                  kind === k ? 'border-brand-600 bg-brand-50 text-brand-900 dark:bg-brand-500/15 dark:text-brand-100' : 'border-hairline text-secondary',
-                )}
-              >
-                {k === 'bonus' ? <Gift size={15} /> : <MinusCircle size={15} />}
-                {k === 'bonus' ? 'Bonus' : 'Deduction'}
-              </button>
-            ))}
-          </div>
+          <Field label="Type">
+            <Select value={kind} onChange={(e) => setKind(e.target.value as 'bonus' | 'deduction')}>
+              <option value="bonus">Bonus</option>
+              <option value="deduction">Deduction</option>
+            </Select>
+          </Field>
           <Field label="Amount (₦)" required>
             <Input inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="20000" />
           </Field>
