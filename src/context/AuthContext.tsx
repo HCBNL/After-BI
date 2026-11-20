@@ -89,6 +89,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   /* The audit log names whoever is signed in; see lib/audit. */
   useEffect(() => setAuditActor(user), [user]);
+
+  /*
+   * A super admin made before employee codes existed is given one, once,
+   * without a form: the next code in the company, ending in SA. The rules
+   * allow this single write while the code is still empty.
+   */
+  const assigning = useRef(false);
+  useEffect(() => {
+    if (!user || user.role !== 'super_admin' || user.employeeCode || !user.orgId || assigning.current) return;
+    assigning.current = true;
+    const { id, orgId } = user;
+    void (async () => {
+      const [{ nextEmployeeCode }, { getOrgSettings, updateProfile }] = await Promise.all([import('@/lib/accounts'), import('@/lib/db')]);
+      const settings = await getOrgSettings().catch(() => null);
+      const employeeCode = await nextEmployeeCode(orgId, 'super_admin', settings?.name);
+      await updateProfile(id, { employeeCode });
+    })().catch(() => {
+      assigning.current = false;
+    });
+  }, [user?.id, user?.role, user?.employeeCode, user?.orgId]);
   const [loading, setLoading] = useState(true);
   const [problem, setProblem] = useState<AuthProblem | null>(null);
 

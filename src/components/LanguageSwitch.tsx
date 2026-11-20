@@ -17,6 +17,7 @@ export function LanguageSwitch({
   full = false,
   hover = false,
   up = false,
+  site = false,
 }: {
   className?: string;
   /** White, for dark backgrounds. */
@@ -27,6 +28,8 @@ export function LanguageSwitch({
   hover?: boolean;
   /** Open the dropdown upwards. */
   up?: boolean;
+  /** The public site is always light: navy text even when the device is in dark mode. */
+  site?: boolean;
 }) {
   const current = getLang();
   const [open, setOpen] = useState(false);
@@ -129,7 +132,11 @@ export function LanguageSwitch({
         aria-label="Language"
         className={cn(
           'tap inline-flex items-center gap-1.5 rounded-full px-2.5 text-body font-semibold transition-colors',
-          onInk ? 'text-white hover:bg-white/10' : 'text-navy-900 hover:bg-black/5 dark:text-white dark:hover:bg-white/10',
+          onInk
+            ? 'text-white hover:bg-white/10'
+            : site
+              ? 'text-navy-900 hover:bg-black/5'
+              : 'text-navy-900 hover:bg-black/5 dark:text-white dark:hover:bg-white/10',
         )}
       >
         <Flag lang={current} />

@@ -41,6 +41,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { IconArt } from '@/components/ui/IconArt';
 import { imageUrl } from '@/lib/cloudinary';
 import { SITE_IMAGES, type IndustryIcon as IndustryKey, type SiteImageKey } from '@/lib/site';
 import { container, eyebrow, eyebrowBase } from './tokens';
@@ -340,17 +341,11 @@ export function IndustryIcon({ icon, size = 26, className }: { icon: IndustryKey
  * The small icon that sits top left on a picture card: minimal, on a soft
  * gradient glass chip, so the picture stays the content.
  */
-export function IconBadge({ children, className }: { children: ReactNode; className?: string }) {
+export function IconBadge({ children, id = '', className }: { children: ReactNode; id?: string; className?: string }) {
   return (
-    <span
-      className={cn(
-        'absolute left-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-xl text-white',
-        'bg-gradient-to-br from-navy-600/90 to-navy-900/90 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.5)] ring-1 ring-white/25 backdrop-blur-sm',
-        className,
-      )}
-    >
+    <IconArt id={id} size={46} halo={0.85} className={cn('absolute left-3 top-3 z-10 drop-shadow-[0_4px_10px_rgba(0,0,0,0.18)]', className)}>
       {children}
-    </span>
+    </IconArt>
   );
 }
 
@@ -364,9 +359,9 @@ export function IndustryCard({ icon, name, className }: { icon: IndustryKey; nam
   if (!photo) {
     return (
       <div className={cn('flex h-full items-center gap-3 rounded-2xl border border-navy-900/10 bg-white p-4 sm:p-5', className)}>
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-800">
+        <IconArt id={icon} size={44} halo={0.6}>
           <IndustryIcon icon={icon} size={18} />
-        </span>
+        </IconArt>
         <span className="text-[14px] font-medium leading-tight text-navy-900">{name}</span>
       </div>
     );

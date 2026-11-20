@@ -1,3 +1,4 @@
+import { IconArt } from '@/components/ui/IconArt';
 import { useBootDone } from '@/lib/boot';
 /**
  * The bar at the top and the block at the bottom of every public page.
@@ -33,6 +34,7 @@ import {
   SOCIAL,
   SOLUTIONS,
   SUPPORT_EMAIL,
+  CONTACT_PHONE,
   WHATSAPP_URL,
   type SocialKey,
 } from '@/lib/site';
@@ -147,7 +149,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
           </nav>
 
           <div className="ml-auto flex items-center gap-2.5 lg:ml-0 lg:justify-self-end">
-            <LanguageSwitch className="hidden lg:block" />
+            <LanguageSwitch site className="hidden lg:block" />
             {/* PiggyVest's pair: the dark one opens the create account form, the outlined one signs in. Laptops only; on a phone both live in the menu. */}
             <button
               type="button"
@@ -202,13 +204,13 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
 
 /* -------------------------------------------------------------- the panels */
 
-function PanelLink({ to, title, body, icon }: { to: string; title: string; body?: string; icon?: ReactNode }) {
+function PanelLink({ to, title, body, icon, id }: { to: string; title: string; body?: string; icon?: ReactNode; id?: string }) {
   return (
-    <Link to={to} className="group flex gap-3 rounded-xl p-3 transition-colors hover:bg-navy-50">
+    <Link to={to} className="group flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-navy-50">
       {icon && (
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-100 text-navy-700 transition-colors group-hover:bg-navy-900 group-hover:text-white">
+        <IconArt id={id ?? to} size={46} halo={0.6}>
           {icon}
-        </span>
+        </IconArt>
       )}
       <span>
         <span className="block text-[14px] font-semibold text-navy-900">{title}</span>
@@ -237,6 +239,7 @@ function ProductsPanel({ onBook }: { onBook: () => void }) {
                 to={`/features/${slug}`}
                 title={item.name}
                 body={item.blurb}
+                id={slug}
                 icon={<ModuleIcon slug={slug} size={19} />}
               />
             );
@@ -283,24 +286,24 @@ function SupportPanel({ onBook }: { onBook: () => void }) {
     <div className="grid grid-cols-[1fr_1fr_20rem] gap-8">
       <div>
         <PanelTitle>Get help</PanelTitle>
-        <PanelLink to="/help/sign-in" title="Sign in help" body="Reset a password or find your workspace." icon={<LifeBuoy size={19} />} />
-        <PanelLink to="/?demo=1" title="Create account" body="Leave your details and we will call you to set it up." icon={<PlayCircle size={19} />} />
+        <PanelLink to="/help/sign-in" title="Sign in help" body="Reset a password or find your workspace." icon={<LifeBuoy size={19} />} id="help-signin" />
+        <PanelLink to="/?demo=1" title="Create account" body="Leave your details and we will call you to set it up." icon={<PlayCircle size={19} />} id="create-account" />
       </div>
       <div>
         <PanelTitle>Talk to us</PanelTitle>
-        <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="group flex gap-3 rounded-xl p-3 hover:bg-navy-50">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-100 text-navy-700 transition-colors group-hover:bg-navy-900 group-hover:text-white">
+        <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="group flex items-center gap-3 rounded-xl p-3 hover:bg-navy-50">
+          <IconArt id="whatsapp" tone="green" shape="scallop" size={46} halo={0.6}>
             <MessageCircle size={19} aria-hidden />
-          </span>
+          </IconArt>
           <span>
             <span className="block text-[14px] font-semibold text-navy-900">WhatsApp</span>
             <span className="mt-0.5 block text-[13.5px] text-navy-600">Chat with our team directly.</span>
           </span>
         </a>
-        <a href={`mailto:${SUPPORT_EMAIL}`} className="group flex gap-3 rounded-xl p-3 hover:bg-navy-50">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-100 text-navy-700 transition-colors group-hover:bg-navy-900 group-hover:text-white">
+        <a href={`mailto:${SUPPORT_EMAIL}`} className="group flex items-center gap-3 rounded-xl p-3 hover:bg-navy-50">
+          <IconArt id="email" tone="orange" shape="bloom" size={46} halo={0.6}>
             <Mail size={19} aria-hidden />
-          </span>
+          </IconArt>
           <span>
             <span className="block text-[14px] font-semibold text-navy-900">Email</span>
             <span className="mt-0.5 block text-[13.5px] text-navy-600">{SUPPORT_EMAIL}</span>
@@ -495,52 +498,20 @@ export function SiteFooter() {
   return (
     <footer className="bg-navy-950 text-white">
       <div className="border-t border-dashed border-white/20">
-        <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 px-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1.2fr_2.2fr_1.25fr_0.95fr_0.95fr_1.15fr]">
-          <div className={cn(cell, 'border-b sm:border-r lg:border-b-0 lg:pl-0 xl:pl-0')}>
+        {/*
+          Five columns on a laptop. On a phone: the brand (with the social icons
+          and contact under it), Platform and Solutions each run the full width;
+          Company and Legal share a row, side by side.
+        */}
+        <div className="mx-auto grid w-full max-w-[1440px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-[1.45fr_2.2fr_1.25fr_0.95fr_0.95fr]">
+          <div className={cn(cell, 'col-span-2 border-b lg:col-span-1 lg:border-b-0 lg:border-r lg:pl-0 xl:pl-0')}>
             <Link to="/" aria-label="AfterBI home">
               <Wordmark onInk className="text-[1.25rem]" />
             </Link>
-            <p className="mt-4 max-w-[16rem] text-[13.5px] leading-[1.6] text-white/60">
+            <p className="mt-4 max-w-[17rem] text-[13.5px] leading-[1.6] text-white/60">
               The sales and distribution platform for consumer goods companies.
             </p>
-          </div>
-
-          <div className={cn(cell, 'border-b lg:border-b-0 lg:border-r')}>
-            <p className="text-[14px] font-semibold text-white">Platform</p>
-            <ul className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2.5">
-              {products.map((item) => (
-                <li key={item.label}>
-                  <Link to={item.to} className="whitespace-nowrap text-[13.5px] leading-snug text-white/60 transition-colors hover:text-white">
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <FooterColumn className={cn(cell, 'border-b sm:border-r lg:border-b-0')} title="Solutions" items={solutions} />
-          <FooterColumn
-            className={cn(cell, 'border-b lg:border-b-0 lg:border-r')}
-            title="Company"
-            items={[
-              { label: 'Platform overview', to: '/features' },
-              { label: 'Pricing', to: '/pricing' },
-              { label: 'Create account', to: '/?demo=1' },
-              { label: 'Sign in', to: '/login' },
-            ]}
-          />
-          <FooterColumn
-            className={cn(cell, 'border-b sm:border-b-0 sm:border-r')}
-            title="Legal"
-            items={[
-              { label: 'Terms of Service', to: '/terms' },
-              { label: 'Privacy Policy', to: '/privacy' },
-              { label: 'Sign in help', to: '/help/sign-in' },
-            ]}
-          />
-
-          <div className={cn(cell, 'lg:pr-0 xl:pr-0')}>
-            <ul className="flex flex-wrap gap-2" aria-label="AfterBI elsewhere">
+            <ul className="mt-6 flex flex-wrap gap-2" aria-label="AfterBI elsewhere">
               {SOCIAL.map((channel) => (
                 <li key={channel.key}>
                   <a
@@ -556,19 +527,53 @@ export function SiteFooter() {
                 </li>
               ))}
             </ul>
-            <ul className="mt-5 space-y-2.5 text-[13.5px]">
+            <ul className="mt-5 space-y-2 text-[13.5px]">
               <li>
-                <a href={`mailto:${SUPPORT_EMAIL}`} className="break-all text-white/60 transition-colors hover:text-white">
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="break-all text-white/70 transition-colors hover:text-white">
                   {SUPPORT_EMAIL}
                 </a>
               </li>
               <li>
-                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="text-white/60 transition-colors hover:text-white">
-                  WhatsApp support
+                <a href={`tel:${CONTACT_PHONE.replace(/\s+/g, '')}`} className="text-white/70 transition-colors hover:text-white">
+                  {CONTACT_PHONE}
                 </a>
               </li>
             </ul>
           </div>
+
+          <div className={cn(cell, 'col-span-2 border-b lg:col-span-1 lg:border-b-0 lg:border-r')}>
+            <p className="text-[14px] font-semibold text-white">Platform</p>
+            <ul className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2.5">
+              {products.map((item) => (
+                <li key={item.label}>
+                  <Link to={item.to} className="text-[13.5px] leading-snug text-white/60 transition-colors hover:text-white lg:whitespace-nowrap">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <FooterColumn className={cn(cell, 'col-span-2 border-b lg:col-span-1 lg:border-b-0 lg:border-r')} title="Solutions" items={solutions} />
+          <FooterColumn
+            className={cn(cell, 'border-r pr-4 lg:pr-6')}
+            title="Company"
+            items={[
+              { label: 'Platform overview', to: '/features' },
+              { label: 'Pricing', to: '/pricing' },
+              { label: 'Create account', to: '/?demo=1' },
+              { label: 'Sign in', to: '/login' },
+            ]}
+          />
+          <FooterColumn
+            className={cn(cell, 'pl-5 lg:pr-0 xl:pr-0')}
+            title="Legal"
+            items={[
+              { label: 'Terms of Service', to: '/terms' },
+              { label: 'Privacy Policy', to: '/privacy' },
+              { label: 'Sign in help', to: '/help/sign-in' },
+            ]}
+          />
         </div>
       </div>
 

@@ -10,6 +10,7 @@
  *
  * Once installed it opens full screen from the home screen, like any app.
  */
+import { IconArt } from '@/components/ui/IconArt';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Download, Plus, Share, Smartphone, X } from 'lucide-react';
@@ -94,9 +95,7 @@ function InstallHelp({ platform, onClose }: { platform: Platform; onClose: () =>
             const Icon = step.icon;
             return (
               <li key={i} className="flex items-center gap-3 rounded-2xl bg-navy-50 p-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-navy-900 ring-1 ring-navy-900/10">
-                  <Icon size={19} aria-hidden />
-                </span>
+                <IconArt icon={Icon} id={step.text} size={44} halo={0.7} />
                 <span className="text-[14.5px] leading-snug text-navy-800">{step.text}</span>
               </li>
             );

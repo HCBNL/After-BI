@@ -24,15 +24,77 @@
 
 import type { CSSProperties } from 'react';
 
-export function BrandBars({ className, style }: { className?: string; style?: CSSProperties }) {
+/*
+ * NOW: THE OWNER'S PETALS, NOT THE BARS.
+ *
+ * The name stays (twenty places call it), but what it draws changed: one of
+ * the owner's flower shapes, in currentColor, turning very slowly, the same
+ * scenery as the PIN lock screen. Which flower is chosen from the class it is
+ * given, so the two corners of one panel never show the same shape.
+ */
+const PETAL_SHAPES = ['fourfold', 'daisy', 'scallop', 'bloom'] as const;
+
+function pickShape(seed: string): (typeof PETAL_SHAPES)[number] {
+  let h = 0;
+  for (let i = 0; i < seed.length; i += 1) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return PETAL_SHAPES[h % PETAL_SHAPES.length];
+}
+
+export function PetalShape({ shape }: { shape: (typeof PETAL_SHAPES)[number] }) {
+  switch (shape) {
+    case 'fourfold':
+      return (
+        <>
+          {[0, 90, 180, 270].map((r) => (
+            <path key={r} d="M50 50 Q22 18 50 4 Q78 18 50 50 Z" transform={`rotate(${r} 50 50)`} />
+          ))}
+        </>
+      );
+    case 'daisy':
+      return (
+        <>
+          {[0, 60, 120, 180, 240, 300].map((r) => (
+            <ellipse key={r} cx="50" cy="26" rx="14" ry="24" transform={`rotate(${r} 50 50)`} />
+          ))}
+          <circle cx="50" cy="50" r="22" />
+        </>
+      );
+    case 'scallop':
+      return (
+        <>
+          <circle cx="50" cy="50" r="36" />
+          {Array.from({ length: 8 }, (_, i) => {
+            const a = (i / 8) * Math.PI * 2;
+            return <circle key={i} cx={50 + 33 * Math.cos(a)} cy={50 + 33 * Math.sin(a)} r="15" />;
+          })}
+        </>
+      );
+    default:
+      return (
+        <>
+          {[0, 90, 180, 270].map((r) => (
+            <ellipse key={r} cx="50" cy="27" rx="18" ry="25" transform={`rotate(${r} 50 50)`} />
+          ))}
+          <circle cx="50" cy="50" r="22" />
+        </>
+      );
+  }
+}
+
+export function BrandBars({
+  className,
+  style,
+  shape,
+}: {
+  className?: string;
+  style?: CSSProperties;
+  shape?: (typeof PETAL_SHAPES)[number];
+}) {
   return (
-    <svg viewBox="0 0 32 32" className={className} style={style} fill="currentColor" aria-hidden focusable="false">
-      <rect x="2" y="18" width="5.5" height="12" rx="2" />
-      <rect x="10" y="13" width="5.5" height="17" rx="2" />
-      <rect x="18" y="8" width="5.5" height="22" rx="2" />
-      {/* The tallest one half out, as it is in the wordmark's own lock-up: it is
-          the bar that has not happened yet, which is the product's argument. */}
-      <rect x="26" y="2" width="4" height="28" rx="2" opacity="0.5" />
+    <svg viewBox="0 0 100 100" className={className} style={style} fill="currentColor" aria-hidden focusable="false">
+      <g className="petal-turn">
+        <PetalShape shape={shape ?? pickShape(className ?? '')} />
+      </g>
     </svg>
   );
 }
