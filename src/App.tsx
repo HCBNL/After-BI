@@ -101,7 +101,6 @@ const HomePage = lazy(() => import('@/pages/public/HomePage'));
 const ProductPage = lazy(() => import('@/pages/public/ProductPage'));
 const ModulePage = lazy(() => import('@/pages/public/ModulePage'));
 const PublicPricingPage = lazy(() => import('@/pages/public/PricingPage'));
-const DemoPage = lazy(() => import('@/pages/public/DemoPage'));
 const SignInHelpPage = lazy(() => import('@/pages/public/SignInHelpPage'));
 const PublicNotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
@@ -292,7 +291,8 @@ export default function App() {
           <Route path="/blog/:slug" element={<Navigate to="/" replace />} />
           <Route path="/roles" element={<Navigate to="/" replace />} />
           <Route path="/about" element={<Navigate to="/" replace />} />
-          <Route path="/demo" element={<DemoPage />} />
+          {/* No demos any more: the old address opens the create account form on the front page. */}
+          <Route path="/demo" element={<Navigate to="/?demo=1" replace />} />
           <Route path="/help/sign-in" element={<SignInHelpPage />} />
 
           <Route

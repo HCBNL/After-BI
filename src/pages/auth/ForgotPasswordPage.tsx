@@ -244,8 +244,8 @@ export default function ForgotPasswordPage() {
               <Link to="/help/sign-in" className="transition-colors hover:text-primary">
                 Trouble signing in
               </Link>
-              <Link to="/demo" className="transition-colors hover:text-primary">
-                Book a demo
+              <Link to="/?demo=1" className="transition-colors hover:text-primary">
+                Create account
               </Link>
             </nav>
             <p className="mt-3">{`© ${year} Contoric. AfterBI is a Contoric product.`}</p>

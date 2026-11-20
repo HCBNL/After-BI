@@ -189,8 +189,8 @@ export default function LoginPage() {
               </h1>
               <p className="mt-2 text-center text-body text-secondary">
                 No account yet?{' '}
-                <Link to="/demo" className="font-bold text-brand-700 hover:underline dark:text-brand-400">
-                  Book a demo
+                <Link to="/?demo=1" className="font-bold text-brand-700 hover:underline dark:text-brand-400">
+                  Create account
                 </Link>
               </p>
 
@@ -296,8 +296,8 @@ export default function LoginPage() {
               <Link to="/features" className="transition-colors hover:text-primary">
                 Features
               </Link>
-              <Link to="/demo" className="transition-colors hover:text-primary">
-                Book a demo
+              <Link to="/?demo=1" className="transition-colors hover:text-primary">
+                Create account
               </Link>
             </nav>
             <p className="mt-3">{`© ${year} Contoric. AfterBI is a Contoric product.`}</p>

@@ -141,6 +141,16 @@ export interface UserProfile {
   role: Role;
   phone?: string;
   photoURL?: string;
+  /**
+   * The employee code, given at onboarding (e.g. HCB0042). Every member of
+   * staff has one, super admins included; a distributor login does not.
+   *
+   * This, not the name, is what ties a person to what they did: it is written
+   * on every audit line beside the name. Names, title, phone and the code are
+   * set by an administrator and cannot be edited by the person themselves
+   * (firestore.rules), so a renamed account can never disguise who acted.
+   */
+  employeeCode?: string;
 
   /**
    * Which organisation this account belongs to.

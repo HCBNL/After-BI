@@ -30,7 +30,7 @@ import { Hint } from '@/components/ui/Hint';
 import { useAsync } from '@/hooks/useAsync';
 import { db } from '@/lib/firebase';
 import { listTenants } from '@/lib/db';
-import { createAccount, suggestPassword } from '@/lib/accounts';
+import { createAccount, normaliseEmployeeCode, suggestPassword } from '@/lib/accounts';
 import { createTenant, listOrgMembers, ORG_ID_PATTERN, slugify } from '@/lib/platform';
 import { TENANTS, type OrgTenant, type SubscriptionStatus } from '@/lib/tenant';
 import { formatDate, naira } from '@/lib/format';
@@ -183,6 +183,7 @@ function NewOrgModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [employeeCode, setEmployeeCode] = useState('');
   const [password, setPassword] = useState(() => suggestPassword());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -199,6 +200,7 @@ function NewOrgModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
       return setError('The ID must be lower case letters, numbers and hyphens, like "bella-foods".');
     }
     if (!firstName.trim() || !email.trim()) return setError('The administrator needs a first name and an email address.');
+    if (!normaliseEmployeeCode(employeeCode)) return setError('The administrator needs an employee code: it is what the audit log knows them by.');
     if (password.length < 6) return setError('The password needs at least six characters.');
 
     setBusy(true);
@@ -208,7 +210,7 @@ function NewOrgModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
         setOrgMade(true);
         onCreated();
       }
-      await createAccount({ orgId: slug, role: 'super_admin', email, password, firstName, lastName });
+      await createAccount({ orgId: slug, role: 'super_admin', email, password, firstName, lastName, employeeCode });
       setDone({ name: `${firstName.trim()} ${lastName.trim()}`.trim(), email: email.trim().toLowerCase(), password });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong.';
@@ -327,6 +329,9 @@ function NewOrgModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
         </div>
         <Field label="Email address" required>
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
+        </Field>
+        <Field label="Employee code" required hint="Their staff number in the organisation. It names them in the audit log and cannot be changed by them.">
+          <Input value={employeeCode} onChange={(e) => setEmployeeCode(e.target.value.toUpperCase())} placeholder="HCB0001" maxLength={24} autoComplete="off" />
         </Field>
         <Field label="Password" required>
           <div className="flex gap-2">
@@ -490,6 +495,7 @@ function AddAdmin({ orgId, onDone }: { orgId: string; onDone: () => void }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [employeeCode, setEmployeeCode] = useState('');
   const [role, setRole] = useState<'super_admin' | 'admin'>('super_admin');
   const [password, setPassword] = useState(() => suggestPassword());
   const [busy, setBusy] = useState(false);
@@ -499,10 +505,11 @@ function AddAdmin({ orgId, onDone }: { orgId: string; onDone: () => void }) {
   const create = async () => {
     setError(null);
     if (!firstName.trim() || !email.trim()) return setError('A first name and an email address are needed.');
+    if (!normaliseEmployeeCode(employeeCode)) return setError('An employee code is needed: it is what the audit log knows them by.');
     if (password.length < 6) return setError('The password needs at least six characters.');
     setBusy(true);
     try {
-      await createAccount({ orgId, role, email, password, firstName, lastName });
+      await createAccount({ orgId, role, email, password, firstName, lastName, employeeCode });
       setMade({ name: `${firstName.trim()} ${lastName.trim()}`.trim(), email: email.trim().toLowerCase(), password });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create that account.');
@@ -539,6 +546,9 @@ function AddAdmin({ orgId, onDone }: { orgId: string; onDone: () => void }) {
       </div>
       <Field label="Email address" required>
         <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
+      </Field>
+      <Field label="Employee code" required hint="Their staff number in the organisation. It names them in the audit log and cannot be changed by them.">
+        <Input value={employeeCode} onChange={(e) => setEmployeeCode(e.target.value.toUpperCase())} placeholder="HCB0001" maxLength={24} autoComplete="off" />
       </Field>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Role">

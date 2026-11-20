@@ -122,6 +122,11 @@ export default function AuditLogPage() {
                       {e.reason && <p className="mt-0.5 text-caption italic text-secondary">{`“${e.reason}”`}</p>}
                       <p className="mt-1 text-caption text-muted">
                         <span className="font-semibold text-secondary">{e.byName}</span>
+                        {e.byCode && (
+                          <span className="ml-1.5 rounded-md surface-sunken px-1.5 py-px font-mono text-micro font-semibold text-primary">
+                            {e.byCode}
+                          </span>
+                        )}
                         {e.role ? ` · ${ROLE_LABEL[e.role as Role] ?? e.role}` : ''}
                         {` · ${formatDateTime(e.at)}`}
                       </p>

@@ -53,6 +53,7 @@ import { VideoPicker } from './website/VideoPicker';
 import { CustomEditor } from './website/ProgrammeEditors';
 import { SiteImageSlots } from './website/SiteImageSlots';
 import { AdEditor } from './website/AdEditor';
+import { TestimonialEditor } from './website/TestimonialEditor';
 
 export default function WebsitePage() {
   const toast = useToast();
@@ -138,9 +139,17 @@ export default function WebsitePage() {
           <Card>
             <CardHeader
               title="Website pictures"
-              subtitle="One box for every picture on the site, grouped by page. Upload, then press Publish."
+              subtitle="Only a few pictures, where they matter. Upload, then press Publish."
             />
             <SiteImageSlots images={home?.images ?? {}} onChange={(images) => seed({ images })} />
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="Testimonials"
+              subtitle="Real customers' words, as cards on the front page. Up to six."
+            />
+            <TestimonialEditor items={home?.testimonials ?? []} onChange={(testimonials) => seed({ testimonials })} />
           </Card>
 
           <Card>

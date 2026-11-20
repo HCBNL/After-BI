@@ -8,10 +8,10 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container, eyebrow } from '@/components/marketing/tokens';
-import { CheckList, IndustryCard, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { CheckList, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
-import { INDUSTRIES, MODULES, SOLUTIONS } from '@/lib/site';
+import { MODULES, SOLUTIONS } from '@/lib/site';
 
 export default function SolutionsPage() {
   return (
@@ -47,23 +47,14 @@ function Body() {
             width={1400}
             className="mx-auto mt-10 aspect-[21/9] max-w-6xl rounded-[2rem] shadow-[0_30px_70px_-34px_rgba(15,31,54,0.45)]"
           />
-          <div className="mx-auto mt-6 grid max-w-6xl grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-2.5">
             {SOLUTIONS.map((s) => (
               <a
                 key={s.slug}
                 href={`#${s.slug}`}
-                className="group relative block overflow-hidden rounded-2xl transition-transform hover:-translate-y-0.5"
+                className="rounded-full bg-white px-5 py-2.5 text-[14.5px] font-semibold text-navy-900 ring-1 ring-navy-900/10 transition-colors hover:bg-navy-900 hover:text-white"
               >
-                <SiteImage
-                  slot={s.image}
-                  alt={s.name}
-                  width={420}
-                  className="aspect-[3/2]"
-                  imgClassName="transition-transform duration-500 group-hover:scale-[1.05]"
-                />
-                <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/85 to-transparent px-4 pb-3 pt-10 text-left text-[14.5px] font-semibold text-white">
-                  {s.name}
-                </span>
+                {s.name}
               </a>
             ))}
           </div>
@@ -102,7 +93,7 @@ function Body() {
                   })}
                 </ul>
                 <button type="button" onClick={book} className={cn(btn.accent, 'mt-8')}>
-                  Book a demo
+                  Create account
                 </button>
               </div>
             </div>
@@ -110,19 +101,6 @@ function Body() {
         </Section>
       ))}
 
-      <Section tone="navy" id="industries">
-        <SectionHead
-          onDark
-          align="center"
-          kicker="Industries"
-          title="Built for every consumer goods category"
-        />
-        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {INDUSTRIES.map((item) => (
-            <IndustryCard key={item.name} icon={item.icon} name={item.name} className="ring-white/10" />
-          ))}
-        </div>
-      </Section>
     </>
   );
 }

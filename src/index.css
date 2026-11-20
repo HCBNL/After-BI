@@ -1310,14 +1310,15 @@
   --ground-c: #0a1f8a;
 }
 
-[data-accent='gold'] {
-  --swatch: #ffb21e;
-  --swatch-ink: #3a2600;
-  --hero: #a26a00;
-  --hero-glow: rgba(255, 178, 30, 0.22);
-  --ground-a: #c88600;
-  --ground-b: #a26a00;
-  --ground-c: #5c3c00;
+/* A deep, rich red: a primary colour for the panels (buttons stay green). */
+[data-accent='red'] {
+  --swatch: #e5383b;
+  --swatch-ink: #ffffff;
+  --hero: #b3191f;
+  --hero-glow: rgba(229, 56, 59, 0.24);
+  --ground-a: #d1262c;
+  --ground-b: #b3191f;
+  --ground-c: #6e0b10;
 }
 
 /* Any colour from the palette: the variables are worked out in lib/theme.ts. */
@@ -1340,9 +1341,9 @@
   --hero-glow: rgba(64, 120, 255, 0.22);
 }
 
-[data-theme='dark'][data-theme='dark'][data-accent='gold'] {
-  --hero: #7a5000;
-  --hero-glow: rgba(255, 178, 30, 0.18);
+[data-theme='dark'][data-accent='red'] {
+  --hero: #8f1419;
+  --hero-glow: rgba(229, 56, 59, 0.2);
 }
 
 /* ================================================ the public pages' edges */
@@ -1969,4 +1970,51 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 @media (prefers-reduced-motion: reduce) {
   .dial-petals { animation: none; }
   .dial-item { animation: none; }
+}
+
+/* The PIN lock screen's artwork: very slow turns, still for reduced motion. */
+@keyframes lock-turn { to { transform: rotate(360deg); } }
+.lock-spin { animation: lock-turn 90s linear infinite; transform-origin: 50% 50%; }
+.lock-spin-back { animation: lock-turn 120s linear infinite reverse; transform-origin: 50% 50%; }
+@media (prefers-reduced-motion: reduce) { .lock-spin, .lock-spin-back { animation: none; } }
+
+/* ================================================== the public site's type */
+/*
+ * Headlines on the public site: Archivo (self hosted from @fontsource-variable,
+ * imported by components/marketing/kit.tsx), a free grotesque with a width axis,
+ * set a little narrow, heavy and tightly spaced, the nearest free match to
+ * the face PiggyVest uses (Neue Plak, a paid Monotype family). Tall letters,
+ * close together, well spaced lines. Body text stays Plus Jakarta Sans, the
+ * same as inside the app. If a Neue Plak web licence is ever bought, swap the
+ * family here and nothing else changes.
+ */
+.site {
+  --site-top: #f3f7f6;
+  --site-heavy: 'Archivo Variable', 'Archivo', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+.site .font-display {
+  font-family: var(--site-heavy);
+  font-stretch: 90%;
+}
+.site-heavy {
+  font-family: var(--site-heavy);
+  font-weight: 800;
+  font-stretch: 84%;
+  letter-spacing: -0.035em;
+  word-spacing: 0.08em;
+  line-height: 0.98;
+}
+.site .status-bar-fill { background: var(--site-top); }
+
+/* The front page's feature cards: the second face rises over the first. */
+.feature-card .feature-back { transform: translateY(101%); transition: transform 0.55s cubic-bezier(.2,.7,.2,1); }
+@media (hover: hover) {
+  .feature-card:hover .feature-back,
+  .feature-card:focus-visible .feature-back { transform: translateY(0); }
+  .feature-card:hover .feature-front-art { transform: translateY(-10px) rotate(-8deg) scale(1.04); }
+}
+.feature-card[data-flipped='true'] .feature-back { transform: translateY(0); }
+.feature-front-art { transition: transform 0.7s cubic-bezier(.2,.7,.2,1); }
+@media (prefers-reduced-motion: reduce) {
+  .feature-card .feature-back, .feature-front-art { transition: none; }
 }

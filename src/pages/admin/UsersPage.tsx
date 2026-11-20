@@ -20,6 +20,7 @@ import {
   Button,
   DataTable,
   Field,
+  Input,
   LinkButton,
   Modal,
   SearchInput,
@@ -32,6 +33,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
 import { clearDistributorLink, listMembers, setRepDistributors, updateProfile } from '@/lib/db';
+import { assertCodeFree, needsEmployeeCode, normaliseEmployeeCode } from '@/lib/accounts';
 import { fullName, partnerScope } from '@/lib/roles';
 import { Checklist } from '@/components/Checklist';
 import { NIGERIAN_STATES } from '@/data/states';
@@ -64,6 +66,7 @@ export default function UsersPage() {
         !needle ||
         fullName(member).toLowerCase().includes(needle) ||
         member.email.toLowerCase().includes(needle) ||
+        (member.employeeCode ?? '').toLowerCase().includes(needle) ||
         ROLE_LABEL[member.role].toLowerCase().includes(needle),
     );
   }, [data, search]);
@@ -78,7 +81,9 @@ export default function UsersPage() {
           <Avatar name={`${row.firstName} ${row.lastName}`} src={row.photoURL} size="sm" />
           <div className="min-w-0">
             <p className="truncate text-body font-semibold text-primary">{fullName(row)}</p>
-            <p className="truncate text-caption text-muted">{row.email}</p>
+            <p className="truncate text-caption text-muted">
+              {row.employeeCode ? `${row.employeeCode} · ${row.email}` : row.email}
+            </p>
           </div>
         </div>
       ),
@@ -126,7 +131,7 @@ export default function UsersPage() {
           </LinkButton>
         }
       >
-        <SearchInput value={search} onChange={setSearch} placeholder="Name, email or role…" className="max-w-sm" />
+        <SearchInput value={search} onChange={setSearch} placeholder="Name, code, email or role…" className="max-w-sm" />
       </PageHeader>
 
       <DataTable
@@ -172,6 +177,10 @@ function MemberModal({
   const [distributorIds, setDistributorIds] = useState<string[]>(() => (member?.role === 'sales_rep' ? accountsOf(member) : []));
   const [territories, setTerritories] = useState<string[]>(() => [...(member?.territories ?? [])]);
   const [active, setActive] = useState(member?.active !== false);
+  const [firstName, setFirstName] = useState(member?.firstName ?? '');
+  const [lastName, setLastName] = useState(member?.lastName ?? '');
+  const [code, setCode] = useState(member?.employeeCode ?? '');
+  const [phone, setPhone] = useState(member?.phone ?? '');
   const [busy, setBusy] = useState(false);
   const [seed, setSeed] = useState(member?.id);
 
@@ -183,6 +192,10 @@ function MemberModal({
     setTerritories([...(member.territories ?? [])]);
     setWarehouseIds([...(member.warehouseIds ?? [])]);
     setActive(member.active !== false);
+    setFirstName(member.firstName);
+    setLastName(member.lastName);
+    setCode(member.employeeCode ?? '');
+    setPhone(member.phone ?? '');
   }
 
   if (!member) return null;
@@ -200,12 +213,33 @@ function MemberModal({
       toast.warning('Which account?', 'A distributor login has to be attached to its distributor.');
       return;
     }
+    const employeeCode = normaliseEmployeeCode(code);
+    if (!self && !firstName.trim()) {
+      toast.warning('Name needed', 'A first name is needed.');
+      return;
+    }
+    if (!self && needsEmployeeCode(role) && !employeeCode) {
+      toast.warning('Employee code needed', 'Every member of staff needs one: the audit log knows them by it.');
+      return;
+    }
     setBusy(true);
     try {
+      if (!self && employeeCode && employeeCode !== (member.employeeCode ?? '') && member.orgId) {
+        await assertCodeFree(member.orgId, employeeCode, member.id);
+      }
       const distributor = distributors.find((d) => d.id === distributorId);
       await updateProfile(member.id, {
         role,
         active,
+        /* Identity: set here by an administrator, never by the person (firestore.rules). */
+        ...(self
+          ? {}
+          : {
+              firstName: firstName.trim(),
+              lastName: lastName.trim(),
+              phone: phone.trim(),
+              ...(employeeCode ? { employeeCode } : {}),
+            }),
         distributorId: needsDistributor ? distributorId : undefined,
         /* The tier is snapshotted onto the profile so the catalogue needs no
            join: see `UserProfile.distributorCategory`. It has to be rewritten
@@ -248,6 +282,24 @@ function MemberModal({
       }
     >
       <div className="space-y-4">
+        {!self && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="First name" required>
+              <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={!canTouch} />
+            </Field>
+            <Field label="Last name">
+              <Input value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={!canTouch} />
+            </Field>
+            {needsEmployeeCode(role) && (
+              <Field label="Employee code" required hint="Names them in the audit log. Only an administrator can change it.">
+                <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="HCB0042" maxLength={24} disabled={!canTouch} />
+              </Field>
+            )}
+            <Field label="Phone">
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} disabled={!canTouch} />
+            </Field>
+          </div>
+        )}
         <Field label="Role" required>
           <Select value={role} onChange={(e) => setRole(e.target.value as Role)} disabled={self || !canTouch}>
             {roleOptions.map((r) => (

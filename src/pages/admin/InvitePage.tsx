@@ -14,7 +14,7 @@ import { Checklist } from '@/components/Checklist';
 import { Alert, Button, Field, Input, LinkButton, Select } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
-import { createAccount, suggestPassword } from '@/lib/accounts';
+import { createAccount, needsEmployeeCode, normaliseEmployeeCode, suggestPassword } from '@/lib/accounts';
 import { saveDistributor } from '@/lib/db';
 import { PORTAL_ROOT } from '@/lib/tiles';
 import { ROLE_LABEL, type Role } from '@/types';
@@ -41,6 +41,7 @@ export default function InvitePage() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [employeeCode, setEmployeeCode] = useState('');
   const [role, setRole] = useState<TeamRole>('sales_rep');
   const [distributorId, setDistributorId] = useState('');
   const [warehouseIds, setWarehouseIds] = useState<string[]>([]);
@@ -62,6 +63,7 @@ export default function InvitePage() {
     setLastName('');
     setEmail('');
     setPhone('');
+    setEmployeeCode('');
     setDistributorId('');
     setWarehouseIds([]);
     setDistributorIds([]);
@@ -75,6 +77,10 @@ export default function InvitePage() {
     setError(null);
     if (!firstName.trim() || !email.trim()) {
       setError('A first name and an email address are needed.');
+      return;
+    }
+    if (needsEmployeeCode(role) && !normaliseEmployeeCode(employeeCode)) {
+      setError('An employee code is needed for staff. The audit log uses it to know who did what.');
       return;
     }
     if (password.length < 6) {
@@ -96,6 +102,7 @@ export default function InvitePage() {
         firstName,
         lastName,
         phone,
+        employeeCode: needsEmployeeCode(role) ? employeeCode : undefined,
         distributorId: needsDistributor ? distributorId : undefined,
         distributorCategory: needsDistributor ? distributor?.category : undefined,
         warehouseIds: needsDepots ? warehouseIds : undefined,
@@ -165,6 +172,17 @@ export default function InvitePage() {
             <Field label="Email address" required hint="What they sign in with">
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
             </Field>
+            {needsEmployeeCode(role) && (
+              <Field label="Employee code" required hint="Their staff number. It identifies them in the audit log; they cannot change it.">
+                <Input
+                  value={employeeCode}
+                  onChange={(e) => setEmployeeCode(e.target.value.toUpperCase())}
+                  placeholder="HCB0042"
+                  maxLength={24}
+                  autoComplete="off"
+                />
+              </Field>
+            )}
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">

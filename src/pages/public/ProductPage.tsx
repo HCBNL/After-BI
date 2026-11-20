@@ -43,7 +43,7 @@ function Body() {
           />
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <button type="button" onClick={book} className={btn.accent}>
-              Book a demo
+              Create account
             </button>
             <Link to="/pricing" className={btn.outline}>
               See plans and pricing
@@ -116,17 +116,9 @@ function Body() {
         <ol className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {MONTH_STEPS.map((step, index) => (
             <li key={step.title} className="overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-inset ring-white/10">
-              <div className="relative">
-                <SiteImage
-                  slot={`step-${index + 1}`}
-                  alt={step.title}
-                  width={480}
-                  className="aspect-[16/10]"
-                />
-                <span className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-navy-900/90 font-display text-[0.97rem] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm">
-                  {index + 1}
-                </span>
-              </div>
+              <span className="ml-6 mt-6 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 font-display text-[0.97rem] font-semibold text-white ring-1 ring-white/20">
+                {index + 1}
+              </span>
               <div className="p-6">
                 <h3 className="text-[16px] font-semibold">{step.title}</h3>
                 <p className="mt-2 text-[14.5px] leading-relaxed text-white/70">{step.body}</p>

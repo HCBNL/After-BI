@@ -6,26 +6,32 @@
  * curved edge, the owner's own shapes in slow motion walking through the
  * palette, cards that lift, lean or turn over to a second face.
  *
- *   Hero         one wide card in the structure colour, the AfterBI bars behind
- *                it, the owner's shapes turning on the right
+ *   Hero         a tall heavy headline with a flower in it, one short line
+ *   FeatureGrid  four cards (tall, two stacked, tall) that turn over on hover
  *   Trust        a turning badge and the three promises (and logos, when added)
  *   Lifecycle    four tabs (Sales, Operations, Finance, Intelligence) as a bento
  *   Values       a dark curved band; six coloured cards that turn over on hover
- *   Voices       customers in their own words, in a dashed frame that leans
- *   Industries   a card per category, a shape arriving on hover
- *   Videos       the films, with shapes in front and behind
+ *   Voices       the owner's own words, in the dashed frame that leans
+ *   Leaders      heads of other companies, as cards (from Platform, Website)
+ *   Videos       the films
  *   Questions    the FAQ
+ *
+ * Kept quiet on purpose: one weight for headings (semibold), one artwork per
+ * section at most, and pictures only where the owner uploads them.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Truck,
+  Undo2,
+  Warehouse,
   BarChart3,
   Boxes,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Landmark,
   MessageCircle,
   Quote,
@@ -40,15 +46,17 @@ import {
 import { Seo } from '@/components/Seo';
 import { faqJsonLd, homeJsonLd } from '@/lib/siteJsonLd';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
+import { GetApp } from '@/components/marketing/GetApp';
 import { Reveal } from '@/components/marketing/bits';
-import { btn, container } from '@/components/marketing/tokens';
-import { Accordion, IndustryCard, Section, SectionHead } from '@/components/marketing/site-ui';
+import { container } from '@/components/marketing/tokens';
+import { Accordion, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { VideoCard } from '@/components/marketing/VideoCard';
-import { BrandBars } from '@/components/home/HomeArt';
-import { Art, ArtTile, SpinBadge, type ArtName } from '@/components/marketing/art';
-import { homeVideos } from '@/lib/siteDoc';
+import { Art, SpinBadge, type ArtName } from '@/components/marketing/art';
+import { homeTestimonials, homeVideos } from '@/lib/siteDoc';
+import { imageUrl } from '@/lib/cloudinary';
+import { initials } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { FAQ, HERO, INDUSTRIES, META_DESCRIPTION, TABS, TESTIMONIALS, type TabKey } from '@/lib/site';
+import { FAQ, HERO, LEADER_QUOTES, META_DESCRIPTION, TABS, TESTIMONIALS, type TabKey } from '@/lib/site';
 
 export default function HomePage() {
   return (
@@ -64,11 +72,12 @@ export default function HomePage() {
       />
       <PublicShell>
         <Hero />
+        <FeatureGrid />
         <Trust />
         <Lifecycle />
         <Values />
         <Voices />
-        <Industries />
+        <Leaders />
         <Videos />
         <Questions />
       </PublicShell>
@@ -79,82 +88,302 @@ export default function HomePage() {
 /* -------------------------------------------------------------------- hero */
 
 /**
- * A wide card, not a full-bleed band: navy deepening into teal, the four
- * AfterBI bars rising out of the right edge. The headline ends on one of the
- * owner's shapes in a tile, turning, in place of the full stop. On a laptop
- * the right hand side holds a slow arrangement of the shapes; on a phone they
- * sit behind the words, quieter.
+ * PART ONE OF THE FRONT PAGE: a headline, a line, and the feature cards.
+ *
+ * Built the way PiggyVest's front page is built: a pale ground, a tall heavy
+ * headline (Archivo, narrow and tight, see `.site-heavy`) with one of the
+ * owner's flowers set inside the words, one short line under it, and nothing
+ * else: no buttons, no badges. The header holds the only actions.
  */
-function Hero() {
-  const { book } = useAsk();
+function HeadlineFlower() {
   return (
-    <section className="bg-white pt-4 sm:pt-6">
-      <div className={cn(container, 'px-3 sm:px-8')}>
-        <div className="site-card-hero relative isolate overflow-hidden rounded-[1.75rem] px-6 pb-12 pt-12 text-white sm:rounded-[2.25rem] sm:px-12 sm:pb-16 sm:pt-16 lg:grid lg:grid-cols-[1.3fr_0.7fr] lg:items-center lg:gap-8 lg:px-16 lg:pb-20 lg:pt-20">
-          <BrandBars className="pointer-events-none absolute -bottom-10 -right-10 -z-10 h-[17rem] w-[17rem] text-white/[0.06] sm:h-[26rem] sm:w-[26rem] lg:-bottom-16 lg:right-6 lg:h-[34rem] lg:w-[34rem]" />
-          <BrandBars className="pointer-events-none absolute -left-8 -top-10 -z-10 h-40 w-40 text-white/[0.04] lg:h-56 lg:w-56" />
-          <span aria-hidden className="pointer-events-none absolute -bottom-32 right-[12%] -z-10 h-72 w-72 rounded-full bg-[rgb(var(--site-accent))] opacity-20 blur-[90px]" />
+    <svg
+      viewBox="0 0 100 100"
+      aria-hidden
+      focusable="false"
+      className="art art-spin mx-[0.02em] inline-block h-[0.78em] w-[0.78em] -translate-y-[0.05em] align-middle"
+      style={{ ['--shift' as string]: 1, ['--speed' as string]: 0.45 }}
+    >
+      <g className="art-a">
+        <circle cx="50" cy="50" r="34" />
+        {Array.from({ length: 8 }, (_, i) => {
+          const a = (i / 8) * Math.PI * 2;
+          return <circle key={i} cx={50 + 32 * Math.cos(a)} cy={50 + 32 * Math.sin(a)} r="16" />;
+        })}
+      </g>
+      <circle cx="50" cy="50" r="9" fill="#ffffff" opacity="0.9" />
+    </svg>
+  );
+}
 
-          {/* On a phone the shapes sit behind the words, small and faint. */}
-          <div aria-hidden className="pointer-events-none absolute -right-8 top-6 -z-10 h-40 w-40 opacity-40 lg:hidden">
-            <Art name="bloom" className="h-full w-full" speed={0.7} />
-          </div>
-          <Art name="spark" shift={2} className="pointer-events-none absolute right-8 top-44 -z-10 h-8 w-8 opacity-60 lg:hidden" />
-
-          <Reveal className="max-w-2xl">
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[12.5px] font-medium text-white/85 ring-1 ring-inset ring-white/15">
-              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-              Sales and distribution platform
-            </p>
-            <h1 className="mt-5 font-display text-[2.25rem] font-semibold leading-[1.08] tracking-[-0.03em] text-balance sm:text-[3rem] lg:text-[3.5rem] lg:font-medium">
-              {HERO.title}
-              <ArtTile name="bloom" className="bg-white/12 ring-1 ring-inset ring-white/20" />
-            </h1>
-            <p className="mt-5 max-w-xl text-[16.5px] leading-[1.6] text-white/80 sm:text-[17px] lg:text-[16.5px]">{HERO.body}</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button type="button" onClick={book} className={cn(btn.accent, 'h-12 px-7')}>
-                Book a demo
-              </button>
-              <Link to="/pricing" className={cn(btn.lineWhite, 'h-12 px-7')}>
-                See plans and pricing
-              </Link>
-            </div>
-            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-              {HERO.trust.map((item) => (
-                <li key={item} className="flex items-center gap-2 text-[14px] font-medium text-white/75">
-                  <Check size={15} strokeWidth={2.5} aria-hidden className="text-brand-500" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-
-          <HeroArt />
-        </div>
+function Hero() {
+  return (
+    <section className="bg-[var(--site-top)] pb-14 pt-14 sm:pb-16 sm:pt-20 lg:pb-20 lg:pt-24">
+      {/*
+        A phone: everything centred, one under another. A laptop: the headline
+        on the far left, and on the right a short line about the business with
+        the two install buttons under it, as PiggyVest lays theirs out.
+      */}
+      <div className={cn(container, 'text-center lg:grid lg:grid-cols-[1.25fr_0.75fr] lg:items-center lg:gap-16 lg:text-left')}>
+        <Reveal>
+          <h1 className="site-heavy mx-auto max-w-[11ch] text-[3.15rem] text-navy-900 sm:max-w-[13ch] sm:text-[4.6rem] lg:mx-0 lg:max-w-none lg:text-[5.4rem]">
+            The smarter way <HeadlineFlower /> to run distribution.
+          </h1>
+        </Reveal>
+        <Reveal delay={100} className="mt-8 lg:mt-0">
+          <p className="mx-auto max-w-[24rem] text-[16.5px] leading-[1.55] text-navy-600 sm:max-w-md sm:text-[17.5px] lg:mx-0">
+            AfterBI helps distributors, importers and manufacturers run orders, stock and payments with their reps and partners, from any phone.
+          </p>
+          <GetApp className="mt-7 justify-center lg:justify-start" />
+        </Reveal>
       </div>
     </section>
   );
 }
 
+/* ---------------------------------------------------------- feature cards */
+
+/** True on a phone or tablet, where a card turns over on a tap instead of a hover. */
+function useTouch(): boolean {
+  const [touch, setTouch] = useState(false);
+  useEffect(() => {
+    const q = window.matchMedia('(hover: none)');
+    const on = () => setTouch(q.matches);
+    on();
+    q.addEventListener('change', on);
+    return () => q.removeEventListener('change', on);
+  }, []);
+  return touch;
+}
+
 /**
- * The owner's shapes, arranged: a large bloom turning like a slow fan, an
- * orbit with its moon going round, a kite and a cloud drifting, sparks
- * catching the light. Every one walks through the palette on its own clock.
+ * One card with two faces. The first is a picture (uploaded in Platform,
+ * Website) or a drawn scene; the second rises over it on hover (a tap on a
+ * phone), in its own colour, with one of the owner's shapes in the corner.
  */
-function HeroArt() {
+function FeatureCard({
+  className,
+  front,
+  back,
+  label,
+}: {
+  className?: string;
+  front: ReactNode;
+  back: { bg: string; ink?: string; art: ArtName; shift?: number; title: string; body: string; to: string };
+  label: string;
+}) {
+  const touch = useTouch();
+  const [flipped, setFlipped] = useState(false);
   return (
-    <div aria-hidden className="relative mx-auto hidden aspect-square w-full max-w-[24rem] lg:block">
-      <span className="absolute inset-[12%] rounded-full bg-white/[0.04] ring-1 ring-inset ring-white/10" />
-      <span className="absolute inset-[30%] rounded-full border border-dashed border-white/10" />
-      <Art name="bloom" speed={0.6} className="absolute left-[22%] top-[14%] h-[52%] w-[52%] drop-shadow-[0_18px_30px_rgba(0,0,0,0.25)]" />
-      <Art name="orbit" shift={1} className="absolute bottom-[4%] left-[2%] h-[30%] w-[30%]" />
-      <Art name="kite" shift={3} className="absolute right-[2%] top-[8%] h-[20%] w-[20%]" />
-      <Art name="blocks" shift={2} className="absolute bottom-[8%] right-[6%] h-[28%] w-[28%]" />
-      <Art name="cloud" shift={4} className="absolute left-[0%] top-[2%] h-[22%] w-[22%]" />
-      <Art name="spark" shift={2} className="absolute right-[30%] top-[2%] h-[9%] w-[9%]" />
-      <Art name="spark" shift={4} className="absolute bottom-[34%] left-[6%] h-[7%] w-[7%]" />
-      <Art name="spark" shift={0} className="absolute bottom-[2%] right-[40%] h-[6%] w-[6%]" />
+    <article
+      tabIndex={0}
+      aria-label={label}
+      data-flipped={flipped}
+      onClick={() => touch && setFlipped((v) => !v)}
+      className={cn('feature-card relative isolate overflow-hidden rounded-[1.75rem] outline-none focus-visible:ring-2 focus-visible:ring-navy-900/40', touch && 'cursor-pointer', className)}
+    >
+      {front}
+      <div className="feature-back absolute inset-0 z-10 flex flex-col p-7 sm:p-8" style={{ background: back.bg, color: back.ink ?? '#ffffff' }}>
+        <Art name={back.art} shift={back.shift ?? 0} className="h-14 w-14 shrink-0 self-end sm:h-20 sm:w-20 lg:absolute lg:right-6 lg:top-6 lg:h-24 lg:w-24" />
+        <h3 className="mt-auto max-w-[16rem] font-display text-[1.65rem] font-bold leading-[1.05] tracking-[-0.03em]">{back.title}</h3>
+        <p className="mt-3 max-w-sm text-[15px] leading-[1.6] opacity-80">{back.body}</p>
+        <Link
+          to={back.to}
+          onClick={(e) => e.stopPropagation()}
+          className="mt-6 inline-flex w-fit items-center gap-2 text-[14.5px] font-semibold underline decoration-current/30 underline-offset-4 transition-all hover:gap-3"
+        >
+          Learn more <ArrowRight size={16} aria-hidden />
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+/** A small bright disc of the owner's palette, half off the card's edge. */
+function CornerDisc({ color, className }: { color: string; className?: string }) {
+  return <span aria-hidden className={cn('feature-front-art absolute rounded-full', className)} style={{ background: color }} />;
+}
+
+/** The catalogue, drawn: a phone's worth of product rows. Shown until a picture is uploaded. */
+function CatalogueScene() {
+  const rows = [
+    { name: 'Mini fan, 12 inch', price: '₦18,500', tone: '#c8d8ff' },
+    { name: 'Rice cooker, 1.8L', price: '₦42,000', tone: '#ffd9e6' },
+    { name: 'LED bulb, pack of 4', price: '₦6,200', tone: '#fff0c2' },
+    { name: 'Blender, 2 speed', price: '₦27,900', tone: '#d9f5c6' },
+  ];
+  return (
+    <div className="absolute inset-0 bg-[#e9eef5]">
+      <CornerDisc color="#ffbe45" className="-bottom-16 -left-16 h-48 w-48 opacity-90" />
+      <Art name="bloom" shift={0} motion="none" className="feature-front-art absolute bottom-10 left-6 h-16 w-16" />
+      <div className="absolute inset-x-8 top-8 rounded-[1.6rem] border-[6px] border-navy-900 bg-white p-4 shadow-[0_30px_60px_-30px_rgba(15,31,54,0.5)] sm:inset-x-10">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-navy-400">Catalogue</p>
+        <ul className="mt-3 space-y-2.5">
+          {rows.map((r) => (
+            <li key={r.name} className="flex items-center gap-3 rounded-xl bg-navy-50/70 p-2.5">
+              <span className="h-9 w-9 shrink-0 rounded-lg" style={{ background: r.tone }} />
+              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-navy-800">{r.name}</span>
+              <span className="text-[12.5px] font-bold text-navy-900">{r.price}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
+  );
+}
+
+/** Finance, drawn: two lines, sold and collected, the gap between them owed. */
+function FinanceScene() {
+  return (
+    <div className="absolute inset-0 bg-[#efe9fb]">
+      <CornerDisc color="#ff78a8" className="-bottom-14 -right-12 h-40 w-40 opacity-90" />
+      <div className="absolute inset-x-7 top-7 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-26px_rgba(15,31,54,0.45)]">
+        <div className="flex items-baseline justify-between">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-navy-400">Collected</p>
+          <p className="font-display text-[1.35rem] font-bold text-navy-900">₦11.9m</p>
+        </div>
+        <svg viewBox="0 0 300 90" className="mt-2 h-20 w-full" aria-hidden>
+          <path d="M0 60 L60 48 L120 66 L180 22 L240 32 L300 44 L300 90 L0 90 Z" fill="#2f6bff" opacity="0.08" />
+          <path d="M0 60 L60 48 L120 66 L180 22 L240 32 L300 44" fill="none" stroke="#2f6bff" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+          <path d="M0 62 L60 52 L120 72 L180 42 L240 60 L300 84" fill="none" stroke="#0aa158" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+        </svg>
+      </div>
+      <Art name="spark" shift={2} className="absolute bottom-8 left-8 h-9 w-9" />
+    </div>
+  );
+}
+
+/** Stock, drawn: four flowers on stems, each holding one part of the warehouse. */
+function StockScene() {
+  const flowers = [
+    { label: 'Depots', icon: Warehouse, color: '#d7c8fb', x: '6%', y: '10%' },
+    { label: 'Cartons', icon: Boxes, color: '#c4ecae', x: '50%', y: '6%' },
+    { label: 'Deliveries', icon: Truck, color: '#ffe08a', x: '2%', y: '42%' },
+    { label: 'Returns', icon: Undo2, color: '#b7e6f8', x: '48%', y: '38%' },
+  ];
+  return (
+    <div className="absolute inset-0 bg-[#eef1f5]">
+      <svg aria-hidden viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+        <path d="M30 40 C40 60, 48 72, 50 88 M72 36 C62 60, 54 72, 50 88 M28 70 C38 78, 46 82, 50 88 M70 66 C60 76, 54 82, 50 88" fill="none" stroke="#f3a7c4" strokeWidth="1.2" />
+      </svg>
+      <span aria-hidden className="absolute bottom-[4%] left-1/2 h-[12%] w-[34%] -translate-x-1/2 rounded-t-lg bg-[#fcd9e6]" />
+      {flowers.map((f, i) => {
+        const Icon = f.icon;
+        return (
+          <div
+            key={f.label}
+            className="feature-front-art absolute flex h-[38%] w-[46%] flex-col items-center justify-center"
+            style={{ left: f.x, top: f.y, transitionDelay: `${i * 40}ms` }}
+          >
+            <svg viewBox="0 0 100 100" aria-hidden className="absolute inset-0 h-full w-full">
+              <g fill={f.color}>
+                <circle cx="50" cy="50" r="34" />
+                {Array.from({ length: 8 }, (_, k) => {
+                  const a = (k / 8) * Math.PI * 2;
+                  return <circle key={k} cx={50 + 32 * Math.cos(a)} cy={50 + 32 * Math.sin(a)} r="16" />;
+                })}
+              </g>
+            </svg>
+            <Icon size={24} strokeWidth={2} className="relative text-navy-900" aria-hidden />
+            <span className="relative mt-1 text-[11.5px] font-bold uppercase tracking-[0.08em] text-navy-900">{f.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Four cards, PiggyVest's grid: one tall card on each side, two stacked in the
+ * middle, all the same overall height. On a phone they stack, and a tap turns
+ * a card over.
+ */
+function FeatureGrid() {
+  return (
+    <section className="bg-[var(--site-top)] pb-16 sm:pb-24">
+      <div className={cn(container, 'grid gap-5 lg:h-[38rem] lg:grid-cols-[1fr_1.1fr_1fr] lg:grid-rows-2')}>
+        <FeatureCard
+          label="Product catalogue"
+          className="h-[27rem] lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:h-auto"
+          front={
+            <>
+              <CatalogueScene />
+              <SiteImage slot="hero-catalogue" alt="Product catalogue" width={720} className="!absolute inset-0 h-full w-full" />
+            </>
+          }
+          back={{
+            bg: '#0f1f36',
+            art: 'bloom',
+            title: 'Product catalogue',
+            body: 'Every product with its carton size, units and price for each tier. Reps and distributors order from the same list.',
+            to: '/features/orders',
+          }}
+        />
+
+        <FeatureCard
+          label="Orders and approvals"
+          className="min-h-[18rem] lg:col-start-2 lg:row-start-1 lg:min-h-0"
+          front={
+            <div className="absolute inset-0 flex flex-col bg-[#eef1f5] p-7 sm:p-8">
+              <h3 className="font-display text-[1.6rem] font-bold leading-[1.08] tracking-[-0.03em] text-navy-900 sm:text-[1.8rem]">
+                Every order,
+                <br />
+                <span className="text-navy-400">signed in one tap.</span>
+              </h3>
+              <p className="mt-auto max-w-sm text-[14.5px] leading-[1.6] text-navy-600">
+                Raised on any phone, approved by the right person, and tracked until it is paid.
+              </p>
+            </div>
+          }
+          back={{
+            bg: '#1d4ef5',
+            art: 'pinwheel',
+            shift: 2,
+            title: 'Orders and approvals',
+            body: 'Proforma, approval, delivery note and invoice, numbered for you, with who signed each one.',
+            to: '/features/orders',
+          }}
+        />
+
+        <FeatureCard
+          label="Finance and analytics"
+          className="min-h-[18rem] lg:col-start-2 lg:row-start-2 lg:min-h-0"
+          front={
+            <>
+              <FinanceScene />
+              <SiteImage slot="hero-finance" alt="Finance and analytics" width={720} className="!absolute inset-0 h-full w-full" />
+            </>
+          }
+          back={{
+            bg: '#0b6b47',
+            art: 'daisy',
+            shift: 3,
+            title: 'Finance and analytics',
+            body: 'What was sold, what came in and what is still owed, by month, by customer, by rep.',
+            to: '/features/analytics',
+          }}
+        />
+
+        <FeatureCard
+          label="Stock and deliveries"
+          className="h-[27rem] lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:h-auto"
+          front={
+            <>
+              <StockScene />
+              <SiteImage slot="hero-stock" alt="Stock and deliveries" width={720} className="!absolute inset-0 h-full w-full" />
+            </>
+          }
+          back={{
+            bg: '#3a1f8f',
+            art: 'orbit',
+            shift: 4,
+            title: 'Stock and deliveries',
+            body: 'Every depot, section and row. Stock counts, adjustments with two signatures, and delivery notes.',
+            to: '/features/stock',
+          }}
+        />
+      </div>
+    </section>
   );
 }
 
@@ -173,13 +402,13 @@ function Trust() {
           <Art name="spark" className="h-[70%] w-[70%]" />
         </SpinBadge>
         <div className="text-center sm:text-left">
-          <p className="font-display text-[1.25rem] font-medium tracking-[-0.02em] text-navy-900 sm:text-[1.45rem]">
+          <p className="font-display text-[1.25rem] font-semibold tracking-[-0.02em] text-navy-900 sm:text-[1.45rem]">
             Trusted by sales and distribution teams
           </p>
           <ul className="mt-3 flex flex-wrap justify-center gap-x-6 gap-y-2 sm:justify-start">
-            {HERO.trust.map((item, i) => (
+            {HERO.trust.map((item) => (
               <li key={item} className="flex items-center gap-2 text-[14.5px] font-medium text-navy-700">
-                <Art name={(['bloom', 'pinwheel', 'daisy'] as ArtName[])[i % 3]} shift={i + 1} className="h-4 w-4" />
+                <Check size={15} strokeWidth={2.5} aria-hidden className="text-brand-600" />
                 {item}
               </li>
             ))}
@@ -222,12 +451,7 @@ function Lifecycle() {
       <SectionHead
         align="center"
         kicker="From lead to revenue"
-        title={
-          <>
-            Complete commercial lifecycle management
-            <ArtTile name="orbit" shift={1} />
-          </>
-        }
+        title="Complete commercial lifecycle management"
       />
 
       <div className="mt-12 flex justify-center">
@@ -258,11 +482,10 @@ function Lifecycle() {
       <div role="tabpanel" key={tab.key} className="mt-10 grid animate-fade-in gap-4 lg:grid-cols-[0.9fr_1.1fr] lg:gap-5">
         <div className="relative isolate flex min-h-[18rem] flex-col overflow-hidden rounded-[2rem] bg-navy-900 p-8 text-white sm:p-10">
           <Art name={TAB_ART[tab.key]} className="pointer-events-none absolute -bottom-8 -right-8 -z-10 h-52 w-52 opacity-90 sm:h-60 sm:w-60" />
-          <Art name="spark" shift={3} className="pointer-events-none absolute right-10 top-10 -z-10 h-7 w-7" />
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-inset ring-white/15">
             <Icon size={20} strokeWidth={1.8} aria-hidden />
           </span>
-          <h3 className="mt-6 max-w-md font-display text-[1.6rem] font-medium leading-[1.15] tracking-[-0.025em] sm:text-[1.9rem]">{tab.title}</h3>
+          <h3 className="mt-6 max-w-md font-display text-[1.6rem] font-semibold leading-[1.15] tracking-[-0.025em] sm:text-[1.9rem]">{tab.title}</h3>
           <Link
             to={tab.link}
             className="mt-auto inline-flex w-fit items-center gap-2 pt-8 text-[14.5px] font-semibold text-white underline decoration-white/30 underline-offset-4 transition-all hover:gap-3 hover:decoration-white"
@@ -271,13 +494,13 @@ function Lifecycle() {
           </Link>
         </div>
         <ul className="grid gap-3 sm:grid-cols-2">
-          {tab.points.map((point, i) => (
+          {tab.points.map((point) => (
             <li
               key={point}
               className="group flex gap-3 rounded-2xl border border-navy-900/10 bg-white p-5 text-[14.5px] leading-snug text-navy-700 transition-all duration-300 hover:-translate-y-1 hover:border-navy-900/25 hover:shadow-[0_18px_40px_-22px_rgba(15,31,54,0.45)] sm:[&:nth-child(odd):last-child]:col-span-2"
             >
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy-50 transition-colors group-hover:bg-navy-900">
-                <Art name={(['spark', 'bloom', 'pinwheel', 'daisy'] as ArtName[])[i % 4]} shift={i} motion="none" className="h-3.5 w-3.5 transition-transform duration-500 group-hover:rotate-90" />
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy-50 text-navy-800 transition-colors group-hover:bg-navy-900 group-hover:text-white">
+                <Check size={13} strokeWidth={2.6} aria-hidden />
               </span>
               {point}
             </li>
@@ -318,17 +541,13 @@ const VALUE_FACES: { bg: string; ink: string; art: ArtName }[] = [
 function Values() {
   return (
     <section className="site-curve relative isolate overflow-hidden bg-navy-900 py-20 text-white sm:py-28">
-      <Art name="bloom" speed={0.5} className="pointer-events-none absolute -left-24 top-16 -z-10 h-72 w-72 opacity-[0.08]" />
-      <Art name="spark" shift={2} className="pointer-events-none absolute right-[8%] top-20 -z-10 h-10 w-10 opacity-70" />
       <div className={container}>
         <header className="mx-auto max-w-3xl text-center">
           <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-[12.5px] font-semibold uppercase tracking-[0.14em] text-white/85 ring-1 ring-inset ring-white/15">
-            <Art name="spark" motion="twinkle" className="h-3.5 w-3.5" />
             What we hold to
           </p>
-          <h2 className="mt-5 font-display text-[1.6rem] font-medium leading-[1.12] tracking-[-0.03em] text-balance sm:text-[2.18rem]">
+          <h2 className="mt-5 font-display text-[1.6rem] font-semibold leading-[1.12] tracking-[-0.03em] text-balance sm:text-[2.18rem]">
             Values that run through the product
-            <ArtTile name="waves" shift={2} className="bg-white/10 ring-1 ring-inset ring-white/15" />
           </h2>
         </header>
 
@@ -363,7 +582,6 @@ function Values() {
 
                   {/* A pointer: the card turns over to the sentence. */}
                   <div className="absolute inset-0 hidden translate-y-full flex-col justify-end bg-navy-950 p-7 text-white transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:translate-y-0 group-focus-visible:translate-y-0 [@media(hover:hover)]:flex">
-                    <Art name={face.art} shift={i + 2} className="absolute right-6 top-6 h-16 w-16" />
                     {/* Keep the face's colour as a thin edge, so the card is still recognisably the same card. */}
                     <span aria-hidden className="absolute inset-x-0 top-0 h-1.5" style={{ background: face.bg }} />
                     <h3 className="font-display text-[1.15rem] font-semibold tracking-[-0.02em]">{value.title}</h3>
@@ -381,7 +599,7 @@ function Values() {
 
 /* ------------------------------------------------------------------ voices */
 
-/** Customers' own words. Slides itself every seven seconds; pauses on hover. */
+/** The owner's own words, in the dashed frame that leans. Slides every seven seconds when there is more than one. */
 function Voices() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -400,47 +618,44 @@ function Voices() {
     <Section className="site-curve overflow-hidden">
       <SectionHead align="center" kicker="In their words" title="Teams already running on AfterBI" />
       <div className="relative mx-auto mt-14 max-w-4xl">
-        <Art name="daisy" shift={1} className="pointer-events-none absolute -left-10 -top-10 h-24 w-24 sm:-left-16 sm:h-32 sm:w-32" />
-        <Art name="cloud" shift={3} className="pointer-events-none absolute -bottom-8 -right-6 z-10 h-20 w-20 sm:-right-14 sm:h-28 sm:w-28" />
-        <Art name="spark" shift={2} className="pointer-events-none absolute -right-4 top-6 h-8 w-8 sm:-right-10" />
-      <div className="site-tilt relative rounded-[2.25rem] border-2 border-dashed border-navy-900/20 bg-white/60 p-2.5 sm:p-3.5">
-      <div
-        className="relative overflow-hidden rounded-[1.75rem]"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        aria-roledescription="carousel"
-      >
-        <div className="flex transition-transform duration-700 ease-[cubic-bezier(.2,.7,.2,1)]" style={{ transform: `translateX(-${index * 100}%)` }}>
-          {TESTIMONIALS.map((t, i) => (
-            <figure
-              key={t.name}
-              aria-hidden={i !== index}
-              className="grid w-full shrink-0 items-center gap-8 rounded-[1.75rem] bg-navy-900 p-7 text-white sm:grid-cols-[auto_1fr] sm:gap-10 sm:p-10"
-            >
-              <img
-                src={t.photo}
-                alt={t.name}
-                width={160}
-                height={160}
-                loading="lazy"
-                decoding="async"
-                className="h-28 w-28 rounded-full object-cover ring-4 ring-white/15 sm:h-40 sm:w-40"
-              />
-              <div>
-                <Quote size={26} aria-hidden className="text-brand-500" />
-                <blockquote className="mt-3 font-display text-[1.15rem] font-normal leading-[1.55] text-white sm:text-[1.3rem]">
-                  {t.quote}
-                </blockquote>
-                <figcaption className="mt-6">
-                  <p className="text-[15px] font-semibold text-white">{t.name}</p>
-                  <p className="text-[13.5px] text-white/60">{`${t.role}, ${t.company}`}</p>
-                </figcaption>
-              </div>
-            </figure>
-          ))}
+        <div className="site-tilt relative rounded-[2.25rem] border-2 border-dashed border-navy-900/20 bg-white/60 p-2.5 sm:p-3.5">
+          <div
+            className="relative overflow-hidden rounded-[1.75rem]"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            aria-roledescription="carousel"
+          >
+            <div className="flex transition-transform duration-700 ease-[cubic-bezier(.2,.7,.2,1)]" style={{ transform: `translateX(-${index * 100}%)` }}>
+              {TESTIMONIALS.map((t, i) => (
+                <figure
+                  key={t.name}
+                  aria-hidden={i !== index}
+                  className="grid w-full shrink-0 items-center gap-8 rounded-[1.75rem] bg-navy-900 p-7 text-white sm:grid-cols-[auto_1fr] sm:gap-10 sm:p-10"
+                >
+                  <img
+                    src={t.photo}
+                    alt={t.name}
+                    width={160}
+                    height={160}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-28 w-28 rounded-full object-cover ring-4 ring-white/15 sm:h-40 sm:w-40"
+                  />
+                  <div>
+                    <Quote size={26} aria-hidden className="text-brand-500" />
+                    <blockquote className="mt-3 font-display text-[1.15rem] font-normal leading-[1.55] text-white sm:text-[1.3rem]">
+                      {t.quote}
+                    </blockquote>
+                    <figcaption className="mt-6">
+                      <p className="text-[15px] font-semibold text-white">{t.name}</p>
+                      <p className="text-[13.5px] text-white/60">{`${t.role}, ${t.company}`}</p>
+                    </figcaption>
+                  </div>
+                </figure>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-      </div>
 
         {count > 1 && (
           <div className="mt-8 flex items-center justify-center gap-3">
@@ -466,37 +681,58 @@ function Voices() {
   );
 }
 
-/* -------------------------------------------------------------- industries */
+/* ----------------------------------------------------------------- leaders */
 
-const INDUSTRY_ART: ArtName[] = ['bloom', 'daisy', 'pinwheel', 'kite', 'orbit', 'leaf', 'fourfold', 'droplet', 'spark', 'waves', 'petals', 'blocks'];
+/**
+ * Heads of other companies on AfterBI, as cards: three across on a laptop,
+ * swiping on a phone. The ones added in Platform, Website come first, then the
+ * built in ones (LEADER_QUOTES in lib/site.ts). A card with no photograph yet
+ * shows the person's initials.
+ */
+function Leaders() {
+  const { home } = useAsk();
+  const added = homeTestimonials(home);
+  const names = new Set(added.map((t) => t.name.trim().toLowerCase()));
+  const items = [...added, ...LEADER_QUOTES.filter((t) => !names.has(t.name.trim().toLowerCase()))];
+  if (items.length === 0) return null;
 
-/** A card per category. A shape arrives in the corner of the one the pointer reaches. */
-function Industries() {
   return (
     <Section tone="mist">
-      <SectionHead
-        align="center"
-        title={
-          <>
-            Built for every consumer goods category
-            <ArtTile name="daisy" shift={3} />
-          </>
-        }
-      />
-      <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {INDUSTRIES.map((item, i) => (
-          <Link
-            key={item.name}
-            to="/solutions#industries"
-            className="group relative block rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-20px_rgba(15,31,54,0.45)]"
+      <SectionHead align="center" kicker="From the people in charge" title="What business owners say" />
+      <div
+        className={cn(
+          '-mx-4 mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mx-auto md:grid md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden',
+          items.length === 1 ? 'justify-center md:max-w-md md:grid-cols-1' : items.length === 2 ? 'md:max-w-4xl md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3',
+        )}
+      >
+        {items.map((t, i) => (
+          <figure
+            key={`${t.name}-${i}`}
+            className="flex w-[82vw] shrink-0 snap-center flex-col rounded-[1.75rem] border border-navy-900/10 bg-white p-7 shadow-[0_18px_40px_-28px_rgba(15,31,54,0.35)] md:w-auto"
           >
-            <IndustryCard icon={item.icon} name={item.name} />
-            <Art
-              name={INDUSTRY_ART[i % INDUSTRY_ART.length]}
-              shift={i}
-              className="pointer-events-none absolute -right-2 -top-3 z-10 h-9 w-9 scale-0 opacity-0 transition-all duration-500 group-hover:scale-100 group-hover:opacity-100"
-            />
-          </Link>
+            <Quote size={24} aria-hidden className="text-navy-300" />
+            <blockquote className="mt-4 flex-1 text-[16px] leading-[1.65] text-navy-800">{t.quote}</blockquote>
+            <figcaption className="mt-6 flex items-center gap-3 border-t border-navy-900/10 pt-5">
+              {t.photo ? (
+                <img
+                  src={t.photo.startsWith('/') ? t.photo : imageUrl(t.photo, { width: 112 })}
+                  alt={t.name}
+                  width={56}
+                  height={56}
+                  loading="lazy"
+                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-1 ring-navy-900/10"
+                />
+              ) : (
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-navy-900 text-[15px] font-semibold text-white">
+                  {initials(t.name)}
+                </span>
+              )}
+              <span className="min-w-0">
+                <span className="block truncate text-[15px] font-semibold text-navy-900">{t.name}</span>
+                <span className="block truncate text-[13.5px] text-navy-500">{[t.role, t.company].filter(Boolean).join(', ')}</span>
+              </span>
+            </figcaption>
+          </figure>
         ))}
       </div>
     </Section>
@@ -513,19 +749,9 @@ function Videos() {
     <Section>
       <SectionHead
         align="center"
-        title={
-          <>
-            See AfterBI in action
-            <ArtTile name="ripple" shift={1} />
-          </>
-        }
+        title="See AfterBI in action"
       />
       <div className="relative isolate mt-10">
-        {/* Behind the films and in front of them, moving. */}
-        <Art name="orbit" shift={2} className="pointer-events-none absolute -left-8 -top-10 -z-10 h-28 w-28 sm:-left-14 sm:h-40 sm:w-40" />
-        <Art name="waves" shift={4} className="pointer-events-none absolute -bottom-10 -right-6 -z-10 h-28 w-28 sm:h-36 sm:w-36" />
-        <Art name="cloud" shift={1} className="pointer-events-none absolute -right-5 -top-8 z-10 h-16 w-16 sm:h-24 sm:w-24" />
-        <Art name="spark" shift={3} className="pointer-events-none absolute -bottom-5 left-[12%] z-10 h-9 w-9" />
         <div className={cn('grid gap-5', videos.length > 1 && 'md:grid-cols-2')}>
           {videos.map((video) => (
             <VideoCard key={video.url} url={video.url} title={video.title} className="rounded-[1.75rem] shadow-[0_30px_60px_-30px_rgba(15,31,54,0.55)]" />
@@ -544,11 +770,6 @@ function Questions() {
       <div className="grid items-start gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <div className="relative">
           <SectionHead title="Frequently asked questions" body="Still unsure? Book a short walkthrough and ask us anything." />
-          <div aria-hidden className="relative mt-10 hidden h-48 lg:block">
-            <Art name="loop" shift={2} className="absolute left-0 top-0 h-36 w-36" />
-            <Art name="kite" shift={4} className="absolute left-36 top-16 h-20 w-20" />
-            <Art name="spark" shift={1} className="absolute left-28 top-0 h-8 w-8" />
-          </div>
         </div>
         <Accordion items={FAQ} />
       </div>

@@ -31,7 +31,6 @@ import {
   Avatar,
   Badge,
   Button,
-  Divider,
   Field,
   Hint,
   Input,
@@ -45,11 +44,12 @@ import { PinSetup } from '@/components/lock/PinSetup';
 import { useLock } from '@/components/lock/useLock';
 import { DEFAULT_MINUTES, LOCK_CHOICES, removePin, setLockMinutes } from '@/lib/pinLock';
 import { getStoredTheme, setStoredTheme, type ThemeChoice } from '@/lib/theme';
-import { LanguageSwitch } from '@/components/LanguageSwitch';
+import { LANGS, getLang, setLang, type Lang } from '@/lib/i18n';
 import { AccentPicker } from '@/components/AccentPicker';
 import { useAuth } from '@/context/AuthContext';
 import { useOptionalOrg } from '@/context/OrgContext';
 import { updateProfile } from '@/lib/db';
+import { assertCodeFree, normaliseEmployeeCode } from '@/lib/accounts';
 import { cloudinaryConfigured, imageUrl, shrinkImage, uploadImage } from '@/lib/cloudinary';
 import { useBrand } from '@/lib/brand';
 import { fullName, partnerScope } from '@/lib/roles';
@@ -73,7 +73,7 @@ export default function ProfilePage() {
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
   const [lastName, setLastName] = useState(user?.lastName ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
-  const [title, setTitle] = useState(user?.title ?? '');
+  const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [viewing, setViewing] = useState(false);
@@ -88,7 +88,6 @@ export default function ProfilePage() {
     setFirstName(user.firstName);
     setLastName(user.lastName);
     setPhone(user.phone ?? '');
-    setTitle(user.title ?? '');
   }, [user?.id]);
 
   if (!user) return null;
@@ -125,16 +124,24 @@ export default function ProfilePage() {
     }
   };
 
-  const save = async () => {
+  /* A super admin made before employee codes existed sets theirs, once (see firestore.rules). */
+  const needsSetup = user.role === 'super_admin' && !user.employeeCode;
+  const setupOnce = async () => {
+    const employeeCode = normaliseEmployeeCode(code);
+    if (!firstName.trim() || employeeCode.length < 2) {
+      toast.warning('Name and code needed', 'Enter your first name and your employee code.');
+      return;
+    }
     setBusy(true);
     try {
+      if (user.orgId) await assertCodeFree(user.orgId, employeeCode, user.id);
       await updateProfile(user.id, {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim(),
-        title: title.trim(),
+        employeeCode,
       });
-      toast.success('Profile saved');
+      toast.success('Saved and locked', `Your employee code is ${employeeCode}.`);
     } catch (err) {
       toast.error('Not saved', err instanceof Error ? err.message : undefined);
     } finally {
@@ -220,29 +227,42 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <Divider className="my-5" />
+        {/*
+          Read only. Name, employee code and phone are set by an administrator
+          and locked to the person (firestore.rules): the audit log names who
+          did what by these, so nobody may rename themselves.
+        */}
+        <dl className="mt-4 border-t border-hairline">
+          <Row label="Name" value={fullName(user)} />
+          {user.role !== 'distributor' && <Row label="Employee code" value={user.employeeCode || 'Not set'} />}
+          <Row label="Phone" value={user.phone || 'Not set'} />
+        </dl>
 
-        <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-[100px_1fr_1fr]">
-            <Field label="Title">
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Mr" />
-            </Field>
-            <Field label="First name" required>
-              <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-            </Field>
-            <Field label="Last name">
-              <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
-            </Field>
+        {needsSetup && (
+          <div className="mt-4 rounded-2xl border border-hairline surface-sunken p-4">
+            <p className="text-body font-semibold text-primary">Set your employee code</p>
+            <p className="mt-0.5 text-label leading-snug text-muted">
+              Once only. After this your name and code are locked, and every action in the audit log carries the code.
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Field label="First name" required>
+                <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              </Field>
+              <Field label="Last name">
+                <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+              </Field>
+              <Field label="Employee code" required>
+                <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="HCB0001" maxLength={24} />
+              </Field>
+              <Field label="Phone">
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </Field>
+            </div>
+            <Button className="mt-3" icon={<Save size={15} />} loading={busy} onClick={() => void setupOnce()}>
+              Save and lock
+            </Button>
           </div>
-
-          <Field label="Phone" hint="Visible to your administrators">
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
-          </Field>
-
-          <Button icon={<Save size={15} />} loading={busy} onClick={() => void save()}>
-            Save
-          </Button>
-        </div>
+        )}
       </section>
 
       <SettingsCard
@@ -414,7 +434,7 @@ export default function ProfilePage() {
           art="colour"
           tone="pink"
           label="Colour"
-          hint="From the logo. Buttons stay green."
+          hint="Blue, red, green, or any colour you pick. Buttons stay green."
           below={<AccentPicker />}
         />
         <SettingsRow
@@ -423,7 +443,23 @@ export default function ProfilePage() {
           tone="teal"
           label="Language"
           hint="The whole app changes, including menus and messages."
-          below={<LanguageSwitch full />}
+          right={
+            <Select
+              aria-label="Language"
+              className="w-36"
+              value={getLang()}
+              onChange={(e) => {
+                const next = e.target.value as Lang;
+                if (next !== getLang()) setLang(next);
+              }}
+            >
+              {LANGS.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.label}
+                </option>
+              ))}
+            </Select>
+          }
         />
         <SettingsRow
           icon={LayoutGrid}

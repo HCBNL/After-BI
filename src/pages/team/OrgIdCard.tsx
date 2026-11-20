@@ -82,7 +82,8 @@ export function useOrgStaffDetails() {
   });
   const [saving, setSaving] = useState(false);
   const orgName = settings?.name || 'Your organisation';
-  const staffNo = user ? orgStaffNumber(user.id, orgName) : '';
+  /* The employee code is the staff number, when the person has one. */
+  const staffNo = user ? user.employeeCode || orgStaffNumber(user.id, orgName) : '';
   /* The public record the card's QR checks against (lib/idCards.ts). */
   const publish = async () => {
     if (!user?.orgId || !details.fullName.trim()) return;
@@ -103,7 +104,8 @@ export function useOrgStaffDetails() {
   const save = async () => {
     setSaving(true);
     try {
-      if (user) await updateProfile(user.id, { position: details.position.trim(), location: details.location.trim(), phone: details.phone.trim() });
+      /* Name and phone are set by an administrator (firestore.rules); only position and location are yours. */
+      if (user) await updateProfile(user.id, { position: details.position.trim(), location: details.location.trim() });
       await publish();
     } finally {
       setSaving(false);
@@ -227,7 +229,7 @@ export default function OrgIdCard({ embedded = false }: { embedded?: boolean } =
           <Card>
             <h2 className="text-[15px] font-bold text-primary">Your details</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <Field label="Full name" hint="As set when your account was made. Change it on your Profile.">
+              <Field label="Full name" hint="As set by your administrator when your account was made.">
                 <Input value={details.fullName} readOnly />
               </Field>
               <Field label="Position">
@@ -236,8 +238,8 @@ export default function OrgIdCard({ embedded = false }: { embedded?: boolean } =
               <Field label="Location">
                 <Input value={details.location} onChange={set('location')} placeholder="City or depot" maxLength={40} />
               </Field>
-              <Field label="Phone">
-                <Input value={details.phone} onChange={set('phone')} placeholder="0803 000 0000" maxLength={20} />
+              <Field label="Phone" hint="As set by your administrator.">
+                <Input value={details.phone} readOnly />
               </Field>
             </div>
             <Button

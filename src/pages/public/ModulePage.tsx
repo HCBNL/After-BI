@@ -64,7 +64,7 @@ function Body({ slug }: { slug: string }) {
               <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-navy-700/85">{item.blurb}</p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <button type="button" onClick={book} className={btn.accent}>
-                  Book a demo
+                  Create account
                 </button>
                 <Link to="/pricing" className={btn.outline}>
                   See plans and pricing
