@@ -31,7 +31,7 @@ import { useAppAds } from '@/hooks/useAppAds';
 import { QuickList } from '@/components/home/QuickList';
 import { SetupChecklist } from '@/components/home/SetupChecklist';
 import { TodoCard, type TodoItem } from '@/components/home/TodoCard';
-import { BriefCard } from '@/components/home/BriefCard';
+import { SalesTrend } from '@/components/home/SalesTrend';
 import { useTour } from '@/context/TourContext';
 import { useShell } from '@/components/layout/ShellContext';
 import { useAsync } from '@/hooks/useAsync';
@@ -336,7 +336,7 @@ export default function PortalHome() {
 
       {cards && <QuickList role={user.role} onMore={() => openMenu()} className="lg:hidden" />}
 
-      <BriefCard root={root} className="lg:col-span-12" />
+      {data && data.trend && <SalesTrend trend={data.trend} overdue={data.overdue} className="lg:col-span-12" />}
 
       <TodoCard className="lg:col-span-8 lg:self-stretch" items={todo} failed={failed} onRetry={reload} />
       <div className="hidden lg:col-span-4 lg:flex lg:self-stretch">

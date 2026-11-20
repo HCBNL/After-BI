@@ -24,7 +24,7 @@ import { countUnit, packLabel, piecesLabel, piecesOf, stockFactor } from '@/lib/
 import { LINE_LABEL, countedByProduct, isIssue, summarise, varianceLines, type VarianceLine } from '@/lib/variance';
 import { printCountReport } from '@/lib/print';
 import { downloadCsv } from '@/lib/download';
-import { count, formatDateTime } from '@/lib/format';
+import { count } from '@/lib/format';
 import { ADJUSTMENT_RAISERS } from '@/lib/adjustments';
 import { CountSheet } from './CountSheet';
 import { VarianceView, type Moved } from './VarianceView';
@@ -314,10 +314,7 @@ export function CountSession({ countId, onBack }: { countId: string; onBack: () 
           <Badge tone={status === 'open' ? 'info' : status === 'closed' ? (issues ? 'critical' : 'good') : 'neutral'}>
             {status === 'open' ? 'Counting' : status === 'closed' ? (issues ? `Closed, ${issues} variances` : 'Closed, all matched') : 'Cancelled'}
           </Badge>
-          <span>{`Started by ${stockCount.startedByName}, ${formatDateTime(stockCount.startedAt)}`}</span>
-          {stockCount.closedAt && <span>{`Closed by ${stockCount.closedByName ?? ''}, ${formatDateTime(stockCount.closedAt)}`}</span>}
-          <span>{`${count(counted.size)} products counted`}</span>
-          {counters.length > 0 && <span>{`Counters: ${counters.join(', ')}`}</span>}
+          {/* Who started, closed or counted is in the audit log; the screen stays clean. */}
         </div>
       </PageHeader>
 

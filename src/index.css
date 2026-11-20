@@ -373,6 +373,10 @@
   --chart-axis: #c5ccd8;
   --chart-ink: #14171c;
   --chart-ink-muted: #6b7686;
+  /* Home sales chart: paid and still owed. Validated pair (CVD and lightness band) per mode. */
+  --chart-paid: #0aa158;
+  --chart-sold: #2f6bff;
+  --chart-owed: #f59e0b;
 
   /* validated categorical order: see README § Chart palette */
   --series-1: #2a6fd6;
@@ -428,6 +432,9 @@
     --chart-axis: #48484c;
     --chart-ink: #f5f5f7;
     --chart-ink-muted: #8e8e93;
+    --chart-paid: #12a35e;
+    --chart-sold: #5b8cff;
+    --chart-owed: #c2850a;
 
     --series-1: #5d9bf0;
     --series-2: #35b894;
@@ -478,6 +485,9 @@
   --chart-axis: #48484c;
   --chart-ink: #f5f5f7;
   --chart-ink-muted: #8e8e93;
+  --chart-paid: #12a35e;
+  --chart-sold: #5b8cff;
+  --chart-owed: #c2850a;
 
   --series-1: #5d9bf0;
   --series-2: #35b894;
@@ -1931,3 +1941,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 }
 .pin-shake { animation: pin-shake 0.42s ease-in-out; }
 @media (prefers-reduced-motion: reduce) { .pin-shake { animation: none; } }
+
+/* IconArt: the petals behind every icon turn slowly, all the time. */
+@keyframes art-petal-turn { to { transform: rotate(360deg); } }
+.art-petal-spin { animation: art-petal-turn 28s linear infinite; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .art-petal-spin { animation: none; } }

@@ -8,8 +8,7 @@
  * hour while the app is open. Nothing is sent to anybody.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { AlarmClock, BellRing, Check, ChevronDown, CircleCheck, ListPlus, RefreshCw, X } from 'lucide-react';
-import { Insights, Pipeline, Sentences } from '@/components/home/BriefCard';
+import { AlarmClock, Check, ChevronDown, CircleCheck, ListPlus, RefreshCw, X } from 'lucide-react';
 import { useToast } from '@/components/ui';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button, LinkButton, SegmentedControl, Switch } from '@/components/ui';
@@ -50,7 +49,7 @@ function countsLine(action: number, later: number): string {
 
 export default function RemindersPage() {
   const {
-    reminders, counts, loading, checkedAt, reload, snooze, dismiss, notify, setNotify, brief, tasks, keepAsTask, toggleTask, isNew, markSeen,
+    reminders, counts, loading, checkedAt, reload, snooze, dismiss, notify, setNotify, tasks, keepAsTask, toggleTask, isNew, markSeen,
   } = useReminders();
 
   /*
@@ -130,12 +129,6 @@ export default function RemindersPage() {
         />
       </div>
 
-      {brief && <SummaryBar summary={brief.summary} insights={brief.insights} />}
-
-      {brief && brief.pipeline.some((stage) => stage.count > 0) && (
-        <Pipeline stages={brief.pipeline} bottleneck={brief.bottleneck?.key} className="mb-4" />
-      )}
-
       {loading && !checkedAt ? (
         <Loading rows={3} label="Reading your records" />
       ) : shown.length === 0 ? (
@@ -171,41 +164,6 @@ export default function RemindersPage() {
             />
           ))}
         </ul>
-      )}
-    </div>
-  );
-}
-
-/**
- * The day's summary as one notification line. Tap it and it opens to the full
- * sentence and anything worth knowing; tap again and it folds away.
- */
-function SummaryBar({ summary, insights }: { summary: string[]; insights: Parameters<typeof Insights>[0]['items'] }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-hairline surface-card shadow-card">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--surface-sunken)]"
-      >
-        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
-          <BellRing size={17} aria-hidden />
-          <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-status-critical ring-2 ring-[var(--surface-card)]" />
-        </span>
-        <span className={cn('min-w-0 flex-1 text-body font-semibold text-primary', !open && 'truncate')}>
-          {open ? 'Today' : <Sentences items={summary} />}
-        </span>
-        <ChevronDown size={17} aria-hidden className={cn('shrink-0 text-muted transition-transform', open && 'rotate-180')} />
-      </button>
-      {open && (
-        <div className="border-t border-hairline px-4 pb-4 pt-3">
-          <p className="text-body leading-relaxed text-secondary">
-            <Sentences items={summary} />
-          </p>
-          {insights.length > 0 && <Insights items={insights} className="mt-3" />}
-        </div>
       )}
     </div>
   );
