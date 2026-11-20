@@ -193,7 +193,9 @@
    "src/components/home/HomeChooser.tsx",
    "src/components/marketing/Sheet.tsx",
    "src/components/ui/Hint.tsx",
-   "src/components/ui/overlay.tsx"
+   "src/components/ui/overlay.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx",
+   "src/pages/inventory/count/CountSheet.tsx"
   ]
  },
  {
@@ -535,6 +537,7 @@
   "text": "Cancel",
   "files": [
    "src/components/finance/AmendPayment.tsx",
+   "src/components/stock/AdjustmentModal.tsx",
    "src/components/ui/overlay.tsx",
    "src/pages/admin/UsersPage.tsx",
    "src/pages/finance/AdjustPriceModal.tsx",
@@ -543,6 +546,7 @@
    "src/pages/hr/HrPage.tsx",
    "src/pages/inventory/ProductsPage.tsx",
    "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/inventory/StockCountPage.tsx",
    "src/pages/inventory/StockPage.tsx",
    "src/pages/inventory/WarehousesPage.tsx",
    "src/pages/partners/DistributorsPage.tsx",
@@ -666,6 +670,7 @@
   "text": "Save correction",
   "files": [
    "src/components/finance/AmendPayment.tsx",
+   "src/pages/inventory/count/CountSheet.tsx",
    "src/pages/sales/SellOutPage.tsx"
   ]
  },
@@ -693,7 +698,9 @@
   "text": "Why",
   "files": [
    "src/components/finance/AmendPayment.tsx",
-   "src/pages/inventory/ReturnsPage.tsx"
+   "src/pages/inventory/AdjustmentsPage.tsx",
+   "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx"
   ]
  },
  {
@@ -1151,6 +1158,7 @@
   "text": "Nothing waiting",
   "files": [
    "src/components/home/BriefCard.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx",
    "src/pages/ops/ApprovalsPage.tsx"
   ]
  },
@@ -1711,8 +1719,11 @@
   "text": "Remove",
   "files": [
    "src/components/ImagePicker.tsx",
+   "src/lib/reminders.ts",
    "src/pages/hr/HrManage.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx",
    "src/pages/inventory/ProductsPage.tsx",
+   "src/pages/ops/ApprovalsPage.tsx",
    "src/pages/platform/BanksPage.tsx",
    "src/pages/platform/website/AdEditor.tsx",
    "src/pages/platform/website/SiteImageSlots.tsx",
@@ -1931,6 +1942,54 @@
   ]
  },
  {
+  "text": "| Step | Teacher's Activity | Pupils' Activity | | --- | --- | --- | | Step I | | | | Step II | | | | Step III | | |",
+  "files": [
+   "src/components/MarkdownEditor.tsx"
+  ]
+ },
+ {
+  "text": "Bold",
+  "files": [
+   "src/components/MarkdownEditor.tsx"
+  ]
+ },
+ {
+  "text": "Bulleted list",
+  "files": [
+   "src/components/MarkdownEditor.tsx"
+  ]
+ },
+ {
+  "text": "Heading",
+  "files": [
+   "src/components/MarkdownEditor.tsx"
+  ]
+ },
+ {
+  "text": "Italic",
+  "files": [
+   "src/components/MarkdownEditor.tsx"
+  ]
+ },
+ {
+  "text": "Numbered list",
+  "files": [
+   "src/components/MarkdownEditor.tsx"
+  ]
+ },
+ {
+  "text": "Sub-heading",
+  "files": [
+   "src/components/MarkdownEditor.tsx"
+  ]
+ },
+ {
+  "text": "Table",
+  "files": [
+   "src/components/MarkdownEditor.tsx"
+  ]
+ },
+ {
   "text": "{0}ms",
   "files": [
    "src/components/marketing/bits.tsx",
@@ -1972,6 +2031,7 @@
   "files": [
    "src/components/marketing/BookDemo.tsx",
    "src/components/tour/Tour.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx",
    "src/pages/staff/StaffIdCard.tsx",
    "src/pages/team/OrgIdCard.tsx"
   ]
@@ -2013,6 +2073,7 @@
    "src/components/tour/Tour.tsx",
    "src/pages/finance/AdjustPriceModal.tsx",
    "src/pages/hr/HrManage.tsx",
+   "src/pages/inventory/count/CountSheet.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
    "src/pages/platform/StaffPage.tsx",
    "src/pages/shared/RemindersPage.tsx",
@@ -2637,6 +2698,18 @@
   ]
  },
  {
+  "text": "b{0}",
+  "files": [
+   "src/components/Prose.tsx"
+  ]
+ },
+ {
+  "text": "noopener noreferrer",
+  "files": [
+   "src/components/Prose.tsx"
+  ]
+ },
+ {
   "text": "{0}/og.png",
   "files": [
    "src/components/Seo.tsx"
@@ -2646,6 +2719,336 @@
   "text": "Choose a state…",
   "files": [
    "src/components/StateSelect.tsx"
+  ]
+ },
+ {
+  "text": "{0} make one",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Add to stock",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "After, once approved",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "An adjustment needs a quantity.",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Below zero: not possible",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Choose a depot…",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/StockCountPage.tsx",
+   "src/pages/inventory/StockPage.tsx"
+  ]
+ },
+ {
+  "text": "Choose a product…",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/StockPage.tsx"
+  ]
+ },
+ {
+  "text": "Choose the depot and the product.",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/StockPage.tsx"
+  ]
+ },
+ {
+  "text": "Damaged in the depot, found in the count, wrong carton booked in…",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Depot",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/inventory/StockCountPage.tsx",
+   "src/pages/inventory/StockPage.tsx",
+   "src/pages/inventory/WarehousesPage.tsx",
+   "src/pages/sales/OrderDrawer.tsx"
+  ]
+ },
+ {
+  "text": "Direction",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/StockPage.tsx"
+  ]
+ },
+ {
+  "text": "From stock count {0}",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "How much?",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/finance/InvoicesPage.tsx"
+  ]
+ },
+ {
+  "text": "In the system now",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Looking up who signs…",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Loose pieces",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Missing something",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/inventory/StockPage.tsx",
+   "src/pages/sales/SellOutPage.tsx",
+   "src/pages/sales/TargetsPage.tsx"
+  ]
+ },
+ {
+  "text": "Needs both of these to approve",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "nobody can sign this side",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Not sent",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Nothing changes in stock when you send this. It waits for a finance manager and an operations manager to both approve it, and only the second approval moves the balance. Every step is kept on the request and in the audit log.",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Product",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/lib/salesAnalytics.ts",
+   "src/pages/inventory/CostingPage.tsx",
+   "src/pages/inventory/MovementsPage.tsx",
+   "src/pages/inventory/ProductsPage.tsx",
+   "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/inventory/StockPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx",
+   "src/pages/inventory/count/VarianceView.tsx",
+   "src/pages/sales/SellOutPage.tsx"
+  ]
+ },
+ {
+  "text": "Reason",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/finance/AdjustPriceModal.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx",
+   "src/pages/inventory/MovementsPage.tsx",
+   "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/inventory/StockPage.tsx"
+  ]
+ },
+ {
+  "text": "Remove from stock",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Say why the stock needs adjusting. Both signers read it.",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Send for approval",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx",
+   "src/pages/sales/NewOrderDrawer.tsx",
+   "src/pages/sales/OrderDrawer.tsx"
+  ]
+ },
+ {
+  "text": "Set pieces per carton on the product",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Stock adjustment request",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "Why?",
+  "files": [
+   "src/components/stock/AdjustmentModal.tsx"
+  ]
+ },
+ {
+  "text": "AB K7M2QX 4",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Close the scanner",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Find",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Hide typing",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Hold the bars inside the box. It reads by itself.",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "No camera was found on this device. Type the code under the bars, or read a photo of the sticker.",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "No sticker barcode was found in that photo. Hold the phone closer and keep the bars straight.",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Opening the camera…",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Read a photo",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Scan a carton sticker",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Sticker code",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "That photo could not be read. Try again, or type the code.",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "The camera could not start. Close other apps using it and try again, or type the code.",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "The camera was not allowed. Allow it for this site in your browser settings, then try again. Until then, type the code or read a photo.",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "This browser cannot open the camera here. Type the code under the bars, or read a photo of the sticker.",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Torch off",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Torch on",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Type the code",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Zoom 1×",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
+  ]
+ },
+ {
+  "text": "Zoom 2×",
+  "files": [
+   "src/components/stock/BarcodeScanner.tsx"
   ]
  },
  {
@@ -2683,7 +3086,8 @@
  {
   "text": "System",
   "files": [
-   "src/components/ThemeToggle.tsx"
+   "src/components/ThemeToggle.tsx",
+   "src/pages/inventory/count/VarianceView.tsx"
   ]
  },
  {
@@ -2830,6 +3234,12 @@
   "text": "Search the choices",
   "files": [
    "src/components/ui/Select.tsx"
+  ]
+ },
+ {
+  "text": "Video",
+  "files": [
+   "src/components/VideoBlock.tsx"
   ]
  },
  {
@@ -3019,6 +3429,44 @@
   "text": "unknown error",
   "files": [
    "src/lib/accounts.ts"
+  ]
+ },
+ {
+  "text": "Both sides signed",
+  "files": [
+   "src/lib/adjustments.ts"
+  ]
+ },
+ {
+  "text": "Finance",
+  "files": [
+   "src/lib/adjustments.ts",
+   "src/lib/audit.ts",
+   "src/lib/site.ts",
+   "src/lib/tiles.ts",
+   "src/pages/finance/FinanceDashboardPage.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "Operations",
+  "files": [
+   "src/lib/adjustments.ts",
+   "src/lib/site.ts",
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "or another",
+  "files": [
+   "src/lib/adjustments.ts"
+  ]
+ },
+ {
+  "text": "Waiting for {0}",
+  "files": [
+   "src/lib/adjustments.ts",
+   "src/pages/inventory/AdjustmentsPage.tsx"
   ]
  },
  {
@@ -3220,16 +3668,6 @@
   ]
  },
  {
-  "text": "Finance",
-  "files": [
-   "src/lib/audit.ts",
-   "src/lib/site.ts",
-   "src/lib/tiles.ts",
-   "src/pages/finance/FinanceDashboardPage.tsx",
-   "src/types/index.ts"
-  ]
- },
- {
   "text": "People",
   "files": [
    "src/lib/audit.ts",
@@ -3259,6 +3697,12 @@
    "src/lib/tiles.ts",
    "src/pages/admin/SettingsPage.tsx",
    "src/pages/team/CompanyInfo.tsx"
+  ]
+ },
+ {
+  "text": "Stock counts and adjustments",
+  "files": [
+   "src/lib/audit.ts"
   ]
  },
  {
@@ -3687,6 +4131,12 @@
   ]
  },
  {
+  "text": "Code 128 B cannot hold \"{0}\".",
+  "files": [
+   "src/lib/code128.ts"
+  ]
+ },
+ {
   "text": "{0}/brand/{1}",
   "files": [
    "src/lib/company.ts"
@@ -3737,9 +4187,34 @@
   ]
  },
  {
+  "text": "AB",
+  "files": [
+   "src/lib/countCode.ts"
+  ]
+ },
+ {
+  "text": "Could not make a new sticker code. Try again.",
+  "files": [
+   "src/lib/countCode.ts"
+  ]
+ },
+ {
   "text": ", credit {0}",
   "files": [
    "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "{0} applied: {1} at {2}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "{0} declined",
+  "files": [
+   "src/lib/db.ts",
+   "src/pages/inventory/AdjustmentsPage.tsx"
   ]
  },
  {
@@ -3767,6 +4242,12 @@
   ]
  },
  {
+  "text": "{0} is a service, so it has no stock.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "{0} is a service, so it has no stock. It is priced on each order instead.",
   "files": [
    "src/lib/db.ts"
@@ -3785,6 +4266,12 @@
   ]
  },
  {
+  "text": "{0} is still open for {1}. Close or cancel it first.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "{0} on {1}{2}",
   "files": [
    "src/lib/db.ts"
@@ -3798,6 +4285,18 @@
  },
  {
   "text": "{0} return {1}: {2} × {3} from {4}{5}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "{0} signed for {1}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "{0}: {1} {2} at {3}, waiting for finance and operations",
   "files": [
    "src/lib/db.ts"
   ]
@@ -3835,6 +4334,18 @@
  },
  {
   "text": "Add at least one line to the order.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "ADJ",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "ADJ{0}{1}",
   "files": [
    "src/lib/db.ts"
   ]
@@ -3972,7 +4483,19 @@
   ]
  },
  {
+  "text": "New sticker code for {0}. Old stickers for it no longer scan.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "no price",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Nobody can sign this yet. The organisation needs a finance manager, an operations manager or a super admin.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -3991,6 +4514,12 @@
  },
  {
   "text": "Nothing to change.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Only {0} in this depot now. Removing that much would leave a negative balance.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -4045,6 +4574,12 @@
  },
  {
   "text": "Only an approved return carries a credit.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Only an open count can be cancelled.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -4119,6 +4654,66 @@
  },
  {
   "text": "Say why the price changed. It is printed on the credit note.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Say why the stock needs adjusting.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "SC",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "SC{0}{1}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Stock count {0} cancelled",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Stock count {0} closed: {1} lines, {2} matched, {3} with a variance",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "Stock count {0} started at {1}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "That adjustment has already been decided.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "That adjustment no longer exists.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "That count is already closed.",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "That count no longer exists.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -4208,7 +4803,19 @@
   ]
  },
  {
+  "text": "Unspecified",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
   "text": "Voided invoice {0} for {1}",
+  "files": [
+   "src/lib/db.ts"
+  ]
+ },
+ {
+  "text": "You are not a signer on this adjustment.",
   "files": [
    "src/lib/db.ts"
   ]
@@ -4336,6 +4943,7 @@
    "src/pages/hr/HrManage.tsx",
    "src/pages/inventory/CostingPage.tsx",
    "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx",
    "src/pages/partners/DistributorsPage.tsx"
   ]
  },
@@ -4352,7 +4960,25 @@
   ]
  },
  {
+  "text": "A correction (damage, loss, a stock count) is not a movement: press Adjust instead. It needs finance and operations to approve.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "A count never changes stock. From a closed count, Adjust on a red line raises a stock adjustment for approval.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "A draft left for days shows up in your brief and reminders, so it is not forgotten.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "A manager presses Close count. The Variance shows every line: matched, or short, over, not counted, not in system in red.",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -4521,6 +5147,12 @@
   ]
  },
  {
+  "text": "Check Not counted yet for anything missed. Use Find without scanning for a carton with a torn sticker.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "Check Stock before promising a delivery date.",
   "files": [
    "src/lib/guide.ts"
@@ -4563,6 +5195,12 @@
   ]
  },
  {
+  "text": "Choose the depot, the product, Remove from stock or Add to stock, and how much.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "Choose the Direction: In for stock received, Out for anything that left other than an order.",
   "files": [
    "src/lib/guide.ts"
@@ -4594,6 +5232,12 @@
  },
  {
   "text": "Choose the Role. A sales representative or distributor also needs the Distributor account they work on.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Choose the sticker size: an A4 sheet of 14, or a label printer roll.",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -4641,6 +5285,12 @@
   ]
  },
  {
+  "text": "code 128",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "Confirm a delivery that arrived",
   "files": [
    "src/lib/guide.ts"
@@ -4648,6 +5298,30 @@
  },
  {
   "text": "Confirm each delivery against what was sent, and raise a return for anything short or damaged.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Correct a stock balance (adjustment)",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "correct stock",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Count stock by scanning",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Counters do not see the system figure while counting, so they count what is there.",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -4846,13 +5520,31 @@
   ]
  },
  {
+  "text": "If it says some products have no sticker code yet, press Give them codes. New products get one automatically.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "If something is short or damaged, raise a return for it straight away.",
   "files": [
    "src/lib/guide.ts"
   ]
  },
  {
+  "text": "If the company has no finance manager or no operations manager, the super admin signs that side.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "In Revenue by, pick Salesperson, Customer, Channel, Region, State, Category or Product, and press Export to Excel (CSV) for each table you need.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "inventory check",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -4925,6 +5617,12 @@
  },
  {
   "text": "Name your company in Settings, and add the address, phone and bank account that print on invoices.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "New code gives a product a fresh code and kills its old stickers at once. Use it only if stickers were lost or copied.",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -5080,7 +5778,25 @@
   ]
  },
  {
+  "text": "Open Stickers.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "Open Stock and press Add stock.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Open Stock and press Adjust, or press Adjust on a red line of a closed stock count.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Open Stock count and press Start a count. Choose the depot.",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -5177,6 +5893,12 @@
   ]
  },
  {
+  "text": "Press Print, then print or Save as PDF. PNG saves one sticker as a picture.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "Press Publish. Nothing changes on the public site until you do.",
   "files": [
    "src/lib/guide.ts"
@@ -5201,7 +5923,25 @@
   ]
  },
  {
+  "text": "Press Save, scan next. Count the same product again in every row it sits in; the rows add up.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Press Scan a carton and hold the phone over the sticker so the bars sit in the box. It reads by itself and opens the product.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "Print an account statement",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Print barcode stickers for cartons",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -5497,6 +6237,12 @@
   ]
  },
  {
+  "text": "Set Pieces per carton on each product (Products, Product details) so loose pieces can be counted.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "Set the Approval threshold in Settings, and choose which roles sign orders above it.",
   "files": [
    "src/lib/guide.ts"
@@ -5522,6 +6268,12 @@
  },
  {
   "text": "Set up the organisation for the first time",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Several people can count the same depot at once from their own phones.",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -5571,10 +6323,28 @@
   ]
  },
  {
+  "text": "Stick one on the face of every carton, where a counter can reach it.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "stock count",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "stock in",
   "files": [
    "src/lib/guide.ts",
    "src/pages/shared/GuidePage.tsx"
+  ]
+ },
+ {
+  "text": "stock take",
+  "files": [
+   "src/lib/guide.ts"
   ]
  },
  {
@@ -5622,6 +6392,24 @@
   ]
  },
  {
+  "text": "The barcode only works inside AfterBI, for your company. Any other scanner reads letters that mean nothing.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "The finance manager and the operations manager each open Stock adjustments and press Approve.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "The second approval moves the balance and writes the movement to the ledger.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
   "text": "They can change their password after signing in, from Profile.",
   "files": [
    "src/lib/guide.ts"
@@ -5635,6 +6423,12 @@
  },
  {
   "text": "Tick the circle when it is done. Finished tasks clear themselves after 30 days.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Tick the products and type how many copies of each (one for every carton to label).",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -5695,6 +6489,12 @@
  },
  {
   "text": "Type what you need to do, choose Today, Tomorrow, In a week or a date, and press Add.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Type where it is (Row E), how many Lines, the cartons per line, any Extra cartons and the Loose pieces.",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -5762,6 +6562,18 @@
  },
  {
   "text": "Works a set of distributor accounts: raises their orders and keys what actually sold.",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "write off",
+  "files": [
+   "src/lib/guide.ts"
+  ]
+ },
+ {
+  "text": "Write the reason and press Send for approval. Nothing moves yet.",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -6083,6 +6895,7 @@
    "src/pages/hr/HrManage.tsx",
    "src/pages/inventory/CostingPage.tsx",
    "src/pages/inventory/MovementsPage.tsx",
+   "src/pages/inventory/StockCountPage.tsx",
    "src/pages/inventory/StockPage.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
    "src/pages/sales/NewOrderDrawer.tsx"
@@ -6135,7 +6948,8 @@
   "files": [
    "src/lib/leave.ts",
    "src/pages/hr/HrManage.tsx",
-   "src/pages/hr/HrPage.tsx"
+   "src/pages/hr/HrPage.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx"
   ]
  },
  {
@@ -6196,6 +7010,32 @@
   "text": "zh-CN",
   "files": [
    "src/lib/locale.ts"
+  ]
+ },
+ {
+  "text": "{0} · {1} pcs",
+  "files": [
+   "src/lib/packs.ts"
+  ]
+ },
+ {
+  "text": "{0}{1} · {2} pcs",
+  "files": [
+   "src/lib/packs.ts"
+  ]
+ },
+ {
+  "text": "{0}{1} pcs",
+  "files": [
+   "src/lib/packs.ts",
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "{0}s",
+  "files": [
+   "src/lib/packs.ts",
+   "src/pages/hr/HrParts.tsx"
   ]
  },
  {
@@ -6407,7 +7247,7 @@
   ]
  },
  {
-  "text": "Stock levels, movements and depots.",
+  "text": "Stock levels, movements, depots, stock counts, stickers and adjustments.",
   "files": [
    "src/lib/plans.ts"
   ]
@@ -6574,6 +7414,12 @@
   ]
  },
  {
+  "text": "{0} {1} at {2}, raised by {3} {4}.",
+  "files": [
+   "src/lib/reminders.ts"
+  ]
+ },
+ {
   "text": "{0} {1} on hand, threshold {2}.",
   "files": [
    "src/lib/reminders.ts"
@@ -6671,6 +7517,12 @@
   ]
  },
  {
+  "text": "{0} needs your {1} approval",
+  "files": [
+   "src/lib/reminders.ts"
+  ]
+ },
+ {
   "text": "{0} of {1}, raised {2}.",
   "files": [
    "src/lib/reminders.ts"
@@ -6734,6 +7586,16 @@
   "text": "A claim from {0} is waiting on a decision",
   "files": [
    "src/lib/reminders.ts"
+  ]
+ },
+ {
+  "text": "Add",
+  "files": [
+   "src/lib/reminders.ts",
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx",
+   "src/pages/ops/ApprovalsPage.tsx",
+   "src/pages/shared/TasksPage.tsx"
   ]
  },
  {
@@ -6889,7 +7751,8 @@
  {
   "text": "{0}.csv",
   "files": [
-   "src/lib/salesAnalytics.ts"
+   "src/lib/salesAnalytics.ts",
+   "src/pages/inventory/count/CountSession.tsx"
   ]
  },
  {
@@ -6962,18 +7825,6 @@
   ]
  },
  {
-  "text": "Product",
-  "files": [
-   "src/lib/salesAnalytics.ts",
-   "src/pages/inventory/CostingPage.tsx",
-   "src/pages/inventory/MovementsPage.tsx",
-   "src/pages/inventory/ProductsPage.tsx",
-   "src/pages/inventory/ReturnsPage.tsx",
-   "src/pages/inventory/StockPage.tsx",
-   "src/pages/sales/SellOutPage.tsx"
-  ]
- },
- {
   "text": "Region",
   "files": [
    "src/lib/salesAnalytics.ts"
@@ -6999,6 +7850,30 @@
   "files": [
    "src/lib/salesAnalytics.ts",
    "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "Code128",
+  "files": [
+   "src/lib/scanner.ts"
+  ]
+ },
+ {
+  "text": "FixedThreshold",
+  "files": [
+   "src/lib/scanner.ts"
+  ]
+ },
+ {
+  "text": "GlobalHistogram",
+  "files": [
+   "src/lib/scanner.ts"
+  ]
+ },
+ {
+  "text": "LocalAverage",
+  "files": [
+   "src/lib/scanner.ts"
   ]
  },
  {
@@ -8118,13 +8993,6 @@
   ]
  },
  {
-  "text": "Operations",
-  "files": [
-   "src/lib/site.ts",
-   "src/types/index.ts"
-  ]
- },
- {
   "text": "Operations and Finance",
   "files": [
    "src/lib/site.ts"
@@ -8988,6 +9856,30 @@
   ]
  },
  {
+  "text": "Cream, navy, signal orange. Corporate and warm.",
+  "files": [
+   "src/lib/sitePalette.ts"
+  ]
+ },
+ {
+  "text": "Harbour",
+  "files": [
+   "src/lib/sitePalette.ts"
+  ]
+ },
+ {
+  "text": "Meridian",
+  "files": [
+   "src/lib/sitePalette.ts"
+  ]
+ },
+ {
+  "text": "Mist, forest teal, electric blue. Calm and analytical.",
+  "files": [
+   "src/lib/sitePalette.ts"
+  ]
+ },
+ {
   "text": "Facebook",
   "files": [
    "src/lib/social.ts"
@@ -9033,6 +9925,60 @@
   "text": "Could not read {0}",
   "files": [
    "src/lib/staff.ts"
+  ]
+ },
+ {
+  "text": "-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif",
+  "files": [
+   "src/lib/stickers.ts"
+  ]
+ },
+ {
+  "text": "'SFMono-Regular',Menlo,Consolas,monospace",
+  "files": [
+   "src/lib/stickers.ts"
+  ]
+ },
+ {
+  "text": "*{box-sizing:border-box;margin:0;padding:0} body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#000; -webkit-print-color-adjust:exact;print-color-adjust:exact} .st{width:{0}mm;height:{1}mm;padding:2.2mm 3mm 1.6mm;display:flex;flex-direction:column; align-items:center;justify-content:center;overflow:hidden;text-align:center;background:#fff} .nm{font-size:{2}mm;font-weight:800;line-height:1.15;max-height:{3}mm;overflow:hidden; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;width:100%} .pk{font-size:{4}mm;color:#333;margin-top:.4mm;white-space:nowrap;overflow:hidden; text-overflow:ellipsis;width:100%} .bars{margin-top:1.4mm;line-height:0} .bars svg{display:block} .cd{font-family:'SFMono-Regular',Menlo,Consolas,monospace;font-size:{5}mm;font-weight:700;letter-spacing:.18em;margin-top:.9mm} {6}",
+  "files": [
+   "src/lib/stickers.ts"
+  ]
+ },
+ {
+  "text": "A4 sheet, 14 a page (99 × 38 mm)",
+  "files": [
+   "src/lib/stickers.ts"
+  ]
+ },
+ {
+  "text": "Label printer, 100 × 50 mm",
+  "files": [
+   "src/lib/stickers.ts"
+  ]
+ },
+ {
+  "text": "Label printer, 60 × 40 mm",
+  "files": [
+   "src/lib/stickers.ts"
+  ]
+ },
+ {
+  "text": "Stock count stickers",
+  "files": [
+   "src/lib/stickers.ts"
+  ]
+ },
+ {
+  "text": "The sticker could not be saved.",
+  "files": [
+   "src/lib/stickers.ts"
+  ]
+ },
+ {
+  "text": "This browser cannot draw the sticker.",
+  "files": [
+   "src/lib/stickers.ts"
   ]
  },
  {
@@ -9087,6 +10033,12 @@
    "src/lib/tiles.ts",
    "src/pages/admin/InvitePage.tsx",
    "src/pages/admin/UsersPage.tsx"
+  ]
+ },
+ {
+  "text": "Adjustments",
+  "files": [
+   "src/lib/tiles.ts"
   ]
  },
  {
@@ -9184,10 +10136,22 @@
   ]
  },
  {
+  "text": "Corrections to a stock balance. Each needs finance and operations to approve before stock moves.",
+  "files": [
+   "src/lib/tiles.ts"
+  ]
+ },
+ {
   "text": "Costing",
   "files": [
    "src/lib/tiles.ts",
    "src/pages/inventory/CostingPage.tsx"
+  ]
+ },
+ {
+  "text": "Count a depot by scanning the sticker on each carton, then see the variance against the system.",
+  "files": [
+   "src/lib/tiles.ts"
   ]
  },
  {
@@ -9394,6 +10358,12 @@
   ]
  },
  {
+  "text": "Print the barcode sticker for each product, to put on its cartons for stock counts.",
+  "files": [
+   "src/lib/tiles.ts"
+  ]
+ },
+ {
   "text": "Proposals",
   "files": [
    "src/lib/tiles.ts",
@@ -9453,10 +10423,25 @@
   ]
  },
  {
+  "text": "Stickers",
+  "files": [
+   "src/lib/tiles.ts",
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
   "text": "Stock",
   "files": [
    "src/lib/tiles.ts",
    "src/pages/inventory/StockPage.tsx"
+  ]
+ },
+ {
+  "text": "Stock count",
+  "files": [
+   "src/lib/tiles.ts",
+   "src/pages/inventory/StockCountPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx"
   ]
  },
  {
@@ -9784,6 +10769,47 @@
   "text": "Your shortcuts",
   "files": [
    "src/lib/tour.ts"
+  ]
+ },
+ {
+  "text": "Matched",
+  "files": [
+   "src/lib/variance.ts",
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Not counted",
+  "files": [
+   "src/lib/variance.ts",
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Not in system",
+  "files": [
+   "src/lib/variance.ts",
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Over",
+  "files": [
+   "src/lib/variance.ts",
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Short",
+  "files": [
+   "src/lib/variance.ts",
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Unknown product",
+  "files": [
+   "src/lib/variance.ts"
   ]
  },
  {
@@ -10332,7 +11358,10 @@
    "src/pages/finance/InvoicesPage.tsx",
    "src/pages/inventory/CostingPage.tsx",
    "src/pages/inventory/ProductsPage.tsx",
+   "src/pages/inventory/StickersPage.tsx",
    "src/pages/inventory/WarehousesPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx",
+   "src/pages/inventory/count/CountSheet.tsx",
    "src/pages/partners/DistributorsPage.tsx",
    "src/pages/platform/BanksPage.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
@@ -10449,6 +11478,7 @@
    "src/pages/hr/HrManage.tsx",
    "src/pages/inventory/ProductsPage.tsx",
    "src/pages/inventory/WarehousesPage.tsx",
+   "src/pages/inventory/count/CountSheet.tsx",
    "src/pages/partners/DistributorsPage.tsx",
    "src/pages/platform/BanksPage.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
@@ -11350,15 +12380,6 @@
   ]
  },
  {
-  "text": "Reason",
-  "files": [
-   "src/pages/finance/AdjustPriceModal.tsx",
-   "src/pages/inventory/MovementsPage.tsx",
-   "src/pages/inventory/ReturnsPage.tsx",
-   "src/pages/inventory/StockPage.tsx"
-  ]
- },
- {
   "text": "Still owed now",
   "files": [
    "src/pages/finance/AdjustPriceModal.tsx"
@@ -11917,12 +12938,6 @@
   ]
  },
  {
-  "text": "How much?",
-  "files": [
-   "src/pages/finance/InvoicesPage.tsx"
-  ]
- },
- {
   "text": "Invoice",
   "files": [
    "src/pages/finance/InvoicesPage.tsx",
@@ -12040,7 +13055,9 @@
    "src/pages/finance/InvoicesPage.tsx",
    "src/pages/inventory/CostingPage.tsx",
    "src/pages/inventory/ProductsPage.tsx",
+   "src/pages/inventory/StickersPage.tsx",
    "src/pages/inventory/StockPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx",
    "src/pages/partners/DistributorsPage.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
    "src/pages/sales/CataloguePage.tsx",
@@ -12060,6 +13077,7 @@
    "src/pages/finance/InvoicesPage.tsx",
    "src/pages/inventory/CostingPage.tsx",
    "src/pages/inventory/ProductsPage.tsx",
+   "src/pages/inventory/StockCountPage.tsx",
    "src/pages/inventory/StockPage.tsx",
    "src/pages/inventory/WarehousesPage.tsx",
    "src/pages/sales/LeadsPage.tsx",
@@ -12118,13 +13136,16 @@
   "text": "Print",
   "files": [
    "src/pages/finance/InvoicesPage.tsx",
-   "src/pages/finance/StatementPage.tsx"
+   "src/pages/finance/StatementPage.tsx",
+   "src/pages/inventory/StickersPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx"
   ]
  },
  {
   "text": "Print {0}",
   "files": [
-   "src/pages/finance/InvoicesPage.tsx"
+   "src/pages/finance/InvoicesPage.tsx",
+   "src/pages/inventory/StickersPage.tsx"
   ]
  },
  {
@@ -12149,8 +13170,11 @@
   "text": "Status",
   "files": [
    "src/pages/finance/InvoicesPage.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx",
    "src/pages/inventory/ProductsPage.tsx",
    "src/pages/inventory/ReturnsPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx",
+   "src/pages/inventory/count/VarianceView.tsx",
    "src/pages/partners/DistributorsPage.tsx",
    "src/pages/platform/OrganisationsPage.tsx",
    "src/pages/platform/PricingPage.tsx",
@@ -13033,13 +14057,6 @@
   ]
  },
  {
-  "text": "Add",
-  "files": [
-   "src/pages/hr/HrManage.tsx",
-   "src/pages/shared/TasksPage.tsx"
-  ]
- },
- {
   "text": "Add a holiday",
   "files": [
    "src/pages/hr/HrManage.tsx"
@@ -13346,7 +14363,8 @@
  {
   "text": "Decline",
   "files": [
-   "src/pages/hr/HrManage.tsx"
+   "src/pages/hr/HrManage.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx"
   ]
  },
  {
@@ -14060,6 +15078,7 @@
   "files": [
    "src/pages/hr/HrManage.tsx",
    "src/pages/hr/HrPage.tsx",
+   "src/pages/inventory/AdjustmentsPage.tsx",
    "src/pages/sales/OrderDrawer.tsx"
   ]
  },
@@ -14424,12 +15443,6 @@
   ]
  },
  {
-  "text": "{0}s",
-  "files": [
-   "src/pages/hr/HrParts.tsx"
-  ]
- },
- {
   "text": "absent, tap to request a reissue",
   "files": [
    "src/pages/hr/HrParts.tsx"
@@ -14678,6 +15691,214 @@
   "text": "You worked {0} today. Well done.",
   "files": [
    "src/pages/hr/HrParts.tsx"
+  ]
+ },
+ {
+  "text": "· from {0}",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} applied",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} signed",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} taken back",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "A request appears here when someone asks for a stock balance to be corrected, for example after a stock count.",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "a signer",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Applied",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Approve for {0}",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Approved by {0}, {1}",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Awaiting you",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx",
+   "src/pages/ops/ApprovalsPage.tsx"
+  ]
+ },
+ {
+  "text": "Balance after: {0}",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Both sides approved. The stock balance has moved and the ledger has the movement.",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Corrections to a stock balance. Each one needs a finance approval AND an operations approval; the second one moves the stock. Until then the balance is untouched.",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Decline {0}?",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Declined by {0}: {1}",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Everything",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx",
+   "src/pages/inventory/StockPage.tsx",
+   "src/pages/shared/RemindersPage.tsx"
+  ]
+ },
+ {
+  "text": "Finance and operations both have to approve it before stock changes.",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "It now waits for the other side.",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "New request",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "No adjustments yet",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Not changed",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx",
+   "src/pages/inventory/StickersPage.tsx",
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Not declined",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Not signed",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Open stock count {0}",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Raised by {0}, {1}",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Recount Row E first, figures do not agree with the waybill…",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Sent for approval",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx",
+   "src/pages/inventory/StockPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx",
+   "src/pages/sales/OrderDrawer.tsx",
+   "src/pages/sales/OrdersPage.tsx"
+  ]
+ },
+ {
+  "text": "Stock adjustments",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Stock is unchanged.",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Stock stays as it is. The person who raised it sees your reason.",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Take back",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Taken back",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
+  ]
+ },
+ {
+  "text": "Waiting ({0})",
+  "files": [
+   "src/pages/inventory/AdjustmentsPage.tsx"
   ]
  },
  {
@@ -15097,6 +16318,641 @@
   ]
  },
  {
+  "text": "(depot removed)",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "{0} cancelled",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "{0} closed",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "{0} products counted",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "{0} products the system holds here have not been counted. They will be reported as not counted.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "1 product the system holds here has not been counted. It will be reported as not counted.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "A stock count is a report. Counting changes no stock. When it is closed, the variance shows what the system held against what was found, and any correction goes through a stock adjustment that finance and operations both approve.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "All counts",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Cancel {0}?",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Cancel count",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Close {0}?",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Close count",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Closed by {0}, {1}",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Closed, {0} variances",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Closed, all matched",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Closing changes no stock.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Counted ({0})",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Counted (pieces)",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Counted (units)",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Counted in {0} places",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx",
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Counted in 1 place",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx",
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Counters: {0}",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Counts appear here as they are saved.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "CSV",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Everything the system holds here has been counted",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Find a counted product…",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Find a product",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Find without scanning",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "For a carton whose sticker is torn or missing. Print it a new sticker afterwards so the next count can scan it.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "It is now a report. Nothing in stock has changed.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "It may have been opened in another organisation.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Keep counting",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Moved during the count: {0} in, {1} out",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx",
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Name, SKU or brand…",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "No organisation is open.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "No product carries this sticker any more. It may have been given a new code: print fresh stickers.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Nobody can add or change a stack after this, and the variance becomes the report.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Not cancelled",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Not closed",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Not counted yet ({0})",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Nothing counted yet",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Nothing matches that.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Pieces per unit",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Places counted",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Products found that the system does not hold still show in the variance.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Scan a carton",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Scan the sticker on a carton to open its product, then type what is stacked.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Started in the wrong depot, depot not ready…",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Stock count {0}: {1}, system {2}, counted {3}.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "System (pieces)",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "System (units)",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "That count does not exist",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "That is not an AfterBI stock sticker. Scan the sticker AfterBI printed, not the maker’s barcode.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "That sticker belongs to another company. It does not open anything here.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "This count could not be opened",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "This count was cancelled",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Variance",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx",
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Variance ({0})",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Variance (pieces)",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Variance (units)",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "What was counted stays on record. Start a new count when ready.",
+  "files": [
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "{0} per line",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Add a stack",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Correct this stack",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Correcting {0}",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Counted so far, every row",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Extra {0}",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Fill both: how many lines, and how many cartons in each line.",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "It no longer counts towards the total.",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Lines (stacks)",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Lines and cartons go together",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Nothing counted",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Part line, on top",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Row A",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Row B",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Row C",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Row D",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Row E",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Row F",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Row G",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Row H",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Row or place",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Save, scan next",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Say which row or place this stack is in.",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Stack corrected",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Stack struck out",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Stop correcting",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Strike out this stack",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Struck out by {0}",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "This count is closed. Nothing in it can change.",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "This stack",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Type what you counted. If this place is empty, type 0 in extra cartons.",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Where is it?",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "You can look but not count in this depot",
+  "files": [
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "Counted",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Every line",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Every line matches",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Lines",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx",
+   "src/pages/sales/OrdersPage.tsx"
+  ]
+ },
+ {
+  "text": "Nothing to compare yet",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Raise an adjustment for {0}",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Scan and count a product and it appears here.",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "The count is still open, so these figures change as counters save. Not counted means nobody has counted it yet.",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Variances",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "Variances ({0})",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
+  "text": "What was counted is exactly what the system held.",
+  "files": [
+   "src/pages/inventory/count/VarianceView.tsx"
+  ]
+ },
+ {
   "text": "{0} at ₦{1} · {2}",
   "files": [
    "src/pages/inventory/ImportCalculator.tsx"
@@ -15424,6 +17280,7 @@
   "text": "Every depot",
   "files": [
    "src/pages/inventory/MovementsPage.tsx",
+   "src/pages/inventory/StockCountPage.tsx",
    "src/pages/inventory/StockPage.tsx"
   ]
  },
@@ -15468,6 +17325,12 @@
  },
  {
   "text": ", then redeploy. Pictures already saved still show everywhere.",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} (from pack size)",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
   ]
@@ -15545,6 +17408,12 @@
   ]
  },
  {
+  "text": "e.g. 144",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
   "text": "EAN or UPC",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
@@ -15552,6 +17421,12 @@
  },
  {
   "text": "For staff, folded away",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "For stock counts",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
   ]
@@ -15647,6 +17522,12 @@
   ]
  },
  {
+  "text": "Pieces per carton",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
   "text": "Price by tier",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
@@ -15721,6 +17602,18 @@
  },
  {
   "text": "Specifications",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "Sticker",
+  "files": [
+   "src/pages/inventory/ProductsPage.tsx"
+  ]
+ },
+ {
+  "text": "Stock count sticker code",
   "files": [
    "src/pages/inventory/ProductsPage.tsx"
   ]
@@ -15855,15 +17748,6 @@
   ]
  },
  {
-  "text": "Depot",
-  "files": [
-   "src/pages/inventory/ReturnsPage.tsx",
-   "src/pages/inventory/StockPage.tsx",
-   "src/pages/inventory/WarehousesPage.tsx",
-   "src/pages/sales/OrderDrawer.tsx"
-  ]
- },
- {
   "text": "Detail",
   "files": [
    "src/pages/inventory/ReturnsPage.tsx"
@@ -15879,15 +17763,6 @@
   "text": "Mark received",
   "files": [
    "src/pages/inventory/ReturnsPage.tsx"
-  ]
- },
- {
-  "text": "Missing something",
-  "files": [
-   "src/pages/inventory/ReturnsPage.tsx",
-   "src/pages/inventory/StockPage.tsx",
-   "src/pages/sales/SellOutPage.tsx",
-   "src/pages/sales/TargetsPage.tsx"
   ]
  },
  {
@@ -16089,6 +17964,341 @@
   ]
  },
  {
+  "text": "(read from pack size)",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} pcs per {1}{2}",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} products given sticker codes",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} products have no sticker code yet",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} sticker.png",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} ticked",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "1 product given a sticker code",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "1 product has no sticker code yet",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Add products under Products and each one gets a sticker code.",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Codes not given",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Copies each",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Copies of {0}",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Copies of each sticker",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Every sticker already printed for {0} stops scanning, at once. Only do this if stickers were lost or copied, and relabel its cartons with the new ones.",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Give them codes",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Give this product a new code?",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "New code",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "New code for {0}",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "New code saved",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "No code",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "No goods in the catalogue",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Nothing to print",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Pieces per carton not set",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx",
+   "src/pages/inventory/count/CountSheet.tsx"
+  ]
+ },
+ {
+  "text": "PNG",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Print new stickers for this product.",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Print stickers for {0}",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Product, SKU or code…",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Products added from now on get one automatically. Give the older ones theirs in one go.",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Save a sticker picture for {0}",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Sticker not saved",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Sticker size",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "The barcode on each product's cartons. A stock count scans it to open the product. It only works inside AfterBI, for this company: any other scanner reads letters that mean nothing.",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Tick all",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Tick at least one product and give it one copy or more.",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Try another name or code.",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": "Untick all",
+  "files": [
+   "src/pages/inventory/StickersPage.tsx"
+  ]
+ },
+ {
+  "text": ", {0} with a variance",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "· closed {0}",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "{0} lines, {1} matched",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "AfterBI notes what the system holds in this depot right now; the count is measured against that. Counters will not see the system's figures while they count. Only one count can be open in a depot at a time.",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Cancelled",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx",
+   "src/types/index.ts"
+  ]
+ },
+ {
+  "text": "Choose the depot you are counting.",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Closed",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Count a depot by scanning the AfterBI sticker on each carton. A count is a report: it never changes stock. Its variance shows what the system held against what was found.",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Counting",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Counts started by a manager appear here.",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Month end count, Rows A to H",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "No counts yet",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Not started",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Start",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Start a count",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Start a count, then scan the stickers on the cartons. Print stickers first under Stickers.",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Start a stock count",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
+  "text": "Started by {0}, {1}",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx",
+   "src/pages/inventory/count/CountSession.tsx"
+  ]
+ },
+ {
+  "text": "Which depot?",
+  "files": [
+   "src/pages/inventory/StockCountPage.tsx"
+  ]
+ },
+ {
   "text": "0 = not tracked",
   "files": [
    "src/pages/inventory/StockPage.tsx"
@@ -16113,10 +18323,10 @@
   ]
  },
  {
-  "text": "Adjustment",
+  "text": "Adjust",
   "files": [
    "src/pages/inventory/StockPage.tsx",
-   "src/types/index.ts"
+   "src/pages/inventory/count/VarianceView.tsx"
   ]
  },
  {
@@ -16126,25 +18336,7 @@
   ]
  },
  {
-  "text": "Choose a depot…",
-  "files": [
-   "src/pages/inventory/StockPage.tsx"
-  ]
- },
- {
-  "text": "Choose a product…",
-  "files": [
-   "src/pages/inventory/StockPage.tsx"
-  ]
- },
- {
-  "text": "Choose the depot and the product.",
-  "files": [
-   "src/pages/inventory/StockPage.tsx"
-  ]
- },
- {
-  "text": "Direction",
+  "text": "Correcting a balance (damage, loss, a stock count)? That is an adjustment, approved by finance and operations.",
   "files": [
    "src/pages/inventory/StockPage.tsx"
   ]
@@ -16156,10 +18348,9 @@
   ]
  },
  {
-  "text": "Everything",
+  "text": "Finance and operations both have to approve it. Stock moves only after the second approval.",
   "files": [
-   "src/pages/inventory/StockPage.tsx",
-   "src/pages/shared/RemindersPage.tsx"
+   "src/pages/inventory/StockPage.tsx"
   ]
  },
  {
@@ -16214,6 +18405,12 @@
  },
  {
   "text": "not tracked",
+  "files": [
+   "src/pages/inventory/StockPage.tsx"
+  ]
+ },
+ {
+  "text": "Raise an adjustment",
   "files": [
    "src/pages/inventory/StockPage.tsx"
   ]
@@ -16276,7 +18473,7 @@
   ]
  },
  {
-  "text": "Waybill number, who delivered it, why it was adjusted",
+  "text": "Waybill number, who delivered it, where it went",
   "files": [
    "src/pages/inventory/StockPage.tsx"
   ]
@@ -16382,6 +18579,12 @@
   ]
  },
  {
+  "text": "{0} {1} at {2}, raised by {3} on {4}",
+  "files": [
+   "src/pages/ops/ApprovalsPage.tsx"
+  ]
+ },
+ {
   "text": "{0} discount",
   "files": [
    "src/pages/ops/ApprovalsPage.tsx"
@@ -16406,12 +18609,6 @@
   ]
  },
  {
-  "text": "Awaiting you",
-  "files": [
-   "src/pages/ops/ApprovalsPage.tsx"
-  ]
- },
- {
   "text": "Everything waiting on your signature.",
   "files": [
    "src/pages/ops/ApprovalsPage.tsx"
@@ -16424,7 +18621,19 @@
   ]
  },
  {
-  "text": "When an order needs your signature it appears here, and on your home screen.",
+  "text": "Sign for {0}",
+  "files": [
+   "src/pages/ops/ApprovalsPage.tsx"
+  ]
+ },
+ {
+  "text": "Stock adjustment · {0}",
+  "files": [
+   "src/pages/ops/ApprovalsPage.tsx"
+  ]
+ },
+ {
+  "text": "When an order or a stock adjustment needs your signature it appears here, and on your home screen.",
   "files": [
    "src/pages/ops/ApprovalsPage.tsx"
   ]
@@ -20137,13 +22346,6 @@
   ]
  },
  {
-  "text": "Send for approval",
-  "files": [
-   "src/pages/sales/NewOrderDrawer.tsx",
-   "src/pages/sales/OrderDrawer.tsx"
-  ]
- },
- {
   "text": "Service, no stock",
   "files": [
    "src/pages/sales/NewOrderDrawer.tsx"
@@ -20450,13 +22652,6 @@
   ]
  },
  {
-  "text": "Sent for approval",
-  "files": [
-   "src/pages/sales/OrderDrawer.tsx",
-   "src/pages/sales/OrdersPage.tsx"
-  ]
- },
- {
   "text": "Set by {0}.",
   "files": [
    "src/pages/sales/OrderDrawer.tsx"
@@ -20592,12 +22787,6 @@
  },
  {
   "text": "It stays in your drafts until you send it for approval.",
-  "files": [
-   "src/pages/sales/OrdersPage.tsx"
-  ]
- },
- {
-  "text": "Lines",
   "files": [
    "src/pages/sales/OrdersPage.tsx"
   ]
@@ -22365,13 +24554,13 @@
   ]
  },
  {
-  "text": "Admin",
+  "text": "Adjustment",
   "files": [
    "src/types/index.ts"
   ]
  },
  {
-  "text": "Cancelled",
+  "text": "Admin",
   "files": [
    "src/types/index.ts"
   ]

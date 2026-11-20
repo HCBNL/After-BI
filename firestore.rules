@@ -432,18 +432,102 @@ service cloud.firestore {
       allow delete: if immutable();
     }
 
+    /*
+     * A stock adjustment being applied in THIS write: pending before, applied
+     * after, stamped now. Only the transaction in signAdjustment (db.ts) does
+     * that, and only once both signatures are on it.
+     */
+    function applyingAdjustment(orgId, adjId) {
+      return adjId is string && adjId != ''
+        && exists(/databases/$(database)/documents/orgs/$(orgId)/stockAdjustments/$(adjId))
+        && get(/databases/$(database)/documents/orgs/$(orgId)/stockAdjustments/$(adjId)).data.status == 'pending'
+        && getAfter(/databases/$(database)/documents/orgs/$(orgId)/stockAdjustments/$(adjId)).data.status == 'applied'
+        && getAfter(/databases/$(database)/documents/orgs/$(orgId)/stockAdjustments/$(adjId)).data.appliedAt == request.time;
+    }
+
     match /orgs/{orgId}/stock/{positionId} {
       allow write: if hasRole(orgId, [
         'super_admin', 'admin', 'staff', 'warehouse_manager', 'operations_manager'
       ]);
+      /* A finance manager moves stock only as the second signature on an adjustment. */
+      allow write: if hasRole(orgId, ['finance_manager'])
+        && applyingAdjustment(orgId, request.resource.data.get('lastAdjustmentId', ''));
     }
 
-    /* Append-only: a mistake is corrected with an opposite movement. */
+    /* Append-only: a mistake is corrected with an opposite movement.
+       An ADJUSTMENT movement exists only as part of applying an approved
+       stock adjustment (finance and operations both signed). */
     match /orgs/{orgId}/stockMovements/{movementId} {
       allow create: if hasRole(orgId, [
-        'super_admin', 'admin', 'staff', 'warehouse_manager', 'operations_manager'
-      ]);
+          'super_admin', 'admin', 'staff', 'warehouse_manager', 'operations_manager'
+        ])
+        && request.resource.data.type != 'adjustment';
+      allow create: if hasRole(orgId, ['super_admin', 'finance_manager', 'operations_manager'])
+        && request.resource.data.type == 'adjustment'
+        && applyingAdjustment(orgId, request.resource.data.get('referenceId', ''));
       allow update, delete: if immutable();
+    }
+
+    /* Stock counts: a report. Open, counted, closed; never deleted, never
+       changed once closed. Reading is the insiders' catch-all above. */
+    match /orgs/{orgId}/stockCounts/{countId} {
+      allow create: if hasRole(orgId, ['super_admin', 'admin', 'operations_manager', 'warehouse_manager'])
+        && request.resource.data.status == 'open'
+        && request.resource.data.startedBy == request.auth.uid;
+      allow update: if hasRole(orgId, ['super_admin', 'admin', 'operations_manager', 'warehouse_manager'])
+        && resource.data.status == 'open'
+        && request.resource.data.status in ['open', 'closed', 'cancelled']
+        && request.resource.data.warehouseId == resource.data.warehouseId
+        && request.resource.data.snapshot == resource.data.snapshot;
+      allow delete: if immutable();
+
+      function countOpen() {
+        return get(/databases/$(database)/documents/orgs/$(orgId)/stockCounts/$(countId)).data.status == 'open';
+      }
+
+      match /entries/{entryId} {
+        allow create: if hasRole(orgId, ['super_admin', 'admin', 'operations_manager', 'warehouse_manager', 'staff'])
+          && countOpen()
+          && request.resource.data.countedBy == request.auth.uid;
+        allow update: if countOpen()
+          && request.resource.data.countedBy == resource.data.countedBy
+          && (
+            hasRole(orgId, ['super_admin', 'admin', 'operations_manager', 'warehouse_manager'])
+            || (hasRole(orgId, ['staff']) && resource.data.countedBy == request.auth.uid)
+          );
+        allow delete: if immutable();
+      }
+    }
+
+    /*
+     * Stock adjustments: two signatures, finance and operations, before stock
+     * moves. Raised pending and unsigned; signed only by someone named on it;
+     * applied only with both sides signed; taken back only by whoever raised it.
+     */
+    match /orgs/{orgId}/stockAdjustments/{adjId} {
+      allow create: if hasRole(orgId, ['super_admin', 'admin', 'operations_manager', 'warehouse_manager'])
+        && request.resource.data.requestedBy == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.quantity > 0
+        && request.resource.data.signatures.size() == 0
+        && request.resource.data.signers.finance.size() > 0
+        && request.resource.data.signers.operations.size() > 0;
+      allow update: if hasRole(orgId, ['super_admin', 'finance_manager', 'operations_manager'])
+        && resource.data.status == 'pending'
+        && request.auth.uid in resource.data.get('signerIds', [])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'signatures', 'status', 'appliedAt', 'appliedBy', 'appliedByName', 'balanceAfter',
+          'declinedAt', 'declinedBy', 'declinedByName', 'declineReason', 'updatedAt'
+        ])
+        && request.resource.data.status in ['pending', 'applied', 'declined']
+        && (request.resource.data.status != 'applied'
+            || request.resource.data.signatures.keys().hasAll(['finance', 'operations']));
+      allow update: if member(orgId)
+        && resource.data.status == 'pending'
+        && resource.data.requestedBy == request.auth.uid
+        && request.resource.data.status == 'cancelled'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'cancelledAt', 'updatedAt']);
+      allow delete: if immutable();
     }
 
     match /orgs/{orgId}/sales/{saleId} {
@@ -639,7 +723,7 @@ service cloud.firestore {
         && request.resource.data.by == request.auth.uid
         && request.resource.data.keys().hasOnly(['at', 'by', 'byName', 'role', 'area', 'action', 'summary', 'ref', 'amount', 'reason'])
         && request.resource.data.at == request.time
-        && request.resource.data.area in ['finance', 'sales', 'catalogue', 'people', 'settings']
+        && request.resource.data.area in ['finance', 'sales', 'catalogue', 'stock', 'people', 'settings']
         && request.resource.data.action is string && request.resource.data.action.size() <= 60
         && request.resource.data.summary is string && request.resource.data.summary.size() <= 400;
       allow update, delete: if false;
