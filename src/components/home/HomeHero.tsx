@@ -133,17 +133,17 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
       </div>
 
       <div className="px-4">
-        <div className="grid grid-cols-4 gap-2.5" data-tour="shortcuts">
+        <div className="grid grid-cols-4 gap-x-2 gap-y-1.5" data-tour="shortcuts">
           {shown.map((action) => {
             const Icon = action.icon;
             return (
               <Link
                 key={action.id}
                 to={resolveTo(action, user.role)}
-                className="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-[18px] bg-white/[0.09] px-1.5 py-3 text-center ring-1 ring-inset ring-white/[0.07] transition-[background-color,transform] duration-150 hover:bg-white/[0.15] active:scale-[0.97] active:bg-white/20"
+                className="flex min-h-[86px] flex-col items-center justify-start gap-2 rounded-[18px] px-1 py-2 text-center transition-[background-color,transform] duration-150 active:scale-[0.96] active:bg-white/10"
               >
-                <IconArt icon={Icon} id={action.id} variant="glass" size={42} />
-                <span className="line-clamp-2 text-micro font-semibold leading-[1.25] text-white/90">
+                <IconArt icon={Icon} id={action.id} size={48} halo />
+                <span className="line-clamp-2 text-micro font-semibold leading-[1.25] text-white">
                   {action.label}
                 </span>
               </Link>

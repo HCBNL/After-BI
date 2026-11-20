@@ -19,7 +19,7 @@ import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
-export type ArtShape = 'scallop' | 'bloom' | 'daisy' | 'pinwheel' | 'fourfold';
+export type ArtShape = 'scallop' | 'bloom' | 'daisy' | 'pinwheel' | 'fourfold' | 'trefoil' | 'fivefold';
 export type ArtTone = 'blue' | 'green' | 'orange' | 'purple' | 'pink' | 'gold' | 'sky' | 'teal';
 
 /* Vivid and thick: the bright part of each colour, deep enough for white on it. */
@@ -34,7 +34,8 @@ const TONES: Record<ArtTone, { fill: string; ink: string }> = {
   teal: { fill: '#079a8c', ink: '#ffffff' },
 };
 const TONE_ORDER: ArtTone[] = ['blue', 'green', 'orange', 'purple', 'sky', 'pink', 'teal', 'gold'];
-const SHAPE_ORDER: ArtShape[] = ['scallop', 'bloom', 'scallop', 'daisy', 'scallop', 'pinwheel', 'scallop', 'fourfold'];
+/* Mostly petals (three, four and five), the way his artwork set is. */
+const SHAPE_ORDER: ArtShape[] = ['trefoil', 'bloom', 'fivefold', 'fourfold', 'daisy', 'trefoil', 'pinwheel', 'fivefold', 'scallop', 'bloom'];
 
 function hash(text: string): number {
   let h = 2166136261;
@@ -94,6 +95,24 @@ function Shape({ shape }: { shape: ArtShape }) {
           <circle cx="50" cy="50" r="24" />
         </>
       );
+    case 'trefoil':
+      return (
+        <>
+          {[0, 120, 240].map((r) => (
+            <ellipse key={r} cx="50" cy="27" rx="21" ry="26" transform={`rotate(${r} 50 50)`} />
+          ))}
+          <circle cx="50" cy="50" r="25" />
+        </>
+      );
+    case 'fivefold':
+      return (
+        <>
+          {[0, 72, 144, 216, 288].map((r) => (
+            <path key={r} d="M50 50 Q27 24 50 6 Q73 24 50 50 Z" transform={`rotate(${r} 50 50)`} />
+          ))}
+          <circle cx="50" cy="50" r="24" />
+        </>
+      );
     case 'fourfold':
       return (
         <>
@@ -114,6 +133,8 @@ export function IconArt({
   variant = 'color',
   tone,
   shape,
+  spin = true,
+  halo = false,
   className,
 }: {
   /** A Lucide icon component, or pass the icon as `children`. */
@@ -126,6 +147,14 @@ export function IconArt({
   variant?: 'color' | 'glass' | 'soft';
   tone?: ArtTone;
   shape?: ArtShape;
+  /** The artwork turns slowly, all the time, to draw the eye to the icon. */
+  spin?: boolean;
+  /**
+   * A white edge around the artwork, the same shape a little larger behind it,
+   * so a vivid badge stands out on any background: green, blue, gold or a
+   * custom brand colour that happens to match the badge's own.
+   */
+  halo?: boolean;
   className?: string;
 }) {
   const t = TONES[tone ?? toneFor(id)];
@@ -139,13 +168,25 @@ export function IconArt({
       className={cn('relative inline-flex shrink-0 items-center justify-center', className)}
       style={{ width: size, height: size, color: ink }}
     >
-      <svg
-        viewBox="0 0 100 100"
-        className="absolute inset-0 h-full w-full transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:rotate-[30deg]"
-        fill={fill}
+      {/* Each badge starts at its own point in the turn, so a grid never moves in step. */}
+      <span
+        className={cn('absolute inset-0', spin && 'art-petal-spin')}
+        style={spin ? { animationDelay: `-${hash(id + s) % 28}s` } : undefined}
       >
-        <Shape shape={s} />
-      </svg>
+        <svg
+          viewBox="0 0 100 100"
+          className="h-full w-full transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:rotate-[30deg]"
+          fill={fill}
+          overflow="visible"
+        >
+          {halo && (
+            <g fill="#ffffff" transform="translate(50 50) scale(1.14) translate(-50 -50)">
+              <Shape shape={s} />
+            </g>
+          )}
+          <Shape shape={s} />
+        </svg>
+      </span>
       <span className="relative flex items-center justify-center">
         {Icon ? <Icon size={glyph} strokeWidth={2} /> : children}
       </span>

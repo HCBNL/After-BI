@@ -112,7 +112,7 @@ function DeskTiles({ role }: { role: Role }) {
   const actions = useMemo(() => actionsForRole(role).filter((a) => !a.soon), [role]);
   return (
     <>
-    <div className="grid grid-cols-6 gap-3 xl:grid-cols-8" data-tour="shortcuts">
+    <div className="grid grid-cols-6 gap-x-3 gap-y-2 xl:grid-cols-8" data-tour="shortcuts">
       {actions.map((action, i) => {
         const Icon = action.icon;
         return (
@@ -120,10 +120,11 @@ function DeskTiles({ role }: { role: Role }) {
             key={action.id}
             to={resolveTo(action, role)}
             title={action.description}
-            className={cn(rowCut(i, expanded, 12, 16), "group min-h-[112px] flex-col items-center justify-center gap-2.5 rounded-[20px] bg-white/[0.08] px-2 py-4 text-center ring-1 ring-inset ring-white/[0.08] transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white/[0.15]")}
+            className={cn(rowCut(i, expanded, 12, 16), "group min-h-[112px] flex-col items-center justify-start gap-3 rounded-[20px] px-2 py-3 text-center transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white/[0.08]")}
           >
-            <IconArt icon={Icon} id={action.id} variant="glass" size={48} />
-            <span className="line-clamp-2 text-label font-semibold leading-tight text-white/90">{action.label}</span>
+            {/* Plain, no box: the coloured artwork is the tile. */}
+            <IconArt icon={Icon} id={action.id} size={58} halo />
+            <span className="line-clamp-2 text-label font-semibold leading-tight text-white">{action.label}</span>
           </Link>
         );
       })}
