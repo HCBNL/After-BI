@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, House, LayoutGrid, LogOut, PanelsTopLeft, Search, UserRound, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { IconArt } from '@/components/ui/IconArt';
 import {
   actionsForRole,
   resolveTo,
@@ -30,9 +31,7 @@ function ActionRow({ action, role, onClose }: { action: AppAction; role: Role; o
         onClick={onClose}
         className="flex items-center gap-3.5 px-5 py-3 transition-colors hover:bg-[var(--surface-sunken)] active:bg-[var(--surface-sunken)]"
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-200">
-          <Icon size={17} strokeWidth={1.9} aria-hidden />
-        </span>
+        <IconArt icon={Icon} id={action.id} size={40} />
         <span className="min-w-0 flex-1 truncate text-body font-medium text-primary">{action.label}</span>
         <span
           aria-hidden

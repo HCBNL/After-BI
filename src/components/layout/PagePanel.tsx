@@ -79,7 +79,7 @@ export function PagePanel({
             <ArrowLeft size={21} aria-hidden />
           </button>
           <div className="flex max-w-[72%] items-center gap-1.5">
-            <h1 className="truncate text-title font-semibold">{title}</h1>
+            <h1 className="truncate text-title font-bold">{title}</h1>
             {description && <About title={title} text={description} />}
           </div>
         </div>
@@ -94,7 +94,7 @@ export function PagePanel({
         */}
         <div className="lg:grid lg:min-h-[5.5rem] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-x-6 lg:gap-y-3">
           <div className={cn('hidden min-w-0 items-center gap-2.5 lg:flex', Boolean(actions) && 'lg:row-span-2')}>
-            <h1 className="truncate font-display text-display font-bold leading-tight tracking-[-0.025em]">{title}</h1>
+            <h1 className="truncate font-display text-display font-extrabold leading-tight tracking-[-0.03em]">{title}</h1>
             {description && <About title={title} text={description} />}
           </div>
           <div className="hidden items-center justify-end gap-2 lg:col-start-2 lg:flex">

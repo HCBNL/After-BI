@@ -5,3 +5,5 @@ export * from './SectionMenu';
 export * from './Hint';
 export * from './Select';
 export * from './DateField';
+export * from './IconArt';
+export * from './SettingsCard';

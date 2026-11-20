@@ -11,6 +11,7 @@ import { setStoredTheme } from '@/lib/theme';
 import { actionsForRole, resolveTo } from '@/lib/tiles';
 import { monthPosition } from '@/lib/month';
 import { cn } from '@/lib/cn';
+import { IconArt } from '@/components/ui/IconArt';
 import type { HomeLayout } from '@/hooks/useHomeLayout';
 import type { Role, UserProfile } from '@/types';
 import type { Kpi } from './HomeSlides';
@@ -121,9 +122,7 @@ function DeskTiles({ role }: { role: Role }) {
             title={action.description}
             className={cn(rowCut(i, expanded, 12, 16), "group min-h-[112px] flex-col items-center justify-center gap-2.5 rounded-[20px] bg-white/[0.08] px-2 py-4 text-center ring-1 ring-inset ring-white/[0.08] transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white/[0.15]")}
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.12] text-white transition-colors group-hover:bg-white group-hover:text-[color:var(--hero)]">
-              <Icon size={21} strokeWidth={1.8} aria-hidden />
-            </span>
+            <IconArt icon={Icon} id={action.id} variant="glass" size={48} />
             <span className="line-clamp-2 text-label font-semibold leading-tight text-white/90">{action.label}</span>
           </Link>
         );
@@ -174,7 +173,7 @@ export function DeskHero({
           <ProfilePhoto user={user} size="lg" />
           <div className="min-w-0">
             <p className="text-lead font-medium text-white/70">{hello},</p>
-            <h1 className="flex items-center gap-2 font-display text-display font-bold leading-[1.12] tracking-[-0.025em] text-white">
+            <h1 className="flex items-center gap-2 font-display text-display font-extrabold leading-[1.12] tracking-[-0.03em] text-white">
               <span className="truncate">{displayName(user)}</span>
               <OrgPlanBadge size={26} />
             </h1>
@@ -234,9 +233,7 @@ export function DeskShortcuts({ role }: { role: Role }) {
               title={action.description}
               className={cn(rowCut(i, expanded, 8, 16), "group flex-col items-center gap-2 rounded-2xl px-1 py-3 text-center transition-colors hover:bg-[var(--surface-sunken)]")}
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-800 transition-colors group-hover:bg-brand-600 group-hover:text-white dark:bg-brand-500/15 dark:text-brand-200 dark:group-hover:bg-brand-500 dark:group-hover:text-white">
-                <Icon size={20} strokeWidth={1.9} aria-hidden />
-              </span>
+              <IconArt icon={Icon} id={action.id} size={50} />
               <span className="line-clamp-2 text-label font-semibold leading-tight text-secondary group-hover:text-primary">
                 {action.label}
               </span>

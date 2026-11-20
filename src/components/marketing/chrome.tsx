@@ -511,50 +511,42 @@ export function SiteFooter() {
     { label: 'All solutions', to: '/solutions' },
   ];
 
+  /*
+   * The owner's footer pattern: a dashed rule across the top, a dashed rule
+   * between every column running the full height, light small type, headings
+   * in plain words. On a phone the columns stack and the rules run across.
+   */
+  const cell = 'border-dashed border-white/20 px-0 py-8 sm:px-7 lg:px-6 lg:py-12 xl:px-8';
+
   return (
     <footer className="bg-navy-950 text-white">
-      <div className={cn(container, 'pb-safe-6 pt-16 sm:pb-10')}>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 lg:grid-cols-[1.5fr_2fr_1fr_1fr]">
-          <div className="col-span-2 md:col-span-4 lg:col-span-1">
+      <div className="border-t border-dashed border-white/20">
+        <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 px-5 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1.2fr_2.2fr_1.25fr_0.95fr_0.95fr_1.15fr]">
+          <div className={cn(cell, 'border-b sm:border-r lg:border-b-0 lg:pl-0 xl:pl-0')}>
             <Link to="/" aria-label="AfterBI home">
-              <Wordmark onInk className="text-[1.38rem]" />
+              <Wordmark onInk className="text-[1.25rem]" />
             </Link>
-            <p className="mt-5 max-w-[22rem] text-[14px] leading-[1.65] text-white/60">
+            <p className="mt-4 max-w-[16rem] text-[13.5px] leading-[1.6] text-white/60">
               The sales and distribution platform for consumer goods companies.
             </p>
-            <ul className="mt-6 flex flex-wrap gap-2.5" aria-label="AfterBI elsewhere">
-              {SOCIAL.map((channel) => (
-                <li key={channel.key}>
-                  <a
-                    href={channel.href}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    aria-label={channel.label}
-                    title={channel.label}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.07] text-white/80 transition-colors hover:bg-white/20 hover:text-white"
-                  >
-                    <SocialIcon name={channel.key} />
-                  </a>
-                </li>
-              ))}
-            </ul>
           </div>
 
-          {/* Platform runs in two columns so every column is about the same height. */}
-          <div className="col-span-2 lg:col-span-1">
-            <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-white">Platform</p>
-            <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2.5">
+          <div className={cn(cell, 'border-b lg:border-b-0 lg:border-r')}>
+            <p className="text-[14px] font-semibold text-white">Platform</p>
+            <ul className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2.5">
               {products.map((item) => (
                 <li key={item.label}>
-                  <Link to={item.to} className="text-[14.5px] text-white/60 transition-colors hover:text-white">
+                  <Link to={item.to} className="whitespace-nowrap text-[13.5px] leading-snug text-white/60 transition-colors hover:text-white">
                     {item.label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          <FooterColumn title="Solutions" items={solutions} />
+
+          <FooterColumn className={cn(cell, 'border-b sm:border-r lg:border-b-0')} title="Solutions" items={solutions} />
           <FooterColumn
+            className={cn(cell, 'border-b lg:border-b-0 lg:border-r')}
             title="Company"
             items={[
               { label: 'Platform overview', to: '/features' },
@@ -563,32 +555,52 @@ export function SiteFooter() {
               { label: 'Sign in', to: '/login' },
             ]}
           />
-        </div>
+          <FooterColumn
+            className={cn(cell, 'border-b sm:border-b-0 sm:border-r')}
+            title="Legal"
+            items={[
+              { label: 'Terms of Service', to: '/terms' },
+              { label: 'Privacy Policy', to: '/privacy' },
+              { label: 'Sign in help', to: '/help/sign-in' },
+            ]}
+          />
 
-        {/* Legal, policy and support, small, under the columns. */}
-        <ul className="mt-12 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/10 pt-6 text-[13px] text-white/50">
-          {[
-            { label: 'Terms of Service', to: '/terms' },
-            { label: 'Privacy Policy', to: '/privacy' },
-            { label: 'Sign in help', to: '/help/sign-in' },
-            { label: 'WhatsApp support', to: WHATSAPP_URL, external: true },
-            { label: SUPPORT_EMAIL, to: `mailto:${SUPPORT_EMAIL}`, external: true },
-          ].map((item) => (
-            <li key={item.label}>
-              {item.external ? (
-                <a href={item.to} target={item.to.startsWith('http') ? '_blank' : undefined} rel="noreferrer noopener" className="hover:text-white">
-                  {item.label}
+          <div className={cn(cell, 'lg:pr-0 xl:pr-0')}>
+            <ul className="flex flex-wrap gap-2" aria-label="AfterBI elsewhere">
+              {SOCIAL.map((channel) => (
+                <li key={channel.key}>
+                  <a
+                    href={channel.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label={channel.label}
+                    title={channel.label}
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-white/75 ring-1 ring-inset ring-white/15 transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    <SocialIcon name={channel.key} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <ul className="mt-5 space-y-2.5 text-[13.5px]">
+              <li>
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="break-all text-white/60 transition-colors hover:text-white">
+                  {SUPPORT_EMAIL}
                 </a>
-              ) : (
-                <Link to={item.to} className="hover:text-white">
-                  {item.label}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
+              </li>
+              <li>
+                <a href={WHATSAPP_URL} target="_blank" rel="noreferrer noopener" className="text-white/60 transition-colors hover:text-white">
+                  WhatsApp support
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
-        <div className="mt-4 flex flex-col gap-2 text-[13px] text-white/45 sm:flex-row sm:items-center sm:justify-between">
+      {/* The last line, under its own dashed rule. Clear of the help bubble on the right. */}
+      <div className="border-t border-dashed border-white/20">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-2 px-5 pb-safe-6 pt-6 text-[12.5px] text-white/45 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:pb-7 sm:pr-24">
           <p>
             © {year}{' '}
             <a href={COMPANY_URL} target="_blank" rel="noreferrer noopener" className="font-semibold text-white/70 hover:text-white">
@@ -609,10 +621,18 @@ export function SiteFooter() {
   );
 }
 
-function FooterColumn({ title, items }: { title: string; items: { label: string; to: string; external?: boolean }[] }) {
+function FooterColumn({
+  title,
+  items,
+  className,
+}: {
+  title: string;
+  items: { label: string; to: string; external?: boolean }[];
+  className?: string;
+}) {
   return (
-    <div>
-      <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-white">{title}</p>
+    <div className={className}>
+      <p className="text-[14px] font-semibold text-white">{title}</p>
       <ul className="mt-4 space-y-2.5">
         {items.map((item) => (
           <li key={item.label}>
@@ -621,12 +641,12 @@ function FooterColumn({ title, items }: { title: string; items: { label: string;
                 href={item.to}
                 target={item.to.startsWith('http') ? '_blank' : undefined}
                 rel="noreferrer noopener"
-                className="break-words text-[14.5px] text-white/60 transition-colors hover:text-white"
+                className="break-words text-[13.5px] leading-snug text-white/60 transition-colors hover:text-white"
               >
                 {item.label}
               </a>
             ) : (
-              <Link to={item.to} className="text-[14.5px] text-white/60 transition-colors hover:text-white">
+              <Link to={item.to} className="text-[13.5px] leading-snug text-white/60 transition-colors hover:text-white">
                 {item.label}
               </Link>
             )}

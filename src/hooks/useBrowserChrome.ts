@@ -31,7 +31,7 @@ export function useBrowserChrome(enabled = true): void {
     };
 
     const apply = () => {
-      const hero = getComputedStyle(root).getPropertyValue('--hero').trim() || '#064e3b';
+      const hero = getComputedStyle(root).getPropertyValue('--hero').trim() || '#07884f';
       tag.setAttribute('content', hero);
       root.style.backgroundColor = phone.matches ? hero : before.root;
       body.style.backgroundColor = phone.matches ? hero : before.body;

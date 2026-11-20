@@ -1,0 +1,246 @@
+/**
+ * The lock screen, and the watcher that decides when to show it.
+ *
+ * Mounted once for the signed in person (see LockGate). It does nothing at all
+ * until that person has set a PIN in Profile. After that:
+ *
+ *   idle for the chosen minutes (5, 15, 30 or 60)       locks
+ *   away from the app for a minute or more (screen      locks on return
+ *   locked, laptop closed, another app in front)
+ *   reload, or close and reopen, while locked           still locked
+ *   five wrong PINs                                     signs out
+ *
+ * Every open tab follows: locking or unlocking in one does the same in all.
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { Avatar, Spinner } from '@/components/ui';
+import { imageUrl } from '@/lib/cloudinary';
+import {
+  AWAY_MS,
+  MAX_TRIES,
+  PIN_LENGTH,
+  checkPin,
+  hasPin,
+  onLockChange,
+  readLocal,
+  shouldLock,
+  syncLock,
+  writeLocal,
+} from '@/lib/pinLock';
+import { PinDots, PinPad } from './PinPad';
+
+const ACTIVITY = ['pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll'] as const;
+const WRITE_EVERY = 5_000;
+
+export default function ScreenLock({ hidden }: { hidden?: boolean }) {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const uid = user?.id ?? '';
+
+  const [locked, setLocked] = useState(() => shouldLock(readLocal(uid)));
+  const [pin, setPinState] = useState('');
+  /* Kept in a ref too, so the sixth digit submits exactly once (state updaters run twice in StrictMode). */
+  const pinRef = useRef('');
+  const setPin = useCallback((next: string) => {
+    pinRef.current = next;
+    setPinState(next);
+  }, []);
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState('');
+  const [shake, setShake] = useState(false);
+  const lastWrite = useRef(0);
+  const hiddenAt = useRef<number | null>(null);
+
+  const lock = useCallback(() => {
+    writeLocal(uid, { locked: true });
+  }, [uid]);
+
+  /* First sight of this person on this device, the device copy, and other tabs. */
+  useEffect(() => {
+    if (!uid) return;
+    const first = readLocal(uid);
+    if (!first.last) writeLocal(uid, { last: Date.now() }, false);
+    const follow = () => {
+      const now = readLocal(uid);
+      setLocked(hasPin(now) && Boolean(now.locked));
+    };
+    const stop = onLockChange(follow);
+    void syncLock(uid).then((next) => {
+      if (shouldLock(next)) lock();
+      else follow();
+    });
+    return stop;
+  }, [uid, lock]);
+
+  /* Watching for idleness, only while unlocked. */
+  useEffect(() => {
+    if (!uid || locked) return;
+
+    const touched = () => {
+      const now = Date.now();
+      if (now - lastWrite.current < WRITE_EVERY) return;
+      /* Check BEFORE refreshing: the first tap after an hour asleep must lock, not count as activity. */
+      if (shouldLock(readLocal(uid), now)) {
+        lock();
+        return;
+      }
+      lastWrite.current = now;
+      writeLocal(uid, { last: now }, false);
+    };
+    const tick = () => {
+      if (shouldLock(readLocal(uid))) lock();
+    };
+    const visibility = () => {
+      if (document.visibilityState === 'hidden') {
+        hiddenAt.current = Date.now();
+        return;
+      }
+      const away = hiddenAt.current === null ? 0 : Date.now() - hiddenAt.current;
+      hiddenAt.current = null;
+      const local = readLocal(uid);
+      if (hasPin(local) && (away >= AWAY_MS || shouldLock(local))) lock();
+    };
+
+    ACTIVITY.forEach((name) => window.addEventListener(name, touched, { capture: true, passive: true }));
+    document.addEventListener('visibilitychange', visibility);
+    const timer = window.setInterval(tick, 10_000);
+    return () => {
+      ACTIVITY.forEach((name) => window.removeEventListener(name, touched, { capture: true }));
+      document.removeEventListener('visibilitychange', visibility);
+      window.clearInterval(timer);
+    };
+  }, [uid, locked, lock]);
+
+  /* Nothing behind the lock scrolls. */
+  const showing = locked && !hidden;
+  useEffect(() => {
+    if (!showing) return;
+    const before = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    setPin('');
+    setError('');
+    return () => {
+      document.body.style.overflow = before;
+    };
+  }, [showing, setPin]);
+
+  const logOut = useCallback(async () => {
+    await signOut();
+    navigate('/login', { replace: true });
+  }, [signOut, navigate]);
+
+  const submit = useCallback(
+    async (entered: string) => {
+      const local = readLocal(uid);
+      if (!hasPin(local)) {
+        writeLocal(uid, { locked: false });
+        return;
+      }
+      setChecking(true);
+      const ok = await checkPin(entered, local).catch(() => false);
+      setChecking(false);
+      if (ok) {
+        lastWrite.current = Date.now();
+        writeLocal(uid, { locked: false, tries: 0, last: Date.now() });
+        return;
+      }
+      const tries = (local.tries ?? 0) + 1;
+      if (tries >= MAX_TRIES) {
+        await logOut();
+        return;
+      }
+      writeLocal(uid, { tries }, false);
+      setPin('');
+      setShake(true);
+      window.setTimeout(() => setShake(false), 450);
+      const left = MAX_TRIES - tries;
+      setError(left === 1 ? 'Wrong PIN. One try left before you are logged out.' : `Wrong PIN. ${left} tries left.`);
+    },
+    [uid, logOut, setPin],
+  );
+
+  const digit = useCallback(
+    (d: string) => {
+      if (checking || pinRef.current.length >= PIN_LENGTH) return;
+      setError('');
+      const next = pinRef.current + d;
+      setPin(next);
+      if (next.length === PIN_LENGTH) void submit(next);
+    },
+    [checking, submit, setPin],
+  );
+  const back = useCallback(() => setPin(pinRef.current.slice(0, -1)), [setPin]);
+
+  if (!showing || !user) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="AfterBI is locked"
+      className="fixed inset-0 z-[400] flex flex-col overflow-y-auto text-white"
+      style={{ background: 'var(--hero)' }}
+    >
+      <LockArt />
+      <div className="relative mx-auto flex w-full max-w-sm flex-1 flex-col px-7 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-[max(3.25rem,env(safe-area-inset-top))]">
+        <Avatar
+          name={`${user.firstName} ${user.lastName}`}
+          src={user.photoURL ? imageUrl(user.photoURL, { width: 160 }) : undefined}
+          size="lg"
+          className="ring-4 ring-white/20"
+        />
+        <h1 className="mt-6 text-[2.1rem] font-extrabold leading-tight tracking-[-0.03em]">
+          {user.firstName || 'Welcome back'},
+        </h1>
+        <p className="mt-2 text-body leading-relaxed text-white/85">
+          Please confirm your PIN to access AfterBI. Not you?{' '}
+          <button type="button" onClick={() => void logOut()} className="font-bold text-white underline underline-offset-4">
+            Log out
+          </button>
+        </p>
+
+        <div className="mt-9 flex justify-center">
+          <PinDots count={pin.length} tone="hero" shake={shake} />
+        </div>
+        <p className="mt-3 flex min-h-[1.5rem] items-center justify-center gap-2 text-center text-label font-semibold text-white" aria-live="assertive">
+          {checking ? <Spinner size={15} /> : error}
+        </p>
+
+        <div className="mt-auto flex justify-center pt-6">
+          <PinPad length={pin.length} onDigit={digit} onBack={back} tone="hero" disabled={checking} />
+        </div>
+        <p className="mt-7 text-center text-caption text-white/70">
+          Forgot your PIN? Log out and sign in with your password.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Faint, slow artwork behind the keypad: the pinwheel and the four petals. */
+function LockArt() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 400 800"
+      preserveAspectRatio="xMidYMid slice"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+    >
+      <g className="art-spin" style={{ transformOrigin: '350px 120px', transformBox: 'view-box' }} opacity="0.09" fill="#fff">
+        {[0, 90, 180, 270].map((r) => (
+          <path key={r} d="M350 120 Q300 60 350 40 Q400 60 350 120 Z" transform={`rotate(${r} 350 120)`} />
+        ))}
+      </g>
+      <g className="art-spin-back" style={{ transformOrigin: '30px 640px', transformBox: 'view-box' }} opacity="0.07" fill="#fff">
+        {[0, 60, 120, 180, 240, 300].map((r) => (
+          <ellipse key={r} cx="30" cy="560" rx="34" ry="62" transform={`rotate(${r} 30 640)`} />
+        ))}
+        <circle cx="30" cy="640" r="40" />
+      </g>
+      <circle cx="380" cy="520" r="90" fill="none" stroke="#fff" strokeOpacity="0.08" strokeWidth="2" strokeDasharray="6 10" />
+    </svg>
+  );
+}

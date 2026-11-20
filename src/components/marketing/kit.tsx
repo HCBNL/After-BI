@@ -28,9 +28,10 @@ import { getSiteHome, type SiteHome } from '@/lib/siteDoc';
 import { SiteFooter, SiteHeader } from './chrome';
 import { BookDemo } from './BookDemo';
 import { HelpBubble } from './HelpBubble';
-import { btn, container } from './tokens';
+import { btn } from './tokens';
 import { SiteImagesProvider } from './site-ui';
 import { Art } from './art';
+import { LOGOS } from '@/lib/site';
 
 /* ---------------------------------------------------------------- the ask */
 
@@ -217,34 +218,47 @@ function ClosingBand() {
   const { book } = useAsk();
 
   return (
-    <section className="bg-white py-16 sm:py-20">
-      <div className={container}>
-        <div className="relative isolate overflow-hidden rounded-[2rem] bg-navy-900 px-6 py-16 text-center text-white sm:rounded-[2.75rem] sm:px-12 sm:py-20">
-          <Art name="bloom" speed={0.55} className="pointer-events-none absolute -left-20 top-1/2 -z-10 h-56 w-56 -translate-y-1/2 opacity-90 sm:-left-16 sm:h-80 sm:w-80" />
-          <Art name="pinwheel" shift={2} speed={0.55} className="pointer-events-none absolute -right-20 top-1/2 -z-10 h-56 w-56 -translate-y-1/2 opacity-90 sm:-right-16 sm:h-80 sm:w-80" />
-          <Art name="spark" shift={1} className="pointer-events-none absolute left-[22%] top-10 -z-10 hidden h-8 w-8 sm:block" />
-          <Art name="spark" shift={3} className="pointer-events-none absolute bottom-12 right-[24%] -z-10 hidden h-6 w-6 sm:block" />
-
-          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)]">
-            <img src="/brand/afterbi-mark.png" alt="AfterBI" width={44} height={44} className="h-11 w-11 object-contain" />
-          </span>
-          <h2 className="mx-auto mt-7 max-w-xl font-display text-[1.75rem] font-semibold leading-[1.08] tracking-[-0.035em] text-balance sm:text-[2.6rem]">
-            Ready to see AfterBI in action?
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-[15.5px] leading-relaxed text-white/80">
-            A guided demo, configured around your products, partners and price lists.
-          </p>
-          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-            <button type="button" onClick={book} className={btn.accent}>
-              Book a demo
-            </button>
-            <Link to="/pricing" className={btn.lineWhite}>
-              See plans and pricing
-            </Link>
+    <>
+      {/*
+        The customers who run on AfterBI, on a white card that sits across the
+        top edge of the band: half on the page, half on the dark.
+      */}
+      {LOGOS.length > 0 && (
+        <div className="relative z-10 bg-[linear-gradient(to_bottom,transparent_50%,var(--color-navy-950)_50%)] px-4 pt-6">
+          <div className="mx-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-x-10 gap-y-4 rounded-[1.75rem] bg-white px-7 py-5 shadow-[0_24px_50px_-28px_rgba(15,31,54,0.55)] ring-1 ring-inset ring-navy-900/8 sm:px-9">
+            <p className="whitespace-nowrap text-[13.5px] font-medium text-navy-600">Trusted by</p>
+            {LOGOS.map((logo) => (
+              <img key={logo.name} src={logo.src} alt={logo.name} loading="lazy" decoding="async" className="h-8 w-auto object-contain sm:h-10" />
+            ))}
           </div>
         </div>
+      )}
+    <section className="relative isolate overflow-hidden bg-navy-950 px-6 pb-36 pt-20 text-center text-white sm:py-24">
+      <Art name="bloom" speed={0.55} className="pointer-events-none absolute -bottom-16 -left-24 -z-10 h-48 w-48 opacity-80 sm:bottom-auto sm:-left-16 sm:top-1/2 sm:h-96 sm:w-96 sm:-translate-y-1/2 sm:opacity-100" />
+      <Art name="pinwheel" shift={2} speed={0.55} className="pointer-events-none absolute -bottom-16 -right-24 -z-10 h-48 w-48 opacity-80 sm:bottom-auto sm:-right-16 sm:top-1/2 sm:h-96 sm:w-96 sm:-translate-y-1/2 sm:opacity-100" />
+      <Art name="spark" shift={1} className="pointer-events-none absolute left-[24%] top-12 -z-10 hidden h-8 w-8 sm:block" />
+      <Art name="spark" shift={3} className="pointer-events-none absolute bottom-14 right-[26%] -z-10 hidden h-6 w-6 sm:block" />
+
+      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)]">
+        <img src="/brand/afterbi-mark.png" alt="AfterBI" width={44} height={44} className="h-11 w-11 object-contain" />
+      </span>
+      <h2 className="mx-auto mt-7 max-w-xl font-display text-[1.75rem] font-semibold leading-[1.08] tracking-[-0.035em] text-balance sm:text-[2.6rem]">
+        Ready to see AfterBI in action?
+      </h2>
+      <p className="mx-auto mt-4 max-w-md text-[15.5px] leading-relaxed text-white/80">
+        A guided demo, configured around your products, partners and price lists.
+      </p>
+      {/* The two choices in one dashed frame, as in the owner's pattern. */}
+      <div className="mx-auto mt-9 inline-flex flex-col gap-2 rounded-[1.6rem] border border-dashed border-white/25 p-2 sm:flex-row">
+        <button type="button" onClick={book} className={btn.accent}>
+          Book a demo
+        </button>
+        <Link to="/pricing" className={btn.lineWhite}>
+          See plans and pricing
+        </Link>
       </div>
     </section>
+    </>
   );
 }
 

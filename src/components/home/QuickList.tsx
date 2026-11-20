@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { actionsForRole, resolveTo } from '@/lib/tiles';
 import { cn } from '@/lib/cn';
+import { IconArt } from '@/components/ui/IconArt';
 import type { Role } from '@/types';
 
 export function QuickList({ role, onMore, className }: { role: Role; onMore: () => void; className?: string }) {
@@ -37,9 +38,7 @@ export function QuickList({ role, onMore, className }: { role: Role; onMore: () 
                 to={resolveTo(action, role)}
                 className="flex items-center gap-2.5 px-3.5 py-3.5 transition-colors hover:bg-[var(--surface-sunken)] active:bg-[var(--surface-sunken)]"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-200">
-                  <Icon size={18} strokeWidth={1.9} aria-hidden />
-                </span>
+                <IconArt icon={Icon} id={action.id} size={40} />
                 <span className="line-clamp-2 min-w-0 flex-1 text-body font-semibold leading-tight text-primary">{action.label}</span>
               </Link>
             </li>

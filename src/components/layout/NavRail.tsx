@@ -12,6 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { IconArt } from '@/components/ui/IconArt';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
 import { Avatar } from '@/components/ui';
@@ -176,7 +177,7 @@ export function NavRail({
             <ul className="space-y-0.5">
               {items.map((action) => (
                 <li key={action.id}>
-                  <RailLink to={resolveTo(action, role)} icon={action.icon} label={action.label} collapsed={collapsed} />
+                  <RailLink to={resolveTo(action, role)} icon={action.icon} label={action.label} artId={action.id} collapsed={collapsed} />
                 </li>
               ))}
             </ul>
@@ -218,6 +219,7 @@ function RailLink({
   to,
   label,
   icon: Icon,
+  artId,
   end,
   collapsed,
   badge,
@@ -225,6 +227,8 @@ function RailLink({
   to: string;
   label: string;
   icon: LucideIcon;
+  /** What the badge stands for, so it wears the same colour as on the tiles. */
+  artId?: string;
   end?: boolean;
   collapsed?: boolean;
   badge?: number;
@@ -252,13 +256,8 @@ function RailLink({
     >
       {({ isActive }) => (
         <>
-          <span
-            className={cn(
-              'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors duration-150',
-              isActive ? 'bg-[var(--ground-a)] text-white' : 'bg-[var(--surface-sunken)] text-muted group-hover:text-primary',
-            )}
-          >
-            <Icon size={17} aria-hidden />
+          <span className="relative flex shrink-0 items-center justify-center">
+            <IconArt icon={Icon} id={artId ?? label} variant={isActive ? 'color' : 'soft'} size={36} />
             {collapsed && Boolean(badge) && (
               <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-status-critical ring-2 ring-[var(--surface-card)]" aria-hidden />
             )}

@@ -14,6 +14,7 @@ import { cn } from '@/lib/cn';
 import { initials as makeInitials } from '@/lib/format';
 import { Hint } from './Hint';
 import { DateField, TimeField } from './DateField';
+import { IconArt } from './IconArt';
 
 /* Button */
 
@@ -26,8 +27,9 @@ const BUTTON_BASE =
   'active:scale-[0.98]';
 
 const BUTTON_VARIANT: Record<ButtonVariant, string> = {
+  /* Vivid and thick: the theme green itself, a step deeper for white words on it. */
   primary:
-    'bg-brand-900 text-white hover:bg-brand-800 shadow-sm dark:bg-brand-500 dark:hover:bg-brand-400 dark:text-brand-950',
+    'bg-brand-700 text-white hover:bg-brand-800 shadow-sm dark:bg-brand-500 dark:hover:bg-brand-400 dark:text-brand-950',
   secondary:
     'bg-brand-50 text-brand-900 hover:bg-brand-100 dark:bg-brand-900/40 dark:text-brand-100 dark:hover:bg-brand-900/60',
   gold: 'bg-gold-400 text-gold-950 hover:bg-gold-300 shadow-sm',
@@ -535,9 +537,9 @@ export function EmptyState({
   return (
     <div className={cn('flex flex-col items-center justify-center px-6 py-14 text-center', className)}>
       {icon && (
-        <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-sunken)] text-[var(--text-muted)]">
+        <IconArt id={title} size={60} className="mb-4">
           {icon}
-        </span>
+        </IconArt>
       )}
 
       <div className="flex items-center gap-1.5">
@@ -765,9 +767,11 @@ export function StatTile({
       <div className="flex items-start justify-between gap-3">
         <p className="text-micro font-semibold uppercase tracking-[0.08em] text-white/75">{label}</p>
         {icon && (
-          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/12 text-white ring-1 ring-inset ring-white/15 backdrop-blur-sm">
-            {icon}
-            {tone !== 'brand' && <span aria-hidden className={cn('absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full ring-2 ring-[var(--hero)]', lamp[tone])} />}
+          <span className="relative shrink-0">
+            <IconArt variant="glass" id={label} size={40}>
+              {icon}
+            </IconArt>
+            {tone !== 'brand' && <span aria-hidden className={cn('absolute right-0 top-0 h-2.5 w-2.5 rounded-full ring-2 ring-[var(--hero)]', lamp[tone])} />}
           </span>
         )}
       </div>

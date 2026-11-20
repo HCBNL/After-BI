@@ -21,6 +21,7 @@ import { useChooserSeen, type HomeLayout } from '@/hooks/useHomeLayout';
 import { actionsForRole, PORTAL_ROOT, resolveTo } from '@/lib/tiles';
 import { monthPosition } from '@/lib/month';
 import { cn } from '@/lib/cn';
+import { IconArt } from '@/components/ui/IconArt';
 import type { UserProfile } from '@/types';
 import type { Kpi } from './HomeSlides';
 import { KpiGlass } from './HomeSlides';
@@ -117,7 +118,7 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
       <div className="flex items-center gap-3 px-5 pb-6 pt-5">
         <div className="min-w-0 flex-1">
           <p className="text-body font-medium text-white/70">{hello},</p>
-          <h1 className="mt-0.5 break-words font-display text-headline font-bold leading-[1.15] tracking-[-0.02em] text-white">
+          <h1 className="mt-0.5 break-words font-display text-headline font-extrabold leading-[1.15] tracking-[-0.03em] text-white">
             {displayName(user)}
             <OrgPlanBadge size={20} className="ml-1.5 inline-block -translate-y-0.5 align-middle" />
           </h1>
@@ -141,7 +142,7 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
                 to={resolveTo(action, user.role)}
                 className="flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-[18px] bg-white/[0.09] px-1.5 py-3 text-center ring-1 ring-inset ring-white/[0.07] transition-[background-color,transform] duration-150 hover:bg-white/[0.15] active:scale-[0.97] active:bg-white/20"
               >
-                <Icon size={22} strokeWidth={1.8} className="shrink-0 text-white" aria-hidden />
+                <IconArt icon={Icon} id={action.id} variant="glass" size={42} />
                 <span className="line-clamp-2 text-micro font-semibold leading-[1.25] text-white/90">
                   {action.label}
                 </span>
@@ -202,7 +203,7 @@ function CardsPanel({
       <div className="flex items-end justify-between gap-4 px-5 pt-3">
         <div className="min-w-0">
           <p className="text-label font-medium text-white/70">{hello},</p>
-          <h1 className="truncate font-display text-headline font-bold leading-tight tracking-[-0.02em] text-white">
+          <h1 className="truncate font-display text-headline font-extrabold leading-tight tracking-[-0.03em] text-white">
             {displayName(user)}
           </h1>
         </div>

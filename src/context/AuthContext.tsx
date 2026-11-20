@@ -269,6 +269,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProblem(null);
         const { auth, signInWithEmailAndPassword } = await firebase();
         await signInWithEmailAndPassword(auth, email.trim(), password);
+        /* The password was just typed: that unlocks any PIN lock left on this device. */
+        forgetLocks();
       },
       async signOut() {
         profileSub.current?.();
@@ -279,6 +281,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setProblem(null);
         rememberSession(false);
+        forgetLocks();
         const { auth, signOut: fbSignOut } = await firebase();
         await fbSignOut(auth);
       },
@@ -291,6 +294,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+/**
+ * The personal PIN lock's state on this device (see lib/pinLock.ts). Inlined
+ * rather than imported from there, so this module stays free of Firestore.
+ */
+function forgetLocks(): void {
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('ab.lock.')) localStorage.removeItem(key);
+    }
+  } catch {
+    /* storage off: nothing was kept */
+  }
 }
 
 export function useAuth(): AuthValue {
