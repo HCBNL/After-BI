@@ -302,6 +302,15 @@ service cloud.firestore {
       allow read, write: if activeProfile() && request.auth.uid == uid;
     }
 
+    /*
+      The personal PIN that unlocks the app after it has been idle. Only a
+      salted PBKDF2 hash is stored, never the digits, and only its owner can
+      read or change it. Nobody else, not even the organisation owner, needs it.
+    */
+    match /users/{uid}/private/{docId} {
+      allow read, write: if activeProfile() && request.auth.uid == uid;
+    }
+
     /* the tenant record */
 
     match /orgs/{orgId} {
