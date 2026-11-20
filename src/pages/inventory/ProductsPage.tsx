@@ -24,7 +24,7 @@ import { LinkButton } from '@/components/ui';
 import { useOrg } from '@/context/OrgContext';
 import { listProducts, retireProduct, saveProduct } from '@/lib/db';
 import { deleteField } from 'firebase/firestore';
-import { piecesFromPack } from '@/lib/packs';
+import { normaliseUnit, piecesFromPack } from '@/lib/packs';
 import { displayCode } from '@/lib/countCode';
 import { naira, count } from '@/lib/format';
 import { cloudinaryConfigured } from '@/lib/cloudinary';
@@ -261,6 +261,7 @@ function ProductModal({
         name: draft.name.trim(),
         category: draft.category?.trim() || 'Uncategorised',
         moq: Math.max(1, Number(draft.moq) || 1),
+        unit: draft.service ? draft.unit ?? 'Per unit' : normaliseUnit(draft.unit),
         packSize: draft.packSize?.trim() ?? '',
         brand: draft.brand?.trim() ?? '',
         barcode: draft.barcode?.trim() ?? '',
@@ -342,12 +343,11 @@ function ProductModal({
               placeholder="Beverages"
             />
           </Field>
-          <Field label="Unit" required hint="What one counts">
-            <Input
-              value={draft.unit ?? ''}
-              onChange={(e) => set('unit', e.target.value)}
-              placeholder="Per carton"
-            />
+          <Field label="Sold per" required hint="A unit is one single item; a carton is the box units come in">
+            <Select value={normaliseUnit(draft.unit)} onChange={(e) => set('unit', e.target.value)}>
+              <option value="Per carton">Per carton</option>
+              <option value="Per unit">Per unit</option>
+            </Select>
           </Field>
           <Field label="Minimum order">
             <Input
@@ -429,9 +429,9 @@ function ProductModal({
             </legend>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Pack size" hint="As people say it">
-                <Input value={draft.packSize ?? ''} onChange={(e) => set('packSize', e.target.value)} placeholder="144 pcs per CTN" />
+                <Input value={draft.packSize ?? ''} onChange={(e) => set('packSize', e.target.value)} placeholder="144 units per carton" />
               </Field>
-              <Field label="Pieces per carton" hint="For stock counts">
+              <Field label="Units per carton" hint="How many single units fill one carton">
                 <Input
                   type="number"
                   inputMode="numeric"

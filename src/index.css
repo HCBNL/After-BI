@@ -1824,3 +1824,101 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 @media (prefers-reduced-motion: reduce) {
   .scan-line { animation: none; }
 }
+
+/* ============================================================ owner's art */
+/*
+ * The owner's shapes (components/marketing/art.tsx) in motion.
+ *
+ * COLOUR: each shape's main colour walks blue, pink, gold, lime, soft blue,
+ * holding each for about seven and a half seconds and easing into the next.
+ * `--shift` starts a shape further along the walk; the second and third
+ * colours of a shape run one and two steps behind the first, so a shape is
+ * never one flat colour.
+ *
+ * MOTION: on the <svg> itself, so it never fights the colour on the parts.
+ */
+@layer components {
+  .art { overflow: visible; transform-origin: 50% 50%; --walk: 37.5s; }
+  .art .art-a { fill: #0866f5; animation: art-fill var(--walk) ease-in-out infinite; animation-delay: calc(var(--shift, 0) * -7.5s); }
+  .art .art-b { fill: #ffbe45; animation: art-fill var(--walk) ease-in-out infinite; animation-delay: calc((var(--shift, 0) + 2) * -7.5s); }
+  .art .art-c { fill: #ff78a8; animation: art-fill var(--walk) ease-in-out infinite; animation-delay: calc((var(--shift, 0) + 1) * -7.5s); }
+  .art .art-stroke { stroke: #0866f5; animation: art-stroke var(--walk) ease-in-out infinite; animation-delay: calc(var(--shift, 0) * -7.5s); }
+  .art .art-ink { fill: #07142e; }
+
+  @keyframes art-fill {
+    0%, 16% { fill: #0866f5; }
+    20%, 36% { fill: #ff78a8; }
+    40%, 56% { fill: #ffbe45; }
+    60%, 76% { fill: #c8f531; }
+    80%, 96% { fill: #7c9cff; }
+    100% { fill: #0866f5; }
+  }
+  @keyframes art-stroke {
+    0%, 16% { stroke: #0866f5; }
+    20%, 36% { stroke: #ff78a8; }
+    40%, 56% { stroke: #ffbe45; }
+    60%, 76% { stroke: #c8f531; }
+    80%, 96% { stroke: #7c9cff; }
+    100% { stroke: #0866f5; }
+  }
+
+  /* A slow fan, either way round. */
+  .art-spin { animation: art-turn calc(28s / var(--speed, 1)) linear infinite; }
+  .art-spin-back { animation: art-turn calc(32s / var(--speed, 1)) linear infinite reverse; }
+  @keyframes art-turn { to { transform: rotate(360deg); } }
+
+  /* Drifting up and down, leaning a little. */
+  .art-float { animation: art-float calc(7s / var(--speed, 1)) ease-in-out infinite; animation-delay: calc(var(--shift, 0) * -1.3s); }
+  @keyframes art-float {
+    0%, 100% { transform: translateY(-6%) rotate(-4deg); }
+    50% { transform: translateY(6%) rotate(4deg); }
+  }
+
+  /* Rocking like a leaf on a stalk. */
+  .art-sway { animation: art-sway calc(6s / var(--speed, 1)) ease-in-out infinite; animation-delay: calc(var(--shift, 0) * -1.1s); }
+  @keyframes art-sway {
+    0%, 100% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+  }
+
+  /* A star catching the light. */
+  .art-twinkle { animation: art-twinkle calc(3.4s / var(--speed, 1)) ease-in-out infinite; animation-delay: calc(var(--shift, 0) * -0.7s); }
+  @keyframes art-twinkle {
+    0%, 100% { transform: scale(0.72) rotate(0deg); opacity: 0.7; }
+    50% { transform: scale(1.06) rotate(45deg); opacity: 1; }
+  }
+
+  /* The ring turns slowly; the small moon goes round it. */
+  .art-orbit { animation: art-turn calc(48s / var(--speed, 1)) linear infinite; }
+  .art .art-satellite { transform-box: view-box; transform-origin: 50px 50px; animation: art-turn calc(6s / var(--speed, 1)) linear infinite; }
+
+  /* Steps rising one after another: blocks, dots, petals. */
+  .art-rise .art-step { transform-box: fill-box; transform-origin: 50% 100%; animation: art-step calc(2.6s / var(--speed, 1)) ease-in-out infinite; animation-delay: calc(var(--i, 0) * 0.28s); }
+  .art-sway .art-step, .art-float .art-step { transform-box: fill-box; }
+  @keyframes art-step {
+    0%, 100% { transform: translateY(0) scale(1); }
+    45% { transform: translateY(-14%) scale(1.06); }
+  }
+
+  /* A line drawing itself, resting, and drawing again. */
+  .art-draw .art-line { stroke-dasharray: 100; animation: art-draw calc(6.5s / var(--speed, 1)) ease-in-out infinite, art-stroke var(--walk) ease-in-out infinite; animation-delay: 0s, calc(var(--shift, 0) * -7.5s); }
+  @keyframes art-draw {
+    0% { stroke-dashoffset: 100; }
+    45%, 70% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -100; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .art, .art * { animation: none !important; }
+  }
+
+  /* A card that leans as the pointer comes to it (the dashed frame card). */
+  .site-tilt { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+  @media (hover: hover) {
+    .site-tilt:hover { transform: rotate(-1.4deg) translateY(-4px); }
+  }
+
+  /* The curved top of a dark band, lapping over the section before it. */
+  .site-curve { border-radius: 2.25rem 2.25rem 0 0; margin-top: -2.25rem; }
+  @media (min-width: 1024px) { .site-curve { border-radius: 3.5rem 3.5rem 0 0; margin-top: -3.5rem; } }
+}

@@ -17,8 +17,7 @@ import { AdjustmentModal } from '@/components/stock/AdjustmentModal';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { cancelAdjustment, declineAdjustment, listAdjustments, signAdjustment } from '@/lib/db';
-import { ADJUSTMENT_RAISERS, SIDE_LABEL, SIDES, sidesToSign, waitingLine } from '@/lib/adjustments';
-import { packLabel, unitsToPieces } from '@/lib/packs';
+import { ADJUSTMENT_RAISERS, SIDE_LABEL, SIDES, adjustmentAmount, sidesToSign, waitingLine } from '@/lib/adjustments';
 import { formatDateTime } from '@/lib/format';
 import { warehouseScope } from '@/lib/roles';
 import { PORTAL_ROOT } from '@/lib/tiles';
@@ -95,7 +94,7 @@ export default function AdjustmentsPage() {
     }
   };
 
-  const amount = (a: StockAdjustment) => packLabel(unitsToPieces(a.quantity, a.piecesPerUnit), a.piecesPerUnit, a.unit);
+  const amount = (a: StockAdjustment) => adjustmentAmount(a, a.quantity);
 
   return (
     <div>
@@ -220,7 +219,7 @@ export default function AdjustmentsPage() {
                 <p className="text-caption text-muted">Status</p>
                 <p className="text-lead font-bold text-primary">{STATUS_LABEL[open.status]}</p>
                 {open.status === 'applied' && typeof open.balanceAfter === 'number' && (
-                  <p className="tabular text-caption text-muted">{`Balance after: ${packLabel(unitsToPieces(open.balanceAfter, open.piecesPerUnit), open.piecesPerUnit, open.unit)}`}</p>
+                  <p className="tabular text-caption text-muted">{`Balance after: ${adjustmentAmount(open, open.balanceAfter)}`}</p>
                 )}
               </div>
             </div>

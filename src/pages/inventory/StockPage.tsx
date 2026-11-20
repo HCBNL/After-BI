@@ -38,7 +38,7 @@ import { useOrg } from '@/context/OrgContext';
 import { listStock, moveStock, setThreshold } from '@/lib/db';
 import { isOperations, warehouseScope } from '@/lib/roles';
 import { count, formatDate } from '@/lib/format';
-import { balanceLabel, piecesOf } from '@/lib/packs';
+import { balanceLabel, stockFactor } from '@/lib/packs';
 import { AdjustmentModal, type AdjustmentPreset } from '@/components/stock/AdjustmentModal';
 import { ADJUSTMENT_RAISERS } from '@/lib/adjustments';
 import type { MovementType, StockPosition } from '@/types';
@@ -147,7 +147,7 @@ export default function StockPage() {
                 : 'tabular text-body font-bold text-primary'
             }
           >
-            {balanceLabel(row.quantity, piecesOf(productById(row.productId)))}
+            {balanceLabel(row.quantity, stockFactor(productById(row.productId)))}
           </span>
         );
       },

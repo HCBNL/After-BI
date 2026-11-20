@@ -21,21 +21,21 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pencil, ScanLine, Trash2, Undo2 } from 'lucide-react';
-import { Badge, Button, Field, Input, Modal, useToast } from '@/components/ui';
+import { Badge, Button, Field, Input, Modal, Select, useToast } from '@/components/ui';
+import { locationLabel, parseLocation, rowsTo, sectionsOf } from '@/lib/locations';
 import { ProductShot } from '@/components/catalogue/ProductShot';
 import { useAuth } from '@/context/AuthContext';
 import { addCountEntry, updateCountEntry, voidCountEntry } from '@/lib/db';
 import { displayCode } from '@/lib/countCode';
-import { packLabel, piecesLabel, piecesOf, unitSingular, unitTitle, unitWord } from '@/lib/packs';
+import { countUnit, packLabel, piecesLabel, piecesOf, unitSingular, unitTitle, unitWord } from '@/lib/packs';
 import { entryPieces } from '@/lib/variance';
 import { count, formatDateTime } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import type { CountEntry, Product, StockCount } from '@/types';
-
-const QUICK_ROWS = ['Row A', 'Row B', 'Row C', 'Row D', 'Row E', 'Row F', 'Row G', 'Row H'];
+import type { CountEntry, Product, StockCount, Warehouse } from '@/types';
 
 export function CountSheet({
   count: stockCount,
+  warehouse,
   product,
   entries,
   canCount,
@@ -46,6 +46,8 @@ export function CountSheet({
   onScanNext,
 }: {
   count: StockCount;
+  /** The depot being counted: its sections and rows are what the counter picks from. */
+  warehouse?: Warehouse;
   product: Product | null;
   entries: CountEntry[];
   canCount: boolean;
@@ -59,20 +61,25 @@ export function CountSheet({
   const toast = useToast();
   const open = stockCount.status === 'open';
   const per = product ? piecesOf(product) : 1;
+  /* Always cartons and loose pieces, whatever the product's stock is kept in. */
+  const cu = product ? countUnit(product) : 'Per carton';
 
   const mine = useMemo(() => entries.filter((e) => product && e.productId === product.id), [entries, product]);
   const live = mine.filter((e) => !e.void);
   const totalPieces = live.reduce((n, e) => n + entryPieces(e), 0);
 
-  /* Places already used in this count, most recent first: the next stack is usually in one of them. */
-  const places = useMemo(() => {
-    const seen: string[] = [];
-    for (const e of [...entries].reverse()) if (!seen.includes(e.location)) seen.push(e.location);
-    return seen.slice(0, 8);
-  }, [entries]);
+  const sections = useMemo(() => sectionsOf(warehouse), [warehouse]);
 
   const [editing, setEditing] = useState<CountEntry | null>(null);
-  const [location, setLocation] = useState('');
+  /* Section number and row letter, as strings for the dropdowns; '' until chosen. */
+  const [section, setSection] = useState('');
+  const [row, setRow] = useState('');
+  const placeFrom = (label: string) => {
+    const p = parseLocation(label);
+    const ok = p && p.section <= sections.length && rowsTo(sections[p.section - 1]).includes(p.row);
+    setSection(ok ? String(p!.section) : '');
+    setRow(ok ? p!.row : '');
+  };
   const [lines, setLines] = useState('');
   const [perLine, setPerLine] = useState('');
   const [extra, setExtra] = useState('');
@@ -85,13 +92,13 @@ export function CountSheet({
   useEffect(() => {
     if (!productId) return;
     setEditing(null);
-    setLocation(lastLocation);
+    placeFrom(lastLocation);
     setLines('');
     setPerLine('');
     setExtra('');
     setLoose('');
     window.setTimeout(() => firstField.current?.focus({ preventScroll: true }), 120);
-  }, [productId, lastLocation]);
+  }, [productId, lastLocation]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!product) return null;
 
@@ -102,7 +109,7 @@ export function CountSheet({
 
   const startEdit = (e: CountEntry) => {
     setEditing(e);
-    setLocation(e.location);
+    placeFrom(e.location);
     setLines(e.lines ? String(e.lines) : '');
     setPerLine(e.perLine ? String(e.perLine) : '');
     setExtra(e.extra ? String(e.extra) : '');
@@ -111,8 +118,8 @@ export function CountSheet({
 
   const save = async (next: boolean) => {
     if (!user) return;
-    if (!location.trim()) {
-      toast.warning('Where is it?', 'Say which row or place this stack is in.');
+    if (!section || !row) {
+      toast.warning('Where is it?', 'Choose the section, then the row this stack is in.');
       return;
     }
     if (halfLine) {
@@ -126,7 +133,7 @@ export function CountSheet({
     const input = {
       productId: product.id,
       productName: product.name,
-      location: location.trim(),
+      location: locationLabel(Number(section), row),
       lines: n(lines),
       perLine: n(perLine),
       extra: n(extra),
@@ -138,7 +145,7 @@ export function CountSheet({
       if (editing) await updateCountEntry(stockCount.id, editing.id, input);
       else await addCountEntry(stockCount.id, input, user);
       onLocation(input.location);
-      toast.success(editing ? 'Stack corrected' : `${input.location}: ${packLabel(formPieces, per, product.unit)}`);
+      toast.success(editing ? 'Stack corrected' : `${input.location}: ${packLabel(formPieces, per, cu)}`);
       setEditing(null);
       setLines('');
       setPerLine('');
@@ -163,7 +170,7 @@ export function CountSheet({
   };
 
   const mayChange = (e: CountEntry) => open && !e.void && (canManage || e.countedBy === user?.id);
-  const big = unitTitle(product.unit);
+  const big = unitTitle(cu);
 
   return (
     <Modal
@@ -171,7 +178,7 @@ export function CountSheet({
       onClose={onClose}
       size="md"
       title={product.name}
-      description={[product.packSize, per > 1 ? `${count(per)} pcs per ${unitSingular(product.unit)}` : null].filter(Boolean).join(' · ') || undefined}
+      description={product.packSize || (per > 1 ? `${count(per)} units per ${unitSingular(cu)}` : undefined)}
       footer={
         open && canCount ? (
           <>
@@ -199,7 +206,7 @@ export function CountSheet({
           <ProductShot src={product.imageUrl} alt="" width={56} className="h-14 w-14 shrink-0 border border-hairline" rounded="rounded-xl" imgClassName="p-0.5" />
           <div className="min-w-0 flex-1">
             <p className="text-caption text-muted">Counted so far, every row</p>
-            <p className="tabular text-headline font-bold text-primary">{packLabel(totalPieces, per, product.unit)}</p>
+            <p className="tabular text-headline font-bold text-primary">{packLabel(totalPieces, per, cu)}</p>
             {per > 1 && <p className="tabular text-caption text-muted">{piecesLabel(totalPieces)}</p>}
           </div>
           {product.countCode && (
@@ -218,13 +225,13 @@ export function CountSheet({
                   <div className="min-w-0 flex-1">
                     <p className={cn('text-label font-semibold text-primary', e.void && 'line-through')}>
                       {e.location}
-                      <span className="ml-2 font-normal text-muted">{formula(e, product.unit)}</span>
+                      <span className="ml-2 font-normal text-muted">{formula(e, cu)}</span>
                     </p>
                     <p className="text-caption text-muted">
                       {e.void ? `Struck out by ${e.voidedBy ?? 'someone'}` : `${e.countedByName} · ${formatDateTime(e.createdAt)}`}
                     </p>
                   </div>
-                  <span className={cn('tabular shrink-0 text-label font-bold text-primary', e.void && 'line-through')}>{packLabel(p, e.piecesPerUnit, product.unit)}</span>
+                  <span className={cn('tabular shrink-0 text-label font-bold text-primary', e.void && 'line-through')}>{packLabel(p, e.piecesPerUnit, cu)}</span>
                   {mayChange(e) && (
                     <div className="flex shrink-0">
                       <Button size="sm" variant="ghost" aria-label="Correct this stack" onClick={() => startEdit(e)}>
@@ -246,29 +253,42 @@ export function CountSheet({
             <div className="flex items-center justify-between gap-2">
               <p className="text-label font-semibold text-secondary">{editing ? `Correcting ${editing.location}` : 'Add a stack'}</p>
               {editing && (
-                <Button size="sm" variant="ghost" icon={<Undo2 size={14} />} onClick={() => { setEditing(null); setLines(''); setPerLine(''); setExtra(''); setLoose(''); setLocation(lastLocation); }}>
+                <Button size="sm" variant="ghost" icon={<Undo2 size={14} />} onClick={() => { setEditing(null); setLines(''); setPerLine(''); setExtra(''); setLoose(''); placeFrom(lastLocation); }}>
                   Stop correcting
                 </Button>
               )}
             </div>
 
-            <Field label="Row or place" required>
-              <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Row E" autoCapitalize="words" />
-            </Field>
-            <div className="-mt-1 flex flex-wrap gap-1.5">
-              {[...places, ...QUICK_ROWS.filter((r) => !places.includes(r))].slice(0, 10).map((place) => (
-                <button
-                  key={place}
-                  type="button"
-                  onClick={() => setLocation(place)}
-                  className={cn(
-                    'rounded-full border px-2.5 py-1 text-caption font-semibold',
-                    place === location ? 'border-brand-600 bg-brand-50 text-brand-900 dark:bg-brand-900/40 dark:text-brand-100' : 'border-hairline text-secondary',
-                  )}
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Section" required>
+                <Select
+                  value={section}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setSection(next);
+                    /* A row the new section does not have is cleared, not kept. */
+                    if (next && row && !rowsTo(sections[Number(next) - 1]).includes(row)) setRow('');
+                  }}
+                  aria-label="Section"
                 >
-                  {place}
-                </button>
-              ))}
+                  <option value="">Choose…</option>
+                  {sections.map((_, i) => (
+                    <option key={i} value={String(i + 1)}>
+                      {`Section ${i + 1}`}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Row" required>
+                <Select value={row} onChange={(e) => setRow(e.target.value)} disabled={!section} aria-label="Row">
+                  <option value="">{section ? 'Choose…' : 'Section first'}</option>
+                  {(section ? rowsTo(sections[Number(section) - 1]) : []).map((l) => (
+                    <option key={l} value={l}>
+                      {`Row ${l}`}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -281,17 +301,23 @@ export function CountSheet({
               <Field label={`Extra ${big.toLowerCase()}`} hint="Part line, on top">
                 <Input type="number" inputMode="numeric" min={0} value={extra} onChange={(e) => setExtra(e.target.value)} placeholder="0" />
               </Field>
-              <Field label="Loose pieces" hint={per > 1 ? `${count(per)} make one` : 'Pieces per carton not set'}>
+              <Field label="Loose units" hint={per > 1 ? `${count(per)} make one carton` : 'Units per carton not set on the product'}>
                 <Input type="number" inputMode="numeric" min={0} value={loose} onChange={(e) => setLoose(e.target.value)} placeholder="0" disabled={per <= 1} />
               </Field>
             </div>
 
+            {per > 1 && (
+              <p className="text-caption text-muted">
+                {`A part carton on its own? Leave lines and ${big.toLowerCase()} empty and type only the loose units (for example 95).`}
+              </p>
+            )}
+
             <div className="flex flex-wrap items-baseline justify-between gap-2 rounded-lg bg-[var(--surface-card)] px-3 py-2">
               <span className="text-caption text-muted">
-                {formula({ lines: n(lines), perLine: n(perLine), extra: n(extra), loose: per > 1 ? n(loose) : 0, piecesPerUnit: per }, product.unit) || 'This stack'}
+                {formula({ lines: n(lines), perLine: n(perLine), extra: n(extra), loose: per > 1 ? n(loose) : 0, piecesPerUnit: per }, cu) || 'This stack'}
               </span>
               <span className="tabular text-body font-bold text-primary">
-                {packLabel(formPieces, per, product.unit)}
+                {packLabel(formPieces, per, cu)}
                 {per > 1 && <span className="ml-2 text-caption font-normal text-muted">{piecesLabel(formPieces)}</span>}
               </span>
             </div>
@@ -310,7 +336,7 @@ export function formula(e: Pick<CountEntry, 'lines' | 'perLine' | 'extra' | 'loo
   if (e.lines || e.perLine) parts.push(`${count(e.lines)} × ${count(e.perLine)}`);
   if (e.extra) parts.push(parts.length ? `+ ${count(e.extra)}` : count(e.extra));
   let out = parts.length ? `${parts.join(' ')} ${unitWord(unit)}` : '';
-  if (e.loose) out += `${out ? ', ' : ''}${count(e.loose)} pcs`;
+  if (e.loose) out += `${out ? ', ' : ''}${count(e.loose)} ${e.loose === 1 ? 'unit' : 'units'}`;
   if (!out) out = `0 ${unitWord(unit)}`;
   return out;
 }

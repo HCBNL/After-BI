@@ -20,7 +20,7 @@ import { useOrg } from '@/context/OrgContext';
 import { cancelCount, closeCount, listMovements, watchCount, watchCountEntries } from '@/lib/db';
 import { readCountCode } from '@/lib/countCode';
 import { getActiveOrg } from '@/lib/tenant';
-import { packLabel, piecesLabel, piecesOf } from '@/lib/packs';
+import { countUnit, packLabel, piecesLabel, piecesOf, stockFactor } from '@/lib/packs';
 import { LINE_LABEL, countedByProduct, isIssue, summarise, varianceLines, type VarianceLine } from '@/lib/variance';
 import { printCountReport } from '@/lib/print';
 import { downloadCsv } from '@/lib/download';
@@ -87,7 +87,7 @@ export function CountSession({ countId, onBack }: { countId: string; onBack: () 
 
   const productMap = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
   const lines = useMemo(
-    () => (stockCount ? varianceLines(stockCount, entries, new Map(products.map((p) => [p.id, { name: p.name, unit: p.unit }]))) : []),
+    () => (stockCount ? varianceLines(stockCount, entries, new Map(products.map((p) => [p.id, { name: p.name, unit: countUnit(p), factor: stockFactor(p) }]))) : []),
     [stockCount, entries, products],
   );
   const counted = useMemo(() => countedByProduct(entries), [entries]);
@@ -255,7 +255,7 @@ export function CountSession({ countId, onBack }: { countId: string; onBack: () 
   };
 
   const exportCsv = async () => {
-    const head = ['Product', 'Pieces per unit', 'System (units)', 'System (pieces)', 'Counted (units)', 'Counted (pieces)', 'Variance (units)', 'Variance (pieces)', 'Status', 'Places counted'];
+    const head = ['Product', 'Units per carton', 'System', 'System (units)', 'Counted', 'Counted (units)', 'Variance', 'Variance (units)', 'Status', 'Places counted'];
     const body = lines.map((l) => [
       l.productName,
       l.piecesPerUnit,
@@ -375,7 +375,7 @@ export function CountSession({ countId, onBack }: { countId: string; onBack: () 
                     <p className="text-caption text-muted">{r.places === 1 ? 'Counted in 1 place' : `Counted in ${r.places} places`}</p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="tabular text-body font-bold text-primary">{packLabel(r.pieces, r.per, r.product?.unit)}</p>
+                    <p className="tabular text-body font-bold text-primary">{packLabel(r.pieces, r.per, countUnit(r.product))}</p>
                     {r.per > 1 && <p className="tabular text-caption text-muted">{piecesLabel(r.pieces)}</p>}
                   </div>
                 </button>
@@ -444,6 +444,7 @@ export function CountSession({ countId, onBack }: { countId: string; onBack: () 
       {sheet && (
         <CountSheet
           count={stockCount}
+          warehouse={warehouses.find((w) => w.id === stockCount.warehouseId)}
           product={sheet}
           entries={entries}
           canCount={canCount}
@@ -547,7 +548,7 @@ function ProductFinder({
               <ProductShot src={p.imageUrl} alt="" width={36} className="h-9 w-9 shrink-0 border border-hairline" rounded="rounded-lg" imgClassName="p-0.5" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-label font-semibold text-primary">{p.name}</p>
-                <p className="truncate text-caption text-muted">{[p.packSize, piecesOf(p) > 1 ? `${piecesOf(p)} pcs` : null].filter(Boolean).join(' · ')}</p>
+                <p className="truncate text-caption text-muted">{[p.packSize, piecesOf(p) > 1 ? `${piecesOf(p)} units per carton` : null].filter(Boolean).join(' · ')}</p>
               </div>
             </button>
           </li>

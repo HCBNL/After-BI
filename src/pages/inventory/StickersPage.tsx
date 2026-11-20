@@ -22,7 +22,7 @@ import { ProductShot } from '@/components/catalogue/ProductShot';
 import { useOrg } from '@/context/OrgContext';
 import { assignMissingCountCodes, reissueCountCode } from '@/lib/db';
 import { displayCode } from '@/lib/countCode';
-import { piecesFromPack, piecesOf } from '@/lib/packs';
+import { countUnit, piecesFromPack, piecesOf, unitSingular } from '@/lib/packs';
 import { STICKER_LAYOUTS, printStickers, stickerPng, type StickerLayout } from '@/lib/stickers';
 import { saveFile } from '@/lib/download';
 import { count } from '@/lib/format';
@@ -189,7 +189,7 @@ export default function StickersPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-body font-semibold text-primary">{p.name}</p>
                     <p className="truncate text-caption text-muted">
-                      {per > 1 ? `${count(per)} pcs per ${p.unit.replace(/^per\s+/i, '').toLowerCase() || 'carton'}${fromPack ? ' (read from pack size)' : ''}` : 'Pieces per carton not set'}
+                      {per > 1 ? `${count(per)} units per ${unitSingular(countUnit(p))}${fromPack ? ' (read from pack size)' : ''}` : 'Units per carton not set'}
                     </p>
                   </div>
                   <div className="w-[118px] shrink-0">

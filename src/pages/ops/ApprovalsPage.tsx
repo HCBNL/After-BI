@@ -22,8 +22,7 @@ import { Badge, EmptyState } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { listOrders, listPendingAdjustments } from '@/lib/db';
-import { ADJUSTMENT_SIGNERS, sidesToSign, SIDE_LABEL, waitingLine } from '@/lib/adjustments';
-import { packLabel, unitsToPieces } from '@/lib/packs';
+import { ADJUSTMENT_SIGNERS, adjustmentAmount, sidesToSign, SIDE_LABEL, waitingLine } from '@/lib/adjustments';
 import { formatDate, naira, count } from '@/lib/format';
 import { orderNet, summarise } from '@/lib/pricing';
 import { PORTAL_ROOT } from '@/lib/tiles';
@@ -111,7 +110,7 @@ export default function ApprovalsPage() {
                     <p className="truncate text-label text-secondary">{`Stock adjustment · ${a.productName}`}</p>
                   </div>
                   <p className="mt-0.5 text-label text-muted">
-                    {`${a.direction === 'out' ? 'Remove' : 'Add'} ${packLabel(unitsToPieces(a.quantity, a.piecesPerUnit), a.piecesPerUnit, a.unit)} at ${a.warehouseName}, raised by ${a.requestedByName} on ${formatDate(a.createdAt)}`}
+                    {`${a.direction === 'out' ? 'Remove' : 'Add'} ${adjustmentAmount(a, a.quantity)} at ${a.warehouseName}, raised by ${a.requestedByName} on ${formatDate(a.createdAt)}`}
                   </p>
                   <p className="mt-1 text-caption text-muted">{waitingLine(a)}</p>
                 </div>

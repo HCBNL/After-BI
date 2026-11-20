@@ -438,6 +438,13 @@ export interface Warehouse {
   /** The org's own depot, as opposed to a distributor's holding. */
   kind: 'company' | 'distributor';
   distributorId?: string;
+  /**
+   * How the floor is laid out, for stock counts: one entry per section
+   * (Section 1, Section 2…), each the LAST row letter that section runs to.
+   * `['Z', 'Z', 'H']` is three sections, the third with rows A to H only.
+   * Not set means five sections of A to Z. See lib/locations.ts.
+   */
+  sections?: string[];
 }
 
 /**
@@ -515,8 +522,14 @@ export interface CountSnapshotLine {
   unit: string;
   /** In `unit`s (cartons). May carry a fraction: loose pieces. */
   quantity: number;
-  /** Pieces in one unit when the count began; 1 when the product has none. */
+  /** Pieces in one carton when the count began; 1 when the product has none. */
   piecesPerUnit: number;
+  /**
+   * Pieces in one unit of STOCK (lib/packs.ts `stockFactor`): 1 for a product
+   * kept in pieces, the carton size for one kept in cartons. Older counts do
+   * not have it; the product's current setting is used for them.
+   */
+  stockFactor?: number;
 }
 
 export type StockCountStatus = 'open' | 'closed' | 'cancelled';
@@ -622,7 +635,11 @@ export interface StockAdjustment {
   productId: string;
   productName: string;
   unit: string;
+  /** Pieces in one unit of stock: the arithmetic. */
   piecesPerUnit: number;
+  /** Pieces in one carton, and the unit to show it in: the display. */
+  cartonPieces?: number;
+  countUnit?: string;
   direction: 'in' | 'out';
   /** In units (cartons), always positive; may carry a fraction for loose pieces. */
   quantity: number;
