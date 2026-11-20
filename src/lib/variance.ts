@@ -65,8 +65,8 @@ export function countedByProduct(entries: CountEntry[]): Map<string, { pieces: n
 export function varianceLines(
   count: Pick<StockCount, 'snapshot'>,
   entries: CountEntry[],
-  /** Current products, for the unit and name of one counted but not in the snapshot. */
-  products?: Map<string, { name: string; unit: string }>,
+  /** Current products: name and count unit for one not in the snapshot, and the stock factor an older snapshot lacks. */
+  products?: Map<string, { name: string; unit: string; factor?: number }>,
 ): VarianceLine[] {
   const counted = countedByProduct(entries);
   const ids = new Set([...Object.keys(count.snapshot ?? {}), ...counted.keys()]);
@@ -75,7 +75,9 @@ export function varianceLines(
     const snap = count.snapshot?.[id];
     const got = counted.get(id);
     const per = Math.max(1, snap?.piecesPerUnit ?? got?.per ?? 1);
-    const systemPieces = snap ? unitsToPieces(snap.quantity, per) : 0;
+    /* The balance in pieces: by what one unit of STOCK holds, not by the carton size. */
+    const factor = snap?.stockFactor ?? products?.get(id)?.factor ?? per;
+    const systemPieces = snap ? unitsToPieces(snap.quantity, factor) : 0;
     const countedPieces = got?.pieces ?? 0;
     if (!got && systemPieces === 0) continue;
     const variancePieces = countedPieces - systemPieces;
@@ -93,7 +95,7 @@ export function varianceLines(
     lines.push({
       productId: id,
       productName: snap?.productName ?? got?.name ?? products?.get(id)?.name ?? 'Unknown product',
-      unit: snap?.unit ?? products?.get(id)?.unit ?? 'Per carton',
+      unit: (snap?.stockFactor === undefined ? products?.get(id)?.unit : undefined) ?? snap?.unit ?? products?.get(id)?.unit ?? 'Per carton',
       piecesPerUnit: per,
       systemPieces,
       countedPieces,

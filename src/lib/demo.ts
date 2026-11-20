@@ -66,17 +66,17 @@ const DEPOTS = [
 ];
 
 const CATALOGUE: Omit<Product, 'id' | 'status'>[] = [
-  { name: 'Classic Cooking Oil 5L', category: 'Edible oil', unit: 'carton of 4', moq: 10, pricing: { OT: 34500, MT: 33200, SA: 32000 } },
-  { name: 'Classic Cooking Oil 1L', category: 'Edible oil', unit: 'carton of 12', moq: 10, pricing: { OT: 21600, MT: 20800, SA: 20000 } },
-  { name: 'Sunrise Detergent 900g', category: 'Home care', unit: 'carton of 12', moq: 20, pricing: { OT: 18400, MT: 17600, SA: 17000 } },
-  { name: 'Sunrise Bar Soap 700g', category: 'Home care', unit: 'carton of 20', moq: 20, pricing: { OT: 14200, MT: 13600, SA: 13100 } },
-  { name: 'Mama Gold Noodles 70g', category: 'Food', unit: 'carton of 40', moq: 25, pricing: { OT: 8200, MT: 7900, SA: 7600 } },
-  { name: 'Mama Gold Seasoning Cubes', category: 'Food', unit: 'carton of 60', moq: 15, pricing: { OT: 12600, MT: 12100, SA: 11700 } },
-  { name: 'Tomato Paste 210g', category: 'Food', unit: 'carton of 24', moq: 15, pricing: { OT: 16800, MT: 16200, SA: 15600 } },
-  { name: 'Full Cream Milk Powder 400g', category: 'Dairy', unit: 'carton of 12', moq: 10, pricing: { OT: 38400, MT: 36900, SA: 35500 } },
-  { name: 'Choco Biscuits 45g', category: 'Snacks', unit: 'carton of 50', moq: 20, pricing: { OT: 9400, MT: 9000, SA: 8700 } },
-  { name: 'Citrus Energy Drink 330ml', category: 'Beverages', unit: 'carton of 24', moq: 20, pricing: { OT: 11200, MT: 10800, SA: 10400 } },
-  { name: 'Fresh Mint Toothpaste 140g', category: 'Personal care', unit: 'carton of 24', moq: 15, pricing: { OT: 22400, MT: 21500, SA: 20800 } },
+  { name: 'Classic Cooking Oil 5L', category: 'Edible oil', unit: 'Per carton', piecesPerUnit: 4, packSize: '4 units per carton', moq: 10, pricing: { OT: 34500, MT: 33200, SA: 32000 } },
+  { name: 'Classic Cooking Oil 1L', category: 'Edible oil', unit: 'Per carton', piecesPerUnit: 12, packSize: '12 units per carton', moq: 10, pricing: { OT: 21600, MT: 20800, SA: 20000 } },
+  { name: 'Sunrise Detergent 900g', category: 'Home care', unit: 'Per carton', piecesPerUnit: 12, packSize: '12 units per carton', moq: 20, pricing: { OT: 18400, MT: 17600, SA: 17000 } },
+  { name: 'Sunrise Bar Soap 700g', category: 'Home care', unit: 'Per carton', piecesPerUnit: 20, packSize: '20 units per carton', moq: 20, pricing: { OT: 14200, MT: 13600, SA: 13100 } },
+  { name: 'Mama Gold Noodles 70g', category: 'Food', unit: 'Per carton', piecesPerUnit: 40, packSize: '40 units per carton', moq: 25, pricing: { OT: 8200, MT: 7900, SA: 7600 } },
+  { name: 'Mama Gold Seasoning Cubes', category: 'Food', unit: 'Per carton', piecesPerUnit: 60, packSize: '60 units per carton', moq: 15, pricing: { OT: 12600, MT: 12100, SA: 11700 } },
+  { name: 'Tomato Paste 210g', category: 'Food', unit: 'Per carton', piecesPerUnit: 24, packSize: '24 units per carton', moq: 15, pricing: { OT: 16800, MT: 16200, SA: 15600 } },
+  { name: 'Full Cream Milk Powder 400g', category: 'Dairy', unit: 'Per carton', piecesPerUnit: 12, packSize: '12 units per carton', moq: 10, pricing: { OT: 38400, MT: 36900, SA: 35500 } },
+  { name: 'Choco Biscuits 45g', category: 'Snacks', unit: 'Per carton', piecesPerUnit: 50, packSize: '50 units per carton', moq: 20, pricing: { OT: 9400, MT: 9000, SA: 8700 } },
+  { name: 'Citrus Energy Drink 330ml', category: 'Beverages', unit: 'Per carton', piecesPerUnit: 24, packSize: '24 units per carton', moq: 20, pricing: { OT: 11200, MT: 10800, SA: 10400 } },
+  { name: 'Fresh Mint Toothpaste 140g', category: 'Personal care', unit: 'Per carton', piecesPerUnit: 24, packSize: '24 units per carton', moq: 15, pricing: { OT: 22400, MT: 21500, SA: 20800 } },
   { name: 'Soft Touch Tissue 10 rolls', category: 'Home care', unit: 'bale of 6', moq: 20, pricing: { OT: 15600, MT: 15000, SA: 14400 } },
 ];
 

@@ -20,6 +20,7 @@
  */
 
 import type { AdjustmentSide, Role, StockAdjustment, UserProfile } from '@/types';
+import { packLabel, unitsToPieces } from './packs';
 
 export const SIDES: AdjustmentSide[] = ['operations', 'finance'];
 
@@ -83,4 +84,11 @@ export function waitingLine(adj: Pick<StockAdjustment, 'signers' | 'signatures'>
     return names.length ? `${SIDE_LABEL[s]} (${names.slice(0, 3).join(' or ')}${names.length > 3 ? ' or another' : ''})` : SIDE_LABEL[s];
   });
   return parts.length ? `Waiting for ${parts.join(' and ')}` : 'Both sides signed';
+}
+
+/** "2 ctn · 95 pcs": an adjustment quantity (or balance) in stock units, shown as cartons and pieces. */
+export function adjustmentAmount(a: Pick<StockAdjustment, 'piecesPerUnit' | 'cartonPieces' | 'countUnit' | 'unit'>, quantity: number): string {
+  const pieces = unitsToPieces(quantity, a.piecesPerUnit);
+  const carton = a.cartonPieces ?? a.piecesPerUnit;
+  return packLabel(pieces, carton, a.countUnit ?? a.unit);
 }

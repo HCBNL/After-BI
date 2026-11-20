@@ -348,7 +348,7 @@ const HOW_TO: HowTo[] = [
     ],
     tips: [
       'The barcode only works inside AfterBI, for your company. Any other scanner reads letters that mean nothing.',
-      'Set Pieces per carton on each product (Products, Product details) so loose pieces can be counted.',
+      'Set Units per carton on each product (Products, Product details) so loose units can be counted.',
       'New code gives a product a fresh code and kills its old stickers at once. Use it only if stickers were lost or copied.',
     ],
   },
@@ -360,12 +360,13 @@ const HOW_TO: HowTo[] = [
     steps: [
       { text: 'Open Stock count and press Start a count. Choose the depot.', to: 'stock-count' },
       { text: 'Press Scan a carton and hold the phone over the sticker so the bars sit in the box. It reads by itself and opens the product.' },
-      { text: 'Type where it is (Row E), how many Lines, the cartons per line, any Extra cartons and the Loose pieces.' },
+      { text: 'Choose the Section, then the Row it sits in. Type how many Lines, the cartons per line, any Extra cartons and the Loose units.' },
       { text: 'Press Save, scan next. Count the same product again in every row it sits in; the rows add up.' },
       { text: 'Check Not counted yet for anything missed. Use Find without scanning for a carton with a torn sticker.' },
       { text: 'A manager presses Close count. The Variance shows every line: matched, or short, over, not counted, not in system in red.' },
     ],
     tips: [
+      'Each depot\'s sections and rows are set on Depots: open the depot and use Sections and rows. A new depot has five sections of rows A to Z.',
       'Counters do not see the system figure while counting, so they count what is there.',
       'A count never changes stock. From a closed count, Adjust on a red line raises a stock adjustment for approval.',
       'Several people can count the same depot at once from their own phones.',

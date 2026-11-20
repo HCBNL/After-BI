@@ -48,7 +48,7 @@ import { orgPath, requireOrg, TENANTS, type CollectionKey } from './tenant';
 import { nairaPlain, todayISO } from './format';
 import { kobo, summarise } from './pricing';
 import { newCountCode } from './countCode';
-import { piecesOf } from './packs';
+import { countUnit, normaliseUnit, piecesFromPack, piecesOf, stockFactor } from './packs';
 import type {
   AdjustmentSide,
   CountEntry,
@@ -403,7 +403,10 @@ function withTiers(product: Product): Product {
     const value = tier === 'SA' ? (stored.SA ?? stored.SEP) : stored[tier];
     if (typeof value === 'number') pricing[tier] = value;
   }
-  return { ...product, pricing };
+  /* Units and cartons only: "carton of 12" reads as Per carton with 12 units in it. */
+  const unit = product.service ? product.unit : normaliseUnit(product.unit);
+  const piecesPerUnit = product.piecesPerUnit ?? (product.service ? undefined : piecesFromPack(product.unit) ?? undefined);
+  return { ...product, pricing, unit, piecesPerUnit };
 }
 
 function withTier(distributor: Distributor): Distributor {
@@ -2412,9 +2415,10 @@ export async function startCount(input: {
     if (product?.service) continue;
     snapshot[pos.productId] = {
       productName: product?.name ?? pos.productName,
-      unit: product?.unit ?? pos.unit,
+      unit: product ? countUnit(product) : pos.unit,
       quantity: Number(pos.quantity) || 0,
       piecesPerUnit: piecesOf(product),
+      stockFactor: product ? stockFactor(product) : piecesOf(product),
     };
   }
 
@@ -2582,7 +2586,7 @@ export async function raiseAdjustment(input: {
   warehouse: Pick<Warehouse, 'id' | 'name'>;
   product: Product;
   direction: 'in' | 'out';
-  /** In units; may carry a fraction for loose pieces. */
+  /** In units of STOCK (pieces for a product kept in pieces); may carry a fraction. */
   quantity: number;
   reason: string;
   count?: Pick<StockCount, 'id' | 'number'> | null;
@@ -2605,7 +2609,9 @@ export async function raiseAdjustment(input: {
     productId: input.product.id,
     productName: input.product.name,
     unit: input.product.unit,
-    piecesPerUnit: piecesOf(input.product),
+    piecesPerUnit: stockFactor(input.product),
+    cartonPieces: piecesOf(input.product),
+    countUnit: countUnit(input.product),
     direction: input.direction,
     quantity: Math.round(input.quantity * 1e6) / 1e6,
     reason: input.reason.trim().slice(0, 500),
