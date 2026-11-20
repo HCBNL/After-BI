@@ -28,8 +28,8 @@ const TOUR_VERSION = 1;
 const BRIEF: TourStep = {
   id: 'brief',
   anchor: 'brief',
-  title: 'Your brief, every morning',
-  body: 'AfterBI reads your orders, invoices and stock and tells you, in plain words, what to do first. Tap the list icon on any line to keep it as a task with a date.',
+  title: 'Your sales at a glance',
+  body: 'Six months of sales: blue is sold, green is collected, and the amber gap between them is still owed. Hover or tap a month for its figures.',
 };
 
 const NAV: TourStep = {

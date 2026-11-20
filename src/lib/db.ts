@@ -1510,6 +1510,15 @@ export interface HomeSummary {
   monthSales: number;
   outstanding: number;
   overdue: number;
+  /** The last six months, oldest first: invoiced in each month, and how much of that is paid. */
+  trend: MonthTrend[];
+}
+
+export interface MonthTrend {
+  /** `YYYY-MM`. */
+  month: string;
+  sold: number;
+  collected: number;
 }
 
 /**
@@ -1535,11 +1544,28 @@ export async function getHomeSummary(input: {
     /* Stock is inside information; a distributor or rep never reads it. */
     input.distributorId == null ? lowStock() : Promise.resolve([] as StockPosition[]),
     listSales({ distributorId: scope, from: monthStart, max: 500 }),
-    listInvoices({ distributorId: scope, max: 300 }),
+    listInvoices({ distributorId: scope, max: 500 }),
   ]);
 
   const today = todayISO();
   const open = invoices.filter((i) => i.status !== 'paid' && i.status !== 'void' && i.status !== 'draft');
+
+  /* Six months of what was sold (invoiced) and how much of it has come in. */
+  const months: string[] = [];
+  const now = new Date();
+  for (let back = 5; back >= 0; back -= 1) {
+    const d = new Date(now.getFullYear(), now.getMonth() - back, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const trend: MonthTrend[] = months.map((month) => ({ month, sold: 0, collected: 0 }));
+  const at = new Map(trend.map((row) => [row.month, row]));
+  for (const invoice of invoices) {
+    if (invoice.status === 'void' || invoice.status === 'draft') continue;
+    const row = at.get(invoice.issuedOn.slice(0, 7));
+    if (!row) continue;
+    row.sold += invoice.total;
+    row.collected += Math.min(invoice.total, invoice.amountPaid ?? 0);
+  }
 
   return {
     openOrders: orders.filter((o) => o.status === 'pending_approval' || o.status === 'approved').length,
@@ -1552,6 +1578,7 @@ export async function getHomeSummary(input: {
     overdue: open
       .filter((i) => i.dueOn < today)
       .reduce((sum, i) => sum + (i.total - (i.amountPaid ?? 0)), 0),
+    trend,
   };
 }
 

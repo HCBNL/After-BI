@@ -50,7 +50,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
       'Read the whole business: every order, every account, every naira owed.',
     ],
     day: [
-      'Read your brief on Home: what needs you first, and where orders are held up.',
+      'Check Reminders: what needs you first, and where orders are held up.',
       'Clear Approvals: sign or reject what is waiting.',
       'Check the pipeline for orders approved but not delivered, and deliveries not invoiced.',
       'Once a month, read Scorecards and Analytics with your managers.',
@@ -68,7 +68,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
       'Keep settings such as the invoice footer and bank details correct.',
     ],
     day: [
-      'Read your brief and clear anything waiting for your signature.',
+      'Check Reminders and clear anything waiting for your signature.',
       'Add or correct products and distributors as the business changes.',
       'Follow up the reminders: unfulfilled orders, uninvoiced deliveries, quiet accounts.',
     ],
@@ -84,7 +84,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
       'Chase what the reminders say is stuck.',
     ],
     day: [
-      'Read your brief for orders that are stuck.',
+      'Check Reminders for orders that are stuck.',
       'Key new orders as they arrive by phone or WhatsApp.',
       'Check Stock before promising a delivery date.',
     ],
@@ -101,7 +101,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
       'Carry your monthly target.',
     ],
     day: [
-      'Read your brief: drafts left unsent, invoices due on your accounts.',
+      'Check Reminders: drafts left unsent, invoices due on your accounts.',
       'Visit, then raise orders on the spot.',
       'Before you finish, key the day’s sell-out.',
     ],
@@ -122,7 +122,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
       'Key your sell-out so your targets are real.',
     ],
     day: [
-      'Read your brief: what is due this week and what has arrived.',
+      'Check Reminders: what is due this week and what has arrived.',
       'Place orders from the catalogue.',
       'Check deliveries and raise returns the same day.',
     ],
@@ -139,7 +139,7 @@ export const ROLE_GUIDES: RoleGuide[] = [
       'Receive returns back into stock.',
     ],
     day: [
-      'Read your brief: approved orders waiting on the depot, lines below threshold.',
+      'Check Reminders: approved orders waiting on the depot, lines below threshold.',
       'Fulfil approved orders. Fulfilling deducts the stock for you.',
       'Record deliveries in from the factory as they land.',
     ],
