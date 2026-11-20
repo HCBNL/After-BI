@@ -335,7 +335,7 @@ export const PROPOSAL_CSS = `
   @page { size: A4; margin: 16mm 15mm; }
   * { box-sizing: border-box; }
   @media screen { body { padding: 28px 32px; } }
-  body { margin: 0; font: 10.5pt/1.55 Inter, -apple-system, 'Segoe UI', Arial, sans-serif; color: #14171c; }
+  body { margin: 0; font: 10.5pt/1.55 'Plus Jakarta Sans', -apple-system, 'Segoe UI', Arial, sans-serif; color: #14171c; }
   h1, h2, h3 { margin: 0; letter-spacing: -0.02em; }
   .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20pt; letter-spacing: -0.04em; }
   .brand img { width: 32px; height: 32px; object-fit: contain; }

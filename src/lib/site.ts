@@ -703,8 +703,13 @@ export const SOLUTIONS: Solution[] = [
   },
 ];
 
-/** Customer logos for the "trusted by" strip. EMPTY ON PURPOSE. Files go in /public/site/logos/. */
-export const LOGOS: { name: string; src: string }[] = [];
+/**
+ * Customers' logos, shown on the white "Trusted by" card that sits on the top
+ * edge of the closing band, above the footer. Files go in /public/site/logos/
+ * (about 120 pixels tall, transparent or white ground); add a line here for
+ * each new customer.
+ */
+export const LOGOS: { name: string; src: string }[] = [{ name: 'Haiqing', src: '/site/logos/haiqing.png' }];
 
 /* ------------------------------------------------------------ the pictures */
 

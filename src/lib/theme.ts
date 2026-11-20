@@ -89,9 +89,9 @@ export type Preset = 'green' | 'blue' | 'gold';
 export type Accent = Preset | `#${string}`;
 
 export const ACCENTS: { id: Preset; label: string; swatch: string }[] = [
-  { id: 'green', label: 'Green', swatch: '#10B981' },
-  { id: 'blue', label: 'Blue', swatch: '#29AEFF' },
-  { id: 'gold', label: 'Yellow', swatch: '#F5C518' },
+  { id: 'green', label: 'Green', swatch: '#12BF6A' },
+  { id: 'blue', label: 'Blue', swatch: '#2F6BFF' },
+  { id: 'gold', label: 'Yellow', swatch: '#FFB21E' },
 ];
 
 const ACCENT_KEY = 'afterbi.accent';
@@ -126,8 +126,8 @@ function mix(hex: string, toward: [number, number, number], amount: number): str
 }
 
 const BLACK: [number, number, number] = [0, 0, 0];
-/* Dark panels lean navy, not black, so a custom colour stays bright at night. */
-const NIGHT: [number, number, number] = [15, 28, 46];
+/* Dark panels lean toward the charcoal of the dark theme, so a custom colour stays vivid at night. */
+const NIGHT: [number, number, number] = [22, 22, 24];
 
 function applyAccent(accent: Accent): void {
   const root = document.documentElement;
@@ -140,8 +140,9 @@ function applyAccent(accent: Accent): void {
   }
   const [r, g, b] = rgb(accent);
   root.dataset.accent = 'custom';
-  root.style.setProperty('--c-hero', mix(accent, BLACK, 0.45));
-  root.style.setProperty('--c-hero-dark', mix(accent, NIGHT, 0.6));
+  /* Vivid and thick: the colour itself, deepened a little, never muddied. */
+  root.style.setProperty('--c-hero', mix(accent, BLACK, 0.22));
+  root.style.setProperty('--c-hero-dark', mix(accent, NIGHT, 0.4));
   root.style.setProperty('--c-glow', `rgba(${r}, ${g}, ${b}, 0.22)`);
   root.style.setProperty('--c-ground-a', mix(accent, BLACK, 0.2));
   root.style.setProperty('--c-ground-b', mix(accent, BLACK, 0.38));
