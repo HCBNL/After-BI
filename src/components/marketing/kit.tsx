@@ -29,7 +29,8 @@ import { SiteFooter, SiteHeader } from './chrome';
 import { BookDemo } from './BookDemo';
 import { HelpBubble } from './HelpBubble';
 import { btn, container } from './tokens';
-import { SiteImage, SiteImagesProvider } from './site-ui';
+import { SiteImagesProvider } from './site-ui';
+import { Art } from './art';
 
 /* ---------------------------------------------------------------- the ask */
 
@@ -208,13 +209,9 @@ export function PublicShell({
 /* ------------------------------------------------------- the closing band */
 
 /**
- * The last thing a reader sees is the ask: a deep band with a picture beside it.
- *
- * The band used to be painted in the accent, which is the most expensive way
- * to spend the ten per cent: a thousand-pixel slab of the loud colour, with
- * the actual button inside it forced to white to stay visible. Now the band
- * is the structure colour at depth and the button on it is the brightest
- * thing in the section, which is the whole arrangement in miniature.
+ * The final call, the owner's pattern: a deep card with two of his shapes,
+ * large, turning and walking through the palette at either side, the AfterBI
+ * mark between them, and the ask. The button is the brightest thing in it.
  */
 function ClosingBand() {
   const { book } = useAsk();
@@ -222,31 +219,29 @@ function ClosingBand() {
   return (
     <section className="bg-white py-16 sm:py-20">
       <div className={container}>
-        <div className="relative isolate grid overflow-hidden rounded-[2rem] bg-navy-900 text-white lg:grid-cols-[1.15fr_1fr]">
-          <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 -z-10 h-80 w-80 rounded-full bg-navy-500/40 blur-3xl" />
-          <div className="p-8 sm:p-12 lg:p-14">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-navy-200">Book a demo</p>
-            <h2 className="mt-4 font-display text-[1.68rem] font-semibold leading-[1.08] tracking-[-0.035em] sm:text-[2.35rem]">
-              Ready to see AfterBI in action?
-            </h2>
-            <p className="mt-4 max-w-md text-[15.5px] leading-relaxed text-white/80">
-              A guided demo, configured around your products, partners and price lists.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              {/* The accent, now that the band behind it is structure. */}
-              <button type="button" onClick={book} className={btn.accent}>
-                Book a demo
-              </button>
-              <Link to="/pricing" className={btn.lineWhite}>
-                See plans and pricing
-              </Link>
-            </div>
+        <div className="relative isolate overflow-hidden rounded-[2rem] bg-navy-900 px-6 py-16 text-center text-white sm:rounded-[2.75rem] sm:px-12 sm:py-20">
+          <Art name="bloom" speed={0.55} className="pointer-events-none absolute -left-20 top-1/2 -z-10 h-56 w-56 -translate-y-1/2 opacity-90 sm:-left-16 sm:h-80 sm:w-80" />
+          <Art name="pinwheel" shift={2} speed={0.55} className="pointer-events-none absolute -right-20 top-1/2 -z-10 h-56 w-56 -translate-y-1/2 opacity-90 sm:-right-16 sm:h-80 sm:w-80" />
+          <Art name="spark" shift={1} className="pointer-events-none absolute left-[22%] top-10 -z-10 hidden h-8 w-8 sm:block" />
+          <Art name="spark" shift={3} className="pointer-events-none absolute bottom-12 right-[24%] -z-10 hidden h-6 w-6 sm:block" />
+
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)]">
+            <img src="/brand/afterbi-mark.png" alt="AfterBI" width={44} height={44} className="h-11 w-11 object-contain" />
+          </span>
+          <h2 className="mx-auto mt-7 max-w-xl font-display text-[1.75rem] font-semibold leading-[1.08] tracking-[-0.035em] text-balance sm:text-[2.6rem]">
+            Ready to see AfterBI in action?
+          </h2>
+          <p className="mx-auto mt-4 max-w-md text-[15.5px] leading-relaxed text-white/80">
+            A guided demo, configured around your products, partners and price lists.
+          </p>
+          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+            <button type="button" onClick={book} className={btn.accent}>
+              Book a demo
+            </button>
+            <Link to="/pricing" className={btn.lineWhite}>
+              See plans and pricing
+            </Link>
           </div>
-          <SiteImage
-            slot="cta-team"
-            alt="The AfterBI team"
-            className="min-h-[16rem] lg:min-h-full"
-          />
         </div>
       </div>
     </section>

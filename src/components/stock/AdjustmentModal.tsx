@@ -15,7 +15,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
 import { listMembers, listStock, raiseAdjustment } from '@/lib/db';
 import { pickSigners, SIDE_LABEL, SIDES } from '@/lib/adjustments';
-import { balanceLabel, packLabel, piecesOf, unitsToPieces, unitTitle } from '@/lib/packs';
+import { countUnit, packLabel, piecesOf, stockFactor, unitsToPieces, unitTitle } from '@/lib/packs';
 import { warehouseScope } from '@/lib/roles';
 import type { StockCount, UserProfile } from '@/types';
 
@@ -57,7 +57,10 @@ export function AdjustmentModal({
   const [seed, setSeed] = useState<string | null>(null);
 
   const product = products.find((p) => p.id === productId);
+  /* Cartons and loose pieces to type and read; the stock factor to turn them into the balance's own unit. */
   const per = piecesOf(product);
+  const factor = stockFactor(product);
+  const cu = countUnit(product);
 
   /* Fill from the preset each time the dialog opens. */
   const seedKey = open ? JSON.stringify(preset ?? {}) : null;
@@ -98,7 +101,7 @@ export function AdjustmentModal({
   const signers = useMemo(() => (user && members ? pickSigners(members, user.id) : null), [members, user]);
 
   const totalPieces = Math.max(0, Math.round(Number(units) || 0)) * per + (per > 1 ? Math.max(0, Math.round(Number(pieces) || 0)) : 0);
-  const heldPieces = held === null ? null : unitsToPieces(held, per);
+  const heldPieces = held === null ? null : unitsToPieces(held, factor);
   const afterPieces = heldPieces === null ? null : heldPieces + (direction === 'in' ? totalPieces : -totalPieces);
 
   const send = async () => {
@@ -123,7 +126,7 @@ export function AdjustmentModal({
         warehouse,
         product,
         direction,
-        quantity: totalPieces / per,
+        quantity: totalPieces / factor,
         reason,
         count: preset?.count ?? null,
         signers,
@@ -195,10 +198,10 @@ export function AdjustmentModal({
         </Field>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label={unitTitle(product?.unit)} required>
+          <Field label={unitTitle(cu)} required>
             <Input type="number" inputMode="numeric" min={0} value={units} onChange={(e) => setUnits(e.target.value)} placeholder="0" />
           </Field>
-          <Field label="Loose pieces" hint={per > 1 ? `${per} make one` : 'Set pieces per carton on the product'}>
+          <Field label="Loose units" hint={per > 1 ? `${per} make one carton` : 'Set units per carton on the product'}>
             <Input type="number" inputMode="numeric" min={0} value={pieces} onChange={(e) => setPieces(e.target.value)} placeholder="0" disabled={per <= 1} />
           </Field>
         </div>
@@ -207,12 +210,12 @@ export function AdjustmentModal({
           <div className="grid grid-cols-2 gap-3 rounded-xl border border-hairline surface-sunken px-4 py-3 text-label">
             <div>
               <p className="text-caption text-muted">In the system now</p>
-              <p className="tabular font-bold text-primary">{balanceLabel(held ?? 0, per)}</p>
+              <p className="tabular font-bold text-primary">{packLabel(heldPieces ?? 0, per, cu)}</p>
             </div>
             <div>
               <p className="text-caption text-muted">After, once approved</p>
               <p className={`tabular font-bold ${afterPieces !== null && afterPieces < 0 ? 'text-status-critical' : 'text-primary'}`}>
-                {afterPieces === null ? '' : afterPieces < 0 ? 'Below zero: not possible' : packLabel(afterPieces, per, product.unit)}
+                {afterPieces === null ? '' : afterPieces < 0 ? 'Below zero: not possible' : packLabel(afterPieces, per, cu)}
               </p>
             </div>
           </div>
