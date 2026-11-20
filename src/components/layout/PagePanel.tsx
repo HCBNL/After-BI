@@ -62,13 +62,13 @@ export function PagePanel({
 
   return (
     <section
-      className={cn('ab-hero ab-panel relative isolate overflow-hidden pb-12 text-white lg:pb-[4.5rem]', className)}
+      className={cn('ab-hero ab-panel relative isolate overflow-hidden pb-12 text-white lg:pb-[4.75rem]', className)}
     >
       <BrandBars className="pointer-events-none absolute -right-14 -top-8 -z-10 h-64 w-64 text-white/[0.05] lg:h-[24rem] lg:w-[24rem]" />
 
       <div aria-hidden style={{ height: 'var(--safe-top)' }} />
 
-      <div className="mx-auto max-w-[1440px] px-4 pt-2 sm:px-5 lg:pt-6">
+      <div className="mx-auto max-w-[1440px] px-4 pt-2 sm:px-5 lg:pt-9">
         <div className="relative flex h-11 items-center justify-center lg:hidden">
           <button
             type="button"
@@ -84,26 +84,31 @@ export function PagePanel({
           </div>
         </div>
 
-        <div className="hidden items-center justify-between gap-4 lg:flex">
-          <div className="flex min-w-0 items-center gap-2.5">
+        {/*
+          On a laptop the title sits on the left at the MIDDLE of the panel's
+          height, not pinned to its top: the right hand column (the four round
+          buttons, then the page's own buttons under them) sets the height,
+          and the title is centred against all of it. So a page with a New
+          order button and a page with none both read balanced. On a phone the
+          title is in the bar above and the page's buttons sit centred.
+        */}
+        <div className="lg:grid lg:min-h-[5.5rem] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-x-6 lg:gap-y-3">
+          <div className={cn('hidden min-w-0 items-center gap-2.5 lg:flex', Boolean(actions) && 'lg:row-span-2')}>
             <h1 className="truncate font-display text-display font-bold leading-tight tracking-[-0.025em]">{title}</h1>
             {description && <About title={title} text={description} />}
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="hidden items-center justify-end gap-2 lg:col-start-2 lg:flex">
             <HeroLanguageButton />
             <HeroMoneyButton />
             <HeroThemeButton />
             {user && <ProfilePhoto user={user} />}
           </div>
-        </div>
-
-        {actions && (
-          <div className="mt-1 flex flex-col items-center gap-4 text-center lg:mt-2 lg:flex-row lg:items-end lg:justify-between lg:text-left">
-            <div className="ab-on-panel flex flex-wrap items-center justify-center gap-2 lg:ml-auto lg:justify-end">
+          {actions && (
+            <div className="ab-on-panel mt-1 flex flex-wrap items-center justify-center gap-2 lg:col-start-2 lg:mt-0 lg:justify-end">
               {actions}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {children && <div className="mt-4 lg:mt-6">{children}</div>}
       </div>

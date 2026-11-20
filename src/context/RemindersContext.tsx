@@ -29,7 +29,8 @@ import { useToast } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { useOptionalOrg } from '@/context/OrgContext';
 import { useAsync } from '@/hooks/useAsync';
-import { listInvoices, listOrders, listReturns, listSales, lowStock } from '@/lib/db';
+import { listInvoices, listOrders, listPendingAdjustments, listReturns, listSales, lowStock } from '@/lib/db';
+import { ADJUSTMENT_SIGNERS } from '@/lib/adjustments';
 import { isAdmin, partnerScope } from '@/lib/roles';
 import { todayISO } from '@/lib/format';
 import { PORTAL_ROOT } from '@/lib/tiles';
@@ -184,10 +185,10 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
       /* An HR officer has no orders or invoices to be reminded of; only their own tasks. */
       if (role === 'hr') {
         setCheckedAt(new Date());
-        return { orders: [], invoices: [], stock: [], returns: [], sales: [] };
+        return { orders: [], invoices: [], stock: [], returns: [], sales: [], adjustments: [] };
       }
       const ops = isAdmin(role) || ['staff', 'operations_manager', 'warehouse_manager'].includes(role);
-      const [orders, invoices, stock, returns, sales] = await Promise.all([
+      const [orders, invoices, stock, returns, sales, adjustments] = await Promise.all([
         listOrders({ distributorId: scope, max: 300 }),
         listInvoices({ distributorId: scope, max: 300 }),
         ops ? lowStock() : Promise.resolve([]),
@@ -195,9 +196,10 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
         role === 'sales_rep'
           ? listSales({ distributorId: scope, from: new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10), max: 200 })
           : Promise.resolve([]),
+        ADJUSTMENT_SIGNERS.includes(role) ? listPendingAdjustments().catch(() => []) : Promise.resolve([]),
       ]);
       setCheckedAt(new Date());
-      return { orders, invoices, stock, returns, sales };
+      return { orders, invoices, stock, returns, sales, adjustments };
     },
     [user?.id, role, scope, live, tick],
     { handleError: false },
@@ -338,6 +340,7 @@ export function RemindersProvider({ children }: { children: ReactNode }) {
       stock: data.stock,
       returns: data.returns,
       sales: data.sales,
+      adjustments: data.adjustments,
       distributors: org?.distributors ?? [],
     });
   }, [data, user, role, org?.settings?.reminders, org?.distributors]);

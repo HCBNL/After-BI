@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/cn';
 import { initials as makeInitials } from '@/lib/format';
 import { Hint } from './Hint';
+import { DateField, TimeField } from './DateField';
 
 /* Button */
 
@@ -290,6 +291,27 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { className, invalid, leading, trailing, ...rest },
   ref,
 ) {
+  /* Dates and times use the app's own pickers, never the browser's (see DateField.tsx). */
+  if (rest.type === 'date' || rest.type === 'time') {
+    const Picker = rest.type === 'date' ? DateField : TimeField;
+    return (
+      <Picker
+        value={rest.value}
+        onChange={rest.onChange}
+        min={rest.min}
+        max={rest.max}
+        disabled={rest.disabled}
+        required={rest.required}
+        placeholder={rest.placeholder}
+        name={rest.name}
+        id={rest.id}
+        className={className}
+        invalid={invalid}
+        aria-label={rest['aria-label']}
+      />
+    );
+  }
+
   const field = (
     <input
       ref={ref}
