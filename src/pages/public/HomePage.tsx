@@ -48,7 +48,7 @@ import { BrandBars } from '@/components/home/HomeArt';
 import { Art, ArtTile, SpinBadge, type ArtName } from '@/components/marketing/art';
 import { homeVideos } from '@/lib/siteDoc';
 import { cn } from '@/lib/cn';
-import { FAQ, HERO, INDUSTRIES, LOGOS, META_DESCRIPTION, TABS, TESTIMONIALS, type TabKey } from '@/lib/site';
+import { FAQ, HERO, INDUSTRIES, META_DESCRIPTION, TABS, TESTIMONIALS, type TabKey } from '@/lib/site';
 
 export default function HomePage() {
   return (
@@ -161,12 +161,11 @@ function HeroArt() {
 /* ------------------------------------------------------------------- trust */
 
 /**
- * A turning badge, the three promises, and the customers' logos once there
- * are any. The badge is the owner's trust strip: words round a ring, a spark
+ * A turning badge and the three promises. (The customers' logos are on the
+ * white card above the footer.) The badge is the owner's trust strip: words round a ring, a spark
  * in the middle.
  */
 function Trust() {
-  const row = [...LOGOS, ...LOGOS];
   return (
     <section className="bg-white py-12 sm:py-14">
       <div className={cn(container, 'flex flex-col items-center gap-8 sm:flex-row sm:justify-center sm:gap-12')}>
@@ -187,15 +186,6 @@ function Trust() {
           </ul>
         </div>
       </div>
-      {LOGOS.length > 0 && (
-        <div className="mt-10 overflow-hidden">
-          <div className="site-marquee flex w-max items-center gap-14 px-7">
-            {row.map((logo, index) => (
-              <img key={`${logo.name}-${index}`} src={logo.src} alt={logo.name} loading="lazy" className="h-9 w-auto opacity-70 grayscale" />
-            ))}
-          </div>
-        </div>
-      )}
     </section>
   );
 }

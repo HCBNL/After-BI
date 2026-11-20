@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { IconArt } from '@/components/ui/IconArt';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useAuth } from '@/context/AuthContext';
 import { groupsForRole, resolveTo, GROUP_ICON } from '@/lib/tiles';
@@ -57,9 +58,7 @@ export default function AllActions() {
                             : 'hover:bg-[var(--surface-sunken)]',
                         )}
                       >
-                        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-sunken)] text-secondary">
-                          <Icon size={17} aria-hidden />
-                        </span>
+                        <IconArt icon={Icon} id={action.id} size={40} className="mt-0.5" />
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2">
                             <span className="text-body font-semibold text-primary">{action.label}</span>

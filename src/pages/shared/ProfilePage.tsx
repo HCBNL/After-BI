@@ -8,12 +8,43 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Camera, LogOut, Save, Trash2 } from 'lucide-react';
+import {
+  Camera,
+  KeyRound,
+  LayoutGrid,
+  Languages,
+  Lock,
+  LockOpen,
+  LogOut,
+  Monitor,
+  Moon,
+  Palette,
+  Save,
+  Sun,
+  Timer,
+  Trash2,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useShell } from '@/components/layout/ShellContext';
-import { Avatar, Badge, Button, Divider, Field, Hint, Input, Spinner, useToast } from '@/components/ui';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import {
+  Avatar,
+  Badge,
+  Button,
+  Divider,
+  Field,
+  Hint,
+  Input,
+  Select,
+  SettingsCard,
+  SettingsRow,
+  Spinner,
+  useToast,
+} from '@/components/ui';
+import { PinSetup } from '@/components/lock/PinSetup';
+import { useLock } from '@/components/lock/useLock';
+import { DEFAULT_MINUTES, LOCK_CHOICES, removePin, setLockMinutes } from '@/lib/pinLock';
+import { getStoredTheme, setStoredTheme, type ThemeChoice } from '@/lib/theme';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { AccentPicker } from '@/components/AccentPicker';
 import { useAuth } from '@/context/AuthContext';
@@ -29,7 +60,7 @@ import { PhotoViewer } from '@/components/PhotoViewer';
 import { useEntitlements } from '@/lib/plans';
 
 export default function ProfilePage() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, resetPassword } = useAuth();
   /* Optional, because this screen is also the platform console's profile, and
      that shell mounts no OrgProvider. See `useOptionalOrg`. */
   const org = useOptionalOrg();
@@ -47,6 +78,10 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [viewing, setViewing] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
+  const [theme, setTheme] = useState<ThemeChoice>(() => getStoredTheme());
+  const [settingPin, setSettingPin] = useState(false);
+  const [pinBusy, setPinBusy] = useState(false);
+  const lock = useLock(user?.id);
 
   useEffect(() => {
     if (!user) return;
@@ -210,21 +245,125 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      </div>
+      <SettingsCard
+        title="Security"
+        description="Your password signs you in. Your PIN keeps the app locked when you step away."
+      >
+        <SettingsRow
+          icon={lock.set ? Lock : LockOpen}
+          art="security-pin"
+          tone="purple"
+          label="Personal PIN"
+          hint={
+            lock.set
+              ? 'Six digits, asked for after the app sits idle or your screen locks.'
+              : 'Not set. Add a second lock on top of your password.'
+          }
+          right={
+            <Button size="sm" variant={lock.set ? 'outline' : 'primary'} onClick={() => setSettingPin(true)}>
+              {lock.set ? 'Change' : 'Set up'}
+            </Button>
+          }
+        />
+        {lock.set && (
+          <SettingsRow
+            icon={Timer}
+            art="security-timer"
+            tone="orange"
+            label="Lock after"
+            hint="Idle this long, and AfterBI asks for your PIN."
+            right={
+              <Select
+                aria-label="Lock after"
+                className="w-36"
+                value={String(lock.local.minutes ?? DEFAULT_MINUTES)}
+                disabled={pinBusy}
+                onChange={async (e) => {
+                  setPinBusy(true);
+                  try {
+                    await setLockMinutes(user.id, Number(e.target.value));
+                  } catch (err) {
+                    toast.error('Not changed', err instanceof Error ? err.message : undefined);
+                  } finally {
+                    setPinBusy(false);
+                  }
+                }}
+              >
+                {LOCK_CHOICES.map((m) => (
+                  <option key={m} value={String(m)}>
+                    {m === 60 ? '1 hour' : `${m} minutes`}
+                  </option>
+                ))}
+              </Select>
+            }
+          />
+        )}
+        <SettingsRow
+          icon={KeyRound}
+          art="security-password"
+          tone="blue"
+          label="Password"
+          hint="We email you a link to choose a new one."
+          right={
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                try {
+                  await resetPassword(user.email);
+                  toast.success('Check your email', `A link to change your password was sent to ${user.email}.`);
+                } catch (err) {
+                  toast.error('Not sent', err instanceof Error ? err.message : undefined);
+                }
+              }}
+            >
+              Change
+            </Button>
+          }
+        />
+        {lock.set && (
+          <SettingsRow
+            icon={Trash2}
+            art="security-off"
+            tone="pink"
+            label="Turn off PIN"
+            danger
+            disabled={pinBusy}
+            onClick={async () => {
+              setPinBusy(true);
+              try {
+                await removePin(user.id);
+                toast.success('PIN turned off');
+              } catch (err) {
+                toast.error('Not turned off', err instanceof Error ? err.message : undefined);
+              } finally {
+                setPinBusy(false);
+              }
+            }}
+          />
+        )}
+      </SettingsCard>
 
-      <div className="space-y-5">
-      <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
-        <div className="flex items-center gap-1.5">
-          <h2 className="text-lead font-semibold text-primary">Set by your administrator</h2>
+      <PinSetup
+        open={settingPin}
+        uid={user.id}
+        minutes={lock.local.minutes}
+        changing={lock.set}
+        onClose={() => setSettingPin(false)}
+      />
+
+      <SettingsCard
+        title="Your account"
+        aside={
           <Hint label="About these details">
-            If any of this is wrong, ask them to change it. It decides what you can see.
+            Set by your administrator. If any of this is wrong, ask them to change it. It decides what you can see.
           </Hint>
-        </div>
-
-        <dl className="mt-4 space-y-2.5">
+        }
+      >
+        <dl className="py-2">
           <Row label="Organisation" value={brand.name} />
           {plan && (
-            <div className="flex items-center justify-between gap-4 border-b border-hairline pb-2.5">
+            <div className="flex items-center justify-between gap-4 border-b border-hairline py-3">
               <dt className="text-label text-muted">Plan</dt>
               <dd>
                 <PlanPill plan={plan} />
@@ -240,55 +379,65 @@ export default function ProfilePage() {
           )}
           <Row label="Account created" value={formatDate(user.createdAt)} />
         </dl>
-      </section>
+      </SettingsCard>
 
-      <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lead font-semibold text-primary">Appearance</h2>
-            <p className="mt-0.5 text-label text-muted">
-              Follows your device unless you choose otherwise.
-            </p>
-          </div>
-          <ThemeToggle />
-        </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
-          <div>
-            <h2 className="text-lead font-semibold text-primary">Language</h2>
-            <p className="mt-0.5 text-label text-muted">The whole app changes, including menus and messages.</p>
-          </div>
-          <LanguageSwitch full />
-        </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
-          <div>
-            <p className="text-body font-semibold text-primary">Colour</p>
-            <p className="mt-0.5 text-label text-muted">From the logo. Buttons stay green.</p>
-          </div>
-          <AccentPicker />
-        </div>
-      </section>
+      </div>
 
-      <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card">
+      <div className="space-y-5">
+      <SettingsCard title="Appearance" description="How AfterBI looks on this device.">
+        {(
+          [
+            { value: 'system', label: 'Automatic', hint: 'Follows your device', icon: Monitor, tone: 'sky' },
+            { value: 'light', label: 'Light', hint: 'Bright white cards', icon: Sun, tone: 'gold' },
+            { value: 'dark', label: 'Dark', hint: 'Easy on the eyes at night', icon: Moon, tone: 'purple' },
+          ] as const
+        ).map((option) => (
+          <SettingsRow
+            key={option.value}
+            icon={option.icon}
+            art={`theme-${option.value}`}
+            tone={option.tone}
+            label={option.label}
+            hint={option.hint}
+            selected={theme === option.value}
+            onClick={() => {
+              setStoredTheme(option.value);
+              setTheme(option.value);
+            }}
+          />
+        ))}
+      </SettingsCard>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-
-          <div>
-
-            <h2 className="text-lead font-semibold text-primary">Home screen</h2>
-
-            <p className="mt-0.5 text-label text-muted">Tiles or cards: what you see first on this device.</p>
-
-          </div>
-
-          <Button variant="outline" size="sm" onClick={openHomeChooser}>
-
-            Change
-
-          </Button>
-
-        </div>
-
-      </section>
+      <SettingsCard title="Personalise">
+        <SettingsRow
+          icon={Palette}
+          art="colour"
+          tone="pink"
+          label="Colour"
+          hint="From the logo. Buttons stay green."
+          below={<AccentPicker />}
+        />
+        <SettingsRow
+          icon={Languages}
+          art="language"
+          tone="teal"
+          label="Language"
+          hint="The whole app changes, including menus and messages."
+          below={<LanguageSwitch full />}
+        />
+        <SettingsRow
+          icon={LayoutGrid}
+          art="home-screen"
+          tone="green"
+          label="Home screen"
+          hint="Tiles or cards: what you see first on this device."
+          right={
+            <Button variant="outline" size="sm" onClick={openHomeChooser}>
+              Change
+            </Button>
+          }
+        />
+      </SettingsCard>
 
       </div>
       </div>
@@ -311,7 +460,7 @@ export default function ProfilePage() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-hairline pb-2.5 last:border-0">
+    <div className="flex items-baseline justify-between gap-4 border-b border-hairline py-3 last:border-0">
       <dt className="text-label text-muted">{label}</dt>
       <dd className="text-label font-semibold text-primary">{value}</dd>
     </div>

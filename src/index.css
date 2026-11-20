@@ -32,31 +32,26 @@
 @theme {
   /* typography */
   /*
-   * Inter for the interface, because this app is almost entirely dense
-   * interface, order lines, stock ledgers, statement runs, and Inter was
-   * drawn for exactly that: tall x-height, unambiguous 1/l/I, and real tabular
-   * figures, which a column of naira needs more than it needs personality.
- */
-  /*
-   * Sora carries the voice, Inter carries the work.
+   * ONE FAMILY, INSIDE AND OUTSIDE THE APP: Plus Jakarta Sans.
    *
-   * The interface still runs on Inter for the reasons above. Sora is the
-   * display face: the wordmark, the marketing headlines, the sign-in greeting,
-   * anything a visitor reads before they have an account. It has a wider,
-   * more geometric build than Inter, so a headline set in it reads as a brand
-   * rather than as a very large label, and the two sit together without
-   * looking like one font drawn twice.
+   * The app ran on Inter and the public pages headlined in Sora, so a visitor
+   * who signed in walked from one typeface into another and the product felt
+   * like two. Plus Jakarta Sans is the face of the owner's site pattern (the
+   * one built for Contoric) and does both jobs: open and friendly at body
+   * size, heavy and confident at 800 for a greeting or a page title (the way a
+   * banking app says "Chukwueloka,"), with real tabular figures for columns of
+   * naira. Display and body are the same family; weight carries rank.
    */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
-  --font-display: 'Sora', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace;
 
   /*
    * THE TYPE SCALE (docs/TYPOGRAPHY.md is the brand manual).
    *
    * Ten steps, each with its own line height and tracking, and nothing in the
-   * app sits between them. Inter does the work (labels, tables, forms, body);
-   * Sora is the voice (page titles, big figures). Weight carries rank:
+   * app sits between them. One family (Plus Jakarta Sans) does the work;
+   * page titles and big figures at 700 and 800. Weight carries rank:
    * 400 reading, 500 controls and navigation, 600 titles, 700 only for page
    * titles and money.
    */
@@ -107,17 +102,17 @@
    * fails AA at body size, which is exactly the mistake the old --accent made
    * on every `.card-action` in the product.
  */
-  --color-brand-50: #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-200: #a7f3d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
-  --color-brand-800: #065f46;
-  --color-brand-900: #064e3b;
-  --color-brand-950: #022c22;
+  --color-brand-50: #e8fbf1;
+  --color-brand-100: #c9f5dd;
+  --color-brand-200: #96ebbf;
+  --color-brand-300: #5bdc9a;
+  --color-brand-400: #2fd47f;
+  --color-brand-500: #12bf6a;
+  --color-brand-600: #0aa158;
+  --color-brand-700: #07844a;
+  --color-brand-800: #066a3d;
+  --color-brand-900: #054f2f;
+  --color-brand-950: #032d1b;
 
   /* secondary: restrained amber */
   /*
@@ -331,47 +326,50 @@
   color-scheme: light;
 
   /* The coloured panel at the top of every screen, and the browser bar above it. */
-  --hero: #064e3b;
-  --hero-glow: rgba(255, 255, 255, 0.1);
+  --hero: #07884f;
+  --hero-glow: rgba(255, 255, 255, 0.12);
 
   /*
-   * Light mode is white.
+   * Light mode is BRIGHT white, on a pale grey page.
+   *
+   * Cards are pure white and the page under them is a pale cool grey
+   * (#f4f5f7), the way a banking app sets its cards: the white only looks
+   * white when there is something a shade darker beside it. (An all white
+   * page made the cards read as grey.)
    *
    * The page used to sit on #F0F2F5 with white cards floating on it, that was
    * AfterBI's old --bg-base, which is the standard dashboard look and the
    * wrong one here: on a phone, where a card fills the width anyway, the grey
-   * does nothing but make the screen look dirty next to the white it
-   * surrounds. The page is white now and the
-   * separation comes from hairlines and shadow; `sunken` stays a faint grey so
-   * inset things, a progress track, a chip well, a code block, still read as
-   * recessed.
+   * surrounds when the grey is a dull one; this one is light and cool, so the
+   * white beside it reads brighter rather than dirtier. `sunken` is a faint
+   * grey so inset things still read as recessed.
  */
-  --surface-page: #ffffff;
+  --surface-page: #f4f5f7;
   --surface-card: #ffffff;
-  --surface-sunken: #f4f6f8;
+  --surface-sunken: #eef0f3;
   --surface-raised: #ffffff;
-  --surface-inverse: #14171c;
+  --surface-inverse: #111214;
 
-  --text-primary: #14171c;
-  --text-secondary: #414856;
-  --text-muted: #6b7686;
+  --text-primary: #111214;
+  --text-secondary: #3d424b;
+  --text-muted: #6f7682;
   --text-inverse: #ffffff;
 
-  --border-hairline: rgba(20, 23, 28, 0.1);
-  --border-strong: rgba(20, 23, 28, 0.2);
+  --border-hairline: rgba(17, 18, 20, 0.08);
+  --border-strong: rgba(17, 18, 20, 0.18);
 
-  --shadow-card: 0 1px 2px rgba(20, 23, 28, 0.05), 0 8px 24px -12px rgba(20, 23, 28, 0.14);
-  --shadow-pop: 0 12px 40px -12px rgba(20, 23, 28, 0.28);
+  --shadow-card: 0 1px 2px rgba(17, 18, 20, 0.04), 0 6px 22px -12px rgba(17, 18, 20, 0.12);
+  --shadow-pop: 0 14px 40px -14px rgba(17, 18, 20, 0.26);
 
   /* The tile grid's icon plate: quiet in light, lifted in dark. */
-  --tile-plate: #eef1f6;
-  --tile-plate-active: #14171c;
-  --tile-plate-ink: #414856;
+  --tile-plate: #eef0f3;
+  --tile-plate-active: #111214;
+  --tile-plate-ink: #3d424b;
   --tile-plate-ink-active: #ffffff;
 
   /* chart chrome */
   --chart-surface: #ffffff;
-  --chart-grid: #e6e9ee;
+  --chart-grid: #e9ebef;
   --chart-axis: #c5ccd8;
   --chart-ink: #14171c;
   --chart-ink-muted: #6b7686;
@@ -400,36 +398,36 @@
   :root:not([data-theme='light']) {
     color-scheme: dark;
 
-    --hero: #0f3b31;
-    --hero-glow: rgba(16, 185, 129, 0.16);
+    --hero: #0a6e44;
+    --hero-glow: rgba(18, 191, 106, 0.18);
 
-    --surface-page: #13243b;
-    --surface-card: #1b2e4b;
-    --surface-sunken: #172943;
-    --surface-raised: #22385a;
-    --surface-inverse: #f7f8fa;
+    --surface-page: #161618;
+    --surface-card: #232325;
+    --surface-sunken: #1c1c1e;
+    --surface-raised: #2c2c2e;
+    --surface-inverse: #f5f5f7;
 
-    --text-primary: #f2f4f7;
-    --text-secondary: #c4d0e3;
-    --text-muted: #91a3bd;
-    --text-inverse: #0f1c2e;
+    --text-primary: #f5f5f7;
+    --text-secondary: #c7c7cc;
+    --text-muted: #8e8e93;
+    --text-inverse: #111214;
 
-    --border-hairline: rgba(150, 185, 235, 0.14);
-    --border-strong: rgba(150, 185, 235, 0.28);
+    --border-hairline: rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.2);
 
-    --shadow-card: 0 1px 2px rgba(4, 12, 28, 0.35), 0 10px 28px -14px rgba(4, 12, 28, 0.55);
-    --shadow-pop: 0 14px 44px -12px rgba(4, 12, 28, 0.65);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -14px rgba(0, 0, 0, 0.6);
+    --shadow-pop: 0 14px 44px -12px rgba(0, 0, 0, 0.7);
 
-    --tile-plate: #22385a;
-    --tile-plate-active: #f2f4f7;
-    --tile-plate-ink: #c4d0e3;
-    --tile-plate-ink-active: #0f1c2e;
+    --tile-plate: #2c2c2e;
+    --tile-plate-active: #f5f5f7;
+    --tile-plate-ink: #c7c7cc;
+    --tile-plate-ink-active: #111214;
 
-    --chart-surface: #1b2e4b;
-    --chart-grid: #2a3f63;
-    --chart-axis: #33496e;
-    --chart-ink: #f2f4f7;
-    --chart-ink-muted: #91a3bd;
+    --chart-surface: #232325;
+    --chart-grid: #343437;
+    --chart-axis: #48484c;
+    --chart-ink: #f5f5f7;
+    --chart-ink-muted: #8e8e93;
 
     --series-1: #5d9bf0;
     --series-2: #35b894;
@@ -443,42 +441,43 @@
 }
 
 /*
- * Dark is navy, not black: a lighter, bluer night so cards read as raised
- * panels rather than holes, and the theme colours stay bright on them.
+ * Dark is a soft charcoal, the shades of a banking app's dark mode: the page
+ * #161618, cards a clear step lighter (#232325) so they read as raised
+ * panels, never pure black, and the vivid theme colours glow on it.
  */
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --hero: #0f3b31;
-  --hero-glow: rgba(16, 185, 129, 0.16);
+  --hero: #0a6e44;
+  --hero-glow: rgba(18, 191, 106, 0.18);
 
-  --surface-page: #13243b;
-  --surface-card: #1b2e4b;
-  --surface-sunken: #172943;
-  --surface-raised: #22385a;
-  --surface-inverse: #f7f8fa;
+  --surface-page: #161618;
+  --surface-card: #232325;
+  --surface-sunken: #1c1c1e;
+  --surface-raised: #2c2c2e;
+  --surface-inverse: #f5f5f7;
 
-  --text-primary: #f2f4f7;
-  --text-secondary: #c4d0e3;
-  --text-muted: #91a3bd;
-  --text-inverse: #0f1c2e;
+  --text-primary: #f5f5f7;
+  --text-secondary: #c7c7cc;
+  --text-muted: #8e8e93;
+  --text-inverse: #111214;
 
-  --border-hairline: rgba(150, 185, 235, 0.14);
-  --border-strong: rgba(150, 185, 235, 0.28);
+  --border-hairline: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.2);
 
-  --shadow-card: 0 1px 2px rgba(4, 12, 28, 0.35), 0 10px 28px -14px rgba(4, 12, 28, 0.55);
-  --shadow-pop: 0 14px 44px -12px rgba(4, 12, 28, 0.65);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -14px rgba(0, 0, 0, 0.6);
+  --shadow-pop: 0 14px 44px -12px rgba(0, 0, 0, 0.7);
 
-  --tile-plate: #22385a;
-  --tile-plate-active: #f2f4f7;
-  --tile-plate-ink: #c4d0e3;
-  --tile-plate-ink-active: #0f1c2e;
+  --tile-plate: #2c2c2e;
+  --tile-plate-active: #f5f5f7;
+  --tile-plate-ink: #c7c7cc;
+  --tile-plate-ink-active: #111214;
 
-  --chart-surface: #1b2e4b;
-  --chart-grid: #2a3f63;
-  --chart-axis: #33496e;
-  --chart-ink: #f2f4f7;
-  --chart-ink-muted: #91a3bd;
+  --chart-surface: #232325;
+  --chart-grid: #343437;
+  --chart-axis: #48484c;
+  --chart-ink: #f5f5f7;
+  --chart-ink-muted: #8e8e93;
 
   --series-1: #5d9bf0;
   --series-2: #35b894;
@@ -538,8 +537,7 @@
     /* The reading size and rhythm everything else is measured from. */
     font-size: 14px;
     line-height: 1.5;
-    /* Inter's rounder digits and a true capital I; numbers line up in columns. */
-    font-feature-settings: 'cv05', 'cv08', 'tnum' 0;
+    font-feature-settings: 'tnum' 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -759,7 +757,7 @@
    */
   .status-bar-fill {
     height: var(--safe-top);
-    background: linear-gradient(135deg, #10b981, #047857);
+    background: var(--hero);
   }
 
   .ab-tile {
@@ -1043,7 +1041,7 @@
     inset: 0 auto 0 0;
     width: 40%;
     border-radius: 999px;
-    background: #10b981;
+    background: #12bf6a;
     animation: boot-run 1.1s ease-in-out infinite;
   }
   @media (prefers-reduced-motion: reduce) {
@@ -1284,32 +1282,32 @@
  * the first banner only. Stamped as `data-accent` on <html> by lib/theme.ts.
  */
 :root {
-  --ground-a: #0a7a52;
-  --ground-b: #065f46;
-  --ground-c: #022c22;
+  --ground-a: #0aa35f;
+  --ground-b: #07884f;
+  --ground-c: #04532f;
   /* The theme colour itself and the ink on it: "done" marks on the panels. */
-  --swatch: #10b981;
+  --swatch: #12bf6a;
   --swatch-ink: #ffffff;
 }
 
 [data-accent='blue'] {
-  --swatch: #29aeff;
+  --swatch: #2f6bff;
   --swatch-ink: #ffffff;
-  --hero: #0a4f8c;
-  --hero-glow: rgba(41, 174, 255, 0.22);
-  --ground-a: #1a6bb5;
-  --ground-b: #0f4d8a;
-  --ground-c: #082a4d;
+  --hero: #1238e6;
+  --hero-glow: rgba(64, 120, 255, 0.28);
+  --ground-a: #2a5bff;
+  --ground-b: #1238e6;
+  --ground-c: #0a1f8a;
 }
 
 [data-accent='gold'] {
-  --swatch: #f5c518;
-  --swatch-ink: #3f2d03;
-  --hero: #6e4f06;
-  --hero-glow: rgba(245, 197, 24, 0.18);
-  --ground-a: #946a06;
-  --ground-b: #7c5a06;
-  --ground-c: #3f2d03;
+  --swatch: #ffb21e;
+  --swatch-ink: #3a2600;
+  --hero: #a26a00;
+  --hero-glow: rgba(255, 178, 30, 0.22);
+  --ground-a: #c88600;
+  --ground-b: #a26a00;
+  --ground-c: #5c3c00;
 }
 
 /* Any colour from the palette: the variables are worked out in lib/theme.ts. */
@@ -1328,13 +1326,13 @@
 }
 
 [data-theme='dark'][data-accent='blue'] {
-  --hero: #143e6e;
-  --hero-glow: rgba(41, 174, 255, 0.18);
+  --hero: #1532c4;
+  --hero-glow: rgba(64, 120, 255, 0.22);
 }
 
 [data-theme='dark'][data-theme='dark'][data-accent='gold'] {
-  --hero: #574412;
-  --hero-glow: rgba(245, 197, 24, 0.16);
+  --hero: #7a5000;
+  --hero-glow: rgba(255, 178, 30, 0.18);
 }
 
 /* ================================================ the public pages' edges */
@@ -1922,3 +1920,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
   .site-curve { border-radius: 2.25rem 2.25rem 0 0; margin-top: -2.25rem; }
   @media (min-width: 1024px) { .site-curve { border-radius: 3.5rem 3.5rem 0 0; margin-top: -3.5rem; } }
 }
+
+/* The PIN dots shake on a wrong PIN. */
+@keyframes pin-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(9px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(4px); }
+}
+.pin-shake { animation: pin-shake 0.42s ease-in-out; }
+@media (prefers-reduced-motion: reduce) { .pin-shake { animation: none; } }

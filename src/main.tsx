@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/components/ui';
+import { LockGate } from '@/components/lock/LockGate';
 import { initTheme } from '@/lib/theme';
 import { lockZoom } from '@/lib/lockZoom';
 import { initPwa } from '@/lib/pwa';
@@ -56,6 +57,8 @@ void startI18n().finally(() => {
         <AuthProvider>
           <ToastProvider>
             <App />
+            {/* The personal PIN lock. Inert until the person sets a PIN in Profile. */}
+            <LockGate />
           </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
