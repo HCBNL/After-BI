@@ -3990,5 +3990,12 @@
 "Pick a day": "选择日期",
 "Hour": "时",
 "Minute": "分",
-"{0}, {1}": "{0}，{1}"
+"{0}, {1}": "{0}，{1}",
+"Loading stock counts": "正在加载盘点",
+"Stock counts could not be loaded": "无法加载盘点",
+"Opening the count": "正在打开盘点",
+"Loading adjustments": "正在加载库存调整",
+"Adjustments could not be loaded": "无法加载库存调整",
+"AfterBI could not reach the server. Check the connection (or close other AfterBI tabs on this phone) and try again.": "AfterBI 无法连接服务器。请检查网络（或关闭此手机上其他 AfterBI 标签页）后重试。",
+"{0} is still open for {1}. Open it from the list, or cancel it first.": "{1} 的盘点 {0} 仍在进行中。请从列表中打开，或先取消。"
 }

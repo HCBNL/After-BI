@@ -3990,5 +3990,12 @@
 "Pick a day": "Choisir un jour",
 "Hour": "Heure",
 "Minute": "Minute",
-"{0}, {1}": "{0}, {1}"
+"{0}, {1}": "{0}, {1}",
+"Loading stock counts": "Chargement des inventaires",
+"Stock counts could not be loaded": "Impossible de charger les inventaires",
+"Opening the count": "Ouverture de l'inventaire",
+"Loading adjustments": "Chargement des ajustements",
+"Adjustments could not be loaded": "Impossible de charger les ajustements",
+"AfterBI could not reach the server. Check the connection (or close other AfterBI tabs on this phone) and try again.": "AfterBI n'a pas pu joindre le serveur. Vérifiez la connexion (ou fermez les autres onglets AfterBI sur ce téléphone) et réessayez.",
+"{0} is still open for {1}. Open it from the list, or cancel it first.": "{0} est encore ouvert pour {1}. Ouvrez le depuis la liste ou annulez le d'abord."
 }

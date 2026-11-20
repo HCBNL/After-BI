@@ -29,6 +29,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getDocsFromCache,
   limit as fsLimit,
   orderBy,
   query,
@@ -2304,6 +2305,44 @@ export async function reissueCountCode(productId: string): Promise<string> {
   return code;
 }
 
+/* never waiting for ever */
+
+/**
+ * A promise, or a readable error once `ms` has passed. A phone with a weak
+ * signal, or a tab the browser has put to sleep, can leave a request
+ * unanswered indefinitely; a screen must say so rather than spin.
+ */
+function within<T>(work: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer = 0;
+  const late = new Promise<never>((_, reject) => {
+    timer = window.setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([work, late]).finally(() => window.clearTimeout(timer));
+}
+
+const OFFLINE =
+  'AfterBI could not reach the server. Check the connection (or close other AfterBI tabs on this phone) and try again.';
+
+/**
+ * The server's answer if it comes within `ms`; otherwise whatever this
+ * device already holds, so a list shows what it can instead of waiting.
+ * The server is still asked, and the next look gets its answer.
+ */
+async function listSoon<T>(key: CollectionKey, ms: number, ...constraints: QueryConstraint[]): Promise<T[]> {
+  const q = query(collection(db, orgPath(key)), ...constraints);
+  const server = getDocs(q);
+  server.catch(() => undefined);
+  try {
+    const snap = await within(server, ms, OFFLINE);
+    return snap.docs.map((d) => shape<T>(d.id, d.data()));
+  } catch (err) {
+    if (err instanceof Error && err.message !== OFFLINE) throw err;
+    const local = await getDocsFromCache(q).catch(() => null);
+    if (local) return local.docs.map((d) => shape<T>(d.id, d.data()));
+    throw err;
+  }
+}
+
 /* stock counts */
 
 type Actor = Pick<UserProfile, 'id' | 'firstName' | 'lastName'>;
@@ -2311,7 +2350,7 @@ const actorName = (a: Actor) => `${a.firstName} ${a.lastName}`.trim();
 
 /** Counts, newest first. `warehouseIds` limits them to those depots (a warehouse manager's). */
 export async function listCounts(warehouseIds?: string[] | null, max = 100): Promise<StockCount[]> {
-  const rows = await list<StockCount>('stockCounts', orderBy('startedAt', 'desc'), fsLimit(max));
+  const rows = await listSoon<StockCount>('stockCounts', 8000, orderBy('startedAt', 'desc'), fsLimit(max));
   return warehouseIds ? rows.filter((c) => warehouseIds.includes(c.warehouseId)) : rows;
 }
 
@@ -2321,7 +2360,12 @@ export const getCount = (id: string) => one<StockCount>('stockCounts', id);
 export function watchCount(id: string, onChange: (count: StockCount | null) => void, onError?: (err: Error) => void): () => void {
   return onSnapshot(
     doc(db, orgPath('stockCounts'), id),
-    (snap) => onChange(snap.exists() ? shape<StockCount>(snap.id, snap.data()) : null),
+    { includeMetadataChanges: true },
+    (snap) => {
+      /* Not on this phone yet is not the same as not existing: wait for the server. */
+      if (!snap.exists() && snap.metadata.fromCache) return;
+      onChange(snap.exists() ? shape<StockCount>(snap.id, snap.data()) : null);
+    },
     (err) => onError?.(err),
   );
 }
@@ -2346,13 +2390,22 @@ export async function listCountEntries(countId: string): Promise<CountEntry[]> {
  * Only one open count per depot: two would split the counters between them
  * and neither would be complete.
  */
-export async function startCount(input: { warehouse: Warehouse; note?: string; actor: Actor }): Promise<string> {
-  const open = await list<StockCount>('stockCounts', where('warehouseId', '==', input.warehouse.id)).catch(() => [] as StockCount[]);
+export async function startCount(input: {
+  warehouse: Warehouse;
+  note?: string;
+  actor: Actor;
+  /** The catalogue the screen already holds, so starting costs no extra read. */
+  products: Product[];
+}): Promise<string> {
+  /* What is open here, and what the system holds here: asked at the same time, each with a limit. */
+  const [open, positions] = await Promise.all([
+    listSoon<StockCount>('stockCounts', 8000, where('warehouseId', '==', input.warehouse.id)).catch(() => [] as StockCount[]),
+    listSoon<StockPosition>('stock', 10000, where('warehouseId', '==', input.warehouse.id)),
+  ]);
   const running = open.find((c) => c.status === 'open');
-  if (running) throw new Error(`${running.number} is still open for ${input.warehouse.name}. Close or cancel it first.`);
+  if (running) throw new Error(`${running.number} is still open for ${input.warehouse.name}. Open it from the list, or cancel it first.`);
 
-  const [positions, products] = await Promise.all([listStock(input.warehouse.id), list<Product>('products')]);
-  const byId = new Map(products.map((p) => [p.id, p]));
+  const byId = new Map(input.products.map((p) => [p.id, p]));
   const snapshot: StockCount['snapshot'] = {};
   for (const pos of positions) {
     const product = byId.get(pos.productId);
@@ -2365,8 +2418,9 @@ export async function startCount(input: { warehouse: Warehouse; note?: string; a
     };
   }
 
-  const number = await nextMonthly('SC');
-  const ref = await addDoc(collection(db, orgPath('stockCounts')), {
+  const number = await within(nextMonthly('SC'), 12000, OFFLINE);
+  const ref = doc(collection(db, orgPath('stockCounts')));
+  const write = setDoc(ref, {
     number,
     warehouseId: input.warehouse.id,
     warehouseName: input.warehouse.name,
@@ -2378,6 +2432,17 @@ export async function startCount(input: { warehouse: Warehouse; note?: string; a
     startedAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+  /*
+   * A refusal (the rules) comes back fast and is shown. A slow confirmation
+   * is not waited for: the count is already on this phone and opens now, and
+   * the write reaches the server when the signal does.
+   */
+  try {
+    await within(write, 8000, OFFLINE);
+  } catch (err) {
+    if (!(err instanceof Error && err.message === OFFLINE)) throw err;
+    write.catch(() => undefined);
+  }
   logAudit({ area: 'stock', action: 'count.started', summary: `Stock count ${number} started at ${input.warehouse.name}`, ref: number });
   return ref.id;
 }
@@ -2407,38 +2472,61 @@ function cleanEntry(input: EntryInput) {
   };
 }
 
+/**
+ * A counter on the warehouse floor must not stand waiting for the signal. A
+ * refusal from the server comes back at once and is shown; a slow
+ * confirmation is not waited for, because the stack is already saved on the
+ * phone, shows in the count straight away, and reaches the server when the
+ * signal does.
+ */
+async function savedSoon(write: Promise<void>): Promise<void> {
+  try {
+    await within(write, 5000, OFFLINE);
+  } catch (err) {
+    if (!(err instanceof Error && err.message === OFFLINE)) throw err;
+    write.catch(() => undefined);
+  }
+}
+
 export async function addCountEntry(countId: string, input: EntryInput, actor: Actor): Promise<string> {
-  const ref = await addDoc(collection(db, `${orgPath('stockCounts')}/${countId}/entries`), {
-    ...cleanEntry(input),
-    countedBy: actor.id,
-    countedByName: actorName(actor),
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  const ref = doc(collection(db, `${orgPath('stockCounts')}/${countId}/entries`));
+  await savedSoon(
+    setDoc(ref, {
+      ...cleanEntry(input),
+      countedBy: actor.id,
+      countedByName: actorName(actor),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
   return ref.id;
 }
 
 export async function updateCountEntry(countId: string, entryId: string, input: EntryInput): Promise<void> {
-  await updateDoc(doc(db, `${orgPath('stockCounts')}/${countId}/entries`, entryId), {
-    ...cleanEntry(input),
-    updatedAt: serverTimestamp(),
-  });
+  await savedSoon(
+    updateDoc(doc(db, `${orgPath('stockCounts')}/${countId}/entries`, entryId), {
+      ...cleanEntry(input),
+      updatedAt: serverTimestamp(),
+    }),
+  );
 }
 
 /** Struck out, not deleted: a count's trail is part of the report. */
 export async function voidCountEntry(countId: string, entryId: string, actor: Actor): Promise<void> {
-  await updateDoc(doc(db, `${orgPath('stockCounts')}/${countId}/entries`, entryId), {
-    void: true,
-    voidedBy: actorName(actor),
-    voidedAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  await savedSoon(
+    updateDoc(doc(db, `${orgPath('stockCounts')}/${countId}/entries`, entryId), {
+      void: true,
+      voidedBy: actorName(actor),
+      voidedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
 }
 
 /** Close a count. From here it is a report: nothing in it can change, and it changes nothing. */
 export async function closeCount(countId: string, summary: StockCountSummary, actor: Actor): Promise<void> {
   const ref = doc(db, orgPath('stockCounts'), countId);
-  const number = await runTransaction(db, async (tx) => {
+  const number = await within(runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error('That count no longer exists.');
     const data = snap.data() as StockCount;
@@ -2452,7 +2540,7 @@ export async function closeCount(countId: string, summary: StockCountSummary, ac
       updatedAt: serverTimestamp(),
     });
     return data.number;
-  });
+  }), 15000, OFFLINE);
   const issues = summary.short + summary.over + summary.notCounted + summary.notInSystem;
   logAudit({
     area: 'stock',
@@ -2479,11 +2567,11 @@ export async function cancelCount(countId: string, reason: string, actor: Actor)
 /* stock adjustments */
 
 export function listAdjustments(max = 200): Promise<StockAdjustment[]> {
-  return list<StockAdjustment>('stockAdjustments', orderBy('createdAt', 'desc'), fsLimit(max));
+  return listSoon<StockAdjustment>('stockAdjustments', 8000, orderBy('createdAt', 'desc'), fsLimit(max));
 }
 
 export function listPendingAdjustments(): Promise<StockAdjustment[]> {
-  return list<StockAdjustment>('stockAdjustments', where('status', '==', 'pending')).then(newestFirst<StockAdjustment>('createdAt'));
+  return listSoon<StockAdjustment>('stockAdjustments', 8000, where('status', '==', 'pending')).then(newestFirst<StockAdjustment>('createdAt'));
 }
 
 /**
@@ -2507,9 +2595,10 @@ export async function raiseAdjustment(input: {
   if (!input.signers.finance.length || !input.signers.operations.length) {
     throw new Error('Nobody can sign this yet. The organisation needs a finance manager, an operations manager or a super admin.');
   }
-  const number = await nextMonthly('ADJ');
+  const number = await within(nextMonthly('ADJ'), 12000, OFFLINE);
   const signerIds = [...new Set([...input.signers.finance, ...input.signers.operations].map((s) => s.uid))];
-  const ref = await addDoc(collection(db, orgPath('stockAdjustments')), {
+  const ref = doc(collection(db, orgPath('stockAdjustments')));
+  await savedSoon(setDoc(ref, {
     number,
     warehouseId: input.warehouse.id,
     warehouseName: input.warehouse.name,
@@ -2530,7 +2619,7 @@ export async function raiseAdjustment(input: {
     requestedByName: actorName(input.actor),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  }));
   logAudit({
     area: 'stock',
     action: 'adjustment.raised',
@@ -2550,7 +2639,7 @@ export async function signAdjustment(id: string, sides: AdjustmentSide[], actor:
   if (!sides.length) throw new Error('You are not a signer on this adjustment.');
   const ref = doc(db, orgPath('stockAdjustments'), id);
   const name = actorName(actor);
-  const outcome = await runTransaction(db, async (tx) => {
+  const outcome = await within(runTransaction(db, async (tx) => {
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error('That adjustment no longer exists.');
     const adj = shape<StockAdjustment>(snap.id, snap.data());
@@ -2615,7 +2704,7 @@ export async function signAdjustment(id: string, sides: AdjustmentSide[], actor:
       updatedAt: serverTimestamp(),
     });
     return { state: 'applied' as const, adj };
-  });
+  }), 15000, OFFLINE);
 
   logAudit({
     area: 'stock',
