@@ -1946,3 +1946,27 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 @keyframes art-petal-turn { to { transform: rotate(360deg); } }
 .art-petal-spin { animation: art-petal-turn 28s linear infinite; will-change: transform; }
 @media (prefers-reduced-motion: reduce) { .art-petal-spin { animation: none; } }
+
+/*
+ * The floating quick settings button (components/layout/QuickDial.tsx).
+ * Its petals drift through deep, white-friendly colours of the palette,
+ * about eight seconds on each, so the plus always reads.
+ */
+@keyframes dial-fill {
+  0%, 16% { fill: #1d4ef5; }
+  20%, 36% { fill: #7a36f0; }
+  40%, 56% { fill: #e23d78; }
+  60%, 76% { fill: #079a8c; }
+  80%, 96% { fill: #0b9f55; }
+  100% { fill: #1d4ef5; }
+}
+.dial-petals { fill: #1d4ef5; animation: dial-fill 40s ease-in-out infinite; }
+@keyframes dial-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+.dial-item { animation: dial-in 180ms cubic-bezier(.2,.7,.2,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .dial-petals { animation: none; }
+  .dial-item { animation: none; }
+}
