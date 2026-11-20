@@ -8,6 +8,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
+import { IconArt } from '@/components/ui/IconArt';
 import { IconBadge, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
@@ -86,13 +87,13 @@ function Body() {
                     to={`/features/${slug}`}
                     className="group flex h-full scroll-mt-32 flex-col overflow-hidden rounded-[1.6rem] bg-white ring-1 ring-navy-900/10 transition-shadow hover:shadow-[0_24px_50px_-24px_rgba(15,31,54,0.35)]"
                   >
-                    <div className="relative">
+                    <div className="relative min-h-[4.75rem]">
                       <SiteImage
                         slot={`module-${slug}` as SiteImageKey}
                         alt={`${m.name} in AfterBI`}
                         className="aspect-[16/10]"
                       />
-                      <IconBadge>
+                      <IconBadge className="left-6 top-6" id={slug}>
                         <ModuleIcon slug={slug} size={17} />
                       </IconBadge>
                     </div>
@@ -116,9 +117,9 @@ function Body() {
         <ol className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {MONTH_STEPS.map((step, index) => (
             <li key={step.title} className="overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-inset ring-white/10">
-              <span className="ml-6 mt-6 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 font-display text-[0.97rem] font-semibold text-white ring-1 ring-white/20">
-                {index + 1}
-              </span>
+              <IconArt id={step.title} size={46} halo={0.35} className="ml-6 mt-6">
+                <span className="font-display text-[0.97rem] font-semibold">{index + 1}</span>
+              </IconArt>
               <div className="p-6">
                 <h3 className="text-[16px] font-semibold">{step.title}</h3>
                 <p className="mt-2 text-[14.5px] leading-relaxed text-white/70">{step.body}</p>

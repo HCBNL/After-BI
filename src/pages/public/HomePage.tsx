@@ -20,6 +20,7 @@
  * section at most, and pictures only where the owner uploads them.
  */
 
+import { IconArt } from '@/components/ui/IconArt';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -482,9 +483,7 @@ function Lifecycle() {
       <div role="tabpanel" key={tab.key} className="mt-10 grid animate-fade-in gap-4 lg:grid-cols-[0.9fr_1.1fr] lg:gap-5">
         <div className="relative isolate flex min-h-[18rem] flex-col overflow-hidden rounded-[2rem] bg-navy-900 p-8 text-white sm:p-10">
           <Art name={TAB_ART[tab.key]} className="pointer-events-none absolute -bottom-8 -right-8 -z-10 h-52 w-52 opacity-90 sm:h-60 sm:w-60" />
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-inset ring-white/15">
-            <Icon size={20} strokeWidth={1.8} aria-hidden />
-          </span>
+          <IconArt icon={Icon} id={tab.key} size={52} halo={0.3} />
           <h3 className="mt-6 max-w-md font-display text-[1.6rem] font-semibold leading-[1.15] tracking-[-0.025em] sm:text-[1.9rem]">{tab.title}</h3>
           <Link
             to={tab.link}
@@ -573,9 +572,7 @@ function Values() {
                   >
                     <Art name={face.art} shift={i} className="-translate-x-4 -translate-y-4 h-16 w-16 sm:-translate-x-3 sm:-translate-y-3 sm:h-20 sm:w-20" />
                   </span>
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-black/10 ring-1 ring-inset ring-black/5">
-                    <Icon size={20} strokeWidth={1.8} aria-hidden />
-                  </span>
+                  <IconArt icon={Icon} id={value.title} size={52} halo={0.7} />
                   <h3 className="mt-6 max-w-[14rem] font-display text-[1.3rem] font-semibold leading-[1.15] tracking-[-0.02em]">{value.title}</h3>
                   {/* No pointer (a phone): the sentence is on the face. */}
                   <p className="mt-2 max-w-[17rem] text-[14.5px] leading-[1.6] opacity-85 [@media(hover:hover)]:hidden">{value.body}</p>
@@ -684,10 +681,11 @@ function Voices() {
 /* ----------------------------------------------------------------- leaders */
 
 /**
- * Heads of other companies on AfterBI, as cards: three across on a laptop,
- * swiping on a phone. The ones added in Platform, Website come first, then the
- * built in ones (LEADER_QUOTES in lib/site.ts). A card with no photograph yet
- * shows the person's initials.
+ * What business owners say, the PiggyVest way: small white cards, the face (or
+ * initials) at the top left, a few lines of what they said, then their name
+ * under it. Three across, the rest centred on the row below; one under another
+ * on a phone. Added in Platform, Website (up to six) and shown first; the
+ * built in ones (LEADER_QUOTES in lib/site.ts) follow.
  */
 function Leaders() {
   const { home } = useAsk();
@@ -697,45 +695,43 @@ function Leaders() {
   if (items.length === 0) return null;
 
   return (
-    <Section tone="mist">
-      <SectionHead align="center" kicker="From the people in charge" title="What business owners say" />
-      <div
-        className={cn(
-          '-mx-4 mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mx-auto md:grid md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden',
-          items.length === 1 ? 'justify-center md:max-w-md md:grid-cols-1' : items.length === 2 ? 'md:max-w-4xl md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3',
-        )}
-      >
-        {items.map((t, i) => (
-          <figure
-            key={`${t.name}-${i}`}
-            className="flex w-[82vw] shrink-0 snap-center flex-col rounded-[1.75rem] border border-navy-900/10 bg-white p-7 shadow-[0_18px_40px_-28px_rgba(15,31,54,0.35)] md:w-auto"
-          >
-            <Quote size={24} aria-hidden className="text-navy-300" />
-            <blockquote className="mt-4 flex-1 text-[16px] leading-[1.65] text-navy-800">{t.quote}</blockquote>
-            <figcaption className="mt-6 flex items-center gap-3 border-t border-navy-900/10 pt-5">
+    <section className="bg-[var(--site-top)] py-20 sm:py-28">
+      <div className={container}>
+        <h2 className="site-heavy max-w-[16ch] text-[2.4rem] text-navy-900 sm:text-[3.2rem]">
+          Business owners who run on AfterBI
+        </h2>
+        <div className="mt-12 flex flex-wrap justify-center gap-5 sm:gap-7">
+          {items.map((t, i) => (
+            <figure
+              key={`${t.name}-${i}`}
+              className="flex w-full flex-col rounded-[1.75rem] bg-white p-7 sm:w-[calc(50%-0.875rem)] sm:p-9 lg:w-[calc((100%-3.5rem)/3)]"
+            >
               {t.photo ? (
                 <img
                   src={t.photo.startsWith('/') ? t.photo : imageUrl(t.photo, { width: 112 })}
                   alt={t.name}
-                  width={56}
-                  height={56}
+                  width={48}
+                  height={48}
                   loading="lazy"
-                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-1 ring-navy-900/10"
+                  className="h-12 w-12 rounded-full object-cover"
                 />
               ) : (
-                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-navy-900 text-[15px] font-semibold text-white">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-navy-900 text-[15px] font-semibold text-white">
                   {initials(t.name)}
                 </span>
               )}
-              <span className="min-w-0">
-                <span className="block truncate text-[15px] font-semibold text-navy-900">{t.name}</span>
-                <span className="block truncate text-[13.5px] text-navy-500">{[t.role, t.company].filter(Boolean).join(', ')}</span>
-              </span>
-            </figcaption>
-          </figure>
-        ))}
+              <blockquote className="mt-5 text-[16.5px] leading-[1.7] text-navy-700">{t.quote}</blockquote>
+              <figcaption className="mt-5 flex flex-wrap items-baseline gap-x-2 text-[15px]">
+                <span className="font-display font-bold text-navy-900">— {t.name}</span>
+                {(t.role || t.company) && (
+                  <span className="text-[13.5px] text-navy-500">{[t.role, t.company].filter(Boolean).join(', ')}</span>
+                )}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
-    </Section>
+    </section>
   );
 }
 

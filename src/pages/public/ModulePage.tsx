@@ -138,7 +138,7 @@ function Body({ slug }: { slug: string }) {
               to={`/features/${m.slug}`}
               className="group flex flex-col overflow-hidden rounded-2xl ring-1 ring-navy-900/10 transition-colors hover:bg-navy-50"
             >
-              <div className="relative">
+              <div className="relative min-h-[4.75rem]">
                 <SiteImage
                   slot={`module-${m.slug}` as SiteImageKey}
                   alt={`${m.name} in AfterBI`}
@@ -146,7 +146,7 @@ function Body({ slug }: { slug: string }) {
                   className="aspect-[16/10]"
                   imgClassName="transition-transform duration-500 group-hover:scale-[1.04]"
                 />
-                <IconBadge>
+                <IconBadge className="left-6 top-6" id={m.slug}>
                   <ModuleIcon slug={m.slug} size={17} />
                 </IconBadge>
               </div>

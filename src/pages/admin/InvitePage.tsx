@@ -6,7 +6,7 @@
  * in, the profile is written under the rules that say who may grant what, and
  * the screen hands back the details to pass on in person.
  */
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { RefreshCw, UserPlus, Users } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Credentials } from '@/components/Credentials';
@@ -14,7 +14,8 @@ import { Checklist } from '@/components/Checklist';
 import { Alert, Button, Field, Input, LinkButton, Select } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
-import { createAccount, needsEmployeeCode, normaliseEmployeeCode, suggestPassword } from '@/lib/accounts';
+import { createAccount, needsEmployeeCode, nextEmployeeCode, suggestPassword } from '@/lib/accounts';
+import { useBrand } from '@/lib/brand';
 import { saveDistributor } from '@/lib/db';
 import { PORTAL_ROOT } from '@/lib/tiles';
 import { ROLE_LABEL, type Role } from '@/types';
@@ -42,6 +43,7 @@ export default function InvitePage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [employeeCode, setEmployeeCode] = useState('');
+  const brand = useBrand();
   const [role, setRole] = useState<TeamRole>('sales_rep');
   const [distributorId, setDistributorId] = useState('');
   const [warehouseIds, setWarehouseIds] = useState<string[]>([]);
@@ -58,12 +60,21 @@ export default function InvitePage() {
   const needsDepots = role === 'warehouse_manager';
   const root = user ? PORTAL_ROOT[user.role] : '/';
 
+  /* The code they will get, shown before the account is made. Assigned, never typed. */
+  useEffect(() => {
+    if (!user?.orgId || !needsEmployeeCode(role)) return setEmployeeCode('');
+    let live = true;
+    void nextEmployeeCode(user.orgId, role, brand.name).then((c) => live && setEmployeeCode(c));
+    return () => {
+      live = false;
+    };
+  }, [user?.orgId, role, brand.name, made]);
+
   const reset = () => {
     setFirstName('');
     setLastName('');
     setEmail('');
     setPhone('');
-    setEmployeeCode('');
     setDistributorId('');
     setWarehouseIds([]);
     setDistributorIds([]);
@@ -77,10 +88,6 @@ export default function InvitePage() {
     setError(null);
     if (!firstName.trim() || !email.trim()) {
       setError('A first name and an email address are needed.');
-      return;
-    }
-    if (needsEmployeeCode(role) && !normaliseEmployeeCode(employeeCode)) {
-      setError('An employee code is needed for staff. The audit log uses it to know who did what.');
       return;
     }
     if (password.length < 6) {
@@ -102,7 +109,7 @@ export default function InvitePage() {
         firstName,
         lastName,
         phone,
-        employeeCode: needsEmployeeCode(role) ? employeeCode : undefined,
+        orgName: brand.name,
         distributorId: needsDistributor ? distributorId : undefined,
         distributorCategory: needsDistributor ? distributor?.category : undefined,
         warehouseIds: needsDepots ? warehouseIds : undefined,
@@ -173,14 +180,10 @@ export default function InvitePage() {
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
             </Field>
             {needsEmployeeCode(role) && (
-              <Field label="Employee code" required hint="Their staff number. It identifies them in the audit log; they cannot change it.">
-                <Input
-                  value={employeeCode}
-                  onChange={(e) => setEmployeeCode(e.target.value.toUpperCase())}
-                  placeholder="HCB0042"
-                  maxLength={24}
-                  autoComplete="off"
-                />
+              <Field label="Employee code" hint="Assigned in order of joining, ending in the role.">
+                <p className="flex h-11 items-center rounded-xl surface-sunken px-3.5 text-body font-semibold tracking-wide text-primary">
+                  {employeeCode || '…'}
+                </p>
               </Field>
             )}
             </div>

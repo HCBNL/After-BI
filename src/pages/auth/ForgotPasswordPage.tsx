@@ -32,7 +32,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, MailCheck, Mail } from 'lucide-react';
 import { Seo } from '@/components/Seo';
-import { BrandBars } from '@/components/home/HomeArt';
+import { PetalBackdrop } from '@/components/brand/PetalBackdrop';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Alert } from '@/components/ui';
@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
   };
 
   const field =
-    'h-14 w-full rounded-xl border bg-[var(--surface-card)] pl-11 pr-4 text-title text-primary shadow-card outline-none transition-colors placeholder:text-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20';
+    'h-14 w-full rounded-xl border bg-[var(--surface-card)] pl-11 pr-4 text-title text-primary shadow-card outline-none transition-colors placeholder:text-muted focus:border-[#1d4ef5] focus:ring-2 focus:ring-[#1d4ef5]/20';
   const year = new Date().getFullYear();
 
   return (
@@ -95,13 +95,9 @@ export default function ForgotPasswordPage() {
       />
 
       <div className="relative min-h-[100dvh] surface-page lg:grid lg:grid-cols-[1.05fr_1fr]">
-        <aside className="ink relative isolate hidden overflow-hidden lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-14">
-          <div aria-hidden className="banner-glow absolute -inset-[8%] -z-20 opacity-80" />
-          {/* The signature, twice, hung off opposite corners. An abstract
-              shape crops well, which is exactly why the wordmark could not do
-              this job, see `home/HomeArt.tsx`. */}
-          <BrandBars className="brand-bars pointer-events-none absolute -right-28 -top-24 -z-10 h-[34rem] w-[34rem] rotate-[14deg]" />
-          <BrandBars className="brand-bars pointer-events-none absolute -bottom-32 -left-24 -z-10 h-[26rem] w-[26rem] -rotate-12" />
+        <aside className="ink auth-blue relative isolate hidden overflow-hidden lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-14">
+          {/* The PIN screen's petals, turning slowly, on the blue. */}
+          <PetalBackdrop className="-z-10 text-white" />
 
           <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="w-fit">
             <Wordmark onInk className="text-headline" />
@@ -109,7 +105,7 @@ export default function ForgotPasswordPage() {
 
           <div className="pb-10">
             <h2 className="font-display text-jumbo font-bold leading-[1.02] tracking-[-0.045em] text-white xl:text-jumbo">
-              It happens<span className="text-brand-500">.</span>
+              It happens<span className="text-[#7fb2ff]">.</span>
             </h2>
             <p className="mt-4 max-w-sm text-title leading-relaxed text-white/60">
               One email, one link, a new password. Your orders and statements are exactly where you left them.
@@ -121,8 +117,8 @@ export default function ForgotPasswordPage() {
           className="relative isolate flex min-h-[100dvh] flex-col overflow-hidden"
           style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
-          <BrandBars className="brand-bars pointer-events-none absolute -right-24 -top-16 -z-10 h-[26rem] w-[26rem] rotate-[14deg] lg:h-[30rem] lg:w-[30rem]" />
-          <BrandBars className="brand-bars pointer-events-none absolute -bottom-24 -left-28 -z-10 h-[24rem] w-[24rem] -rotate-12 lg:hidden" />
+          {/* The same petals behind the form, in the page's ink: pale by day, faint white at night. */}
+          <PetalBackdrop className="-z-10 text-[#1238e6] opacity-70 dark:text-white dark:opacity-60" />
 
           <div className="flex items-center justify-between px-5 pt-4 sm:px-8 lg:justify-end">
             <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="lg:hidden">
@@ -138,7 +134,7 @@ export default function ForgotPasswordPage() {
             <div className="w-full max-w-[25rem]">
               {sent ? (
                 <>
-                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
+                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e8eeff] text-[#1d4ef5] dark:bg-[#1d4ef5]/20 dark:text-[#8aa8ff]">
                     <MailCheck size={26} aria-hidden />
                   </span>
                   <h1 className="mt-6 text-center font-display text-display font-bold leading-[1.1] tracking-[-0.04em] text-primary sm:text-display">
@@ -160,7 +156,7 @@ export default function ForgotPasswordPage() {
 
                   <Link
                     to="/login"
-                    className="tap mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-title font-semibold text-white shadow-card transition-all hover:bg-brand-700 active:scale-[0.99]"
+                    className="tap mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#1d4ef5] text-title font-semibold text-white shadow-card transition-all hover:bg-[#1638c9] active:scale-[0.99]"
                   >
                     Back to sign in
                     <ArrowRight size={18} aria-hidden />
@@ -215,7 +211,7 @@ export default function ForgotPasswordPage() {
                     <button
                       type="submit"
                       disabled={busy}
-                      className="tap inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 text-title font-semibold text-white shadow-card transition-all hover:bg-brand-700 active:scale-[0.99] disabled:opacity-60"
+                      className="tap inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#1d4ef5] text-title font-semibold text-white shadow-card transition-all hover:bg-[#1638c9] active:scale-[0.99] disabled:opacity-60"
                     >
                       {busy ? 'Sending' : 'Send the link'}
                       {!busy && <ArrowRight size={18} aria-hidden />}
@@ -225,7 +221,7 @@ export default function ForgotPasswordPage() {
                   <p className="mt-6 text-center text-body text-secondary">
                     <Link
                       to="/login"
-                      className="inline-flex items-center gap-1.5 font-bold text-primary underline decoration-brand-500 decoration-2 underline-offset-4"
+                      className="inline-flex items-center gap-1.5 font-bold text-primary underline decoration-[#1d4ef5] decoration-2 underline-offset-4"
                     >
                       <ArrowLeft size={15} aria-hidden />
                       Back to sign in

@@ -1,7 +1,7 @@
 /**
  * Targets: the number you are carrying this month.
  *
- * Measured against sell-out, not sell-in. A rep who has pushed 4,000 cartons
+ * Measured on invoiced sales (accrual), not on payments. (Earlier: sell-out.) A rep who has pushed 4,000 cartons
  * into a distributor's warehouse has not sold them; the shops have to. Paying
  * commission on sell-in is how a territory ends up with nine months of stock
  * and a rep who has already been paid for it.
@@ -26,7 +26,7 @@ import {
 } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
-import { listSales, listTargets, removeTarget, saveTarget } from '@/lib/db';
+import { listInvoices, listInvoicesSince, listTargets, removeTarget, saveTarget } from '@/lib/db';
 import { isAdmin, partnerScope } from '@/lib/roles';
 import { useOrg } from '@/context/OrgContext';
 import { listMembers } from '@/lib/db';
@@ -54,11 +54,17 @@ export default function TargetsPage() {
     async () => {
       const from = `${period}-01`;
       const to = `${period}-31`;
-      const [targets, sales] = await Promise.all([
+      const [targets, invoices, members] = await Promise.all([
         listTargets(period, scope ? [user?.id ?? '', ...scope] : null),
-        listSales({ distributorId: scope, from, to, max: 1000 }),
+        /* Accrual: a sale counts the day it is invoiced, paid or not. */
+        scope ? listInvoices({ distributorId: scope, max: 1000 }) : listInvoicesSince(from),
+        /* Who manages which accounts, for reps' targets. Only an administrator may list people. */
+        user && isAdmin(user.role) ? listMembers().catch(() => []) : Promise.resolve([]),
       ]);
-      return { targets, sales };
+      const inPeriod = invoices.filter(
+        (i) => i.issuedOn >= from && i.issuedOn <= to && i.status !== 'void' && i.status !== 'draft',
+      );
+      return { targets, invoices: inPeriod, members };
     },
     [period, scope],
     { handleError: true },
@@ -67,13 +73,30 @@ export default function TargetsPage() {
   const rows = useMemo(() => {
     if (!data) return [];
 
-    /* Achievement is summed per owner from the sell-out in the period, so the
-       figure on this screen and the figure on Sell-out cannot disagree. */
+    /*
+     * ACHIEVEMENT IS WHAT WAS INVOICED IN THE PERIOD (accrual), paid or not:
+     * goods sold to a customer count the day the invoice is issued.
+     *
+     *   a distributor   every invoice to that account
+     *   a product       the value of that product's lines on those invoices
+     *   a sales rep     invoices to the accounts the rep manages
+     */
     const achieved = new Map<string, number>();
-    for (const sale of data.sales) {
-      for (const key of [sale.capturedBy, sale.distributorId, sale.productId]) {
-        achieved.set(key, (achieved.get(key) ?? 0) + sale.total);
-      }
+    const add = (key: string, amount: number) => achieved.set(key, (achieved.get(key) ?? 0) + amount);
+    for (const invoice of data.invoices) {
+      add(invoice.distributorId, invoice.total);
+      for (const line of invoice.lines ?? []) add(line.productId, line.lineTotal ?? line.quantity * line.unitPrice);
+    }
+    const repAccounts = new Map<string, string[]>();
+    for (const member of data.members) repAccounts.set(member.id, partnerScope(member) ?? []);
+    if (user && !repAccounts.has(user.id)) repAccounts.set(user.id, scope ?? []);
+    for (const target of data.targets) {
+      if (target.ownerType !== 'rep') continue;
+      const accounts = new Set(repAccounts.get(target.ownerId) ?? []);
+      achieved.set(
+        target.ownerId,
+        data.invoices.filter((i) => accounts.has(i.distributorId)).reduce((sum, i) => sum + i.total, 0),
+      );
     }
 
     return data.targets
@@ -99,7 +122,7 @@ export default function TargetsPage() {
     <div>
       <PageHeader
         title="Targets"
-        description="The number you are carrying, and how far through it you are. Measured on sell-out."
+        description="The number you are carrying, and how far through it you are. Measured on what is invoiced, paid or not."
         actions={
           canSet && (
             <Button
@@ -141,7 +164,7 @@ export default function TargetsPage() {
           title="No target set"
           description={
             canSet
-              ? 'Set one per rep, per distributor or per product line, and it is measured against sell-out automatically.'
+              ? 'Set one per rep, per distributor or per product line, and it is measured against invoiced sales automatically.'
               : 'An administrator sets targets per rep, per distributor or per product line.'
           }
           action={
@@ -315,7 +338,7 @@ function TargetModal({
       open
       onClose={onClose}
       title={target.id ? 'Edit target' : 'Set a target'}
-      description="Measured against sell-out, not sell-in. Stock sitting in a distributor's warehouse has not been sold."
+      description="Measured on sales invoiced in the month (accrual): an invoice counts the day it is issued, whether or not it is paid yet."
       footer={
         <>
           <Button variant="ghost" onClick={onClose} disabled={busy}>

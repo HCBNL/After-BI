@@ -2018,3 +2018,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 @media (prefers-reduced-motion: reduce) {
   .feature-card .feature-back, .feature-front-art { transition: none; }
 }
+
+/* The petals behind panels and cards (BrandBars in home/HomeArt.tsx): a very slow turn. */
+.petal-turn { transform-box: view-box; transform-origin: 50px 50px; animation: lock-turn 140s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .petal-turn { animation: none; } }
+
+/* The sign-in and password screens' panel: blue, in both themes (a touch deeper at night). */
+.auth-blue { background-color: #1238e6 !important; }
+[data-theme='dark'] .auth-blue { background-color: #1532c4 !important; }

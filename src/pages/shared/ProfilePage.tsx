@@ -7,7 +7,7 @@
  * are on before they can say so.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Camera,
   KeyRound,
@@ -19,7 +19,6 @@ import {
   Monitor,
   Moon,
   Palette,
-  Save,
   Sun,
   Timer,
   Trash2,
@@ -31,9 +30,7 @@ import {
   Avatar,
   Badge,
   Button,
-  Field,
   Hint,
-  Input,
   Select,
   SettingsCard,
   SettingsRow,
@@ -49,7 +46,6 @@ import { AccentPicker } from '@/components/AccentPicker';
 import { useAuth } from '@/context/AuthContext';
 import { useOptionalOrg } from '@/context/OrgContext';
 import { updateProfile } from '@/lib/db';
-import { assertCodeFree, normaliseEmployeeCode } from '@/lib/accounts';
 import { cloudinaryConfigured, imageUrl, shrinkImage, uploadImage } from '@/lib/cloudinary';
 import { useBrand } from '@/lib/brand';
 import { fullName, partnerScope } from '@/lib/roles';
@@ -70,11 +66,6 @@ export default function ProfilePage() {
   const { openHomeChooser } = useShell();
   const { plan } = useEntitlements();
 
-  const [firstName, setFirstName] = useState(user?.firstName ?? '');
-  const [lastName, setLastName] = useState(user?.lastName ?? '');
-  const [phone, setPhone] = useState(user?.phone ?? '');
-  const [code, setCode] = useState('');
-  const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [viewing, setViewing] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
@@ -82,13 +73,6 @@ export default function ProfilePage() {
   const [settingPin, setSettingPin] = useState(false);
   const [pinBusy, setPinBusy] = useState(false);
   const lock = useLock(user?.id);
-
-  useEffect(() => {
-    if (!user) return;
-    setFirstName(user.firstName);
-    setLastName(user.lastName);
-    setPhone(user.phone ?? '');
-  }, [user?.id]);
 
   if (!user) return null;
 
@@ -121,31 +105,6 @@ export default function ProfilePage() {
       toast.error('Not removed', err instanceof Error ? err.message : undefined);
     } finally {
       setUploading(false);
-    }
-  };
-
-  /* A super admin made before employee codes existed sets theirs, once (see firestore.rules). */
-  const needsSetup = user.role === 'super_admin' && !user.employeeCode;
-  const setupOnce = async () => {
-    const employeeCode = normaliseEmployeeCode(code);
-    if (!firstName.trim() || employeeCode.length < 2) {
-      toast.warning('Name and code needed', 'Enter your first name and your employee code.');
-      return;
-    }
-    setBusy(true);
-    try {
-      if (user.orgId) await assertCodeFree(user.orgId, employeeCode, user.id);
-      await updateProfile(user.id, {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        phone: phone.trim(),
-        employeeCode,
-      });
-      toast.success('Saved and locked', `Your employee code is ${employeeCode}.`);
-    } catch (err) {
-      toast.error('Not saved', err instanceof Error ? err.message : undefined);
-    } finally {
-      setBusy(false);
     }
   };
 
@@ -238,31 +197,6 @@ export default function ProfilePage() {
           <Row label="Phone" value={user.phone || 'Not set'} />
         </dl>
 
-        {needsSetup && (
-          <div className="mt-4 rounded-2xl border border-hairline surface-sunken p-4">
-            <p className="text-body font-semibold text-primary">Set your employee code</p>
-            <p className="mt-0.5 text-label leading-snug text-muted">
-              Once only. After this your name and code are locked, and every action in the audit log carries the code.
-            </p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <Field label="First name" required>
-                <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-              </Field>
-              <Field label="Last name">
-                <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
-              </Field>
-              <Field label="Employee code" required>
-                <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="HCB0001" maxLength={24} />
-              </Field>
-              <Field label="Phone">
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
-              </Field>
-            </div>
-            <Button className="mt-3" icon={<Save size={15} />} loading={busy} onClick={() => void setupOnce()}>
-              Save and lock
-            </Button>
-          </div>
-        )}
       </section>
 
       <SettingsCard

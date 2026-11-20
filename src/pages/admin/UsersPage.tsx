@@ -33,7 +33,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
 import { clearDistributorLink, listMembers, setRepDistributors, updateProfile } from '@/lib/db';
-import { assertCodeFree, needsEmployeeCode, normaliseEmployeeCode } from '@/lib/accounts';
+import { assertCodeFree, needsEmployeeCode, nextEmployeeCode, normaliseEmployeeCode, withRoleSuffix } from '@/lib/accounts';
 import { fullName, partnerScope } from '@/lib/roles';
 import { Checklist } from '@/components/Checklist';
 import { NIGERIAN_STATES } from '@/data/states';
@@ -213,17 +213,17 @@ function MemberModal({
       toast.warning('Which account?', 'A distributor login has to be attached to its distributor.');
       return;
     }
-    const employeeCode = normaliseEmployeeCode(code);
+    let employeeCode = normaliseEmployeeCode(code);
     if (!self && !firstName.trim()) {
       toast.warning('Name needed', 'A first name is needed.');
       return;
     }
-    if (!self && needsEmployeeCode(role) && !employeeCode) {
-      toast.warning('Employee code needed', 'Every member of staff needs one: the audit log knows them by it.');
-      return;
-    }
     setBusy(true);
     try {
+      /* Staff without a code get the next one, the same way a new account does. */
+      if (!self && needsEmployeeCode(role) && !employeeCode && member.orgId) {
+        employeeCode = await nextEmployeeCode(member.orgId, role);
+      }
       if (!self && employeeCode && employeeCode !== (member.employeeCode ?? '') && member.orgId) {
         await assertCodeFree(member.orgId, employeeCode, member.id);
       }
@@ -291,8 +291,8 @@ function MemberModal({
               <Input value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={!canTouch} />
             </Field>
             {needsEmployeeCode(role) && (
-              <Field label="Employee code" required hint="Names them in the audit log. Only an administrator can change it.">
-                <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="HCB0042" maxLength={24} disabled={!canTouch} />
+              <Field label="Employee code" hint="Company letters, staff number, then the role (SA, FN, OP, WH, SR, HR, ST). Changing the role changes the ending.">
+                <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Assigned on save" maxLength={24} disabled={!canTouch} />
               </Field>
             )}
             <Field label="Phone">
@@ -301,7 +301,15 @@ function MemberModal({
           </div>
         )}
         <Field label="Role" required>
-          <Select value={role} onChange={(e) => setRole(e.target.value as Role)} disabled={self || !canTouch}>
+          <Select
+            value={role}
+            onChange={(e) => {
+              const next = e.target.value as Role;
+              setRole(next);
+              if (code) setCode(withRoleSuffix(code, next));
+            }}
+            disabled={self || !canTouch}
+          >
             {roleOptions.map((r) => (
               <option key={r} value={r}>
                 {ROLE_LABEL[r]}
