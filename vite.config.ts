@@ -23,12 +23,15 @@ function seoFiles(mode: string): Plugin {
       const source = readFileSync(path.resolve(rootDir, 'src/lib/site.ts'), 'utf8');
       const block = source.slice(source.indexOf('export const MODULES'), source.indexOf('];', source.indexOf('export const MODULES')));
       const modules = [...block.matchAll(/slug: '([a-z0-9-]+)'/g)].map((m) => m[1]);
+      const sBlock = source.slice(source.indexOf('export const SOLUTIONS'), source.indexOf('];', source.indexOf('export const SOLUTIONS')));
+      const solutions = [...sBlock.matchAll(/slug: '([a-z0-9-]+)'/g)].map((m) => m[1]);
       const today = new Date().toISOString().slice(0, 10);
       const pages = [
         { loc: '/', priority: '1.0' },
         { loc: '/features', priority: '0.9' },
         ...modules.map((slug) => ({ loc: `/features/${slug}`, priority: '0.8' })),
         { loc: '/solutions', priority: '0.8' },
+        ...solutions.map((slug) => ({ loc: `/solutions/${slug}`, priority: '0.7' })),
         { loc: '/pricing', priority: '0.8' },
         { loc: '/terms', priority: '0.3' },
         { loc: '/privacy', priority: '0.3' },
