@@ -9,13 +9,8 @@
 import { useLayoutEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
 import { useBrowserChrome } from '@/hooks/useBrowserChrome';
 import { BrandBars } from '@/components/home/HomeArt';
-import { HeroThemeButton } from '@/components/home/HomeDesk';
-import { HeroLanguageButton } from '@/components/HeroLanguageButton';
-import { HeroMoneyButton } from '@/components/MoneyToggle';
-import { ProfilePhoto } from '@/components/home/HomeHero';
 import { cn } from '@/lib/cn';
 import { Hint } from '@/components/ui/Hint';
 import { usePageHeading } from './PageHeading';
@@ -51,7 +46,6 @@ export function PagePanel({
   className?: string;
 }) {
   const { setPanel } = usePageHeading();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   useLayoutEffect(() => {
@@ -62,13 +56,13 @@ export function PagePanel({
 
   return (
     <section
-      className={cn('ab-hero ab-panel relative isolate overflow-hidden pb-12 text-white lg:pb-[4.75rem]', className)}
+      className={cn('ab-hero ab-panel relative isolate overflow-hidden pb-10 text-white lg:pb-16', className)}
     >
       <BrandBars className="pointer-events-none absolute -right-14 -top-8 -z-10 h-64 w-64 text-white/[0.05] lg:h-[24rem] lg:w-[24rem]" />
 
       <div aria-hidden style={{ height: 'var(--safe-top)' }} />
 
-      <div className="mx-auto max-w-[1440px] px-4 pt-2 sm:px-5 lg:pt-9">
+      <div className="mx-auto max-w-[1440px] px-4 pt-2 sm:px-5 lg:pt-7">
         <div className="relative flex h-11 items-center justify-center lg:hidden">
           <button
             type="button"
@@ -85,26 +79,19 @@ export function PagePanel({
         </div>
 
         {/*
-          On a laptop the title sits on the left at the MIDDLE of the panel's
-          height, not pinned to its top: the right hand column (the four round
-          buttons, then the page's own buttons under them) sets the height,
-          and the title is centred against all of it. So a page with a New
-          order button and a page with none both read balanced. On a phone the
-          title is in the bar above and the page's buttons sit centred.
+          On a laptop: the title on the left and the page's own buttons on the
+          right, in ONE row, centred on each other. The language, balances and
+          theme buttons that used to stack above them now live in the floating
+          button (QuickDial), so the panel is only as tall as this row. On a
+          phone the title is in the bar above and the page's buttons sit centred.
         */}
-        <div className="lg:grid lg:min-h-[5.5rem] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-x-6 lg:gap-y-3">
-          <div className={cn('hidden min-w-0 items-center gap-2.5 lg:flex', Boolean(actions) && 'lg:row-span-2')}>
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-x-6">
+          <div className="hidden min-w-0 items-center gap-2.5 lg:flex">
             <h1 className="truncate font-display text-display font-extrabold leading-tight tracking-[-0.03em]">{title}</h1>
             {description && <About title={title} text={description} />}
           </div>
-          <div className="hidden items-center justify-end gap-2 lg:col-start-2 lg:flex">
-            <HeroLanguageButton />
-            <HeroMoneyButton />
-            <HeroThemeButton />
-            {user && <ProfilePhoto user={user} />}
-          </div>
           {actions && (
-            <div className="ab-on-panel mt-1 flex flex-wrap items-center justify-center gap-2 lg:col-start-2 lg:mt-0 lg:justify-end">
+            <div className="ab-on-panel mt-1 flex flex-wrap items-center justify-center gap-2 lg:col-start-2 lg:row-start-1 lg:mt-0 lg:justify-end">
               {actions}
             </div>
           )}

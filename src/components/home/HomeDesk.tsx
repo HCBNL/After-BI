@@ -11,16 +11,14 @@ import { setStoredTheme } from '@/lib/theme';
 import { actionsForRole, resolveTo } from '@/lib/tiles';
 import { monthPosition } from '@/lib/month';
 import { cn } from '@/lib/cn';
-import { IconArt } from '@/components/ui/IconArt';
+import { IconArt, menuShape } from '@/components/ui/IconArt';
 import type { HomeLayout } from '@/hooks/useHomeLayout';
 import type { Role, UserProfile } from '@/types';
 import type { Kpi } from './HomeSlides';
 import { KpiGlassGrid } from './HomeSlides';
 import { BrandBars } from './HomeArt';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
-import { HeroLanguageButton } from '@/components/HeroLanguageButton';
-import { HeroMoneyButton } from '@/components/MoneyToggle';
-import { displayName, greeting, LayoutButton, ProfilePhoto } from './HomeHero';
+import { displayName, greeting, ProfilePhoto } from './HomeHero';
 import { dateLocale } from '@/lib/locale';
 
 const HERO_ICON =
@@ -122,9 +120,9 @@ function DeskTiles({ role }: { role: Role }) {
             title={action.description}
             className={cn(rowCut(i, expanded, 12, 16), "group min-h-[112px] flex-col items-center justify-start gap-3 rounded-[20px] px-2 py-3 text-center transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white/[0.08]")}
           >
-            {/* Plain, no box: the coloured artwork is the tile. */}
-            <IconArt icon={Icon} id={action.id} size={58} halo />
-            <span className="line-clamp-2 text-label font-semibold leading-tight text-white">{action.label}</span>
+            {/* Plain, no box: the artwork is the tile, in a tint of the theme colour. */}
+            <IconArt icon={Icon} id={action.id} variant="tint" shape={menuShape(action.id)} size={56} halo={0.22} />
+            <span className="line-clamp-2 text-label font-bold leading-tight text-white">{action.label}</span>
           </Link>
         );
       })}
@@ -162,12 +160,6 @@ export function DeskHero({
       <div className="mx-auto max-w-[1440px] px-5 pt-6">
         <div className="flex items-center justify-between gap-4">
           <p className="text-body font-medium text-white/65">{today}</p>
-          <div className="flex items-center gap-2">
-            <HeroLanguageButton />
-            <HeroMoneyButton />
-            <HeroThemeButton />
-            <LayoutButton />
-          </div>
         </div>
 
         <div className="mt-4 flex items-center gap-5">

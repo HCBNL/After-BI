@@ -34,8 +34,7 @@ const TONES: Record<ArtTone, { fill: string; ink: string }> = {
   teal: { fill: '#079a8c', ink: '#ffffff' },
 };
 const TONE_ORDER: ArtTone[] = ['blue', 'green', 'orange', 'purple', 'sky', 'pink', 'teal', 'gold'];
-/* Mostly petals (three, four and five), the way his artwork set is. */
-const SHAPE_ORDER: ArtShape[] = ['trefoil', 'bloom', 'fivefold', 'fourfold', 'daisy', 'trefoil', 'pinwheel', 'fivefold', 'scallop', 'bloom'];
+const SHAPE_ORDER: ArtShape[] = ['scallop', 'bloom', 'scallop', 'daisy', 'scallop', 'pinwheel', 'scallop', 'fourfold'];
 
 function hash(text: string): number {
   let h = 2166136261;
@@ -45,6 +44,18 @@ function hash(text: string): number {
 
 export function toneFor(id: string): ArtTone {
   return TONE_ORDER[hash(id) % TONE_ORDER.length];
+}
+
+/*
+ * The home menu's own set: every shape in the artwork, mixed, but all in ONE
+ * colour, a lighter tint of whatever theme colour is chosen (variant "tint"),
+ * with a faint white edge. One colour family is what keeps it calm and
+ * professional; the mix of shapes is the touch of beauty.
+ */
+const MENU_SHAPES: ArtShape[] = ['scallop', 'bloom', 'pinwheel', 'daisy', 'fourfold', 'trefoil', 'fivefold'];
+
+export function menuShape(id: string): ArtShape {
+  return MENU_SHAPES[(hash(id) >>> 4) % MENU_SHAPES.length];
 }
 
 export function shapeFor(id: string): ArtShape {
@@ -133,7 +144,7 @@ export function IconArt({
   variant = 'color',
   tone,
   shape,
-  spin = true,
+  spin = false,
   halo = false,
   className,
 }: {
@@ -144,23 +155,32 @@ export function IconArt({
   id?: string;
   /** Pixels across. */
   size?: number;
-  variant?: 'color' | 'glass' | 'soft';
+  /** `tint`: a lighter shade of the theme colour (the panel's own), white icon. */
+  variant?: 'color' | 'glass' | 'soft' | 'tint';
   tone?: ArtTone;
   shape?: ArtShape;
-  /** The artwork turns slowly, all the time, to draw the eye to the icon. */
+  /** The artwork turns slowly, all the time. Off unless asked for. */
   spin?: boolean;
   /**
    * A white edge around the artwork, the same shape a little larger behind it,
    * so a vivid badge stands out on any background: green, blue, gold or a
-   * custom brand colour that happens to match the badge's own.
+   * custom brand colour that happens to match the badge's own. A number is
+   * the edge's opacity: a faint edge, just enough to separate shape and panel.
    */
-  halo?: boolean;
+  halo?: boolean | number;
   className?: string;
 }) {
   const t = TONES[tone ?? toneFor(id)];
   const s = shape ?? shapeFor(id);
-  const fill = variant === 'color' ? t.fill : variant === 'glass' ? 'rgba(255,255,255,0.16)' : 'var(--surface-sunken)';
-  const ink = variant === 'color' ? t.ink : variant === 'glass' ? '#ffffff' : 'var(--text-secondary)';
+  const fill =
+    variant === 'color'
+      ? t.fill
+      : variant === 'tint'
+        ? 'color-mix(in oklab, var(--hero) 68%, #ffffff)'
+        : variant === 'glass'
+          ? 'rgba(255,255,255,0.16)'
+          : 'var(--surface-sunken)';
+  const ink = variant === 'color' ? t.ink : variant === 'glass' || variant === 'tint' ? '#ffffff' : 'var(--text-secondary)';
   const glyph = Math.round(size * 0.42);
   return (
     <span
@@ -180,7 +200,11 @@ export function IconArt({
           overflow="visible"
         >
           {halo && (
-            <g fill="#ffffff" transform="translate(50 50) scale(1.14) translate(-50 -50)">
+            <g
+              fill="#ffffff"
+              fillOpacity={typeof halo === 'number' ? halo : 1}
+              transform={`translate(50 50) scale(${typeof halo === 'number' ? 1.09 : 1.14}) translate(-50 -50)`}
+            >
               <Shape shape={s} />
             </g>
           )}

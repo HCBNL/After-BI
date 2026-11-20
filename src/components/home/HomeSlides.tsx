@@ -11,7 +11,6 @@
  * The number cards take the same `Kpi` objects, so a number can never say one thing
  * on a phone and another on a laptop.
  */
-import { IconArt } from '@/components/ui/IconArt';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ExternalLink } from 'lucide-react';
@@ -130,9 +129,9 @@ function BannerCard({ item, index }: { item: Kpi; index: number }) {
       <div className="flex items-start justify-between gap-3">
         <p className="pt-1 text-label font-semibold text-white/80">{item.label}</p>
         {item.icon && (
-          <IconArt id={item.key} size={44} halo className="shrink-0">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/15" aria-hidden>
             {item.icon}
-          </IconArt>
+          </span>
         )}
       </div>
       <Figure item={item} className="tabular mt-1 font-display text-display font-bold leading-none tracking-[-0.02em]" />
@@ -190,9 +189,9 @@ function GlassCard({ item }: { item: Kpi }) {
       <BrandBars className="pointer-events-none absolute -right-5 -top-7 -z-10 h-32 w-32 text-white/[0.05]" />
       <div className="flex items-center gap-2.5">
         {item.icon && (
-          <IconArt id={item.key} size={44} halo className="shrink-0">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/15" aria-hidden>
             {item.icon}
-          </IconArt>
+          </span>
         )}
         <p className="min-w-0 flex-1 truncate text-body font-semibold text-white/85">{item.label}</p>
       </div>

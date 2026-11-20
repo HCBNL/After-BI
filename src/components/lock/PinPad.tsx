@@ -46,6 +46,7 @@ export function PinPad({
   tone,
   disabled,
   listen = true,
+  fit = false,
 }: {
   length: number;
   onDigit: (d: string) => void;
@@ -54,6 +55,8 @@ export function PinPad({
   disabled?: boolean;
   /** Take digits from the physical keyboard. Off when two pads share a screen. */
   listen?: boolean;
+  /** Size the keys to the screen's height, so the lock screen never scrolls. */
+  fit?: boolean;
 }) {
   useEffect(() => {
     if (!listen) return;
@@ -71,8 +74,12 @@ export function PinPad({
     return () => window.removeEventListener('keydown', key);
   }, [listen, disabled, onDigit, onBack]);
 
+  const size = fit
+    ? 'h-[clamp(48px,8.4dvh,74px)] w-[clamp(48px,8.4dvh,74px)] text-[clamp(1.25rem,3.1dvh,1.65rem)]'
+    : 'h-[68px] w-[68px] text-[1.65rem] sm:h-[74px] sm:w-[74px]';
   const keyClass = cn(
-    'flex h-[68px] w-[68px] select-none items-center justify-center rounded-full text-[1.65rem] font-semibold transition-[transform,background-color] duration-100 active:scale-95 disabled:opacity-50 sm:h-[74px] sm:w-[74px]',
+    'flex select-none items-center justify-center rounded-full font-semibold transition-[transform,background-color] duration-100 active:scale-95 disabled:opacity-50',
+    size,
     'focus:outline-none focus-visible:ring-2',
     tone === 'hero'
       ? 'bg-white/14 text-white hover:bg-white/22 active:bg-white/30 focus-visible:ring-white'
@@ -86,7 +93,12 @@ export function PinPad({
   );
 
   return (
-    <div className="grid grid-cols-3 justify-items-center gap-x-6 gap-y-4 sm:gap-x-7">
+    <div
+      className={cn(
+        'grid grid-cols-3 justify-items-center',
+        fit ? 'gap-x-[clamp(1.25rem,3.2dvh,1.75rem)] gap-y-[clamp(0.5rem,1.8dvh,1rem)]' : 'gap-x-6 gap-y-4 sm:gap-x-7',
+      )}
+    >
       {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(digit)}
       <span aria-hidden />
       {digit('0')}
@@ -96,7 +108,8 @@ export function PinPad({
         disabled={disabled || length === 0}
         onClick={onBack}
         className={cn(
-          'flex h-[68px] w-[68px] items-center justify-center rounded-full transition-colors disabled:opacity-40 sm:h-[74px] sm:w-[74px] focus:outline-none focus-visible:ring-2',
+          'flex items-center justify-center rounded-full transition-colors disabled:opacity-40 focus:outline-none focus-visible:ring-2',
+          fit ? 'h-[clamp(48px,8.4dvh,74px)] w-[clamp(48px,8.4dvh,74px)]' : 'h-[68px] w-[68px] sm:h-[74px] sm:w-[74px]',
           tone === 'hero' ? 'text-white hover:bg-white/10 focus-visible:ring-white' : 'text-primary hover:bg-[var(--surface-sunken)] focus-visible:ring-brand-500',
         )}
       >

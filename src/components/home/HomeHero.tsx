@@ -9,8 +9,6 @@
  * It ends in the page rising over it on a curve, and it runs to the top of the
  * glass: `useBrowserChrome` paints the browser's own bar the same colour.
  */
-import { HeroLanguageButton } from '@/components/HeroLanguageButton';
-import { HeroMoneyButton } from '@/components/MoneyToggle';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Menu, PanelsTopLeft, Search } from 'lucide-react';
@@ -21,7 +19,7 @@ import { useChooserSeen, type HomeLayout } from '@/hooks/useHomeLayout';
 import { actionsForRole, PORTAL_ROOT, resolveTo } from '@/lib/tiles';
 import { monthPosition } from '@/lib/month';
 import { cn } from '@/lib/cn';
-import { IconArt } from '@/components/ui/IconArt';
+import { IconArt, menuShape } from '@/components/ui/IconArt';
 import type { UserProfile } from '@/types';
 import type { Kpi } from './HomeSlides';
 import { KpiGlass } from './HomeSlides';
@@ -124,10 +122,7 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
           </h1>
           <p className="mt-1.5 truncate text-label text-white/55">{orgName}</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2.5">
-          <HeroMoneyButton />
-          <HeroLanguageButton />
-          <LayoutButton />
+        <div className="flex shrink-0 items-center">
           <ProfilePhoto user={user} size="md" />
         </div>
       </div>
@@ -142,8 +137,8 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
                 to={resolveTo(action, user.role)}
                 className="flex min-h-[86px] flex-col items-center justify-start gap-2 rounded-[18px] px-1 py-2 text-center transition-[background-color,transform] duration-150 active:scale-[0.96] active:bg-white/10"
               >
-                <IconArt icon={Icon} id={action.id} size={48} halo />
-                <span className="line-clamp-2 text-micro font-semibold leading-[1.25] text-white">
+                <IconArt icon={Icon} id={action.id} variant="tint" shape={menuShape(action.id)} size={46} halo={0.22} />
+                <span className="line-clamp-2 text-micro font-bold leading-[1.25] text-white">
                   {action.label}
                 </span>
               </Link>
@@ -192,10 +187,7 @@ function CardsPanel({
             <Search size={20} strokeWidth={2} aria-hidden />
           </HeroButton>
         </div>
-        <div className="flex items-center gap-2 pr-2">
-          <HeroMoneyButton />
-          <HeroLanguageButton />
-          <LayoutButton />
+        <div className="flex items-center pr-2">
           <ProfilePhoto user={user} />
         </div>
       </div>

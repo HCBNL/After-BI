@@ -65,37 +65,11 @@ export function SiteSkeleton() {
   return <BootSplash />;
 }
 
-/**
- * The AfterBI mark, filling bar by bar like a network signal. The same drawing
- * and animation as the splash in index.html (the keyframes live there, in the
- * page head, so the very first frame already moves).
- */
-function SignalMark({ size = 88 }: { size?: number }) {
-  return (
-    <svg className="ab-signal" viewBox="-8 -14 146 146" width={size} height={size} overflow="visible" aria-hidden>
-      <defs>
-        <linearGradient id="abs1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff7a1a" /><stop offset="1" stopColor="#f2332b" /></linearGradient>
-        <linearGradient id="abs2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffd21f" /><stop offset="1" stopColor="#f5a400" /></linearGradient>
-        <linearGradient id="abs3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3ddc7a" /><stop offset="1" stopColor="#02a05c" /></linearGradient>
-        <linearGradient id="abs4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#45b0ff" /><stop offset="1" stopColor="#0e6dfd" /></linearGradient>
-      </defs>
-      <g transform="skewX(-9) translate(14 0)">
-        <rect className="b1" x="3" y="78" width="25" height="36" rx="12.5" fill="url(#abs1)" />
-        <rect className="b2" x="35" y="55" width="25" height="59" rx="12.5" fill="url(#abs2)" />
-        <rect className="b3" x="67" y="37" width="25" height="77" rx="12.5" fill="url(#abs3)" />
-        <rect className="b4" x="99" y="20" width="25" height="94" rx="12.5" fill="url(#abs4)" />
-      </g>
-    </svg>
-  );
-}
-
-/** The whole screen while the app (or the website) is on its way: the mark and the name. */
+/** The whole screen while the app (or the website) is on its way: the page colour and a small turning ring, nothing else. */
 function BootSplash({ label = 'Loading AfterBI' }: { label?: string }) {
   return (
-    <div className="ab-splash fixed inset-0 z-[60] flex flex-col items-center justify-center gap-1.5" role="status" aria-label={label}>
-      <SignalMark size={104} />
-      <span className="font-display text-display font-bold leading-none tracking-[-0.04em] text-primary">AfterBI</span>
-      <span className="ab-tag mt-1.5">Sales and distribution, connected</span>
+    <div className="surface-page fixed inset-0 z-[60] flex items-center justify-center" role="status" aria-label={label}>
+      <span className="ab-wait" aria-hidden />
     </div>
   );
 }

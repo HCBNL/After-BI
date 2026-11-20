@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, Spinner } from '@/components/ui';
 import { imageUrl } from '@/lib/cloudinary';
+import { useBootDone } from '@/lib/boot';
 import {
   AWAY_MS,
   MAX_TRIES,
@@ -116,6 +117,8 @@ export default function ScreenLock({ hidden }: { hidden?: boolean }) {
 
   /* Nothing behind the lock scrolls. */
   const showing = locked && !hidden;
+  /* Opening the app while locked: the PIN screen IS the first page, so the loading ring goes at once. */
+  useBootDone(showing);
   useEffect(() => {
     if (!showing) return;
     const before = document.body.style.overflow;
@@ -181,38 +184,47 @@ export default function ScreenLock({ hidden }: { hidden?: boolean }) {
       role="dialog"
       aria-modal="true"
       aria-label="AfterBI is locked"
-      className="fixed inset-0 z-[400] flex flex-col overflow-y-auto text-white"
+      className="fixed inset-0 z-[400] flex h-[100dvh] flex-col overflow-hidden text-white"
       style={{ background: 'var(--hero)' }}
     >
       <LockArt />
-      <div className="relative mx-auto flex w-full max-w-sm flex-1 flex-col px-7 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-[max(3.25rem,env(safe-area-inset-top))]">
-        <Avatar
-          name={`${user.firstName} ${user.lastName}`}
-          src={user.photoURL ? imageUrl(user.photoURL, { width: 160 }) : undefined}
-          size="lg"
-          className="ring-4 ring-white/20"
-        />
-        <h1 className="mt-6 text-[2.1rem] font-extrabold leading-tight tracking-[-0.03em]">
-          {user.firstName || 'Welcome back'},
-        </h1>
-        <p className="mt-2 text-body leading-relaxed text-white/85">
-          Please confirm your PIN to access AfterBI. Not you?{' '}
-          <button type="button" onClick={() => void logOut()} className="font-bold text-white underline underline-offset-4">
-            Log out
-          </button>
-        </p>
+      {/*
+        Fits the screen exactly, phone or laptop, with no scrolling: every
+        size here follows the screen's height (dvh) between a floor and a cap,
+        and the keypad takes whatever room is left in the middle.
+      */}
+      <div className="relative mx-auto flex h-full w-full max-w-[420px] flex-col px-6 pb-[max(env(safe-area-inset-bottom),clamp(0.75rem,3dvh,2rem))] pt-[max(env(safe-area-inset-top),clamp(1rem,5dvh,3.5rem))]">
+        <div className="flex items-center gap-4">
+          <Avatar
+            name={`${user.firstName} ${user.lastName}`}
+            src={user.photoURL ? imageUrl(user.photoURL, { width: 160 }) : undefined}
+            size="lg"
+            className="shrink-0 ring-4 ring-white/20"
+          />
+          <div className="min-w-0">
+            <h1 className="truncate text-[clamp(1.45rem,3.8dvh,2.1rem)] font-extrabold leading-tight tracking-[-0.03em]">
+              {user.firstName || 'Welcome back'},
+            </h1>
+            <p className="mt-1 text-label leading-snug text-white/85">
+              Please confirm your PIN to access AfterBI. Not you?{' '}
+              <button type="button" onClick={() => void logOut()} className="font-bold text-white underline underline-offset-4">
+                Log out
+              </button>
+            </p>
+          </div>
+        </div>
 
-        <div className="mt-9 flex justify-center">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
           <PinDots count={pin.length} tone="hero" shake={shake} />
+          <p className="mt-[clamp(0.25rem,1dvh,0.75rem)] flex min-h-[1.4rem] items-center justify-center gap-2 text-center text-label font-semibold text-white" aria-live="assertive">
+            {checking ? <Spinner size={15} /> : error}
+          </p>
+          <div className="mt-[clamp(0.25rem,1.5dvh,1.25rem)]">
+            <PinPad length={pin.length} onDigit={digit} onBack={back} tone="hero" disabled={checking} fit />
+          </div>
         </div>
-        <p className="mt-3 flex min-h-[1.5rem] items-center justify-center gap-2 text-center text-label font-semibold text-white" aria-live="assertive">
-          {checking ? <Spinner size={15} /> : error}
-        </p>
 
-        <div className="mt-auto flex justify-center pt-6">
-          <PinPad length={pin.length} onDigit={digit} onBack={back} tone="hero" disabled={checking} />
-        </div>
-        <p className="mt-7 text-center text-caption text-white/70">
+        <p className="text-center text-caption text-white/70">
           Forgot your PIN? Log out and sign in with your password.
         </p>
       </div>

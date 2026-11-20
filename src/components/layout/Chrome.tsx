@@ -9,8 +9,6 @@ import type { ComponentType } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { LanguageSwitch } from '@/components/LanguageSwitch';
 import { Avatar } from '@/components/ui';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HomeChooser } from '@/components/home/HomeChooser';
@@ -28,6 +26,7 @@ import { MenuSheet } from './MenuSheet';
 import { NavRail } from './NavRail';
 import { usePageHeading } from './PageHeading';
 import { ShellProvider, type ShellApi } from './ShellContext';
+import { QuickDial } from './QuickDial';
 
 function Passthrough({ children }: { children: ReactNode }) {
   return <>{children}</>;
@@ -137,10 +136,6 @@ export function Chrome({
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-0.5">
-                <LanguageSwitch />
-                <div className="hidden lg:block">
-                  <ThemeToggle compact />
-                </div>
                 <Link
                   to={`${root}/profile`}
                   aria-label="Your profile"
@@ -210,6 +205,9 @@ export function Chrome({
         />
 
         <HomeChooser open={chooserOpen} onClose={() => setChooserOpen(false)} uid={user.id} />
+
+        {/* Language, balances, theme and home screen: one floating button, bottom right. */}
+        <QuickDial />
       </div>
       </TourProvider>
       </RemindersProvider>

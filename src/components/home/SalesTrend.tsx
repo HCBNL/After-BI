@@ -231,9 +231,11 @@ export function SalesTrend({
               {`Best month: ${monthName(totals.best.month, 'long')}, ${nairaShort(totals.best.sold)}`}
             </Chip>
           )}
-          {overdue > 0 && (
-            <Chip icon={<Clock size={13} aria-hidden />} warn>
-              {`${nairaShort(overdue)} overdue`}
+          {totals.owed > 0 && (
+            <Chip icon={<Clock size={13} aria-hidden />} owed>
+              {overdue > 0
+                ? `${nairaShort(totals.owed)} owed, ${nairaShort(overdue)} overdue`
+                : `${nairaShort(totals.owed)} owed`}
             </Chip>
           )}
         </div>
@@ -288,14 +290,13 @@ function TipRow({ label, value, swatch }: { label: string; value: number; swatch
   );
 }
 
-function Chip({ icon, warn, children }: { icon: ReactNode; warn?: boolean; children: ReactNode }) {
+function Chip({ icon, owed, children }: { icon: ReactNode; owed?: boolean; children: ReactNode }) {
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-label font-semibold',
-        warn
-          ? 'bg-amber-50 text-[var(--color-status-warning)] dark:bg-amber-500/10'
-          : 'surface-sunken text-secondary',
+        /* Owed is pending, and pending is red: red on black, so it is the first thing seen. */
+        owed ? 'bg-[#111214] text-[#ff5a52] ring-1 ring-white/10 dark:bg-black' : 'surface-sunken text-secondary',
       )}
     >
       {icon}
