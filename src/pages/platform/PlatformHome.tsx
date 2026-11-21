@@ -10,8 +10,7 @@ import { Loading } from '@/components/brand/Loader';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
 import { HomeHero } from '@/components/home/HomeHero';
 import type { Kpi } from '@/components/home/HomeSlides';
-import { AdSlides, KpiBannerGrid, KpiBanners } from '@/components/home/HomeSlides';
-import { useAppAds } from '@/hooks/useAppAds';
+import { KpiBannerGrid } from '@/components/home/HomeSlides';
 import { QuickList } from '@/components/home/QuickList';
 import { TodoCard, type TodoItem } from '@/components/home/TodoCard';
 import { useShell } from '@/components/layout/ShellContext';
@@ -29,7 +28,6 @@ export default function PlatformHome() {
   const { user } = useAuth();
   const [layout] = useHomeLayout(user?.id);
   const { openMenu } = useShell();
-  const ads = useAppAds();
   const { data, loading, error, reload } = useAsync(() => listTenants(), [], { handleError: true });
   useBootDone(data !== undefined || Boolean(error));
 
@@ -173,15 +171,6 @@ export default function PlatformHome() {
         <MonthCard footnote={`Monthly revenue ${nairaShort(summary.mrr)}`} />
       </div>
 
-      <div className="hidden lg:col-span-12 lg:block">
-        <AdSlides ads={ads} bleed={false} slideClassName="lg:basis-[calc((100%_-_1.5rem)/3)]" />
-      </div>
-
-      {cards ? (
-        <AdSlides ads={ads} className="mt-auto lg:hidden" />
-      ) : (
-        <KpiBanners className="mt-auto lg:hidden" items={kpis} failed={failed} onRetry={reload} />
-      )}
     </div>
   );
 }

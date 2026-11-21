@@ -2038,3 +2038,44 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
     .scene-float { animation: none; }
   }
 }
+
+/* ================================================== the moving wallpaper */
+/*
+ * Behind the opening screen, the PIN screen, PIN setup and the organisation
+ * gate: the AfterBI blue, slowly drifting through purple, a touch of pink and
+ * teal, and deep night blue, with the owner's petals turning on top.
+ * Only opacity and transform move, so a phone keeps it smooth.
+ * The same rules are copied inline in index.html for the first paint.
+ */
+/* In the components layer, so the caller's `fixed inset-0` (a utility) decides the position. */
+@layer components {
+  .ab-wall { position: relative; isolation: isolate; overflow: hidden; background: #1238e6; color: #fff; }
+}
+.ab-wall-l { position: absolute; inset: -25%; pointer-events: none; z-index: -1; will-change: opacity, transform; }
+.ab-wall-a { background: radial-gradient(45% 40% at 30% 30%, #2f6bff 0%, transparent 70%), radial-gradient(50% 45% at 75% 70%, #0b2bd1 0%, transparent 70%); animation: ab-wall-drift 26s ease-in-out infinite alternate; }
+.ab-wall-b { background: radial-gradient(50% 45% at 72% 28%, #7c3aed 0%, transparent 72%), radial-gradient(45% 40% at 22% 78%, #5b21b6 0%, transparent 72%); opacity: 0; animation: ab-wall-fade 18s ease-in-out infinite, ab-wall-drift 30s ease-in-out infinite alternate-reverse; }
+.ab-wall-c { background: linear-gradient(165deg, #0c1550 0%, #050a26 100%); opacity: 0; animation: ab-wall-dark 24s ease-in-out infinite; }
+.ab-wall-d { background: radial-gradient(30% 28% at 85% 85%, rgba(236, 72, 153, 0.7) 0%, transparent 70%), radial-gradient(28% 26% at 12% 15%, rgba(14, 165, 233, 0.7) 0%, transparent 70%); opacity: 0; animation: ab-wall-fade 14s ease-in-out 5s infinite; }
+@keyframes ab-wall-drift { from { transform: translate3d(-4%, -3%, 0) rotate(0deg); } to { transform: translate3d(4%, 3%, 0) rotate(8deg); } }
+@keyframes ab-wall-fade { 0%, 100% { opacity: 0; } 50% { opacity: 0.9; } }
+@keyframes ab-wall-dark { 0%, 30%, 100% { opacity: 0; } 60%, 72% { opacity: 0.78; } }
+@media (prefers-reduced-motion: reduce) { .ab-wall-l { animation: none !important; } }
+
+/* The small loader inside the app: four petals turning, their colour drifting like the wallpaper. No logo. */
+.ab-bloom { animation: lock-turn 6s linear infinite; transform-origin: 50% 50%; }
+.ab-bloom path { animation: ab-bloom-hue 7.5s ease-in-out infinite; }
+.ab-bloom path:nth-child(2) { animation-delay: -1.8s; }
+.ab-bloom path:nth-child(3) { animation-delay: -3.6s; }
+.ab-bloom path:nth-child(4) { animation-delay: -5.4s; }
+@keyframes ab-bloom-hue { 0%, 100% { fill: #1d4ef5; } 33% { fill: #7c3aed; } 66% { fill: #ec4899; } }
+@media (prefers-reduced-motion: reduce) { .ab-bloom, .ab-bloom path { animation-duration: 0s; animation-iteration-count: 1; } }
+
+/* The floating bottom bar: frosted, so the page shows through it. */
+.ab-dock {
+  background-color: color-mix(in oklab, var(--surface-card) 74%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+  box-shadow: 0 10px 30px -8px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+[data-theme='dark'] .ab-dock { box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .ab-dock { background-color: var(--surface-card); } }

@@ -26,8 +26,8 @@ import { useBootDone } from '@/lib/boot';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
 import { HomeHero } from '@/components/home/HomeHero';
 import type { Kpi } from '@/components/home/HomeSlides';
-import { AdSlides, KpiBannerGrid, KpiBanners } from '@/components/home/HomeSlides';
-import { useAppAds } from '@/hooks/useAppAds';
+import { KpiBannerGrid } from '@/components/home/HomeSlides';
+import { RecentActivity } from '@/components/home/RecentActivity';
 import { QuickList } from '@/components/home/QuickList';
 import { SetupChecklist } from '@/components/home/SetupChecklist';
 import { TodoCard, type TodoItem } from '@/components/home/TodoCard';
@@ -292,8 +292,6 @@ export default function PortalHome() {
     return items;
   }, [data, role, root]);
 
-  const ads = useAppAds();
-
   /* The first visit plays the tour, once, after the screen has drawn. */
   const { startIfNew } = useTour();
   useEffect(() => {
@@ -357,15 +355,7 @@ export default function PortalHome() {
         </div>
       )}
 
-      <div className="hidden lg:col-span-12 lg:block">
-        <AdSlides ads={ads} bleed={false} slideClassName="lg:basis-[calc((100%_-_1.5rem)/3)]" />
-      </div>
-
-      {cards ? (
-        <AdSlides ads={ads} className="mt-auto lg:hidden" />
-      ) : (
-        <KpiBanners className="mt-auto lg:hidden" items={kpis} failed={failed} onRetry={reload} />
-      )}
+      <RecentActivity uid={user.id} role={user.role} root={root} className="lg:col-span-12" />
     </div>
   );
 }

@@ -39,7 +39,7 @@ import {
 } from '@/components/ui';
 import { PinSetup } from '@/components/lock/PinSetup';
 import { useLock } from '@/components/lock/useLock';
-import { DEFAULT_MINUTES, LOCK_CHOICES, removePin, setLockMinutes } from '@/lib/pinLock';
+import { DEFAULT_MINUTES, LOCK_CHOICES, setLockMinutes } from '@/lib/pinLock';
 import { getStoredTheme, setStoredTheme, type ThemeChoice } from '@/lib/theme';
 import { LANGS, getLang, setLang, type Lang } from '@/lib/i18n';
 import { AccentPicker } from '@/components/AccentPicker';
@@ -275,27 +275,6 @@ export default function ProfilePage() {
             </Button>
           }
         />
-        {lock.set && (
-          <SettingsRow
-            icon={Trash2}
-            art="security-off"
-            tone="pink"
-            label="Turn off PIN"
-            danger
-            disabled={pinBusy}
-            onClick={async () => {
-              setPinBusy(true);
-              try {
-                await removePin(user.id);
-                toast.success('PIN turned off');
-              } catch (err) {
-                toast.error('Not turned off', err instanceof Error ? err.message : undefined);
-              } finally {
-                setPinBusy(false);
-              }
-            }}
-          />
-        )}
       </SettingsCard>
 
       <PinSetup
