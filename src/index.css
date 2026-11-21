@@ -753,14 +753,15 @@
     }
     /* The grid's 1.5rem gap and the curve's 22px, taken back, so the next card starts 1.25rem below the curve's top. */
     .ab-desk-pull { margin-bottom: calc(-1.5rem - 22px); }
-    /* What follows paints above the sheet's curve, which now reaches 22px into it. */
-    .ab-desk-pull ~ :not(.absolute, .fixed) { position: relative; z-index: 1; }
+
   }
 
   /* A page's panel (PagePanel), pulled out to the page edges at every width. */
-  .ab-panel { margin-top: -1rem; margin-inline: -0.75rem; }
+  /* The top margin takes back exactly `main`'s top padding under a panel (pt-1, sm:pt-2), no more:
+     pulling further hid the top of the panel, back button and title, under the phone's status bar. */
+  .ab-panel { margin-top: -0.25rem; margin-inline: -0.75rem; }
   @media (min-width: 640px) {
-    .ab-panel { margin-top: -1.5rem; margin-inline: -1.25rem; }
+    .ab-panel { margin-top: -0.5rem; margin-inline: -1.25rem; }
   }
   @media (min-width: 1024px) {
     .ab-panel { margin-inline: calc((min(1400px, 100cqw) - 100cqw) / 2 - 1.25rem); }
@@ -2109,3 +2110,12 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 .ab-card-art { animation: lock-turn 38s linear infinite; transform-origin: 50% 50%; opacity: 0.95; }
 .ab-card-art-back { animation-direction: reverse; }
 @media (prefers-reduced-motion: reduce) { .ab-card-art { animation: none; } }
+
+/*
+ * A coloured panel's sheet curve reaches a little way into the first card
+ * under it (so the card sits close to the curve). The panel is positioned, so
+ * without this the page colour of the curve was painted over the card's top
+ * edge and rounded corners. Positioned too, and later in the page, the cards
+ * now paint on top of it. No z-index, so no new layers for popovers to fight.
+ */
+.ab-sheet-over ~ :not(.absolute, .fixed, .sticky) { position: relative; }

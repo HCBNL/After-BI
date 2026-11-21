@@ -7,6 +7,9 @@
  * are on before they can say so.
  */
 
+import { cn } from '@/lib/cn';
+import { getAppIcon, setAppIcon, type AppIcon } from '@/lib/appIcon';
+import { useSelfPhoto } from '@/lib/selfPhoto';
 import { useRef, useState } from 'react';
 import {
   Camera,
@@ -57,6 +60,8 @@ import { useEntitlements } from '@/lib/plans';
 
 export default function ProfilePage() {
   const { user, signOut, resetPassword } = useAuth();
+  const photo = useSelfPhoto(user);
+  const [appIcon, setAppIconState] = useState<AppIcon>(() => getAppIcon());
   /* Optional, because this screen is also the platform console's profile, and
      that shell mounts no OrgProvider. See `useOptionalOrg`. */
   const org = useOptionalOrg();
@@ -129,7 +134,7 @@ export default function ProfilePage() {
             >
               <Avatar
                 name={`${user.firstName} ${user.lastName}`}
-                src={user.photoURL ? imageUrl(user.photoURL, { width: 160 }) : undefined}
+                src={photo}
                 size="lg"
               />
             </button>
@@ -339,6 +344,41 @@ export default function ProfilePage() {
             }}
           />
         ))}
+      </SettingsCard>
+
+      <SettingsCard
+        title="App icon"
+        description="The round badge on your home screen or desktop, black or blue. Remove the app and add it again to see a new choice."
+      >
+        <div className="grid grid-cols-2 gap-3 py-3">
+          {(
+            [
+              { value: 'white', label: 'Black' },
+              { value: 'blue', label: 'Blue' },
+            ] as const
+          ).map((option) => {
+            const on = appIcon === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={on}
+                onClick={() => {
+                  setAppIcon(option.value);
+                  setAppIconState(option.value);
+                  toast.success(`${option.label} icon chosen`, 'Remove AfterBI from your home screen and add it again to see it.');
+                }}
+                className={cn(
+                  'flex flex-col items-center gap-2.5 rounded-2xl border p-3 transition-colors',
+                  on ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10' : 'border-hairline hover:bg-[var(--surface-sunken)]',
+                )}
+              >
+                <img src={`/appicon/${option.value}-192.png`} alt="" width={64} height={64} className="h-16 w-16 rounded-[18px] shadow-card ring-1 ring-black/5" />
+                <span className={cn('text-label font-semibold', on ? 'text-brand-800 dark:text-brand-200' : 'text-primary')}>{option.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </SettingsCard>
 
       <SettingsCard title="Personalise">
