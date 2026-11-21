@@ -13,11 +13,11 @@
  * Every open tab follows: locking or unlocking in one does the same in all.
  */
 
+import { useSelfPhoto } from '@/lib/selfPhoto';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar, Spinner } from '@/components/ui';
-import { imageUrl } from '@/lib/cloudinary';
 import { useBootDone } from '@/lib/boot';
 import {
   AWAY_MS,
@@ -44,6 +44,7 @@ export default function ScreenLock({ hidden }: { hidden?: boolean }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const uid = user?.id ?? '';
+  const photo = useSelfPhoto(user);
 
   /* Opening the app asks for the PIN; signing in with the password on this load does not. */
   const launch = useRef(!isFreshSignIn());
@@ -222,7 +223,7 @@ export default function ScreenLock({ hidden }: { hidden?: boolean }) {
         <div className="flex items-center gap-4">
           <Avatar
             name={`${user.firstName} ${user.lastName}`}
-            src={user.photoURL ? imageUrl(user.photoURL, { width: 160 }) : undefined}
+            src={photo}
             size="lg"
             className="shrink-0 ring-4 ring-white/20"
           />

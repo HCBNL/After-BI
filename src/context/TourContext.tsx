@@ -23,6 +23,9 @@ interface TourApi {
 
 const TourContext = createContext<TourApi | null>(null);
 
+/* Once per page load: the account has been told this device already saw the tour. */
+let synced = false;
+
 export function useTour(): TourApi {
   const ctx = useContext(TourContext);
   // Never throws. A screen outside the shell asking for the tour should get a
@@ -44,11 +47,37 @@ export function TourProvider({ children }: { children: ReactNode }) {
     setRunning(true);
   }, [role]);
 
+  const uid = user?.id;
+
+  /*
+   * ONCE PER ACCOUNT, NOT PER DEVICE OR SIGN IN.
+   *
+   * The device copy answers at once; when it has no record (a new phone, a
+   * cleared browser) the account is asked before anything plays. It is marked
+   * seen the moment it starts, on the device and on the account, so signing in
+   * again, here or anywhere, never brings it back. Help still starts it on demand.
+   */
   const startIfNew = useCallback(() => {
-    if (!role || tourSeen(role)) return;
-    setPlayed(null);
-    setRunning(true);
-  }, [role]);
+    if (!role || !uid) return;
+    if (tourSeen(role)) {
+      /* Seen on this device before accounts kept it: copy that to the account once, so a new device stays quiet too. */
+      if (!synced) {
+        synced = true;
+        void import('@/lib/tourRemote').then(({ markTourSeenRemote }) => markTourSeenRemote(uid));
+      }
+      return;
+    }
+    void import('@/lib/tourRemote').then(async ({ tourSeenRemote, markTourSeenRemote }) => {
+      if (await tourSeenRemote(uid)) {
+        markTourSeen(role);
+        return;
+      }
+      markTourSeen(role);
+      void markTourSeenRemote(uid);
+      setPlayed(null);
+      setRunning(true);
+    });
+  }, [role, uid]);
 
   const play = useCallback((steps: TourStep[]) => {
     if (!steps.length) return;

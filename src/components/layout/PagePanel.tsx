@@ -65,13 +65,13 @@ export function PagePanel({
 
   return (
     <section
-      className={cn('ab-hero ab-panel relative isolate overflow-hidden pb-10 text-white lg:pb-16', className)}
+      className={cn('ab-hero ab-panel ab-sheet-over relative isolate overflow-hidden pb-10 text-white lg:pb-16', className)}
     >
       <BrandBars className="pointer-events-none absolute -right-14 -top-8 -z-10 h-64 w-64 text-white/[0.05] lg:h-[24rem] lg:w-[24rem]" />
 
       <div aria-hidden style={{ height: 'var(--safe-top)' }} />
 
-      <div className="mx-auto max-w-[1440px] px-4 pt-2 sm:px-5 lg:pt-7">
+      <div className="mx-auto max-w-[1440px] px-4 pt-3 sm:px-5 sm:pt-4 lg:pt-7">
         <div className="relative flex h-11 items-center justify-center lg:hidden">
           <button
             type="button"

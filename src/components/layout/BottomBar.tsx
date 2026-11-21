@@ -1,8 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom';
+import { useSelfPhoto } from '@/lib/selfPhoto';
 import { Home, Menu as MenuIcon } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Avatar } from '@/components/ui';
-import { imageUrl } from '@/lib/cloudinary';
 import { cn } from '@/lib/cn';
 import { actionById, resolveTo, BAR, PORTAL_ROOT } from '@/lib/tiles';
 import type { Role } from '@/types';
@@ -29,6 +29,7 @@ export function BottomBar({
 }) {
   const location = useLocation();
   const { user } = useAuth();
+  const photo = useSelfPhoto(user);
   const root = PORTAL_ROOT[role];
   useEntitlements();
   /* A slot whose screen the plan has locked is left out rather than leading nowhere. */
@@ -94,7 +95,7 @@ export function BottomBar({
                   isProfile && user ? (
                     <Avatar
                       name={`${user.firstName} ${user.lastName}`}
-                      src={user.photoURL ? imageUrl(user.photoURL, { width: 96 }) : undefined}
+                      src={photo}
                       size="xs"
                       className={cn(
                         'h-[30px] w-[30px] ring-2 transition-shadow',

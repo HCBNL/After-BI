@@ -9,6 +9,7 @@
  * It ends in the page rising over it on a curve, and it runs to the top of the
  * glass: `useBrowserChrome` paints the browser's own bar the same colour.
  */
+import { useSelfPhoto } from '@/lib/selfPhoto';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Menu, PanelsTopLeft, Search } from 'lucide-react';
@@ -51,6 +52,7 @@ const PHOTO = {
 } as const;
 
 export function ProfilePhoto({ user, size = 'sm' }: { user: UserProfile; size?: keyof typeof PHOTO }) {
+  const photo = useSelfPhoto(user);
   return (
     <Link
       to={`${PORTAL_ROOT[user.role]}/profile`}
@@ -61,7 +63,7 @@ export function ProfilePhoto({ user, size = 'sm' }: { user: UserProfile; size?: 
         PHOTO[size].gap,
       )}
     >
-      <Avatar name={`${user.firstName} ${user.lastName}`} src={user.photoURL} size={PHOTO[size].avatar} />
+      <Avatar name={`${user.firstName} ${user.lastName}`} src={photo} size={PHOTO[size].avatar} />
     </Link>
   );
 }
@@ -234,7 +236,7 @@ export function HomeHero({
 
   return (
     /* The negative margins match the page's own padding exactly, so the panel meets the top of the glass. */
-    <section className="ab-hero relative isolate -mx-3 -mb-4 -mt-4 overflow-hidden pb-12 sm:-mx-5 sm:-mt-6 lg:hidden">
+    <section className="ab-hero ab-sheet-over relative isolate -mx-3 -mb-4 -mt-4 overflow-hidden pb-12 sm:-mx-5 sm:-mt-6 lg:hidden">
       <BrandBars className="pointer-events-none absolute -right-14 -top-8 -z-10 h-64 w-64 text-white/[0.045]" />
       <div aria-hidden style={{ height: 'var(--safe-top)' }} />
 

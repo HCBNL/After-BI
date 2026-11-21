@@ -4,6 +4,7 @@
  * its own panel), and the home-screen chooser. `AppShell` wraps it for a
  * tenant, `PlatformShell` for the platform owner: same frame, one codebase.
  */
+import { useSelfPhoto } from '@/lib/selfPhoto';
 import { Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ComponentType } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -41,6 +42,7 @@ export function Chrome({
   Gate?: ComponentType<{ children: ReactNode }>;
 }) {
   const { user, signOut } = useAuth();
+  const photo = useSelfPhoto(user);
   const navigate = useNavigate();
   const location = useLocation();
   const { heading, panel } = usePageHeading();
@@ -141,7 +143,7 @@ export function Chrome({
                   aria-label="Your profile"
                   className="ml-0.5 flex items-center rounded-full transition-opacity hover:opacity-85"
                 >
-                  <Avatar name={`${user.firstName} ${user.lastName}`} src={user.photoURL} size="sm" />
+                  <Avatar name={`${user.firstName} ${user.lastName}`} src={photo} size="sm" />
                 </Link>
               </div>
             </div>
@@ -200,7 +202,7 @@ export function Chrome({
           orgName={orgName}
           personName={fullName(user)}
           focusSearch={menuSearch}
-          photoURL={user.photoURL}
+          photoURL={photo}
           onChooseHome={shell.openHomeChooser}
         />
 

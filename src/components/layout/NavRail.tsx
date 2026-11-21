@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSelfPhoto } from '@/lib/selfPhoto';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import {
   BellRing,
@@ -58,6 +59,7 @@ export function NavRail({
   orgName: string;
   onSignOut: () => void;
 }) {
+  const photo = useSelfPhoto(person);
   const root = PORTAL_ROOT[role];
   const { openMenu } = useShell();
   /* Only what is new: seen reminders still stand, but they stop counting. */
@@ -198,7 +200,7 @@ export function NavRail({
             title="Your profile"
             className={cn('flex min-w-0 items-center gap-2.5 rounded-xl transition-opacity hover:opacity-85', collapsed ? 'justify-center' : 'flex-1')}
           >
-            <Avatar name={`${person.firstName} ${person.lastName}`} src={person.photoURL} size="sm" />
+            <Avatar name={`${person.firstName} ${person.lastName}`} src={photo} size="sm" />
             {!collapsed && (
               <span className="min-w-0">
                 <span className="block truncate text-label font-medium text-primary">{fullName(person)}</span>

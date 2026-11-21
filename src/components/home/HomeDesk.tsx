@@ -153,7 +153,7 @@ export function DeskHero({
   const today = useMemo(todayLine, []);
 
   return (
-    <section className={cn('ab-hero ab-desk relative isolate overflow-hidden', className)}>
+    <section className={cn('ab-hero ab-desk ab-sheet-over relative isolate overflow-hidden', className)}>
       <BrandBars className="pointer-events-none absolute -right-20 -top-16 -z-10 h-[28rem] w-[28rem] text-white/[0.045]" />
       <BrandBars className="pointer-events-none absolute -bottom-24 left-[42%] -z-10 h-64 w-64 text-white/[0.03]" />
 
