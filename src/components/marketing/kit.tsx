@@ -1,4 +1,5 @@
 /* The public site's headline face, served from the app itself (no Google request). See `.site-heavy` in index.css. */
+import { Mark } from '@/components/brand/Wordmark';
 import '@fontsource-variable/archivo/wdth.css';
 /**
  * Everything around a public page, so a page is only its own content.
@@ -242,7 +243,7 @@ function ClosingBand() {
       <Art name="spark" shift={3} className="pointer-events-none absolute bottom-14 right-[26%] -z-10 hidden h-6 w-6 sm:block" />
 
       <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)]">
-        <img src="/brand/afterbi-mark.png" alt="AfterBI" width={44} height={44} className="h-11 w-11 object-contain" />
+        <Mark title="AfterBI" className="h-11 w-11" />
       </span>
       <h2 className="mx-auto mt-7 max-w-xl font-display text-[1.75rem] font-semibold leading-[1.08] tracking-[-0.035em] text-balance sm:text-[2.6rem]">
         Ready when you are

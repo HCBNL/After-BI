@@ -1,42 +1,49 @@
 /**
- * The whole brand, in one file.
+ * The AfterBI logo, drawn in code (SVG), in one file.
  *
- * "AfterBI.", the display face, and a green full stop. That is the logo.
- * There is no icon, no monogram and no four-bar glyph any more, and removing
- * them is the point rather than a simplification:
+ *   Wordmark  three slanted bars, the tallest the height of the capital A,
+ *             then "AfterBI" in heavy Archivo. One colour: the text colour.
+ *   Mark      the same three bars, white, in a round badge. The browser icon,
+ *             the app icon, ID cards.
  *
- *   A mark and a wordmark side by side is two logos, and every surface then
- *   has to decide which it is showing. The rail showed the glyph collapsed and
- *   both expanded, the sign-in screen showed both, the footer showed both, the
- *   loader animated the glyph alone, four answers to one question. One
- *   wordmark, drawn at whatever size the surface needs, is a brand somebody
- *   recognises at a glance instead of a kit somebody assembles.
- *
- * THE FULL STOP IS THE WHOLE DEVICE
- *
- * It is the only place the brand green appears on the bar, which is what keeps
- * it meaning something further down the page. It is also the only thing that
- * has to be coloured for the logo to read as the logo, so the wordmark works
- * in one colour anywhere it has to, a print, a favicon, a watermark.
+ * Both are outlined paths (see logoPaths.ts), so they never depend on a font
+ * loading and look the same at every size. Size the wordmark with font size:
+ * it is exactly 1em tall.
  */
 
 import { cn } from '@/lib/cn';
+import {
+  MARK_BARS,
+  MARK_BAR_WIDTH,
+  WORDMARK_BARS,
+  WORDMARK_BAR_WIDTH,
+  WORDMARK_LETTERS,
+  WORDMARK_RATIO,
+  WORDMARK_VIEWBOX,
+} from './logoPaths';
 
-/** The AfterBI logo mark (the four rising bars), from public/brand. */
-export function Mark({ className }: { className?: string }) {
-  return <img src="/brand/afterbi-mark-128.png" alt="" aria-hidden width={128} height={128} className={cn('shrink-0 object-contain', className)} />;
+/** The round badge with the three bars. The circle takes the text colour (near black by default). */
+export function Mark({ className, title }: { className?: string; title?: string }) {
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      role={title ? 'img' : undefined}
+      aria-label={title}
+      aria-hidden={title ? undefined : true}
+      focusable="false"
+      className={cn('shrink-0 text-[#0a0a0b]', className)}
+    >
+      <circle cx="50" cy="50" r="47.7" fill="currentColor" />
+      <path d={MARK_BARS} stroke="#fff" strokeWidth={MARK_BAR_WIDTH} strokeLinecap="round" fill="none" />
+    </svg>
+  );
 }
 
-/** The four rising bars drawn in the text colour: for the one colour logo on the public site's bar. */
+/** The three bars alone, in the text colour. */
 export function MarkSolid({ className }: { className?: string }) {
   return (
-    <svg viewBox="-8 -14 146 146" aria-hidden focusable="false" className={cn('shrink-0', className)} fill="currentColor">
-      <g transform="skewX(-9) translate(14 0)">
-        <rect x="3" y="78" width="25" height="36" rx="12.5" />
-        <rect x="35" y="55" width="25" height="59" rx="12.5" />
-        <rect x="67" y="37" width="25" height="77" rx="12.5" />
-        <rect x="99" y="20" width="25" height="94" rx="12.5" />
-      </g>
+    <svg viewBox="0 -740 1250 750" aria-hidden focusable="false" className={cn('shrink-0', className)}>
+      <path d={WORDMARK_BARS} stroke="currentColor" strokeWidth={WORDMARK_BAR_WIDTH} strokeLinecap="round" fill="none" />
     </svg>
   );
 }
@@ -44,24 +51,27 @@ export function MarkSolid({ className }: { className?: string }) {
 export function Wordmark({
   className,
   onInk,
-  mono,
 }: {
   className?: string;
   /** White on the dark pages; the theme's own ink everywhere else. */
   onInk?: boolean;
-  /** Mark and word in one colour (the text colour), as on the public site's bar. */
+  /** Kept for old callers: the logo is always one colour now. */
   mono?: boolean;
 }) {
   return (
     <span
-      className={cn(
-        'inline-flex items-center gap-[0.32em] whitespace-nowrap font-display font-extrabold leading-none tracking-[-0.04em]',
-        onInk ? 'text-white' : 'text-primary',
-        className,
-      )}
+      role="img"
+      aria-label="AfterBI"
+      className={cn('inline-flex shrink-0 items-center leading-none', onInk ? 'text-white' : 'text-primary', className)}
     >
-      {mono ? <MarkSolid className="h-[1.15em] w-[1.15em]" /> : <Mark className="h-[1.15em] w-[1.15em]" />}
-      AfterBI
+      <svg viewBox={WORDMARK_VIEWBOX} style={{ height: '1em', width: `${WORDMARK_RATIO}em` }} aria-hidden focusable="false">
+        <path d={WORDMARK_BARS} stroke="currentColor" strokeWidth={WORDMARK_BAR_WIDTH} strokeLinecap="round" fill="none" />
+        <g fill="currentColor">
+          {WORDMARK_LETTERS.map(([x, d], i) => (
+            <path key={i} transform={`translate(${x} 0)`} d={d} />
+          ))}
+        </g>
+      </svg>
     </span>
   );
 }

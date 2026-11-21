@@ -104,7 +104,7 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
       >
         <div className={cn(container, 'flex h-[4.5rem] items-center gap-6 sm:h-[5rem] lg:grid lg:grid-cols-[1fr_auto_1fr]')}>
           <Link to="/" aria-label="AfterBI home" className="shrink-0 lg:justify-self-start">
-            <Wordmark mono className="text-[1.4rem] !text-navy-900 sm:text-[1.55rem]" />
+            <Wordmark className="text-[1.55rem] !text-navy-900 sm:text-[1.9rem]" />
           </Link>
 
           <nav aria-label="Main" className="hidden items-center justify-center gap-1 lg:flex">
@@ -396,7 +396,7 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
     <div role="dialog" aria-modal="true" aria-label="Menu" className="site fixed inset-0 z-[60] flex animate-fade-in flex-col overflow-y-auto lg:hidden">
       <div className="status-bar-fill" aria-hidden />
       <div className={cn(container, 'flex h-16 items-center justify-between border-b border-navy-900/10')}>
-        <Wordmark mono className="text-[1.4rem] !text-navy-900" />
+        <Wordmark className="text-[1.55rem] !text-navy-900" />
         <button
           type="button"
           onClick={onClose}
@@ -506,7 +506,7 @@ export function SiteFooter() {
         <div className="mx-auto grid w-full max-w-[1440px] grid-cols-2 px-5 sm:px-8 lg:grid-cols-[1.45fr_2.2fr_1.25fr_0.95fr_0.95fr]">
           <div className={cn(cell, 'col-span-2 border-b lg:col-span-1 lg:border-b-0 lg:border-r lg:pl-0 xl:pl-0')}>
             <Link to="/" aria-label="AfterBI home">
-              <Wordmark onInk className="text-[1.25rem]" />
+              <Wordmark onInk className="text-[1.6rem]" />
             </Link>
             <p className="mt-4 max-w-[17rem] text-[13.5px] leading-[1.6] text-white/60">
               The sales and distribution platform for consumer goods companies.

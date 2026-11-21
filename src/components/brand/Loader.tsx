@@ -1,3 +1,4 @@
+import { Mark } from './Wordmark';
 import { cn } from '@/lib/cn';
 
 /**
@@ -126,14 +127,7 @@ export function QuietLoader({
   inline?: boolean;
 }) {
   const mark = (
-    <img
-      src="/brand/afterbi-mark.png"
-      alt=""
-      width={64}
-      height={64}
-      className="h-16 w-16 select-none object-contain"
-      draggable={false}
-    />
+    <Mark className="h-16 w-16 select-none" />
   );
 
   if (inline) {

@@ -75,7 +75,7 @@ export function NavRail({
   };
   const logo = (
     <Link to={root} onClick={goHome} title="Home" aria-label="Home" className="rounded-lg transition-opacity hover:opacity-80">
-      <Wordmark className="text-heading" />
+      <Wordmark className="text-[1.5rem]" />
     </Link>
   );
 
