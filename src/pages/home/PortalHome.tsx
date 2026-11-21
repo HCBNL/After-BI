@@ -26,7 +26,6 @@ import { useBootDone } from '@/lib/boot';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
 import { HomeHero } from '@/components/home/HomeHero';
 import type { Kpi } from '@/components/home/HomeSlides';
-import { KpiBannerGrid } from '@/components/home/HomeSlides';
 import { RecentActivity } from '@/components/home/RecentActivity';
 import { QuickList } from '@/components/home/QuickList';
 import { SetupChecklist } from '@/components/home/SetupChecklist';
@@ -315,11 +314,11 @@ export default function PortalHome() {
     (warehouses.length === 0 || products.length === 0 || distributors.length === 0);
 
   return (
-    <div className="min-h-home flex flex-col gap-5 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
+    <div className="ab-home-wide min-h-home flex flex-col gap-3 sm:gap-5 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6">
       <HomeHero user={user} orgName={orgName} layout={layout} kpis={kpis} kpiFailed={failed} onKpiRetry={reload} />
 
       <DeskHero
-        className="hidden lg:col-span-12 lg:-mb-6 lg:block"
+        className="hidden lg:col-span-12 lg:block ab-desk-pull"
         user={user}
         orgName={orgName}
         layout={layout}
@@ -328,9 +327,11 @@ export default function PortalHome() {
         onKpiRetry={reload}
       />
 
-      <div className="hidden lg:col-span-12 lg:block">
-        {cards ? <DeskShortcuts role={user.role} /> : <KpiBannerGrid items={kpis} failed={failed} onRetry={reload} />}
-      </div>
+      {cards && (
+        <div className="hidden lg:col-span-12 lg:block">
+          <DeskShortcuts role={user.role} />
+        </div>
+      )}
 
       {cards && <QuickList role={user.role} onMore={() => openMenu()} className="lg:hidden" />}
 

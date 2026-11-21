@@ -8,6 +8,7 @@
  * unfinished rather than safe.
  */
 
+import { CardStrip } from '@/components/ui/CardStrip';
 import { useMemo } from 'react';
 import { CreditCard } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -124,7 +125,7 @@ export default function CreditPage() {
         description="What each distributor may owe at once, and who is against their ceiling."
       />
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+      <CardStrip className="mb-5">
         <StatTile label="Total exposure" value={nairaShort(totals.exposure)} icon={<CreditCard size={16} />} />
         <StatTile label="Overdue" value={nairaShort(totals.overdue)} tone={totals.overdue ? 'critical' : 'good'} />
         <StatTile
@@ -133,7 +134,7 @@ export default function CreditPage() {
           tone={totals.breached ? 'critical' : 'good'}
           hint={totals.breached ? 'Needs a decision' : 'Everybody is inside'}
         />
-      </div>
+      </CardStrip>
 
       <DataTable
         rows={rows}

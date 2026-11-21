@@ -16,6 +16,7 @@
  * curve useless.
  */
 
+import { CardStrip } from '@/components/ui/CardStrip';
 import { useMemo, useState } from 'react';
 import { Pencil, Plus, TrendingUp, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -196,11 +197,11 @@ export default function SellOutPage() {
         }
       />
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+      <CardStrip className="mb-5">
         <StatTile label="This month" value={nairaShort(totals.month)} icon={<TrendingUp size={16} />} tone="good" />
         <StatTile label="Today" value={nairaShort(totals.today)} hint="Keyed so far today" />
         <StatTile label="Outlets" value={count(totals.outlets)} hint="Named this month" tone="info" />
-      </div>
+      </CardStrip>
 
       <div className="mb-4">
         <SearchInput

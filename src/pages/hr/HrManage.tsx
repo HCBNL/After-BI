@@ -16,6 +16,7 @@
  * (The concept is GetSchool's HR, per organisation.)
  */
 
+import { CardStrip } from '@/components/ui/CardStrip';
 import { useMemo, useState, type FormEvent } from 'react';
 import {
   Banknote,
@@ -349,7 +350,7 @@ export default function HrManage() {
 
       {tab === 'payroll' && (
         <section className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <CardStrip>
             <StatTile label="Net payroll" value={nairaShort(totalNet)} icon={<Banknote size={16} />} tone="good" hint={`Full salaries ${nairaShort(fullPayroll)}`} />
             <StatTile label="Running costs" value={nairaShort(costTotal)} icon={<Receipt size={16} />} tone="warning" hint={monthCosts.length === 1 ? '1 cost this month' : `${monthCosts.length} costs this month`} />
             <StatTile label="Total monthly cost" value={nairaShort(totalNet + costTotal)} tone="brand" hint="Net payroll plus running costs" />
@@ -360,7 +361,7 @@ export default function HrManage() {
               tone="info"
               hint={`${rows.length} on the payroll`}
             />
-          </div>
+          </CardStrip>
 
           {unset.length > 0 && (
             <Alert tone="warning" title={unset.length === 1 ? '1 person without a salary' : `${unset.length} people without a salary`}>

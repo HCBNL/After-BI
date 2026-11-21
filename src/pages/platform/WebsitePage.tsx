@@ -52,7 +52,6 @@ import { SOCIAL_FIELDS } from '@/lib/social';
 import { VideoPicker } from './website/VideoPicker';
 import { CustomEditor } from './website/ProgrammeEditors';
 import { SiteImageSlots } from './website/SiteImageSlots';
-import { AdEditor } from './website/AdEditor';
 import { TestimonialEditor } from './website/TestimonialEditor';
 
 export default function WebsitePage() {
@@ -127,14 +126,6 @@ export default function WebsitePage() {
               These changes are only on this screen. Press Publish to put them on the landing page.
             </Alert>
           )}
-
-          <Card>
-            <CardHeader
-              title="Ads in the app"
-              subtitle="Slide on every customer's home screen. A tap opens the address in the browser."
-            />
-            <AdEditor ads={home?.appAds ?? []} onChange={(appAds) => seed({ appAds })} />
-          </Card>
 
           <Card>
             <CardHeader

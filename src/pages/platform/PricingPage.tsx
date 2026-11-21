@@ -10,6 +10,7 @@
  * list price is right.
  */
 
+import { CardStrip } from '@/components/ui/CardStrip';
 import { useMemo } from 'react';
 import { Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -118,7 +119,7 @@ export default function PricingPage() {
         description="What every organisation on the platform actually pays, and what that averages to."
       />
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <CardStrip className="mb-5">
         <StatTile label="Monthly" value={nairaShort(summary.mrr)} icon={<Wallet size={16} />} tone="good" />
         <StatTile label="Annualised" value={nairaShort(summary.arr)} hint="Monthly × 12" />
         <StatTile label="Average" value={nairaShort(summary.average)} hint="Per paying organisation" />
@@ -128,7 +129,7 @@ export default function PricingPage() {
           tone={summary.unpriced ? 'warning' : 'good'}
           hint={summary.unpriced ? 'Active with no fee set' : 'Every active account is priced'}
         />
-      </div>
+      </CardStrip>
 
       <DataTable
         rows={[...tenants].sort((a, b) => (b.subscriptionFee ?? 0) - (a.subscriptionFee ?? 0))}

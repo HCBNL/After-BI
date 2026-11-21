@@ -729,10 +729,32 @@
 
   /* The laptop home panel, pulled out to the edges of the content column. */
   @media (min-width: 1024px) {
+    /*
+     * Home runs the full width of the content area on a laptop (no 1400px
+     * column), so its cards always sit 1.25rem in from the coloured panel's
+     * edges, whatever the screen size.
+     */
+    .ab-home-wide { margin-inline: calc((min(1400px, 100cqw) - 100cqw) / 2); }
     .ab-desk {
       margin-top: -1.5rem;
-      margin-inline: calc((min(1400px, 100cqw) - 100cqw) / 2 - 1.25rem);
+      margin-inline: -1.25rem;
+      /*
+       * The sheet's curve and the first card under it are drawn as one shape:
+       * the card sits as far below the curve's top as it sits in from the
+       * sheet's sides (1.25rem), and the curve's radius is the card's 22px
+       * plus that, so the two corners are concentric.
+       */
+      padding-bottom: calc(22px + 1.25rem + 2.5rem);
     }
+    .ab-desk-sheet {
+      height: calc(22px + 1.25rem);
+      border-top-left-radius: calc(22px + 1.25rem);
+      border-top-right-radius: calc(22px + 1.25rem);
+    }
+    /* The grid's 1.5rem gap and the curve's 22px, taken back, so the next card starts 1.25rem below the curve's top. */
+    .ab-desk-pull { margin-bottom: calc(-1.5rem - 22px); }
+    /* What follows paints above the sheet's curve, which now reaches 22px into it. */
+    .ab-desk-pull ~ :not(.absolute, .fixed) { position: relative; z-index: 1; }
   }
 
   /* A page's panel (PagePanel), pulled out to the page edges at every width. */
@@ -1752,45 +1774,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 }
 
 /*
- * Stat and KPI cards carry the theme colour, in light and dark: a soft wash
- * from the top corner and a thin accent line, so they feel part of the
- * brand rather than plain boxes.
+ * The figure cards (StatTile) in a CardStrip: each slot's ground, in turn.
+ * The theme colour first (it follows the organisation's colour), then night
+ * with a green glow, burnt orange, violet and deep teal. Every ground keeps
+ * white text above 4.5:1, in light and dark mode alike.
  */
-/* The figure card: the theme's deep shade, a soft light from the top right,
-   and the AfterBI bars as a faint signature behind the number. */
-.ab-stat {
-  background-color: var(--hero);
-  background-image:
-    radial-gradient(120% 95% at 100% 0%, color-mix(in srgb, var(--swatch) 34%, transparent), transparent 62%),
-    linear-gradient(155deg, color-mix(in srgb, var(--hero) 82%, #ffffff 18%), var(--hero) 70%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 10px 24px -14px color-mix(in srgb, var(--hero) 80%, transparent),
-    0 1px 2px rgba(0, 0, 0, 0.12);
-  border: 1px solid color-mix(in srgb, var(--hero) 70%, #ffffff 12%);
-}
-.ab-stat .ab-stat-bars {
-  position: absolute;
-  right: -0.5rem;
-  bottom: -1.5rem;
-  z-index: -1;
-  width: 6.5rem;
-  height: 6.5rem;
-  color: #ffffff;
-  opacity: 0.1;
-  transform: rotate(-6deg);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
-}
-.ab-stat:hover .ab-stat-bars { transform: rotate(-6deg) translateY(-4px); opacity: 0.14; }
-[data-theme='dark'] .ab-stat {
-  background-image:
-    radial-gradient(120% 95% at 100% 0%, color-mix(in srgb, var(--swatch) 24%, transparent), transparent 62%),
-    linear-gradient(155deg, color-mix(in srgb, var(--hero) 88%, #ffffff 8%), var(--hero) 72%);
-  border-color: color-mix(in srgb, var(--hero) 60%, #ffffff 14%);
-}
-@media (prefers-reduced-motion: reduce) {
-  .ab-stat .ab-stat-bars { transition: none; }
-}
+.ab-banner { background-image: linear-gradient(140deg, var(--ground-a) 0%, var(--ground-b) 52%, var(--ground-c) 100%); }
+.ab-strip-slot:nth-child(5n + 2) > .ab-banner { background-image: radial-gradient(120% 90% at 100% 0%, rgba(16, 185, 129, 0.34), transparent 55%), linear-gradient(140deg, #2b313b 0%, #14171c 60%, #0b0d10 100%); }
+.ab-strip-slot:nth-child(5n + 3) > .ab-banner { background-image: linear-gradient(140deg, #b45309 0%, #92400e 55%, #5c2406 100%); }
+.ab-strip-slot:nth-child(5n + 4) > .ab-banner { background-image: linear-gradient(140deg, #6d28d9 0%, #5b21b6 55%, #3b0f7a 100%); }
+.ab-strip-slot:nth-child(5n + 5) > .ab-banner { background-image: linear-gradient(140deg, #0f766e 0%, #115e59 55%, #083d3a 100%); }
 
 .ab-kpi {
   background-image:
@@ -2079,3 +2072,40 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 }
 [data-theme='dark'] .ab-dock { box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .ab-dock { background-color: var(--surface-card); } }
+
+/*
+ * A phone's rhythm on every page: the space between one card and the next is
+ * the same 12px as the screen's side margin. Applied to a page's own top level
+ * stack only (the page root and its direct children), so spacing inside a
+ * card or a form is left as it was. Tablets and laptops keep their own.
+ */
+@media (max-width: 639px) {
+  .ab-page > :is(.mb-4, .mb-5, .mb-6),
+  .ab-page > * > :is(.mb-4, .mb-5, .mb-6) { margin-bottom: 0.75rem; }
+  .ab-page > :is(.mt-4, .mt-5, .mt-6),
+  .ab-page > * > :is(.mt-4, .mt-5, .mt-6) { margin-top: 0.75rem; }
+  .ab-page > :is(.space-y-4, .space-y-5, .space-y-6) > :not(:last-child),
+  .ab-page > * > :is(.space-y-4, .space-y-5, .space-y-6) > :not(:last-child) { margin-bottom: 0.75rem; }
+  .ab-page > :is(.grid, .flex-col):is(.gap-4, .gap-5, .gap-6),
+  .ab-page > * > :is(.grid, .flex-col):is(.gap-4, .gap-5, .gap-6) { gap: 0.75rem; }
+}
+
+/*
+ * A list page's search and its filter dropdown line up: the full width of a
+ * phone, one shared width (24rem) on a tablet or laptop, whatever width a
+ * page asked for before.
+ */
+.ab-filter-list { display: flex; }
+@media (max-width: 639px) {
+  .ab-page .ab-search,
+  .ab-page .ab-filter-list { width: 100%; max-width: none; min-width: 0; flex: 1 1 100%; }
+}
+@media (min-width: 640px) {
+  .ab-page .ab-search { width: 24rem; max-width: 100%; flex: 0 1 24rem; }
+  .ab-page .ab-filter-list { width: 24rem; max-width: 100%; }
+}
+
+/* The artwork in a figure card's corner: turning slowly enough to watch, alternate cards the other way. */
+.ab-card-art { animation: lock-turn 38s linear infinite; transform-origin: 50% 50%; opacity: 0.95; }
+.ab-card-art-back { animation-direction: reverse; }
+@media (prefers-reduced-motion: reduce) { .ab-card-art { animation: none; } }

@@ -7,6 +7,7 @@
  * and a rep who has already been paid for it.
  */
 
+import { CardStrip } from '@/components/ui/CardStrip';
 import { useMemo, useState } from 'react';
 import { Pencil, Plus, Target as TargetIcon, Trash2 } from 'lucide-react';
 import { MonthSelect } from '@/components/MonthSelect';
@@ -138,7 +139,7 @@ export default function TargetsPage() {
         <MonthSelect value={period} onChange={setPeriod} ahead={12} className="w-full max-w-[15rem]" />
       </PageHeader>
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+      <CardStrip className="mb-5">
         <StatTile label="Target" value={nairaShort(summary.target)} icon={<TargetIcon size={16} />} />
         <StatTile
           label="Achieved"
@@ -150,7 +151,7 @@ export default function TargetsPage() {
           value={summary.target ? percent((summary.achieved / summary.target) * 100) : 'No target'}
           tone={summary.target && summary.achieved / summary.target >= 1 ? 'good' : 'brand'}
         />
-      </div>
+      </CardStrip>
 
       {loading ? (
         <div className="space-y-2.5">

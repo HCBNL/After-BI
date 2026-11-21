@@ -14,6 +14,7 @@
  * current.
  */
 
+import { CardStrip } from '@/components/ui/CardStrip';
 import { useMemo, useState } from 'react';
 import { Ban, CalendarDays, Pencil, Plus, Printer, Receipt, ReceiptText } from 'lucide-react';
 import { AmendPaymentModal, canCorrectPayment } from '@/components/finance/AmendPayment';
@@ -235,7 +236,7 @@ export default function InvoicesPage() {
         }
       />
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+      <CardStrip className="mb-5">
         <StatTile
           label="Outstanding"
           value={nairaShort(totals.outstanding)}
@@ -254,7 +255,7 @@ export default function InvoicesPage() {
           tone={totals.oldest > 60 ? 'critical' : totals.oldest > 30 ? 'warning' : 'good'}
           hint="Longest anything has been overdue"
         />
-      </div>
+      </CardStrip>
 
       <div className="mb-4">
         <SearchInput

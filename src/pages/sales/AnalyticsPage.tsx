@@ -10,6 +10,7 @@
  * team, and the rest is arithmetic in the browser (`lib/salesAnalytics.ts`).
  * The map's outlines are fetched only on a screen wide enough to show them.
  */
+import { CardStrip } from '@/components/ui/CardStrip';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Download, MapPin, PhoneCall, Users, Wallet, X } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -264,7 +265,7 @@ export default function AnalyticsPage() {
       ) : (
         <div className="space-y-5">
           {/* --------------------------------------------------------- KPIs */}
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <CardStrip>
             <StatTile
               label={source === 'sell-in' ? 'Revenue (sell-in)' : 'Revenue (sell-out)'}
               value={nairaShort(summary.revenue)}
@@ -286,7 +287,7 @@ export default function AnalyticsPage() {
               icon={<PhoneCall size={17} />}
               tone={toCall.length ? 'warning' : 'good'}
             />
-          </div>
+          </CardStrip>
 
           {/* ------------------------------------------------ the territory */}
           <div className="grid gap-5 lg:grid-cols-12">
