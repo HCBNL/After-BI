@@ -13,12 +13,12 @@
  * Bump VERSION when the icons or this file's strategy change; the old caches
  * are dropped on the next activation.
  */
-const VERSION = 'ab-v4';
+const VERSION = 'ab-v5';
 const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
 const STATIC = `${VERSION}-static`;
 const SHELL_URL = '/index.html';
-const PRECACHE = [SHELL_URL, '/manifest.webmanifest', '/icon.svg', '/icon-192.png'];
+const PRECACHE = [SHELL_URL, '/manifest.webmanifest', '/icon.svg', '/appicon/white-192.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
