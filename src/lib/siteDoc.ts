@@ -124,9 +124,6 @@ export interface SiteHome {
   /** The Partner Programme page: the reward, the packages and partners' words. */
   partners?: PartnerSettings;
 
-  /** AfterBI's own ads, sliding on every customer's home screen. See `AppAd`. */
-  appAds?: AppAd[];
-
   /**
    * What real customers say, shown as cards on the front page (up to six).
    * Added by the owner from Platform, Website. Empty shows the built in one.
@@ -134,46 +131,6 @@ export interface SiteHome {
   testimonials?: SiteTestimonial[];
 
   updatedAt?: string;
-}
-
-/**
- * One ad on the in-app home screen. The picture is the ad (16:7, 1600 × 700,
- * words baked in or written over it); tapping it opens `url` in the browser.
- */
-export interface AppAd {
-  id: string;
-  image: string;
-  /** Optional words over the picture. Empty draws the picture alone. */
-  title: string;
-  body: string;
-  /** Where a tap goes. Empty makes the card a picture only. */
-  url: string;
-  /** The button's words. Empty reads "Learn more". */
-  cta: string;
-  /** Off keeps it in the console without showing it. */
-  live: boolean;
-}
-
-export const MAX_APP_ADS = 6;
-
-/**
- * An ad's address made safe to put in a link: http or https only. "afterbi.com/x"
- * is completed to https; anything else (javascript:, data:) reads as no link.
- */
-export function adLink(url: string | undefined): string {
-  const raw = (url ?? '').trim();
-  if (!raw) return '';
-  if (/^https?:\/\//i.test(raw)) return raw;
-  if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) return '';
-  return /^[\w-]+(\.[\w-]+)+/.test(raw) ? `https://${raw}` : '';
-}
-
-/** The ads worth drawing: live, with a picture, and a link that is safe to follow. */
-export function liveAds(home: SiteHome | null | undefined): AppAd[] {
-  return (home?.appAds ?? [])
-    .filter((ad) => ad?.live && typeof ad.image === 'string' && /^https:\/\//i.test(ad.image))
-    .slice(0, MAX_APP_ADS)
-    .map((ad) => ({ ...ad, title: ad.title ?? '', body: ad.body ?? '', cta: ad.cta ?? '', url: adLink(ad.url) }));
 }
 
 /** One customer's words on the front page. Every field is written, empty rather than missing. */
