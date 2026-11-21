@@ -13,6 +13,7 @@
  * session stays open, the screen shows the UID to create, and the profile
  * listener lets the owner straight in the moment the document appears.
  */
+import { markFreshSignIn } from '@/lib/pinLocal';
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { normaliseRole } from '@/lib/roles';
 import { hadSession, isPublicPath, rememberSession } from '@/lib/session';
@@ -292,6 +293,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await signInWithEmailAndPassword(auth, email.trim(), password);
         /* The password was just typed: that unlocks any PIN lock left on this device. */
         forgetLocks();
+        markFreshSignIn();
       },
       async signOut() {
         profileSub.current?.();

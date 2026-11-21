@@ -1,4 +1,4 @@
-import { Mark } from './Wordmark';
+import { Bloom, Wallpaper } from './Wallpaper';
 import { cn } from '@/lib/cn';
 
 /**
@@ -11,12 +11,11 @@ import { cn } from '@/lib/cn';
  * layout means the page does not jump when data lands, which is the other
  * half of the effect.
  *
- * WHERE THE LOGO IS ALLOWED, WHICH IS ALMOST NOWHERE
+ * NO LOGO WHILE WAITING
  *
- * The mark belongs to arrival, not to navigation. It is drawn on the boot
- * splash, before the app exists at all, and on the home screen, which is the
- * one place a person lands rather than clicks into. Everywhere else, opening
- * a screen shows the screen.
+ * The owner's call: the logo is not a loading sign. Opening the app shows the
+ * moving wallpaper (Wallpaper.tsx) straight into the PIN screen; a screen
+ * loading inside the app shows a small turning bloom.
  *
  * It used to show on every route change, and that is a worse experience than
  * nothing: the logo flashing between two pages makes a 90ms navigation feel
@@ -63,26 +62,18 @@ export function Loading({
  * as loading.
  */
 export function SiteSkeleton() {
-  return <BootSplash />;
+  return <div className="surface-page fixed inset-0 z-[60]" role="status" aria-label="Loading AfterBI" />;
 }
 
-/** The whole screen while the app (or the website) is on its way: the page colour and a small turning ring, nothing else. */
-function BootSplash({ label = 'Loading AfterBI' }: { label?: string }) {
-  return (
-    <div className="surface-page fixed inset-0 z-[60] flex items-center justify-center" role="status" aria-label={label}>
-      <span className="ab-wait" aria-hidden />
-    </div>
-  );
-}
-
+/** The whole screen while the app is on its way: the moving wallpaper, no spinner, no logo. */
 export function ShellSkeleton() {
-  return <BootSplash />;
+  return <Wallpaper className="fixed inset-0 z-[60]" label="Loading AfterBI" />;
 }
 
 /**
- * Inside the shell, while a screen's code or data loads: the AfterBI logo,
- * exactly as it is, centred on the space the screen is going to fill. Nothing
- * around it, no halo, no colour wash, no bar. It fades in after a beat, so a
+ * Inside the shell, while a screen's code or data loads: four petals turning,
+ * their colour drifting like the wallpaper (never the logo), centred on the
+ * space the screen is going to fill. It fades in after a beat, so a
  * screen that is ready at once never flashes it.
  *
  * WHY THIS IS NEITHER `fixed inset-0` NOR A HEIGHT IN THE FLOW
@@ -123,12 +114,10 @@ export function QuietLoader({
   label?: string;
   /** Only before the shell exists. Inside it, this puts the mark off-centre. */
   fullscreen?: boolean;
-  /** In the page's own content, under its header panel: the logo centred in the space the list will fill. */
+  /** In the page's own content, under its header panel: the bloom centred in the space the list will fill. */
   inline?: boolean;
 }) {
-  const mark = (
-    <Mark className="h-16 w-16 select-none" />
-  );
+  const mark = <Bloom />;
 
   if (inline) {
     return (
@@ -140,16 +129,8 @@ export function QuietLoader({
   }
 
   if (fullscreen) {
-    return (
-      <div
-        role="status"
-        aria-label={label}
-        className="ab-quiet fixed inset-0 z-30 flex items-center justify-center"
-      >
-        {mark}
-        <span className="sr-only">{label}</span>
-      </div>
-    );
+    /* Before the shell exists: the same moving wallpaper as the opening and PIN screens. */
+    return <Wallpaper className="fixed inset-0 z-30" label={label} />;
   }
 
   return (

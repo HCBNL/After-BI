@@ -66,7 +66,7 @@ export function PinSetup({
       setSaving(true);
       try {
         await savePin(uid, entered, minutes ?? DEFAULT_MINUTES);
-        toast.success(changing ? 'PIN changed' : 'PIN set', 'AfterBI will ask for it after it sits idle.');
+        toast.success(changing ? 'PIN changed' : 'PIN set', 'AfterBI asks for it every time it opens.');
         onClose();
       } catch (err) {
         toast.error('PIN not saved', err instanceof Error ? err.message : undefined);
