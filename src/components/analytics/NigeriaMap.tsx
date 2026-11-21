@@ -149,7 +149,7 @@ export default function NigeriaMap({
           stroke="color-mix(in srgb, var(--swatch) 85%, var(--surface-card))"
           /* Half of this survives the fill, so the national edge lands about
              three times the weight of a state border: bold, still crisp. */
-          strokeWidth={6}
+          strokeWidth={3.5}
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
           style={{ paintOrder: 'stroke' }}
@@ -180,10 +180,10 @@ export default function NigeriaMap({
                 setHover({ state, x: event.clientX - box.left, y: event.clientY - box.top });
               }}
               fill={fillFor(value)}
-              stroke={active ? 'var(--text-primary)' : 'color-mix(in srgb, var(--swatch) 38%, var(--surface-card))'}
+              stroke={active ? 'var(--text-primary)' : 'color-mix(in srgb, var(--swatch) 26%, var(--surface-card))'}
               /* One device pixel, at any size: wide enough to see, narrow
                  enough that a border's two traces stay inside it. */
-              strokeWidth={active ? 2.5 : 1}
+              strokeWidth={active ? 1.5 : 0.5}
               vectorEffect="non-scaling-stroke"
               className={cn(
                 'cursor-pointer outline-none transition-[fill,opacity] duration-150 focus-visible:stroke-[var(--text-primary)]',

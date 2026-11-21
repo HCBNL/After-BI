@@ -713,7 +713,7 @@ export function ProgressBar({
  * soft blue daisy on the theme colour, blue bloom on night, soft blue
  * pinwheel on orange, pink twist on violet, gold spark on teal.
  */
-function CardArt({ index }: { index: number }) {
+export function CardArt({ index, className }: { index: number; className?: string }) {
   const n = index % 5;
   const shape = (() => {
     switch (n) {
@@ -769,6 +769,7 @@ function CardArt({ index }: { index: number }) {
       className={cn(
         'ab-card-art pointer-events-none absolute -bottom-16 -right-12 -z-10 h-32 w-32 lg:-bottom-20 lg:-right-16 lg:h-40 lg:w-40',
         n % 2 === 1 && 'ab-card-art-back',
+        className,
       )}
     >
       {shape}

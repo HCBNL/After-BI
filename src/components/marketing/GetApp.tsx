@@ -16,6 +16,7 @@ import { createPortal } from 'react-dom';
 import { Download, Plus, Share, Smartphone, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { canPromptInstall, isInstalled, promptInstall } from '@/lib/pwa';
+import { appUrl, onSiteHost } from '@/lib/hosts';
 
 type Platform = 'ios' | 'android';
 
@@ -29,6 +30,11 @@ export function GetApp({ className }: { className?: string }) {
   const [done, setDone] = useState(() => isInstalled());
 
   const get = async (platform: Platform) => {
+    /* The app lives on app.afterbi.com: it is installed from there, so its icon opens the app, not the website. */
+    if (onSiteHost()) {
+      window.location.href = appUrl('/login');
+      return;
+    }
     if (platform === 'android' || !isIOS()) {
       if (canPromptInstall()) {
         const ok = await promptInstall();

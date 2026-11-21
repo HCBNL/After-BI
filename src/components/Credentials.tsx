@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { appUrl } from '@/lib/hosts';
 import { Check, Copy } from 'lucide-react';
 import { Button } from '@/components/ui';
 
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui';
  */
 export function Credentials({ name, email, password }: { name: string; email: string; password: string }) {
   const [copied, setCopied] = useState(false);
-  const address = `${window.location.origin}/login`;
+  const address = appUrl('/login');
   const text = `AfterBI sign-in for ${name}\nAddress: ${address}\nEmail: ${email}\nPassword: ${password}`;
 
   const copy = async () => {
