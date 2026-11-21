@@ -553,7 +553,7 @@ const HOW_TO: HowTo[] = [
       { text: 'Press New staff member, fill in their name, email, phone, position and location.' },
       { text: 'Keep the suggested password or type your own, then press Create account.' },
       { text: 'Press Copy login details or Send on WhatsApp to give them their login.' },
-      { text: 'They sign in at afterbi.com/login and download their ID card from My ID card.' },
+      { text: 'They sign in at app.afterbi.com and download their ID card from My ID card.' },
     ],
   },
 ];

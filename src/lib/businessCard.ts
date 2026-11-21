@@ -49,7 +49,7 @@ function fromBase64Url(text: string): string {
   return new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0)));
 }
 
-export function cardLink(card: BusinessCard, origin = window.location.origin): string {
+export function cardLink(card: BusinessCard, origin = publicOrigin()): string {
   /* A short array rather than an object, so the link stays short. */
   const values = KEYS.map((k) => (card[k] ?? '').trim().slice(0, MAX[k] ?? 80));
   while (values.length > 6 && !values[values.length - 1]) values.pop();
@@ -111,4 +111,5 @@ export function whatsappNumber(raw: string | undefined | null): string | null {
 export function whatsappLink(phone: string | null, message: string): string {
   const text = encodeURIComponent(message);
   return phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`;
-}
+}import { publicOrigin } from './hosts';
+

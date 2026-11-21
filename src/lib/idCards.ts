@@ -7,6 +7,7 @@
  * database client) and says whether the holder is a current member of staff.
  * Suspending someone in People marks their card inactive at once.
  */
+import { publicOrigin } from './hosts';
 import { doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { restGet } from './firestoreRest';
@@ -28,7 +29,7 @@ export interface IdCardRecord {
 }
 
 export function idVerifyUrl(uid: string): string {
-  return `${window.location.origin}/verify/id/${encodeURIComponent(uid)}`;
+  return `${publicOrigin()}/verify/id/${encodeURIComponent(uid)}`;
 }
 
 /** Written by the card holder whenever they make or save their card. */

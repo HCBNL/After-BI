@@ -8,6 +8,7 @@
  * is public.
  */
 
+import { publicOrigin } from './hosts';
 import type { UserProfile } from '@/types';
 import { restGet } from './firestoreRest';
 
@@ -94,7 +95,7 @@ export async function readStaffCard(staffNo: string): Promise<StaffCardRecord | 
 
 /** Where the ID card's QR code points. */
 export function staffVerifyUrl(staffNo: string): string {
-  return `${window.location.origin}/verify/staff/${encodeURIComponent(staffNo)}`;
+  return `${publicOrigin()}/verify/staff/${encodeURIComponent(staffNo)}`;
 }
 
 /** A public file as a data URL, for drawing into a PDF. */
