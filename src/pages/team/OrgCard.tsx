@@ -23,17 +23,18 @@
  * simply be missing. The profile picture is hosted, so it travels.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Building2, Copy, Download, ExternalLink, Mail, MapPin, MessageCircle, Phone, Share2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Copy, Download, ExternalLink, MessageCircle, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Button, Card, SegmentedControl, Switch, useToast } from '@/components/ui';
-import { Hint } from '@/components/ui/Hint';
 import { cardLink } from '@/lib/businessCard';
 import { imageAsDataUrl, imageUrl } from '@/lib/cloudinary';
 import { saveFile } from '@/lib/download';
 import { PORTAL_ROOT } from '@/lib/tiles';
-import { buildBusinessCard, hexToRgb, type BusinessCardLayout } from '@/lib/businessCardPdf';
+import { type BusinessCardLayout } from '@/lib/businessCardPdf';
+import { BusinessCardFace, ScaledCard, cardColour, type CardCompany } from '@/components/cards/CardFaces';
+import { cardPdf } from '@/lib/cardExport';
 import { useOrgStaffDetails } from './OrgIdCard';
 
 export default function OrgCard({ embedded = false }: { embedded?: boolean } = {}) {
@@ -58,7 +59,42 @@ export default function OrgCard({ embedded = false }: { embedded?: boolean } = {
    * hand out different cards. `brandColor` is the organisation's own, and is
    * already the colour its invoices and statements print in.
    */
-  const accent = /^#[0-9a-f]{6}$/i.test(settings?.brandColor ?? '') ? settings!.brandColor! : '#dc3c06';
+  const accent = cardColour(settings?.brandColor);
+  /* The photo and logo as data, so the preview and the PDF draw the same pixels. */
+  const [photoData, setPhotoData] = useState('');
+  const [logoData, setLogoData] = useState('');
+  useEffect(() => {
+    let live = true;
+    void imageAsDataUrl(user?.photoURL, 480).then((d) => live && setPhotoData(d));
+    void imageAsDataUrl(settings?.logoUrl, 240).then((d) => live && setLogoData(d));
+    return () => {
+      live = false;
+    };
+  }, [user?.photoURL, settings?.logoUrl]);
+  const company: CardCompany = {
+    name: orgName,
+    short: settings?.shortName || orgName,
+    website: settings?.website?.replace(/^https?:\/\//, '') ?? '',
+    address: settings?.address ?? '',
+    logo: logoData || settings?.logoUrl,
+    color: accent,
+  };
+  const person = { ...details, email: user?.email ?? '' };
+  const frontRef = useRef<HTMLDivElement>(null);
+  const backRef = useRef<HTMLDivElement>(null);
+  const [face, setFace] = useState<'front' | 'back'>('back');
+  /* The preview fills the column it has, up to 1.4 × print size. */
+  const fitRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const el = fitRef.current;
+    if (!el) return;
+    const fit = () => setScale(Math.min(1.4, el.clientWidth / 340));
+    fit();
+    const watch = new ResizeObserver(fit);
+    watch.observe(el);
+    return () => watch.disconnect();
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -95,48 +131,33 @@ export default function OrgCard({ embedded = false }: { embedded?: boolean } = {
   const download = useCallback(async () => {
     setBusy(true);
     try {
-      const [photoData, logoData] = await Promise.all([
-        imageAsDataUrl(user?.photoURL, 480),
-        imageAsDataUrl(settings?.logoUrl, 240),
-      ]);
-      const doc = await buildBusinessCard(
-        {
-          name: details.fullName,
-          position: details.position,
-          location: details.location,
-          phone: details.phone,
-          email: user?.email ?? '',
-          company: orgName,
-          website: settings?.website ?? '',
-          photo: photoData,
-          logo: logoData,
-          qr,
-          accent: hexToRgb(accent),
-        },
-        layout,
-        bleed,
-      );
+      if (!frontRef.current || !backRef.current) throw new Error('not ready');
+      const blob = await cardPdf({
+        front: frontRef.current,
+        back: backRef.current,
+        w: 85,
+        h: 55,
+        sheet: layout,
+        title: `${details.fullName}, ${orgName}`,
+        bleed: layout === 'card' && bleed ? { front: accent, back: '#ffffff' } : undefined,
+      });
       const name = `${details.fullName.replace(/\s+/g, '-').toLowerCase()}-business-card.pdf`;
-      await saveFile(name, doc.output('blob'));
+      await saveFile(name, blob);
       toast.success('Card downloaded', layout === 'card' ? 'Send this file to your print shop.' : 'Print at 100% and cut along the marks.');
     } catch {
       toast.error('Could not build the card', 'Try again, or check your connection.');
     } finally {
       setBusy(false);
     }
-  }, [user, settings, details, orgName, qr, layout, bleed, toast]);
+  }, [details, orgName, layout, bleed, accent, toast]);
 
-  const initials = details.fullName.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
 
   return (
     <>
       {!embedded && (
         <PageHeader
           title="My business card"
-          actions={
-            <Hint label="About your business card">
-              {`A contact card anyone can open on their phone, under ${orgName}’s name and logo, with buttons to call you, WhatsApp you or save your number. The details travel in the link, so nothing is stored. Download it to print at 85 × 55 mm, the standard card size.`}</Hint>
-          }
+        description={`A contact card anyone can open on their phone, under ${orgName}’s name and logo, with buttons to call you, WhatsApp you or save your number. The details travel in the link, so nothing is stored. Download it to print at 85 × 55 mm, the standard card size.`}
         />
       )}
       {missing && user && (
@@ -164,69 +185,28 @@ export default function OrgCard({ embedded = false }: { embedded?: boolean } = {
           thing that gets printed. `aspect-[85/55]` rather than a height, so
           it keeps that shape at every width.
         */}
-        <div className="mx-auto w-full max-w-[30rem]">
-          <div className="aspect-[85/55] w-full overflow-hidden rounded-2xl bg-white shadow-[0_30px_70px_-35px_rgba(15,31,54,0.55)] ring-1 ring-black/5">
-            <div className="flex h-full flex-col">
-              {/* The company bar, with the accent rule under it. */}
-              <div className="relative flex items-center gap-2.5 bg-[#0f1f36] px-[5%] py-[3.2%]">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-1">
-                  {settings?.logoUrl ? (
-                    <img src={imageUrl(settings.logoUrl, { width: 64 })} alt="" className="max-h-full max-w-full object-contain" />
-                  ) : (
-                    <Building2 size={16} className="text-[#0f1f36]" />
-                  )}
-                </span>
-                <span className="truncate font-display text-[clamp(0.8rem,2.6cqw,1.05rem)] font-extrabold tracking-[-0.02em] text-white">
-                  {orgName}
-                </span>
-                <span className="absolute inset-x-0 bottom-0 h-[3px]" style={{ background: accent }} />
-              </div>
-
-              <div className="flex min-h-0 flex-1 gap-[4%] px-[5%] pb-[4%] pt-[3%]">
-                {/* The photograph, overlapping nothing: landscape gives it room. */}
-                <span className="h-[4.6rem] w-[4.6rem] shrink-0 overflow-hidden rounded-xl ring-1 ring-black/5" style={{ background: accent }}>
-                  {photo ? (
-                    <img src={photo} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="flex h-full w-full items-center justify-center font-display text-[1.5rem] font-extrabold text-white">
-                      {initials}
-                    </span>
-                  )}
-                </span>
-
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <p className="truncate font-display text-[1.15rem] font-extrabold leading-tight text-[#111420]">
-                    {details.fullName}
-                  </p>
-                  <p className="truncate text-[11.5px] font-bold uppercase tracking-[0.1em]" style={{ color: accent }}>
-                    {details.position || 'Your position'}
-                  </p>
-
-                  {/* The same hairline the PDF rules above its contact block,
-                      so the whitespace above reads as a deliberate foot
-                      rather than as a card that failed to fill. */}
-                  <div className="mt-auto space-y-[3px] border-t border-black/[0.07] pt-2.5 text-[12px] text-[#686e7e]">
-                    {details.phone && (
-                      <p className="flex items-center gap-1.5 truncate font-semibold text-[#111420]">
-                        <Phone size={12} className="shrink-0" style={{ color: accent }} aria-hidden /> {details.phone}
-                      </p>
-                    )}
-                    {user?.email && (
-                      <p className="flex items-center gap-1.5 truncate">
-                        <Mail size={12} className="shrink-0" style={{ color: accent }} aria-hidden /> {user.email}
-                      </p>
-                    )}
-                    {details.location && (
-                      <p className="flex items-center gap-1.5 truncate">
-                        <MapPin size={12} className="shrink-0" style={{ color: accent }} aria-hidden /> {details.location}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div className="mx-auto w-full max-w-[30rem] space-y-3">
+          <div className="flex justify-center">
+            <SegmentedControl
+              value={face}
+              onChange={setFace}
+              options={[
+                { value: 'back', label: 'Your side' },
+                { value: 'front', label: 'Company side' },
+              ]}
+            />
           </div>
-          <p className="mt-2 text-center text-[12px] text-muted">Actual size 85 × 55 mm, the standard business card.</p>
+          <div ref={fitRef} className="w-full">
+            <ScaledCard width={340} height={220} scale={scale}>
+              <BusinessCardFace side={face} person={person} company={company} photo={photoData || photo} qr={qr} />
+            </ScaledCard>
+          </div>
+          <p className="text-center text-[12px] text-muted">Actual size 85 × 55 mm, the standard business card.</p>
+          {/* Both faces at print size, off screen, for the PDF. */}
+          <div aria-hidden className="pointer-events-none fixed -left-[2000px] top-0">
+            <BusinessCardFace ref={frontRef} side="front" person={person} company={company} photo={photoData || photo} qr={qr} />
+            <BusinessCardFace ref={backRef} side="back" person={person} company={company} photo={photoData || photo} qr={qr} />
+          </div>
         </div>
 
         <div className="space-y-5">

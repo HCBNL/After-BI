@@ -6,11 +6,11 @@
  * and the proposal maker. It can read nothing of any customer.
  */
 
+import { appUrl } from '@/lib/hosts';
 import { useState, type FormEvent } from 'react';
 import { Copy, KeyRound, MapPin, Phone, Plus, RefreshCw, UserCheck, UserX } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, useToast } from '@/components/ui';
-import { Hint } from '@/components/ui/Hint';
 import { Loading } from '@/components/brand/Loader';
 import { useAuth } from '@/context/AuthContext';
 import { useAsync } from '@/hooks/useAsync';
@@ -88,7 +88,7 @@ export default function StaffPage() {
   };
 
   const loginNote = made
-    ? `Hello ${made.name.split(' ')[0]}, your AfterBI staff login:\n\nSite: https://afterbi.com/login\nEmail: ${made.email}\nPassword: ${made.password}\n\nPlease keep it private.`
+    ? `Hello ${made.name.split(' ')[0]}, your AfterBI staff login:\n\nSite: ${appUrl('/login')}\nEmail: ${made.email}\nPassword: ${made.password}\n\nPlease keep it private.`
     : '';
 
   const staff = data ?? [];
@@ -97,12 +97,9 @@ export default function StaffPage() {
     <>
       <PageHeader
         title="AfterBI staff"
+        description="The people who sell AfterBI for you. They sign in at afterbi.com/login and get their own staff space: an ID card signed by the CEO, a digital business card and the proposal maker. They cannot see any customer."
         actions={
           <div className="flex items-center gap-2">
-            <Hint label="About AfterBI staff">
-              The people who sell AfterBI for you. They sign in at afterbi.com/login and get their own staff space: an
-              ID card signed by the CEO, a digital business card and the proposal maker. They cannot see any customer.
-            </Hint>
             <Button variant="outline" icon={<RefreshCw size={16} />} onClick={reload} loading={loading}>
               Refresh
             </Button>

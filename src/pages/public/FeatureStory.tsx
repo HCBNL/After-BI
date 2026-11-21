@@ -14,6 +14,7 @@
  * No back link or breadcrumb: the header is the navigation.
  */
 
+import { translateText } from '@/lib/i18n';
 import type { CSSProperties, ReactNode } from 'react';
 import { Art, type ArtName } from '@/components/marketing/art';
 import { Scene } from '@/components/marketing/scenes';
@@ -275,8 +276,13 @@ function TrustGrid({ story }: { story: FeatureStory }) {
   );
 }
 
-/* `**word**` in the copy is set in navy, bold. */
-function bolden(text: string): ReactNode[] {
+/*
+ * `**word**` in the copy is set in navy, bold. The sentence is translated
+ * whole first (the dictionary keeps the ** marks around the right words in
+ * each language), so it is never translated piece by piece around the bold.
+ */
+function bolden(source: string): ReactNode[] {
+  const text = source.includes('**') ? translateText(source) ?? source : source;
   return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
     part.startsWith('**') ? (
       <strong key={i} className="font-semibold text-navy-900">

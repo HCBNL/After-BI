@@ -11,7 +11,6 @@ import { Copy, ExternalLink, MapPin, MessageCircle, Phone, Share2 } from 'lucide
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Button, Card, useToast } from '@/components/ui';
-import { Hint } from '@/components/ui/Hint';
 import { Mark } from '@/components/brand/Wordmark';
 import { cardLink } from '@/lib/businessCard';
 import { useStaffDetails } from './StaffIdCard';
@@ -56,12 +55,7 @@ export default function StaffCard() {
     <>
       <PageHeader
         title="My business card"
-        actions={
-          <Hint label="About your business card">
-            A contact card anyone can open on their phone, with buttons to call you, WhatsApp you or save your number. The
-            details travel in the link, so nothing is stored.
-          </Hint>
-        }
+        description="A contact card anyone can open on their phone, with buttons to call you, WhatsApp you or save your number. The details travel in the link, so nothing is stored."
       />
       {missing && (
         <Alert tone="warning" className="mb-4">

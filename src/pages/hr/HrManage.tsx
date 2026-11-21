@@ -43,7 +43,6 @@ import {
 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, Modal, SectionMenu, Select, StatTile, Switch, Textarea, useToast } from '@/components/ui';
-import { Hint } from '@/components/ui/Hint';
 import { useAuth } from '@/context/AuthContext';
 import { Loading } from '@/components/brand/Loader';
 import { useAsync } from '@/hooks/useAsync';
@@ -256,13 +255,11 @@ export default function HrManage() {
     <div className="space-y-5">
       <PageHeader
         title="HR"
-        actions={
-          <>
-            <Hint label="About HR" align="right">
-              {manager
+        description={manager
                 ? 'Salaries, attendance, leave, bonuses and running costs. Pay is the monthly salary divided by the working days, times the days actually worked. Approved leave days are paid as worked days.'
                 : 'Attendance, leave, reissues and holidays. You can mark or correct a day, approve or decline requests, and record leave for someone.'}
-            </Hint>
+        actions={
+          <>
             <Button variant="outline" icon={<RefreshCw size={16} />} onClick={reload} loading={att.loading}>
               Refresh
             </Button>
@@ -276,22 +273,22 @@ export default function HrManage() {
         today={today}
         saturday={rules.saturday}
         footer={
-          <p className="text-label text-white/65">
+          <p className="text-label text-secondary">
             {manager && (
               <>
                 {`${current.label} payroll so far: `}
-                <b className="text-white">{offset === 0 ? naira(totalNet) : 'open this month in Payroll'}</b>
+                <b className="text-primary">{offset === 0 ? naira(totalNet) : 'open this month in Payroll'}</b>
                 {', '}
               </>
             )}
             {`${clockedToday.size} of ${people.filter((p) => !p.suspended).length} clocked in today`}
             {leaveWaiting > 0 && (
-              <button type="button" onClick={() => setTab('leave')} className="font-bold text-white underline-offset-2 hover:underline">
+              <button type="button" onClick={() => setTab('leave')} className="font-bold text-brand-700 underline-offset-2 hover:underline dark:text-brand-300">
                 {leaveWaiting === 1 ? ', 1 leave request waiting' : `, ${leaveWaiting} leave requests waiting`}
               </button>
             )}
             {(pending.data?.length ?? 0) > 0 && (
-              <button type="button" onClick={() => setTab('reissues')} className="font-bold text-gold-300 underline-offset-2 hover:underline">
+              <button type="button" onClick={() => setTab('reissues')} className="font-bold text-[#b45309] underline-offset-2 hover:underline dark:text-gold-300">
                 {pending.data!.length === 1 ? ', 1 reissue request waiting' : `, ${pending.data!.length} reissue requests waiting`}</button>
             )}
           </p>

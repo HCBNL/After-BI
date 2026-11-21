@@ -10,7 +10,6 @@ import { useMemo, useState } from 'react';
 import { Banknote, CalendarCheck2, Gift, Hourglass, Info, MinusCircle, Palmtree, RotateCcw, TrendingUp, Undo2, XCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Badge, Button, Card, Field, Input, Modal, Textarea, useToast } from '@/components/ui';
-import { Hint } from '@/components/ui/Hint';
 import { Loading } from '@/components/brand/Loader';
 import { useAuth } from '@/context/AuthContext';
 import { useAsync } from '@/hooks/useAsync';
@@ -106,10 +105,7 @@ export default function HrPage() {
     <div className="space-y-5">
       <PageHeader
         title="My pay"
-        actions={
-          <Hint label="How your pay is worked out">
-            {`Each month covers ${cycleWords(base.data.settings.cycleStart)}, Monday to ${saturday ? 'Saturday' : 'Friday'} only. Salary is paid on the ${ordinal(base.data.settings.payDay)}, or the working day before if that is a day off or holiday. Your monthly salary divided by the working days is your daily rate; every day you clock in earns it. Bonuses are added and deductions taken off.`}</Hint>
-        }
+        description={`Each month covers ${cycleWords(base.data.settings.cycleStart)}, Monday to ${saturday ? 'Saturday' : 'Friday'} only. Salary is paid on the ${ordinal(base.data.settings.payDay)}, or the working day before if that is a day off or holiday. Your monthly salary divided by the working days is your daily rate; every day you clock in earns it. Bonuses are added and deductions taken off.`}
       />
 
       <PayCycle period={period} holidays={holidaySet} today={today} saturday={saturday} />

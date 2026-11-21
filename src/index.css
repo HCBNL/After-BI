@@ -1678,6 +1678,10 @@ html[data-lang='zh'] body {
  *                       Dark enough to stay premium, tinted enough that a
  *                       glance tells you which theme you are in.
  */
+.hr-pay {
+  --hr-key: color-mix(in srgb, var(--swatch) 82%, #ffffff);
+  --hr-lift: var(--ground-a);
+}
 .hr-cycle {
   --hr-key: color-mix(in srgb, var(--swatch) 82%, #ffffff);
   --hr-lift: var(--ground-a);
@@ -2119,3 +2123,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
  * now paint on top of it. No z-index, so no new layers for popovers to fight.
  */
 .ab-sheet-over ~ :not(.absolute, .fixed, .sticky) { position: relative; }
+
+/* Settings while locked: fields stay easy to read, they just cannot be typed in. */
+.ab-locked :is(input, textarea, select):disabled { opacity: 1; cursor: not-allowed; background-color: var(--surface-sunken); }
+.ab-locked button:disabled { cursor: not-allowed; }

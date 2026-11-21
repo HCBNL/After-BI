@@ -34,6 +34,7 @@
  * is how a platform owner bootstraps their own account.
  */
 
+import { siteUrl } from '@/lib/hosts';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Copy, Eye, EyeOff, Lock, Mail } from 'lucide-react';
@@ -146,7 +147,7 @@ export default function LoginPage() {
           {/* The PIN screen's petals, turning slowly, on the blue. */}
           <PetalBackdrop className="-z-10 text-white" />
 
-          <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="w-fit">
+          <Link to={siteUrl('/')} aria-label={`Back to the ${BRAND} home page`} className="w-fit">
             <Wordmark onInk className="text-headline" />
           </Link>
 
@@ -169,7 +170,7 @@ export default function LoginPage() {
           <PetalBackdrop className="-z-10 text-[#1238e6] opacity-70 dark:text-white dark:opacity-60" />
 
           <div className="flex items-center justify-between px-5 pt-4 sm:px-8 lg:justify-end">
-            <Link to="/" aria-label={`Back to the ${BRAND} home page`} className="lg:hidden">
+            <Link to={siteUrl('/')} aria-label={`Back to the ${BRAND} home page`} className="lg:hidden">
               <Wordmark className="text-headline text-primary" />
             </Link>
             <div className="flex items-center gap-1">
@@ -286,7 +287,7 @@ export default function LoginPage() {
 
           <footer className="px-5 pb-5 text-center text-label text-muted sm:px-8">
             <nav aria-label={BRAND} className="flex items-center justify-center gap-5 font-semibold">
-              <Link to="/" className="transition-colors hover:text-primary">
+              <Link to={siteUrl('/')} className="transition-colors hover:text-primary">
                 Home
               </Link>
               <Link to="/features" className="transition-colors hover:text-primary">

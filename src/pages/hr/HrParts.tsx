@@ -5,8 +5,9 @@
  */
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Ban, CalendarDays, Check, Clock3, Hourglass, LogIn, LogOut, PartyPopper, RotateCcw, Sparkles } from 'lucide-react';
+import { Ban, CalendarDays, Check, Clock3, Hourglass, LogIn, LogOut, PartyPopper, RotateCcw } from 'lucide-react';
 import { Button, useToast } from '@/components/ui';
+import { SceneArt } from '@/components/brand/SceneArt';
 import { cn } from '@/lib/cn';
 import { fromIso, isOffDay, prettyIso, workingDays, daysBetween, type PayPeriod } from '@/lib/payroll';
 import { clockIn, clockOut, getAttendance, hoursBetween, timeOf, type Attendance } from '@/lib/hr';
@@ -55,29 +56,7 @@ export function CountUp({ value, format, duration = 1100 }: { value: number; for
 /* ------------------------------------------------------------- countdown */
 
 /** Each character re-mounts when it changes, so only the digits that move animate. */
-function Digits({ value }: { value: string }) {
-  return (
-    <span className="inline-flex overflow-hidden">
-      {value.split('').map((ch, i) => (
-        <span key={`${i}-${ch}`} className="hr-digit inline-block tabular">
-          {ch}
-        </span>
-      ))}
-    </span>
-  );
-}
 
-function Unit({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="relative flex min-w-0 flex-1 flex-col items-center rounded-2xl border border-white/10 bg-white/[0.06] px-1 pb-2.5 pt-3 backdrop-blur-sm sm:pb-3 sm:pt-4">
-      <span aria-hidden className="absolute inset-x-3 top-1/2 h-px bg-white/[0.07]" />
-      <span className="font-display text-display font-bold leading-none tracking-[-0.04em] text-white sm:text-jumbo">
-        <Digits value={value} />
-      </span>
-      <span className="mt-1.5 text-micro font-bold uppercase tracking-[0.14em] text-white/45 sm:text-micro">{label}</span>
-    </div>
-  );
-}
 
 /* Four shades off the current theme; the colours live in `.hr-cycle-confetti-*`. */
 const CONFETTI_TONES = ['hr-cycle-confetti-1', 'hr-cycle-confetti-2', 'hr-cycle-confetti-3', 'hr-cycle-confetti-4'];
@@ -116,9 +95,12 @@ function Confetti() {
 }
 
 /**
- * The salary countdown. Navy, a slow aurora behind it, days, hours, minutes
- * and seconds ticking, a ring filling as the pay period passes, and confetti
- * on the day itself.
+ * The salary card. Calm on purpose: the pay date, a ring that fills as the
+ * pay period passes with the days left in it, and a slim bar of working days.
+ * Drawn in the organisation's colour on the page's own card, with the owner's
+ * Secondary artwork (a calendar with its due date) beside it on wider
+ * screens. No ticking seconds: a salary is counted in days. Confetti on the
+ * day itself.
  */
 export function PayCountdown({
   period,
@@ -133,7 +115,7 @@ export function PayCountdown({
   footer?: ReactNode;
   saturday?: boolean;
 }) {
-  const now = useNow(1000);
+  const now = useNow(60_000);
   const pay = fromIso(period.payDay);
   const target = new Date(pay.getFullYear(), pay.getMonth(), pay.getDate(), 0, 0, 0);
   const s = fromIso(period.start);
@@ -141,126 +123,76 @@ export function PayCountdown({
   const isPayday = today === period.payDay;
 
   const left = Math.max(0, target.getTime() - now.getTime());
-  const d = Math.floor(left / 86_400_000);
-  const h = Math.floor((left % 86_400_000) / 3_600_000);
-  const m = Math.floor((left % 3_600_000) / 60_000);
-  const sec = Math.floor((left % 60_000) / 1000);
+  const d = Math.ceil(left / 86_400_000);
   const pct = isPayday ? 1 : Math.min(1, Math.max(0, (now.getTime() - begin.getTime()) / (target.getTime() - begin.getTime())));
 
   const wd = workingDays(period.start, period.end, holidays, saturday);
-  const done = wd.filter((x) => x <= today).length;
+  const done = Math.min(wd.filter((x) => x <= today).length, wd.length);
 
-  const R = 84;
+  const R = 42;
   const C = 2 * Math.PI * R;
-  const angle = pct * 2 * Math.PI - Math.PI / 2;
 
   return (
-    <section className="hr-cycle relative isolate overflow-hidden rounded-[28px] p-5 shadow-pop sm:p-8">
-      {/* The two drifting lights. The ground and the dot grid are `.hr-cycle`. */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="hr-aurora hr-cycle-glow-a absolute -left-24 -top-28 h-80 w-80 rounded-full blur-[90px]" />
-        <div className="hr-aurora-slow hr-cycle-glow-b absolute -bottom-32 right-0 h-96 w-96 rounded-full blur-[100px]" />
-      </div>
+    <section className="hr-pay relative isolate overflow-hidden rounded-[26px] border border-hairline surface-card p-5 shadow-card sm:p-6">
       {isPayday && <Confetti />}
 
-      <div className="grid items-center gap-6 md:grid-cols-[1fr_auto] md:gap-10">
-        <div className="hr-rise min-w-0">
-          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 text-micro font-semibold uppercase tracking-[0.14em] hr-cycle-key">
-            {isPayday ? <PartyPopper size={13} aria-hidden /> : <Sparkles size={13} aria-hidden />}
-            {isPayday ? 'Salary day' : 'Next salary'}
-          </p>
-          <h2 className="mt-3 font-display text-display font-bold leading-[1.05] tracking-[-0.04em] sm:text-jumbo">
-            {isPayday ? (
-              <>
-                It&rsquo;s salary day<span className="hr-cycle-key">!</span>
-              </>
-            ) : (
-              <>
-                {prettyIso(period.payDay, { weekday: 'long', day: 'numeric', month: 'long' })}
-                <span className="hr-cycle-key">.</span>
-              </>
-            )}
-          </h2>
-          <p className="mt-1.5 text-body text-white/60">
-            {`${period.label} salary, covers ${prettyIso(period.start, { day: 'numeric', month: 'short' })} to ${prettyIso(period.end, { day: 'numeric', month: 'short' })}`}
-          </p>
-
-          {!isPayday && (
-            <div className="mt-5 flex gap-2 sm:gap-3" role="timer" aria-label={`${d} days ${h} hours ${m} minutes to salary day`}>
-              <Unit value={two(d)} label={d === 1 ? 'Day' : 'Days'} />
-              <Unit value={two(h)} label="Hours" />
-              <Unit value={two(m)} label="Mins" />
-              <Unit value={two(sec)} label="Secs" />
-            </div>
-          )}
-
-          {/* the period, as a bar */}
-          <div className="mt-5">
-            <div className="relative h-2.5 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="hr-cycle-bar absolute inset-y-0 left-0 rounded-full transition-[width] duration-1000"
-                style={{ width: `${pct * 100}%` }}
-              >
-                <span className="hr-sheen absolute inset-0 rounded-full" />
-              </div>
-            </div>
-            <div className="mt-2 flex justify-between gap-2 text-caption font-semibold text-white/50">
-              <span>{prettyIso(period.start, { day: 'numeric', month: 'short' })}</span>
-              <span className="text-white/75">
-                {`Working day ${Math.min(done, wd.length)} of ${wd.length}`}
-              </span>
-              <span>{prettyIso(period.end, { day: 'numeric', month: 'short' })}</span>
-            </div>
-          </div>
-          {footer && <div className="mt-4">{footer}</div>}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-7">
+        {/* the owner's calendar artwork, on a soft tile of the theme colour */}
+        <div className="hidden h-36 w-36 shrink-0 items-center justify-center rounded-[22px] bg-brand-50 md:flex dark:bg-brand-500/10">
+          <SceneArt name="billing-calendar" className="h-32 w-32" />
         </div>
 
-        {/* the ring */}
-        <div className="relative mx-auto hidden h-[212px] w-[212px] shrink-0 sm:block">
-          <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90" aria-hidden>
-            <defs>
-              {/* The same sweep as the bar, read straight off the theme. */}
-              <linearGradient id="hr-ring-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="var(--hr-lift)" />
-                <stop offset="100%" stopColor="var(--hr-key)" />
-              </linearGradient>
-            </defs>
-            <circle cx="100" cy="100" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="12" />
+        <div className="hr-rise min-w-0">
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-micro font-bold uppercase tracking-[0.12em] text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
+            {isPayday ? <PartyPopper size={12} aria-hidden /> : <CalendarDays size={12} aria-hidden />}
+            {isPayday ? 'Salary day' : 'Next salary'}
+          </p>
+          <h2 className="mt-2 font-display text-headline font-bold leading-tight tracking-[-0.03em] text-primary sm:text-display">
+            {isPayday ? 'It’s salary day!' : prettyIso(period.payDay, { weekday: 'long', day: 'numeric', month: 'long' })}
+          </h2>
+          <p className="mt-1 text-label text-muted">
+            {`${prettyIso(period.start, { day: 'numeric', month: 'short' })} to ${prettyIso(period.end, { day: 'numeric', month: 'short' })}`}
+          </p>
+
+          <div className="mt-4">
+            <div className="h-2 overflow-hidden rounded-full bg-[var(--surface-sunken)]">
+              <div className="h-full rounded-full bg-brand-600 transition-[width] duration-1000 dark:bg-brand-400" style={{ width: `${wd.length ? (done / wd.length) * 100 : 0}%` }} />
+            </div>
+            <p className="mt-1.5 text-caption font-semibold text-secondary">{`Working day ${done} of ${wd.length}`}</p>
+          </div>
+        </div>
+
+        {/* the ring: the pay period passing, the days left in the middle */}
+        <div className="relative h-[112px] w-[112px] shrink-0 sm:h-[132px] sm:w-[132px]">
+          <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 text-brand-600 dark:text-brand-400" aria-hidden>
+            <circle cx="50" cy="50" r={R} fill="none" stroke="var(--surface-sunken)" strokeWidth="8" />
             <circle
-              cx="100"
-              cy="100"
+              cx="50"
+              cy="50"
               r={R}
               fill="none"
-              stroke="url(#hr-ring-grad)"
-              strokeWidth="12"
+              stroke="currentColor"
+              strokeWidth="8"
               strokeLinecap="round"
               strokeDasharray={C}
               strokeDashoffset={C * (1 - pct)}
-              className="hr-ring transition-[stroke-dashoffset] duration-1000"
-              style={{ ['--hr-ring-full' as string]: C }}
+              className="transition-[stroke-dashoffset] duration-1000"
             />
           </svg>
-          {/* the bead at the tip of the ring */}
-          <span
-            aria-hidden
-            className="hr-cycle-bead absolute h-4 w-4 rounded-full transition-all duration-1000"
-            style={{ left: `calc(50% + ${(R / 200) * 100 * Math.cos(angle)}% - 8px)`, top: `calc(50% + ${(R / 200) * 100 * Math.sin(angle)}% - 8px)` }}
-          />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center" role="timer" aria-label={isPayday ? 'Salary day' : `${d} days to salary day`}>
             {isPayday ? (
-              <PartyPopper size={48} className="hr-cycle-key" aria-hidden />
+              <PartyPopper size={34} className="text-brand-600 dark:text-brand-400" aria-hidden />
             ) : (
               <>
-                <span className="font-display text-jumbo font-bold leading-none tracking-[-0.05em]">
-                  <Digits value={String(d)} />
-                </span>
-                <span className="mt-1 text-micro font-bold uppercase tracking-[0.14em] text-white/50">{d === 1 ? 'day to go' : 'days to go'}</span>
+                <span className="font-display text-[2rem] font-bold leading-none tracking-[-0.04em] text-primary sm:text-[2.5rem]">{d}</span>
+                <span className="mt-0.5 max-w-[78%] text-[10px] font-semibold uppercase leading-tight tracking-[0.06em] text-muted sm:text-micro sm:tracking-[0.1em]">{d === 1 ? 'day to go' : 'days to go'}</span>
               </>
             )}
-            <span className="mt-2 rounded-full bg-white/10 px-2 py-0.5 text-micro font-bold tabular text-white/70">{`${Math.round(pct * 100)}% of the month`}</span>
           </div>
         </div>
       </div>
+
+      {footer && <div className="mt-4 border-t border-hairline pt-3 text-label text-secondary">{footer}</div>}
     </section>
   );
 }

@@ -1,4 +1,5 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
+import { crossHost, onAppHost } from '@/lib/hosts';
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useAuth, HOME_FOR_ROLE } from '@/context/AuthContext';
 import { ShellSkeleton, SiteSkeleton } from '@/components/brand/Loader';
@@ -241,6 +242,15 @@ function teamRoutes(withHr: boolean) {
 export default function App() {
   const { user, loading } = useAuth();
   const location = useLocation();
+
+  /* Two front doors (lib/hosts.ts): a website page opened on app.afterbi.com, or an app page on afterbi.com, moves to the right address. */
+  const elsewhere = crossHost(location.pathname);
+  useEffect(() => {
+    if (elsewhere) window.location.replace(elsewhere + location.search + location.hash);
+  }, [elsewhere, location.search, location.hash]);
+  if (elsewhere) return null;
+  /* The app's own address opens on sign in. */
+  if (onAppHost() && location.pathname === '/') return <Navigate to="/login" replace />;
 
   return (
     /*

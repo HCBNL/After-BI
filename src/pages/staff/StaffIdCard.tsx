@@ -11,7 +11,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Camera, Download, ImageOff, Save } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Button, Card, Field, Input, SegmentedControl, Switch, useToast } from '@/components/ui';
-import { Hint } from '@/components/ui/Hint';
 import { PhotoCropper } from '@/components/PhotoCropper';
 import { Mark } from '@/components/brand/Wordmark';
 import { useAuth } from '@/context/AuthContext';
@@ -128,12 +127,7 @@ export default function StaffIdCard() {
     <>
       <PageHeader
         title="My ID card"
-        actions={
-          <Hint label="About your ID card">
-            Your AfterBI staff ID, front and back, signed by the CEO. Download it and print at 100%, or take the card-size PDF to a print
-            shop. Your photo is not uploaded anywhere.
-          </Hint>
-        }
+        description="Your AfterBI staff ID, front and back, signed by the CEO. Download it and print at 100%, or take the card-size PDF to a print shop. Your photo is not uploaded anywhere."
       />
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">
         <div className="space-y-5">

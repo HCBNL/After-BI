@@ -157,6 +157,7 @@ export default function CataloguePage() {
         actions={
           <Link
             to={`${root}/orders?new=1`}
+            data-variant="primary"
             className="inline-flex h-9 items-center gap-2 rounded-xl bg-brand-900 px-3 text-label font-semibold text-white transition-colors hover:bg-brand-800 dark:bg-brand-500 dark:text-brand-950 dark:hover:bg-brand-400"
           >
             <ShoppingCart size={15} />

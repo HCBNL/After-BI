@@ -2,24 +2,30 @@
  * Company info: the organisation's bank accounts and details, each a tap to
  * copy. Seen by everybody in the organisation, distributors included: the
  * account to pay into is not a secret, and a customer who can see the real one
- * in the app is a customer who will not pay a fake one sent on WhatsApp.
+ * in the app is a customer who will not pay a fake one sent to them.
  *
- * Everything here comes from Settings (Company); nothing is typed on this page.
- * (The concept is GetSchool's Company info, per organisation.)
+ * Drawn in the organisation's own colour (the theme ground, `.ab-banner`), with
+ * the owner's Primary artwork turning in the bank card's corner and a Secondary
+ * artwork beside the "pay only here" note, so it matches HR and the figure
+ * cards whatever colour a company picks. The picture a customer is sent is a
+ * plain black card drawn on a canvas (lib/bankImage), the same for every
+ * company. Everything comes from Settings (Company); nothing is typed here.
  */
 
-import { useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Check, ChevronLeft, ChevronRight, Copy, Download, FileBadge, Globe, Landmark, Mail, MapPin, MessageCircle, Phone, Share2 } from 'lucide-react';
+import { Building2, Check, Copy, Download, FileBadge, Globe, Landmark, Mail, MapPin, Phone, ShieldCheck, type LucideIcon } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Alert, Card, useToast } from '@/components/ui';
+import { Card, CardArt, IconArt, useToast } from '@/components/ui';
 import { OrgPlanBadge, PlanPill } from '@/components/brand/PlanBadge';
+import { SecurePaymentArt } from '@/components/brand/SceneArt';
+import { Slider } from '@/components/home/Slider';
 import { useOrg } from '@/context/OrgContext';
 import { useAuth } from '@/context/AuthContext';
-import { whatsappNumber } from '@/lib/businessCard';
 import { useEntitlements } from '@/lib/plans';
 import { PORTAL_ROOT } from '@/lib/tiles';
 import { saveFile } from '@/lib/download';
+import { bankImage } from '@/lib/bankImage';
 import { cn } from '@/lib/cn';
 import type { BankAccount } from '@/types';
 import { useAsync } from '@/hooks/useAsync';
@@ -73,22 +79,33 @@ export default function CompanyInfo() {
   const banks = (settings?.banks ?? []).filter((b) => b.accountNumber && b.bankName);
   const isAdmin = user?.role === 'super_admin' || user?.role === 'admin';
   const settingsLink = user ? `${PORTAL_ROOT[user.role]}/settings` : '#';
-  const wa = whatsappNumber(settings?.phone);
   const site = settings?.website?.replace(/^https?:\/\//, '') ?? '';
+  const phone = settings?.phone || undefined;
+
+  const cards = banks.map((b, i) => (
+    <BankCard
+      key={b.id || i}
+      bank={b}
+      profile={b.bankId ? byId.get(b.bankId) : undefined}
+      company={name}
+      phone={phone}
+      index={i}
+      done={done}
+      copy={copy}
+    />
+  ));
 
   return (
     <div className="space-y-5">
       <PageHeader title="Company info" description={`${name}'s account details and contacts. Tap anything to copy it.`} />
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-        <div className="space-y-5">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start">
+        <div className="min-w-0 space-y-5">
           {banks.length === 0 ? (
             <Card>
               <div className="flex items-start gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-sunken)] text-muted">
-                  <Landmark size={20} aria-hidden />
-                </span>
-                <div>
+                <IconArt icon={Landmark} id="company-bank" variant="tint" size={44} />
+                <div className="min-w-0">
                   <p className="text-lead font-semibold text-primary">No bank account added yet</p>
                   <p className="mt-1 text-label text-muted">
                     {isAdmin ? (
@@ -106,121 +123,76 @@ export default function CompanyInfo() {
                 </div>
               </div>
             </Card>
+          ) : banks.length === 1 ? (
+            cards
           ) : (
-            <BankCarousel count={banks.length}>
-              {banks.map((b, i) => (
-                <BankCard key={b.id || i} bank={b} profile={b.bankId ? byId.get(b.bankId) : undefined} company={name} index={i} done={done} copy={copy} />
-              ))}
-            </BankCarousel>
+            <Slider label="Bank accounts">{cards}</Slider>
           )}
+
           {banks.length > 0 && (
-            <Alert tone="info" title="Pay only into these accounts">
-              {`${name} does not recognise payments into any other account, whoever asks for them. If someone sends different bank details, check here first.`}</Alert>
+            <section className="flex items-center gap-4 overflow-hidden rounded-[22px] border border-hairline surface-card p-4 shadow-card sm:p-5">
+              <SecurePaymentArt className="h-20 w-20 shrink-0 sm:h-24 sm:w-24" />
+              <div className="min-w-0">
+                <p className="flex items-center gap-1.5 text-body font-bold text-primary">
+                  <ShieldCheck size={16} className="shrink-0 text-brand-700 dark:text-brand-300" aria-hidden />
+                  Pay only into these accounts
+                </p>
+                <p className="mt-1 text-label leading-snug text-secondary">
+                  {`${name} does not recognise payment into any other account, whoever asks. If someone sends different details, check here first.`}
+                </p>
+              </div>
+            </section>
           )}
         </div>
 
-        <Card className="hr-rise self-start" style={{ animationDelay: '120ms' }}>
-          <div className="flex items-center gap-3">
-            {settings?.logoUrl ? (
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-hairline bg-white p-1.5">
-                <img src={settings.logoUrl} alt="" className="max-h-full max-w-full object-contain" />
-              </span>
-            ) : (
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
-                <Building2 size={24} aria-hidden />
-              </span>
-            )}
-            <div className="min-w-0">
-              <p className="flex items-center gap-1.5 text-title font-semibold text-primary">
-                <span className="truncate">{name}</span>
-                <OrgPlanBadge size={18} />
-              </p>
-              {settings?.rcNumber && <p className="text-label font-semibold text-muted">{settings.rcNumber}</p>}
-              {plan && <PlanPill plan={plan} className="mt-1" />}
+        <section className="min-w-0 overflow-hidden rounded-[22px] border border-hairline surface-card shadow-card">
+          <div className="ab-banner relative isolate overflow-hidden p-5 text-white">
+            <CardArt index={2} />
+            <div className="flex min-w-0 items-center gap-3">
+              {settings?.logoUrl ? (
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-card">
+                  <img src={settings.logoUrl} alt="" className="max-h-full max-w-full object-contain" />
+                </span>
+              ) : (
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                  <Building2 size={24} aria-hidden />
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="flex min-w-0 items-center gap-1.5 text-title font-bold">
+                  <span className="truncate">{name}</span>
+                  <OrgPlanBadge size={18} />
+                </p>
+                {settings?.rcNumber && <p className="text-label font-semibold text-white/75">{`RC ${settings.rcNumber}`}</p>}
+                {plan && <PlanPill plan={plan} className="mt-1" />}
+              </div>
             </div>
           </div>
-          <ul className="mt-4 space-y-1.5">
-            {settings?.address && <Row icon={<MapPin size={15} />} label="Address" value={settings.address} done={done === 'addr'} onCopy={() => void copy('addr', settings.address!, 'Address')} />}
-            {settings?.phone && <Row icon={<Phone size={15} />} label="Phone" value={settings.phone} done={done === 'phone'} onCopy={() => void copy('phone', settings.phone!, 'Phone number')} />}
-            {settings?.email && <Row icon={<Mail size={15} />} label="Email" value={settings.email} done={done === 'email'} onCopy={() => void copy('email', settings.email!, 'Email')} />}
-            {site && <Row icon={<Globe size={15} />} label="Website" value={site} done={done === 'web'} onCopy={() => void copy('web', `https://${site}`, 'Website')} />}
-            {settings?.rcNumber && <Row icon={<Building2 size={15} />} label="Registration" value={settings.rcNumber} done={done === 'rc'} onCopy={() => void copy('rc', settings.rcNumber!, 'RC number')} />}
-            {settings?.taxId && <Row icon={<FileBadge size={15} />} label="Tax ID" value={settings.taxId} done={done === 'tax'} onCopy={() => void copy('tax', settings.taxId!, 'Tax ID')} />}
+
+          <ul className="divide-y divide-[var(--border-hairline)] px-2 py-1 sm:px-3">
+            {settings?.address && <Row icon={MapPin} id="company-address" label="Address" value={settings.address} done={done === 'addr'} onCopy={() => void copy('addr', settings.address!, 'Address')} />}
+            {phone && <Row icon={Phone} id="company-phone" label="Phone" value={phone} done={done === 'phone'} onCopy={() => void copy('phone', phone, 'Phone number')} />}
+            {settings?.email && <Row icon={Mail} id="company-email" label="Email" value={settings.email} done={done === 'email'} onCopy={() => void copy('email', settings.email!, 'Email')} />}
+            {site && <Row icon={Globe} id="company-web" label="Website" value={site} done={done === 'web'} onCopy={() => void copy('web', `https://${site}`, 'Website')} />}
+            {settings?.rcNumber && <Row icon={Building2} id="company-rc" label="Registration" value={settings.rcNumber} done={done === 'rc'} onCopy={() => void copy('rc', settings.rcNumber!, 'RC number')} />}
+            {settings?.taxId && <Row icon={FileBadge} id="company-tax" label="Tax ID" value={settings.taxId} done={done === 'tax'} onCopy={() => void copy('tax', settings.taxId!, 'Tax ID')} />}
           </ul>
-          {!settings?.address && !settings?.phone && !settings?.email && (
-            <p className="mt-3 text-label text-muted">{isAdmin ? 'Add the address, phone and email in Settings.' : 'No contact details added yet.'}</p>
+          {!settings?.address && !phone && !settings?.email && (
+            <p className="px-5 pb-5 text-label text-muted">{isAdmin ? 'Add the address, phone and email in Settings.' : 'No contact details added yet.'}</p>
           )}
-          {wa && (
-            <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-label font-semibold text-[#128C7E] hover:underline">
-              <MessageCircle size={15} aria-hidden /> {` Message ${name} on WhatsApp`}</a>
-          )}
-        </Card>
+        </section>
       </div>
     </div>
   );
 }
 
-/* one bank account, as a card */
-
-/**
- * More than one account: one card at a time, sliding. Arrows, dots, or a swipe
- * on a phone. One account: just the card.
- */
-function BankCarousel({ count, children }: { count: number; children: ReactNode[] }) {
-  const [index, setIndex] = useState(0);
-  const start = useRef<number | null>(null);
-  if (count <= 1) return <>{children}</>;
-  const go = (n: number) => setIndex((n + count) % count);
-  const down = (e: ReactPointerEvent) => {
-    start.current = e.clientX;
-  };
-  const up = (e: ReactPointerEvent) => {
-    if (start.current === null) return;
-    const dx = e.clientX - start.current;
-    start.current = null;
-    if (Math.abs(dx) > 45) go(index + (dx < 0 ? 1 : -1));
-  };
-  return (
-    <div className="space-y-3">
-      <div className="overflow-hidden rounded-[28px]" onPointerDown={down} onPointerUp={up} style={{ touchAction: 'pan-y' }}>
-        <div className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: `translateX(-${index * 100}%)` }}>
-          {children.map((child, i) => (
-            <div key={i} className="w-full shrink-0" aria-hidden={i !== index} inert={i !== index ? true : undefined}>
-              {child}
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="flex items-center justify-between gap-3">
-        <button type="button" onClick={() => go(index - 1)} aria-label="Previous account" className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-secondary hover:bg-[var(--surface-sunken)] hover:text-primary">
-          <ChevronLeft size={17} aria-hidden />
-        </button>
-        <div className="flex items-center gap-1.5">
-          {Array.from({ length: count }, (_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setIndex(i)}
-              aria-label={`Account ${i + 1} of ${count}`}
-              className={cn('h-2 rounded-full transition-all', i === index ? 'w-6 bg-brand-600' : 'w-2 bg-[var(--border-strong)] hover:bg-[var(--text-muted)]')}
-            />
-          ))}
-          <span className="ml-2 text-caption font-semibold text-muted tabular">
-            {`${index + 1} of ${count}`}
-          </span>
-        </div>
-        <button type="button" onClick={() => go(index + 1)} aria-label="Next account" className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-secondary hover:bg-[var(--surface-sunken)] hover:text-primary">
-          <ChevronRight size={17} aria-hidden />
-        </button>
-      </div>
-    </div>
-  );
-}
+/* one bank account, as a card in the organisation's colour */
 
 function BankCard({
   bank,
   profile,
   company,
+  phone,
   index,
   done,
   copy,
@@ -228,144 +200,135 @@ function BankCard({
   bank: BankAccount;
   profile?: BankProfile;
   company: string;
+  phone?: string;
   index: number;
   done: string | null;
   copy: (key: string, text: string, label: string) => Promise<void>;
 }) {
   const toast = useToast();
-  const ref = useRef<HTMLElement>(null);
   const [saving, setSaving] = useState(false);
   const k = (s: string) => `${s}${index}`;
-  const all = `Account number: ${bank.accountNumber}\nAccount name: ${bank.accountName}\nBank: ${bank.bankName}`;
+  const bankName = profile?.name || bank.bankName;
+  const all = [
+    `Account number: ${bank.accountNumber}`,
+    `Account name: ${bank.accountName}`,
+    `Bank: ${bankName}`,
+    ...(phone ? [`To confirm, call: ${phone}`] : []),
+  ].join('\n');
 
-  /* The card as a PNG, at twice screen resolution, without the buttons. Loaded on demand. */
-  const downloadImage = async () => {
-    const node = ref.current;
-    if (!node) return;
+  const download = async () => {
     setSaving(true);
-    const actions = node.querySelector<HTMLElement>('[data-no-export-row]');
     try {
-      const { toBlob } = await import('html-to-image');
-      if (actions) actions.style.display = 'none';
-      await new Promise((r) => requestAnimationFrame(() => r(null)));
-      const blob = await toBlob(node, {
-        pixelRatio: 2,
-        cacheBust: true,
-        filter: (el) => !(el instanceof HTMLElement && el.dataset.noExport !== undefined),
-      });
-      if (!blob) throw new Error('The image came out empty.');
-      await saveFile(`${company.replace(/[^a-z0-9]+/gi, '_')}_account_details.png`, blob);
+      const blob = await bankImage({ company, bankName, accountNumber: bank.accountNumber, accountName: bank.accountName, phone });
+      await saveFile(`${company.replace(/[^a-z0-9]+/gi, '_')}_${bankName.replace(/[^a-z0-9]+/gi, '_')}.png`, blob);
     } catch (err) {
       toast.error('Could not make the image', err instanceof Error ? err.message : 'Try again.');
     } finally {
-      actions?.style.removeProperty('display');
       setSaving(false);
     }
   };
 
   return (
-    <section ref={ref} className="relative isolate overflow-hidden rounded-[28px] bg-night p-5 text-white shadow-pop sm:p-7">
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="hr-aurora absolute -right-20 -top-24 h-72 w-72 rounded-full bg-gold-400/25 blur-[80px]" />
-        <div className="hr-aurora-slow absolute -bottom-28 -left-10 h-72 w-72 rounded-full bg-[#ee6a00]/30 blur-[90px]" />
-        <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'repeating-linear-gradient(135deg, #fff 0 1px, transparent 1px 14px)' }} />
-      </div>
+    <section className="ab-banner relative isolate w-full min-w-0 overflow-hidden rounded-[26px] p-5 text-white shadow-card sm:p-6">
+      <CardArt index={index} className="!h-44 !w-44 !-bottom-20 !-right-16 sm:!h-52 sm:!w-52 sm:!-bottom-24 sm:!-right-20" />
 
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5 rounded-2xl bg-white py-1.5 pl-1.5 pr-3.5 text-night shadow-card">
-          <BankLogo size={40} bank={{ name: bank.bankName, logoUrl: profile?.logoUrl || bank.logoUrl, color: profile?.color }} />
-          <span className="truncate text-body font-semibold uppercase tracking-wide">{profile?.name || bank.bankName}</span>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5 rounded-2xl bg-white py-1.5 pl-1.5 pr-3.5 text-[#0a0a0b] shadow-card">
+          <BankLogo size={36} bank={{ name: bank.bankName, logoUrl: profile?.logoUrl || bank.logoUrl, color: profile?.color }} />
+          <span className="truncate text-label font-bold uppercase tracking-wide">{bankName}</span>
         </div>
-        <span aria-hidden className="relative mt-1 h-9 w-12 shrink-0 overflow-hidden rounded-md bg-gradient-to-br from-gold-200 via-gold-400 to-gold-600 shadow-inner">
-          <span className="absolute inset-x-0 top-1/2 h-px bg-gold-800/40" />
-          <span className="absolute inset-y-0 left-1/2 w-px bg-gold-800/40" />
-          <span className="hr-sheen absolute inset-0" />
-        </span>
+        <button
+          type="button"
+          onClick={() => void download()}
+          disabled={saving}
+          aria-label="Download as a picture"
+          title="Download as a picture"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-inset ring-white/20 transition-colors hover:bg-white/25 disabled:opacity-60"
+        >
+          <Download size={18} aria-hidden className={cn(saving && 'animate-pulse')} />
+        </button>
       </div>
 
-      <p className="mt-7 text-micro font-semibold uppercase tracking-[0.16em] text-white/50">Account number</p>
+      <p className="mt-6 text-micro font-semibold uppercase tracking-[0.16em] text-white/70">Account number</p>
       <button
         type="button"
         onClick={() => void copy(k('number'), bank.accountNumber, 'Account number')}
-        className="group mt-1 flex w-full items-center justify-between gap-3 rounded-2xl text-left"
+        className="group mt-1 flex w-full min-w-0 items-center justify-between gap-3 text-left"
         aria-label={`Copy account number ${bank.accountNumber}`}
       >
-        <span className="font-display text-display font-bold leading-none tracking-[0.04em] tabular sm:text-jumbo">{spaced(bank.accountNumber)}</span>
-        <CopyMark done={done === k('number')} dark />
+        <span className="min-w-0 truncate font-display text-[2rem] font-bold leading-none tracking-[0.03em] tabular sm:text-display">
+          {spaced(bank.accountNumber)}
+        </span>
+        <CopyMark done={done === k('number')} />
       </button>
 
-      <div className="mt-6 grid gap-3">
+      <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-2.5">
         <CardLine label="Account name" value={bank.accountName} done={done === k('name')} onCopy={() => void copy(k('name'), bank.accountName, 'Account name')} />
-        <CardLine label="Bank" value={bank.bankName} done={done === k('bank')} onCopy={() => void copy(k('bank'), bank.bankName, 'Bank name')} />
+        {phone ? (
+          <CardLine label="To confirm, call" value={phone} done={done === k('phone')} onCopy={() => void copy(k('phone'), phone, 'Phone number')} />
+        ) : (
+          <CardLine label="Bank" value={bankName} done={done === k('bank')} onCopy={() => void copy(k('bank'), bankName, 'Bank name')} />
+        )}
       </div>
 
-      <div data-no-export data-no-export-row className="mt-6 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => void copy(k('all'), all, 'Account details')}
-          className="tap inline-flex items-center gap-2 rounded-xl bg-white px-4 text-body font-semibold text-night transition-transform hover:-translate-y-0.5"
-        >
-          {done === k('all') ? <Check size={16} aria-hidden /> : <Copy size={16} aria-hidden />}
-          {done === k('all') ? 'Copied' : 'Copy all details'}
-        </button>
-        <a
-          href={`https://wa.me/?text=${encodeURIComponent(`${company} payment details\n\n${all}`)}`}
-          target="_blank"
-          rel="noreferrer"
-          className="tap inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 text-body font-semibold text-white transition-transform hover:-translate-y-0.5"
-        >
-          <Share2 size={16} aria-hidden /> Share on WhatsApp
-        </a>
-        <button
-          type="button"
-          onClick={() => void downloadImage()}
-          disabled={saving}
-          className="tap inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 text-body font-semibold text-white ring-1 ring-inset ring-white/20 transition-transform hover:-translate-y-0.5 hover:bg-white/15 disabled:opacity-60"
-        >
-          <Download size={16} aria-hidden /> {saving ? 'Making image…' : 'Download image'}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => void copy(k('all'), all, 'Account details')}
+        className="mt-4 inline-flex h-9 items-center gap-2 rounded-full bg-white px-3.5 text-label font-bold text-[#0a0a0b] transition-transform hover:-translate-y-0.5"
+      >
+        {done === k('all') ? <Check size={15} aria-hidden /> : <Copy size={15} aria-hidden />}
+        {done === k('all') ? 'Copied' : 'Copy all'}
+      </button>
     </section>
   );
 }
 
-function CopyMark({ done, dark }: { done: boolean; dark?: boolean }) {
+function CopyMark({ done }: { done: boolean }) {
   return (
     <span
-      data-no-export
       className={cn(
-        'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all',
-        dark ? 'bg-white/10 text-white group-hover:bg-white/20' : 'surface-sunken text-secondary group-hover:text-primary',
-        done && '!bg-[#0ca30c] !text-white scale-110',
+        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white transition-all group-hover:bg-white/25',
+        done && '!bg-white !text-[#0a7a0a] scale-110',
       )}
     >
-      {done ? <Check size={17} aria-hidden /> : <Copy size={16} aria-hidden />}
+      {done ? <Check size={16} aria-hidden /> : <Copy size={15} aria-hidden />}
     </span>
   );
 }
 
 function CardLine({ label, value, done, onCopy }: { label: string; value: string; done: boolean; onCopy: () => void }) {
   return (
-    <button type="button" onClick={onCopy} className="group flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3.5 py-3 text-left backdrop-blur-sm">
+    <button
+      type="button"
+      onClick={onCopy}
+      className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-white/[0.12] px-3.5 py-2.5 text-left ring-1 ring-inset ring-white/15 backdrop-blur-sm"
+    >
       <span className="min-w-0">
-        <span className="block text-micro font-semibold uppercase tracking-[0.14em] text-white/50">{label}</span>
-        <span className="mt-0.5 block truncate text-body font-semibold">{value}</span>
+        <span className="block text-micro font-semibold uppercase tracking-[0.14em] text-white/70">{label}</span>
+        <span className="mt-0.5 block break-words text-body font-semibold">{value}</span>
       </span>
-      <CopyMark done={done} dark />
+      <CopyMark done={done} />
     </button>
   );
 }
 
-function Row({ icon, label, value, done, onCopy }: { icon: ReactNode; label: string; value: string; done: boolean; onCopy: () => void }) {
+function Row({ icon, id, label, value, done, onCopy }: { icon: LucideIcon; id: string; label: string; value: string; done: boolean; onCopy: () => void }) {
   return (
     <li>
-      <button type="button" onClick={onCopy} className="group flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left hover:bg-[var(--surface-sunken)]">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">{icon}</span>
+      <button type="button" onClick={onCopy} className="group flex w-full min-w-0 items-center gap-3 rounded-2xl px-2 py-3 text-left transition-colors hover:bg-[var(--surface-sunken)]">
+        <IconArt icon={icon} id={id} variant="tint" size={40} />
         <span className="min-w-0 flex-1">
           <span className="block text-micro font-semibold uppercase tracking-wide text-muted">{label}</span>
           <span className="block truncate text-body font-semibold text-primary">{value}</span>
         </span>
-        <CopyMark done={done} />
+        <span
+          className={cn(
+            'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-sunken)] text-secondary transition-all group-hover:text-primary',
+            done && '!bg-brand-600 !text-white scale-110',
+          )}
+        >
+          {done ? <Check size={16} aria-hidden /> : <Copy size={15} aria-hidden />}
+        </span>
       </button>
     </li>
   );

@@ -15,8 +15,9 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Check, Copy, Plus, Save, Trash2 } from 'lucide-react';
+import { Check, Copy, Lock, LockOpen, Plus, Save, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { cn } from '@/lib/cn';
 import {
   Button, Divider, Field, Hint, IconButton, Input, Select, Switch, Textarea, useToast,
 } from '@/components/ui';
@@ -45,10 +46,45 @@ export default function SettingsPage() {
 
   const [draft, setDraft] = useState<Partial<OrgSettings>>(settings ?? { currency: 'NGN' });
   const [busy, setBusy] = useState(false);
+  /*
+   * LOCKED UNTIL ASKED.
+   *
+   * Once a company is set up, Settings opens locked: every field is read only,
+   * so a stray key press can never end up on an invoice or a policy. The small
+   * lock beside Save opens it for editing; saving locks it again. Locking it
+   * again without saving puts back what was saved. A company with no name yet
+   * (the first setup) opens unlocked.
+   */
+  const [locked, setLocked] = useState(() => Boolean(settings?.name));
 
   useEffect(() => {
     if (settings) setDraft(settings);
   }, [settings]);
+
+  const toggleLock = () => {
+    if (locked) {
+      setLocked(false);
+      return;
+    }
+    if (settings) setDraft(settings);
+    setLocked(true);
+  };
+
+  const lockButton = (
+    <button
+      type="button"
+      onClick={toggleLock}
+      aria-pressed={!locked}
+      title={locked ? 'Locked. Tap to edit.' : 'Editing. Tap to lock without saving.'}
+      className={cn(
+        'inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-label font-semibold transition-colors',
+        locked ? 'bg-white/15 text-white ring-1 ring-inset ring-white/25 hover:bg-white/25' : 'bg-[#f5c518] text-[#141414] hover:brightness-95',
+      )}
+    >
+      {locked ? <Lock size={14} aria-hidden /> : <LockOpen size={14} aria-hidden />}
+      {locked ? 'Locked' : 'Editing'}
+    </button>
+  );
 
   /* The banks the platform keeps: pick one, type only the account number. */
   const bankList = useAsync(() => listBankProfiles(), [], { handleError: true });
@@ -108,7 +144,8 @@ export default function SettingsPage() {
     try {
       await saveOrgSettings({ ...draft, banks, name: draft.name.trim(), currency: 'NGN' });
       reload();
-      toast.success('Settings saved');
+      setLocked(true);
+      toast.success('Settings saved', 'Locked again. Tap the lock to edit.');
     } catch (err) {
       toast.error('Not saved', err instanceof Error ? err.message : undefined);
     } finally {
@@ -136,13 +173,19 @@ export default function SettingsPage() {
         title="Settings"
         description="Company details, invoice footer, and the threshold above which an order needs a signature."
         actions={
-          <Button size="sm" icon={<Save size={15} />} loading={busy} onClick={() => void save()}>
-            Save
-          </Button>
+          <div className="flex items-center gap-2">
+            {lockButton}
+            {!locked && (
+              <Button size="sm" icon={<Save size={15} />} loading={busy} onClick={() => void save()}>
+                Save
+              </Button>
+            )}
+          </div>
         }
       />
 
-      <div className="space-y-5">
+      {/* Locked: one fieldset disables every field, picker and button inside at once. */}
+      <fieldset disabled={locked} aria-label={locked ? 'Settings, locked' : 'Settings'} className={cn('m-0 min-w-0 space-y-5 border-0 p-0', locked && 'ab-locked')}>
         <section className="rounded-2xl border border-hairline surface-card p-5 shadow-card sm:p-7">
           <div className="flex items-center gap-1.5">
             <h2 className="text-title font-semibold text-primary">Your company</h2>
@@ -539,12 +582,14 @@ export default function SettingsPage() {
           </section>
         )}
 
-        <div className="lg:hidden">
-          <Button full icon={<Save size={15} />} loading={busy} onClick={() => void save()}>
-            Save settings
-          </Button>
-        </div>
-      </div>
+        {!locked && (
+          <div className="lg:hidden">
+            <Button full icon={<Save size={15} />} loading={busy} onClick={() => void save()}>
+              Save settings
+            </Button>
+          </div>
+        )}
+      </fieldset>
     </div>
   );
 }

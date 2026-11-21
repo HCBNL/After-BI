@@ -16,7 +16,6 @@ import { useSearchParams } from 'react-router-dom';
 import { Contact, IdCard } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SegmentedControl } from '@/components/ui';
-import { Hint } from '@/components/ui/Hint';
 import OrgIdCard from './OrgIdCard';
 import OrgCard from './OrgCard';
 
@@ -30,12 +29,7 @@ export default function MyCards() {
     <>
       <PageHeader
         title="My cards"
-        actions={
-          <Hint label="About your cards" align="right">
-            Your staff ID card and your business card come from the same details. Set your position, location and phone
-            on the ID card tab and both cards use them. Each one downloads as a print-ready PDF.
-          </Hint>
-        }
+        description="Your staff ID card and your business card come from the same details. Set your position, location and phone on the ID card tab and both cards use them. Each one downloads as a print-ready PDF."
       />
       <SegmentedControl
         className="mb-5"
