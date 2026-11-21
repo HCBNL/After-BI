@@ -749,7 +749,9 @@ service cloud.firestore {
       decision, as themselves; never edited or deleted by anyone.
     */
     match /audit/{orgId}/log/{id} {
-      allow read: if hasRole(orgId, ['super_admin', 'admin']);
+      /* Admins read it all; anyone reads their own lines (the home screen's recent activity). */
+      allow read: if hasRole(orgId, ['super_admin', 'admin'])
+        || (member(orgId) && resource.data.by == request.auth.uid);
       allow create: if member(orgId)
         && request.resource.data.by == request.auth.uid
         && request.resource.data.keys().hasOnly(['at', 'by', 'byName', 'byCode', 'role', 'area', 'action', 'summary', 'ref', 'amount', 'reason'])

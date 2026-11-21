@@ -68,15 +68,33 @@
       html[data-theme='dark'] { --sk-page: #161618; --sk-card: #232325; --sk-line: rgba(255,255,255,.09); --sk-fill: #1c1c1e; --sk-ink: #ffffff; }
       html, body { margin: 0; height: 100%; background: var(--sk-page); }
       /*
-        While the app loads: the plain page colour and one small ring turning.
-        No logo, no name, no wallpaper. It goes the moment the first real page
-        (or the PIN screen) has drawn; see src/lib/boot.ts.
+        While the app opens: the moving wallpaper (AfterBI blue drifting through
+        purple, pink, teal and night blue) with the petals turning. No spinner,
+        no logo. It goes the moment the PIN screen (or the first page) has
+        drawn; see src/lib/boot.ts. A copy of .ab-wall in src/index.css.
+        The public website opens on its plain page colour instead.
       */
-      #splash { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: var(--sk-page); transition: opacity .2s ease; }
+      #splash { position: fixed; inset: 0; z-index: 9999; overflow: hidden; isolation: isolate; background: #1238e6; transition: opacity .25s ease; }
       #splash.gone { opacity: 0; pointer-events: none; }
-      .ab-wait { width: 26px; height: 26px; border-radius: 50%; border: 2.5px solid var(--sk-line); border-top-color: var(--sk-ink); opacity: .55; animation: ab-wait .8s linear infinite; }
-      @keyframes ab-wait { to { transform: rotate(360deg); } }
-      @media (prefers-reduced-motion: reduce) { .ab-wait { animation-duration: 2.4s; } }
+      html[data-boot='site'] #splash { background: var(--sk-page); }
+      html[data-boot='site'] #splash > * { display: none; }
+      #splash .ab-wall-l { position: absolute; inset: -25%; pointer-events: none; z-index: -1; }
+      #splash .ab-wall-a { background: radial-gradient(45% 40% at 30% 30%, #2f6bff 0%, transparent 70%), radial-gradient(50% 45% at 75% 70%, #0b2bd1 0%, transparent 70%); animation: ab-wall-drift 26s ease-in-out infinite alternate; }
+      #splash .ab-wall-b { background: radial-gradient(50% 45% at 72% 28%, #7c3aed 0%, transparent 72%), radial-gradient(45% 40% at 22% 78%, #5b21b6 0%, transparent 72%); opacity: 0; animation: ab-wall-fade 18s ease-in-out infinite, ab-wall-drift 30s ease-in-out infinite alternate-reverse; }
+      #splash .ab-wall-c { background: linear-gradient(165deg, #0c1550 0%, #050a26 100%); opacity: 0; animation: ab-wall-dark 24s ease-in-out infinite; }
+      #splash .ab-wall-d { background: radial-gradient(30% 28% at 85% 85%, rgba(236,72,153,.7) 0%, transparent 70%), radial-gradient(28% 26% at 12% 15%, rgba(14,165,233,.7) 0%, transparent 70%); opacity: 0; animation: ab-wall-fade 14s ease-in-out 5s infinite; }
+      #splash svg { position: absolute; color: #fff; animation: ab-turn 90s linear infinite; }
+      #splash .p1 { right: -9vmin; top: -7vmin; width: max(34vmin, 170px); height: max(34vmin, 170px); }
+      #splash .p2 { left: -12vmin; bottom: -10vmin; width: max(48vmin, 230px); height: max(48vmin, 230px); animation-direction: reverse; animation-duration: 120s; }
+      @media (min-width: 1024px) {
+        #splash .p1 { right: -4vmin; top: -6vmin; width: 46vmin; height: 46vmin; }
+        #splash .p2 { left: -6vmin; bottom: -12vmin; width: 58vmin; height: 58vmin; }
+      }
+      @keyframes ab-wall-drift { from { transform: translate3d(-4%,-3%,0) rotate(0deg); } to { transform: translate3d(4%,3%,0) rotate(8deg); } }
+      @keyframes ab-wall-fade { 0%, 100% { opacity: 0; } 50% { opacity: .9; } }
+      @keyframes ab-wall-dark { 0%, 30%, 100% { opacity: 0; } 60%, 72% { opacity: .78; } }
+      @keyframes ab-turn { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { #splash * { animation: none !important; } }
     </style>
 
     <!--
@@ -102,11 +120,15 @@
       <div id="boot"></div>
     </div>
     <!--
-      THE ONE LOADING SCREEN, deliberately bare: the page colour and a small
-      turning ring. Outside #root, so React mounting does not remove it: it
+      THE ONE OPENING SCREEN: the moving wallpaper and petals, no spinner, no
+      logo. Outside #root, so React mounting does not remove it: it
       stays until the first real page has drawn, then fades (src/lib/boot.ts).
     -->
-    <div id="splash" role="status" aria-label="Loading AfterBI"><div class="ab-wait"></div></div>
+    <div id="splash" role="status" aria-label="Loading AfterBI">
+      <i class="ab-wall-l ab-wall-a"></i><i class="ab-wall-l ab-wall-b"></i><i class="ab-wall-l ab-wall-c"></i><i class="ab-wall-l ab-wall-d"></i>
+      <svg class="p1" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><g opacity=".1"><path d="M50 50 Q22 18 50 4 Q78 18 50 50 Z"/><path d="M50 50 Q22 18 50 4 Q78 18 50 50 Z" transform="rotate(90 50 50)"/><path d="M50 50 Q22 18 50 4 Q78 18 50 50 Z" transform="rotate(180 50 50)"/><path d="M50 50 Q22 18 50 4 Q78 18 50 50 Z" transform="rotate(270 50 50)"/></g></svg>
+      <svg class="p2" viewBox="0 0 100 100" fill="currentColor" opacity=".08" aria-hidden="true"><ellipse cx="50" cy="26" rx="14" ry="24"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(60 50 50)"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(120 50 50)"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(180 50 50)"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(240 50 50)"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(300 50 50)"/><circle cx="50" cy="50" r="22"/></svg>
+    </div>
     <!--
       A BOOT FAILURE THAT SAYS WHAT IS WRONG, RATHER THAN A WHITE SCREEN.
 
