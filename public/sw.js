@@ -13,7 +13,7 @@
  * Bump VERSION when the icons or this file's strategy change; the old caches
  * are dropped on the next activation.
  */
-const VERSION = 'ab-v3';
+const VERSION = 'ab-v4';
 const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
 const STATIC = `${VERSION}-static`;
