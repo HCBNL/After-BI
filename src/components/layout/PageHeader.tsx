@@ -41,8 +41,9 @@ export function PageHeader({
   if (inShell) {
     return (
       <>
-        <PagePanel title={title} description={description} actions={actions} className="mb-3" />
-        {children && <div className={cn('mb-5', className)}>{children}</div>}
+        {/* On a phone the first card sits 24px under the sheet's curve, the same as home; 12px between cards after that. */}
+        <PagePanel title={title} description={description} actions={actions} className="-mb-1 sm:mb-3" />
+        {children && <div className={cn('mb-3 sm:mb-5', className)}>{children}</div>}
       </>
     );
   }

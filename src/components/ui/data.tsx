@@ -200,7 +200,7 @@ export function Tabs({
   className?: string;
 }) {
   /* Sections are picked from one dropdown, never a row of tabs. */
-  return <SectionMenu items={items} active={active} onChange={onChange} className={className} />;
+  return <SectionMenu items={items} active={active} onChange={onChange} className={cn('ab-filter-list', className)} />;
 }
 
 /* SegmentedControl */
@@ -256,16 +256,19 @@ export function SearchInput({
   placeholder?: string;
   className?: string;
 }) {
+  /* `.ab-search` (index.css): the full width of a phone, the same width as the page's filter on a laptop. */
   return (
-    <Input
-      type="search"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      leading={<Search size={16} />}
-      className={className}
-      aria-label={placeholder}
-    />
+    <div className={cn('ab-search', className)}>
+      <Input
+        type="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        leading={<Search size={16} />}
+        className="w-full"
+        aria-label={placeholder}
+      />
+    </div>
   );
 }
 

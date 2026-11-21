@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, House, LayoutGrid, LogOut, PanelsTopLeft, Search, UserRound } from 'lucide-react';
+import { ArrowLeft, ChevronRight, House, LogOut, PanelsTopLeft, Search, UserRound } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { IconArt } from '@/components/ui/IconArt';
 import {
@@ -177,6 +177,16 @@ export function MenuSheet({
           <div aria-hidden className="sm:hidden" style={{ height: 'var(--safe-top)' }} />
 
           <div className="relative flex h-11 items-center justify-center">
+            {/* Back to the screen the menu was opened over. */}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Go back"
+              title="Go back"
+              className="absolute -left-1 flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.12] text-white transition-colors hover:bg-white/20 active:bg-white/25"
+            >
+              <ArrowLeft size={20} aria-hidden />
+            </button>
             <p className="text-title font-semibold">Menu</p>
           </div>
 
@@ -224,14 +234,10 @@ export function MenuSheet({
             />
           </div>
 
-          <div className="mt-3 grid grid-cols-3 gap-2.5">
+          <div className="mt-3 grid grid-cols-2 gap-2.5">
             <Link to={`${root}/profile`} onClick={onClose} className={tile}>
               <UserRound size={20} strokeWidth={1.8} aria-hidden />
               Profile
-            </Link>
-            <Link to={`${root}/all`} onClick={onClose} className={tile}>
-              <LayoutGrid size={20} strokeWidth={1.8} aria-hidden />
-              All actions
             </Link>
             {onChooseHome ? (
               <button

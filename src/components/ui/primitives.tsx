@@ -1,5 +1,6 @@
 import {
   forwardRef,
+  useContext,
   useId,
   useState,
   type ButtonHTMLAttributes,
@@ -15,6 +16,7 @@ import { initials as makeInitials } from '@/lib/format';
 import { Hint } from './Hint';
 import { DateField, TimeField } from './DateField';
 import { IconArt } from './IconArt';
+import { StripIndex } from './CardStrip';
 
 /* Button */
 
@@ -704,36 +706,83 @@ export function ProgressBar({
 
 /* Stat tile */
 
-/**
- * A figure card in the app's own colour.
- *
- * The card is filled with the theme's deep shade (`--hero`, the same colour
- * as the page header), worked out from whatever colour the organisation
- * picked, so it is always dark enough for white figures in light and dark
- * mode alike. Behind the figure sit the AfterBI bars, the product's
- * signature, faint enough never to compete with the number.
+/*
+ * One of the owner's Primary artworks in a figure card's bottom right corner,
+ * mostly off the card, so only part of it shows as it turns. Each place in a
+ * strip has its own shape and colours, chosen to sit well on that ground:
+ * soft blue daisy on the theme colour, blue bloom on night, soft blue
+ * pinwheel on orange, pink twist on violet, gold spark on teal.
  */
-function TileBars() {
+function CardArt({ index }: { index: number }) {
+  const n = index % 5;
+  const shape = (() => {
+    switch (n) {
+      case 1:
+        return (
+          <>
+            {[0, 90, 180, 270].map((r) => (
+              <ellipse key={r} cx="50" cy="27" rx="18" ry="25" transform={`rotate(${r} 50 50)`} fill="#0866F5" />
+            ))}
+            <circle cx="50" cy="50" r="9" fill="#FFBE45" />
+          </>
+        );
+      case 2:
+        return (
+          <>
+            {[0, 90, 180, 270].map((r) => (
+              <path key={r} d="M50 50 L50 8 Q85 9 83 42 Z" transform={`rotate(${r} 50 50)`} fill="#7C9CFF" />
+            ))}
+          </>
+        );
+      case 3:
+        return (
+          <>
+            {[0, 90, 180, 270].map((r) => (
+              <path key={r} d="M50 50 Q25 20 50 10 Q75 20 50 50 Z" transform={`rotate(${r} 50 50)`} fill="#FF78A8" />
+            ))}
+            <circle cx="50" cy="50" r="7" fill="#FFBE45" />
+          </>
+        );
+      case 4:
+        return (
+          <path
+            fillRule="evenodd"
+            fill="#FFBE45"
+            d="M50 6 L61 38 L94 50 L61 61 L50 94 L39 61 L6 50 L39 38 Z M59 50 A9 9 0 1 0 41 50 A9 9 0 1 0 59 50 Z"
+          />
+        );
+      default:
+        return (
+          <>
+            {[0, 60, 120, 180, 240, 300].map((r) => (
+              <ellipse key={r} cx="50" cy="28" rx="13" ry="23" transform={`rotate(${r} 50 50)`} fill="#7C9CFF" />
+            ))}
+            <circle cx="50" cy="50" r="10" fill="#FFBE45" />
+          </>
+        );
+    }
+  })();
   return (
     <svg
-      viewBox="0 0 32 32"
-      width="104"
-      height="104"
-      fill="currentColor"
+      viewBox="0 0 100 100"
       aria-hidden
-      focusable="false"
-      /* Sized and placed here as well as in index.css, so the bars can never
-         spread across the card while the stylesheet is still loading or out of date. */
-      className="ab-stat-bars pointer-events-none absolute -bottom-6 -right-2 -z-10 h-[6.5rem] w-[6.5rem] -rotate-6 text-white opacity-10"
+      className={cn(
+        'ab-card-art pointer-events-none absolute -bottom-16 -right-12 -z-10 h-32 w-32 lg:-bottom-20 lg:-right-16 lg:h-40 lg:w-40',
+        n % 2 === 1 && 'ab-card-art-back',
+      )}
     >
-      <rect x="2" y="18" width="5.5" height="12" rx="2" />
-      <rect x="10" y="13" width="5.5" height="17" rx="2" />
-      <rect x="18" y="8" width="5.5" height="22" rx="2" />
-      <rect x="26" y="2" width="4" height="28" rx="2" opacity="0.5" />
+      {shape}
     </svg>
   );
 }
 
+/**
+ * A figure card, drawn like the home screen's old banners: a rich ground
+ * (set by its place in a CardStrip, see `.ab-strip-slot` in index.css), the
+ * owner's petals turning slowly in the corner, the label and an icon chip on
+ * top, the figure large, a line of context under it. Put a page's figures in
+ * a CardStrip so they swipe rather than squeeze.
+ */
 export function StatTile({
   label,
   value,
@@ -751,9 +800,10 @@ export function StatTile({
   tone?: 'brand' | 'gold' | 'good' | 'warning' | 'critical' | 'info';
   className?: string;
 }) {
-  /* On the coloured card the tone is a small lamp on the icon, not a fill. */
+  /* The card's ground and artwork come from its place in a CardStrip; the tone is a small lamp on the icon. */
+  const place = useContext(StripIndex);
   const lamp = {
-    brand: 'bg-white/70',
+    brand: '',
     gold: 'bg-[#f5c518]',
     good: 'bg-[#5fdc7a]',
     warning: 'bg-[#fab219]',
@@ -762,37 +812,40 @@ export function StatTile({
   };
 
   return (
-    <div className={cn('ab-stat relative isolate overflow-hidden rounded-2xl p-4 text-white sm:p-5', className)} style={{ backgroundColor: 'var(--hero)' }}>
-      <TileBars />
+    <article
+      className={cn(
+        'ab-banner relative isolate flex min-h-[150px] w-full flex-col overflow-hidden rounded-[22px] p-4 text-white shadow-card transition-transform duration-300 hover:-translate-y-0.5 lg:min-h-[168px] lg:p-5',
+        className,
+      )}
+    >
+      <CardArt index={place} />
       <div className="flex items-start justify-between gap-3">
-        <p className="text-micro font-semibold uppercase tracking-[0.08em] text-white/75">{label}</p>
+        <p className="min-w-0 pt-1 text-label font-semibold leading-snug text-white/85">{label}</p>
         {icon && (
-          <span className="relative shrink-0">
-            <IconArt variant="glass" id={label} size={40}>
-              {icon}
-            </IconArt>
-            {tone !== 'brand' && <span aria-hidden className={cn('absolute right-0 top-0 h-2.5 w-2.5 rounded-full ring-2 ring-[var(--hero)]', lamp[tone])} />}
+          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/15 [&_svg]:h-[18px] [&_svg]:w-[18px]" aria-hidden>
+            {icon}
+            {tone !== 'brand' && <span className={cn('absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white/25', lamp[tone])} />}
           </span>
         )}
       </div>
-      <p className="tabular mt-3 font-display text-headline font-bold leading-none text-white sm:text-display">{value}</p>
+      <p className="tabular mt-2 pr-6 font-display text-headline font-bold leading-none tracking-[-0.02em] sm:text-display">{value}</p>
       {(hint || delta !== undefined) && (
-        <div className="mt-2.5 flex items-center gap-2">
+        <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-2">
           {delta !== undefined && (
             <span
               className={cn(
-                'inline-flex items-center gap-0.5 rounded-full bg-white/12 px-1.5 py-0.5 text-caption font-semibold tabular',
-                delta >= 0 ? 'text-[#8af0a0]' : 'text-[#ffb0b0]',
+                'inline-flex items-center gap-0.5 rounded-full bg-white/15 px-1.5 py-0.5 text-caption font-semibold tabular',
+                delta >= 0 ? 'text-[#a7f3b8]' : 'text-[#ffc2c2]',
               )}
             >
               <span aria-hidden="true">{delta >= 0 ? '▲' : '▼'}</span>
               {Math.abs(delta)}%
             </span>
           )}
-          {hint && <span className="text-caption text-white/70">{hint}</span>}
+          {hint && <span className="line-clamp-2 max-w-[78%] text-label leading-snug text-white/80">{hint}</span>}
         </div>
       )}
-    </div>
+    </article>
   );
 }
 

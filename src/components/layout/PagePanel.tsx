@@ -14,6 +14,8 @@ import { BrandBars } from '@/components/home/HomeArt';
 import { cn } from '@/lib/cn';
 import { Hint } from '@/components/ui/Hint';
 import { usePageHeading } from './PageHeading';
+import { useAuth } from '@/context/AuthContext';
+import { PORTAL_ROOT } from '@/lib/tiles';
 
 /**
  * What a page is for, behind an (i) beside its title.
@@ -47,6 +49,13 @@ export function PagePanel({
 }) {
   const { setPanel } = usePageHeading();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  /* Back to the screen before; opened straight from a link (nothing before it in this app), back to home instead. */
+  const goBack = () => {
+    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+    if (idx > 0) navigate(-1);
+    else navigate(user ? PORTAL_ROOT[user.role] : '/', { replace: true });
+  };
 
   useLayoutEffect(() => {
     setPanel(true);
@@ -66,11 +75,11 @@ export function PagePanel({
         <div className="relative flex h-11 items-center justify-center lg:hidden">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={goBack}
             aria-label="Go back"
-            className="tap absolute -left-1 flex items-center justify-center rounded-full text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+            className="absolute -left-1 flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.12] text-white transition-colors hover:bg-white/20 active:bg-white/25"
           >
-            <ArrowLeft size={21} aria-hidden />
+            <ArrowLeft size={20} aria-hidden />
           </button>
           <div className="flex max-w-[72%] items-center gap-1.5">
             <h1 className="truncate text-title font-bold">{title}</h1>
@@ -87,6 +96,15 @@ export function PagePanel({
         */}
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-x-6">
           <div className="hidden min-w-0 items-center gap-2.5 lg:flex">
+            <button
+              type="button"
+              onClick={goBack}
+              aria-label="Go back"
+              title="Go back"
+              className="mr-1.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/[0.12] text-white ring-1 ring-inset ring-white/15 transition-colors hover:bg-white/20 active:bg-white/25"
+            >
+              <ArrowLeft size={20} aria-hidden />
+            </button>
             <h1 className="truncate font-display text-display font-extrabold leading-tight tracking-[-0.03em]">{title}</h1>
             {description && <About title={title} text={description} />}
           </div>

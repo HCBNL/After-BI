@@ -91,12 +91,12 @@ export function QuickDial({ homeChooser = true }: { homeChooser?: boolean }) {
         <div
           aria-hidden
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-[55] bg-black/25 backdrop-blur-[2px] animate-fade-in"
+          className="fixed inset-0 z-[44] bg-black/25 backdrop-blur-[2px] animate-fade-in"
         />
       )}
 
       <div
-        className="fixed bottom-[calc(var(--bottom-bar-h)+var(--safe-bottom)+1rem)] right-4 z-[56] flex flex-col items-end gap-3 lg:bottom-7 lg:right-7"
+        className="fixed bottom-[calc(var(--bottom-bar-h)+var(--safe-bottom)+1rem)] right-4 z-[45] flex flex-col items-end gap-3 lg:bottom-7 lg:right-7"
         data-dial
       >
         {open && (

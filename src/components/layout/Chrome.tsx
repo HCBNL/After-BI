@@ -157,7 +157,7 @@ export function Chrome({
               'pb-bottom-bar',
               (atHome || panel) && '@container',
             )}>
-            <div className="mx-auto max-w-[1400px]">
+            <div className="ab-page mx-auto max-w-[1400px]">
               <Gate>
                 <ErrorBoundary resetOn={location.pathname} home={root}>
                   {/*

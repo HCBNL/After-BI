@@ -6,7 +6,7 @@
  * that can be swiped, with no instruction needed. It is how every banking app
  * in the country presents its banners, so the gesture is already learned.
  *
- * Built on CSS scroll-snap, like `HomeKpis` and `Carousel`: the browser does
+ * Built on CSS scroll-snap: the browser does
  * the movement on the compositor, and the only script is a scroll listener,
  * throttled to a frame, that lights the right dot.
  *

@@ -153,11 +153,11 @@ export function DeskHero({
   const today = useMemo(todayLine, []);
 
   return (
-    <section className={cn('ab-hero ab-desk relative isolate overflow-hidden pb-[4.75rem]', className)}>
+    <section className={cn('ab-hero ab-desk relative isolate overflow-hidden', className)}>
       <BrandBars className="pointer-events-none absolute -right-20 -top-16 -z-10 h-[28rem] w-[28rem] text-white/[0.045]" />
       <BrandBars className="pointer-events-none absolute -bottom-24 left-[42%] -z-10 h-64 w-64 text-white/[0.03]" />
 
-      <div className="mx-auto max-w-[1440px] px-5 pt-6">
+      <div className="px-5 pt-6">
         <div className="flex items-center justify-between gap-4">
           <p className="text-body font-medium text-white/65">{today}</p>
         </div>
@@ -185,7 +185,7 @@ export function DeskHero({
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-9 rounded-t-[36px] surface-page shadow-[0_-16px_36px_-18px_rgba(0,0,0,0.5)]"
+        className="ab-desk-sheet pointer-events-none absolute inset-x-0 bottom-0 surface-page shadow-[0_-16px_36px_-18px_rgba(0,0,0,0.5)]"
       />
     </section>
   );
