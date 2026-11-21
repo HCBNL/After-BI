@@ -148,3 +148,30 @@ export async function listAudit(area?: AuditArea, after?: QueryDocumentSnapshot 
   });
   return { entries, next: snap.docs.length === AUDIT_PAGE ? snap.docs[snap.docs.length - 1] : null };
 }
+
+/**
+ * The signed in person's own last few lines, newest first: the home screen's
+ * "Recent activity". Anyone may read the lines they wrote themselves.
+ */
+export async function listMyAudit(uid: string, count = 5): Promise<AuditEntry[]> {
+  const org = getActiveOrg();
+  if (!org || !uid) return [];
+  const snap = await getDocs(query(logCol(org), where('by', '==', uid), orderBy('at', 'desc'), limit(count)));
+  return snap.docs.map((d) => {
+    const v = d.data({ serverTimestamps: 'estimate' });
+    return {
+      id: d.id,
+      at: v.at?.toDate?.().toISOString() ?? '',
+      by: String(v.by ?? ''),
+      byName: String(v.byName ?? ''),
+      byCode: v.byCode ? String(v.byCode) : undefined,
+      role: (v.role ?? '') as Role | '',
+      area: v.area as AuditArea,
+      action: String(v.action ?? ''),
+      summary: String(v.summary ?? ''),
+      ref: v.ref || undefined,
+      amount: typeof v.amount === 'number' ? v.amount : undefined,
+      reason: v.reason || undefined,
+    };
+  });
+}

@@ -606,8 +606,9 @@ export async function createOrder(input: {
  */
   const status: OrderStatus = !input.submit ? 'draft' : approvers.length ? 'pending_approval' : 'approved';
 
+  const orderNumber = await nextMonthly('PI');
   const ref = await addDoc(collection(db, orgPath('orders')), {
-    orderNumber: await nextMonthly('PI'),
+    orderNumber,
     distributorId: input.distributor.id,
     distributorName: input.distributor.company,
     lines,
@@ -628,6 +629,16 @@ export async function createOrder(input: {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+
+  if (status !== 'draft') {
+    logAudit({
+      area: 'sales',
+      action: 'order.raised',
+      summary: `Raised order ${orderNumber} for ${input.distributor.company}`,
+      ref: orderNumber,
+      amount: total,
+    });
+  }
 
   return ref.id;
 }
@@ -1292,6 +1303,14 @@ export async function recordPayment(input: {
       updatedAt: serverTimestamp(),
     });
   });
+
+  logAudit({
+    area: 'finance',
+    action: 'payment.recorded',
+    summary: `Recorded payment on ${input.invoice.invoiceNumber}`,
+    ref: input.invoice.invoiceNumber,
+    amount: input.amount,
+  });
 }
 
 /* credit notes */
@@ -1808,6 +1827,20 @@ export async function submitOrder(
     updatedAt: serverTimestamp(),
   });
 
+  void getDoc(ref)
+    .then((snap) => {
+      const order = snap.data() as Order | undefined;
+      if (!order) return;
+      logAudit({
+        area: 'sales',
+        action: 'order.raised',
+        summary: `Raised order ${order.orderNumber} for ${order.distributorName}`,
+        ref: order.orderNumber,
+        amount: order.total,
+      });
+    })
+    .catch(() => undefined);
+
   return status;
 }
 
@@ -2149,8 +2182,9 @@ export async function createInvoice(input: {
   due.setDate(due.getDate() + (input.distributor.paymentTermsDays ?? 30));
   const dueOn = input.dueOn ?? todayISO(due);
 
+  const invoiceNumber = await nextNumber('INV');
   const ref = await addDoc(collection(db, orgPath('invoices')), {
-    invoiceNumber: await nextNumber('INV'),
+    invoiceNumber,
     orderId: input.order?.id ?? null,
     orderNumber: input.order?.orderNumber ?? null,
     distributorId: input.distributor.id,
@@ -2175,6 +2209,16 @@ export async function createInvoice(input: {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+
+  if (input.issue !== false) {
+    logAudit({
+      area: 'finance',
+      action: 'invoice.issued',
+      summary: `Issued invoice ${invoiceNumber} to ${input.distributor.company}`,
+      ref: invoiceNumber,
+      amount: total,
+    });
+  }
 
   return ref.id;
 }

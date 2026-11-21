@@ -43,7 +43,20 @@ const lockDoc = (uid: string) => doc(db, 'users', uid, 'private', 'lock');
 
 /** Refresh the device copy from Firestore. Offline, the device copy stands. */
 export async function syncLock(uid: string): Promise<LocalLock> {
+  return (await syncLockState(uid)).local;
+}
+
+/** As syncLock, and whether the server answered (so "no PIN" is known, not a guess made offline). */
+export async function syncLockState(uid: string): Promise<{ local: LocalLock; known: boolean }> {
   try {
+    return { local: await pull(uid), known: true };
+  } catch {
+    return { local: readLocal(uid), known: false };
+  }
+}
+
+async function pull(uid: string): Promise<LocalLock> {
+  {
     const snap = await getDoc(lockDoc(uid));
     if (!snap.exists()) {
       const local = readLocal(uid);
@@ -58,8 +71,6 @@ export async function syncLock(uid: string): Promise<LocalLock> {
       salt: data.salt,
       minutes: data.minutes ?? DEFAULT_MINUTES,
     });
-  } catch {
-    return readLocal(uid);
   }
 }
 

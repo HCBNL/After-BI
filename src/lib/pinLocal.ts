@@ -117,3 +117,18 @@ export function shouldLock(local: LocalLock, now = Date.now()): boolean {
   if (!local.last) return false;
   return now - local.last >= (local.minutes || DEFAULT_MINUTES) * 60_000;
 }
+
+/* ------------------------------------------------- opening vs signing in */
+
+/*
+ * The PIN is asked every time the app opens. The one exception is the moment
+ * right after typing the password on this page load: that already proved who
+ * this is. A module flag (not storage), so a reload counts as opening again.
+ */
+let freshSignIn = false;
+export function markFreshSignIn(): void {
+  freshSignIn = true;
+}
+export function isFreshSignIn(): boolean {
+  return freshSignIn;
+}
