@@ -1,3 +1,5 @@
+import { publicOrigin } from './hosts';
+
 /**
  * A digital business card, carried entirely in its link: for AfterBI's own
  * staff, and for the staff of every organisation on AfterBI (then `company`,
@@ -73,7 +75,7 @@ export function readCardHash(hash: string): BusinessCard | null {
 }
 
 /** A vCard, so "Save contact" puts them straight into the phone's contacts. */
-export function vcard(card: BusinessCard): string {
+export function vcard(card: BusinessCard, photoBase64 = ''): string {
   const [first, ...rest] = card.name.split(/\s+/);
   return [
     'BEGIN:VCARD',
@@ -86,6 +88,7 @@ export function vcard(card: BusinessCard): string {
     card.email && `EMAIL:${card.email}`,
     card.location && `ADR;TYPE=WORK:;;${card.location};;;;`,
     card.company ? card.website && `URL:https://${card.website.replace(/^https?:\/\//, '')}` : 'URL:https://afterbi.com',
+    photoBase64 && fold(`PHOTO;ENCODING=b;TYPE=JPEG:${photoBase64}`),
     'END:VCARD',
   ]
     .filter(Boolean)
@@ -111,5 +114,58 @@ export function whatsappNumber(raw: string | undefined | null): string | null {
 export function whatsappLink(phone: string | null, message: string): string {
   const text = encodeURIComponent(message);
   return phone ? `https://wa.me/${phone}?text=${text}` : `https://wa.me/?text=${text}`;
-}import { publicOrigin } from './hosts';
+}
 
+
+
+/* A vCard line may be no longer than 75 characters; longer ones carry on after a space. */
+function fold(line: string): string {
+  const out: string[] = [];
+  for (let i = 0; i < line.length; i += 74) out.push((i ? ' ' : '') + line.slice(i, i + 74));
+  return out.join('\r\n');
+}
+
+/**
+ * The holder's picture as a small square JPEG, base64, for the vCard, so the
+ * contact lands in the phone with their face. Cloudinary crops it on the face;
+ * anything else is redrawn on a canvas. Empty when it cannot be had.
+ */
+export async function photoForVcard(url?: string): Promise<string> {
+  if (!url || !/^https:\/\//.test(url)) return '';
+  try {
+    const src = url.includes('/upload/') ? url.replace('/upload/', '/upload/f_jpg,q_82,w_400,h_400,c_fill,g_face/') : url;
+    const blob = await (await fetch(src, { mode: 'cors' })).blob();
+    let jpeg = blob;
+    if (blob.type !== 'image/jpeg') {
+      const bitmap = await createImageBitmap(blob);
+      const side = Math.min(bitmap.width, bitmap.height);
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = Math.min(400, side);
+      canvas.getContext('2d')?.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, canvas.width, canvas.height);
+      jpeg = await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('photo'))), 'image/jpeg', 0.85));
+    }
+    const data: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('photo'));
+      reader.readAsDataURL(jpeg);
+    });
+    return data.split(',')[1] ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/** Saves the contact, with the picture when there is one. */
+export async function saveContact(card: BusinessCard): Promise<void> {
+  const photo = await photoForVcard(card.photo);
+  const blob = new Blob([vcard(card, photo)], { type: 'text/vcard' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${card.name.replace(/[^a-z0-9]+/gi, '_')}.vcf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+}

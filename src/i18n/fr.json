@@ -4890,5 +4890,15 @@
 "Company side": "Côté entreprise",
 "Your side": "Votre côté",
 "The card is not ready yet.": "La carte n’est pas encore prête.",
-"They sign in at app.afterbi.com and download their ID card from My ID card.": "Ils se connectent sur app.afterbi.com et téléchargent leur badge depuis Mon badge."
+"They sign in at app.afterbi.com and download their ID card from My ID card.": "Ils se connectent sur app.afterbi.com et téléchargent leur badge depuis Mon badge.",
+"Staff number": "Numéro de matricule",
+"This person is no longer a member of staff of {0}. Do not deal with them on the company's behalf.": "Cette personne ne fait plus partie du personnel de {0}. Ne traitez pas avec elle au nom de l’entreprise.",
+"Verified": "Vérifié",
+"Full screen": "Plein écran",
+"Full screen (Ctrl Shift F)": "Plein écran (Ctrl Maj F)",
+"Leave full screen": "Quitter le plein écran",
+"Leave full screen (Ctrl Shift F)": "Quitter le plein écran (Ctrl Maj F)",
+"Paper": "Papier",
+"Show": "Afficher",
+"Your card under {0}’s name and logo. Scanning its code opens your contact with your photo, ready to save. Print it at 85 × 55 mm, the standard card size.": "Votre carte au nom et au logo de {0}. Scanner son code ouvre votre contact avec votre photo, prêt à être enregistré. Imprimez‑la au format standard 85 × 55 mm."
 }

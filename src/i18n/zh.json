@@ -4890,5 +4890,15 @@
 "Company side": "公司面",
 "Your side": "个人面",
 "The card is not ready yet.": "卡片尚未准备好。",
-"They sign in at app.afterbi.com and download their ID card from My ID card.": "他们在 app.afterbi.com 登录，并在“我的工牌”中下载工牌。"
+"They sign in at app.afterbi.com and download their ID card from My ID card.": "他们在 app.afterbi.com 登录，并在“我的工牌”中下载工牌。",
+"Staff number": "员工编号",
+"This person is no longer a member of staff of {0}. Do not deal with them on the company's behalf.": "此人已不再是{0}的员工。请勿以公司名义与其往来。",
+"Verified": "已认证",
+"Full screen": "全屏",
+"Full screen (Ctrl Shift F)": "全屏（Ctrl Shift F）",
+"Leave full screen": "退出全屏",
+"Leave full screen (Ctrl Shift F)": "退出全屏（Ctrl Shift F）",
+"Paper": "纸张",
+"Show": "显示",
+"Your card under {0}’s name and logo. Scanning its code opens your contact with your photo, ready to save. Print it at 85 × 55 mm, the standard card size.": "以{0}的名称和标志制作的名片。扫描二维码即可打开带有您照片的联系人，并可直接保存。按 85 × 55 毫米的标准名片尺寸打印。"
 }

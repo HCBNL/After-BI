@@ -19,6 +19,10 @@ export interface IdCardRecord {
   position: string;
   company: string;
   logo?: string;
+  /** The holder's profile picture (https), shown when the card is scanned and saved with the contact. */
+  photo?: string;
+  /** The company's colour, #rrggbb, so the scanned card wears it. */
+  color?: string;
   phone?: string;
   email?: string;
   website?: string;
@@ -32,11 +36,18 @@ export function idVerifyUrl(uid: string): string {
   return `${publicOrigin()}/verify/id/${encodeURIComponent(uid)}`;
 }
 
+/** The business card's short link: the same public record, shown as a contact card. */
+export function businessCardUrl(uid: string): string {
+  return `${publicOrigin()}/card/${encodeURIComponent(uid)}`;
+}
+
 /** Written by the card holder whenever they make or save their card. */
 export async function publishIdCard(record: Omit<IdCardRecord, 'active' | 'updatedAt'>): Promise<void> {
   await setDoc(doc(db, 'idCards', record.uid), {
     ...record,
     logo: record.logo ?? '',
+    photo: /^https:\/\//.test(record.photo ?? '') ? record.photo : '',
+    color: /^#[0-9a-f]{6}$/i.test(record.color ?? '') ? record.color : '',
     phone: record.phone ?? '',
     email: record.email ?? '',
     website: record.website ?? '',
@@ -58,7 +69,13 @@ export async function setIdCardActive(uid: string, active: boolean): Promise<voi
 export async function readIdCard(uid: string): Promise<IdCardRecord | null> {
   try {
     const data = await restGet(`idCards/${encodeURIComponent(uid)}`);
-    return data ? (data as unknown as IdCardRecord) : null;
+    if (!data) return null;
+    const card = data as unknown as IdCardRecord;
+    /* Only https pictures and a plain hex colour are ever drawn. */
+    if (card.photo && !/^https:\/\//.test(card.photo)) card.photo = '';
+    if (card.logo && !/^https:\/\//.test(card.logo)) card.logo = '';
+    if (card.color && !/^#[0-9a-f]{6}$/i.test(card.color)) card.color = '';
+    return card;
   } catch {
     return null;
   }

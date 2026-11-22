@@ -2,9 +2,9 @@
  * A bank account as a picture, drawn straight onto a canvas.
  *
  * The same plain design for every company: black, white type, the account
- * number large. It does not depend on the screen, the theme or the bank's
- * logo loading, so it comes out the same for one company or fifty thousand,
- * on any phone, and reads clearly when forwarded or printed.
+ * number large, and the bank's logo on a white pill. If the logo cannot load,
+ * the bank's initials on its colour stand in, so it still comes out the same
+ * on any phone and reads clearly when forwarded or printed.
  */
 
 export interface BankImageDetails {
@@ -14,6 +14,45 @@ export interface BankImageDetails {
   accountName: string;
   /** A number to call to confirm the account. Optional. */
   phone?: string;
+  /** The bank's logo, drawn on a white tile beside its name. */
+  logoUrl?: string;
+  /** The bank's colour, for the initials tile when there is no logo. */
+  color?: string;
+}
+
+/** Loads a picture for the canvas without tainting it; null when it cannot. */
+async function loadLogo(url?: string): Promise<CanvasImageSource | null> {
+  if (!url) return null;
+  try {
+    const blob = await (await fetch(url, { mode: 'cors' })).blob();
+    if ('createImageBitmap' in window) {
+      try {
+        return await createImageBitmap(blob);
+      } catch {
+        /* an SVG: fall through to an <img> */
+      }
+    }
+    const src = URL.createObjectURL(blob);
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error('logo'));
+      img.src = src;
+    });
+    return img;
+  } catch {
+    return null;
+  }
+}
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 
 const W = 1600;
@@ -66,15 +105,43 @@ export async function bankImage(d: BankImageDetails): Promise<Blob> {
     ctx.fillText(text, PAD, y);
   };
 
-  /* the bank, top left; the company, top right */
+  /* the bank on a white pill, logo and name, top left; the company, top right */
+  const logo = await loadLogo(d.logoUrl);
+  const pillH = 112;
+  const tile = 84;
+  const tx = PAD + 14;
+  const ty = PAD - 20 + (pillH - tile) / 2;
+  fit(ctx, d.bankName.toUpperCase(), 800, 40, family, max * 0.42);
+  const nameW = ctx.measureText(d.bankName.toUpperCase()).width;
+  const nameFont = ctx.font;
   ctx.fillStyle = '#FFFFFF';
-  fit(ctx, d.bankName, 800, 56, family, max * 0.6);
-  ctx.fillText(d.bankName, PAD, PAD + 44);
+  roundRect(ctx, PAD, PAD - 20, 14 + tile + 26 + nameW + 36, pillH, 32);
+  ctx.fill();
+  if (logo) {
+    const lw = (logo as { width: number }).width || tile;
+    const lh = (logo as { height: number }).height || tile;
+    const k = Math.min((tile - 8) / lw, (tile - 8) / lh);
+    ctx.drawImage(logo, tx + (tile - lw * k) / 2, ty + (tile - lh * k) / 2, lw * k, lh * k);
+  } else {
+    ctx.fillStyle = d.color || '#0f1f36';
+    roundRect(ctx, tx, ty, tile, tile, 22);
+    ctx.fill();
+    const initials = d.bankName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `800 36px ${family}`;
+    ctx.textAlign = 'center';
+    ctx.fillText(initials, tx + tile / 2, ty + tile / 2 + 13);
+    ctx.textAlign = 'left';
+  }
+  ctx.fillStyle = '#0A0A0B';
+  ctx.font = nameFont;
+  ctx.fillText(d.bankName.toUpperCase(), tx + tile + 26, PAD - 20 + pillH / 2 + 14);
+
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
   const co = d.company;
   fit(ctx, co, 600, 30, family, max * 0.38);
   ctx.textAlign = 'right';
-  ctx.fillText(co, W - PAD, PAD + 36);
+  ctx.fillText(co, W - PAD, PAD + 46);
   ctx.textAlign = 'left';
 
   /* the number, large */

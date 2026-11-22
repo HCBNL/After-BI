@@ -94,7 +94,8 @@ export const ACCENTS: { id: Preset; label: string; swatch: string }[] = [
   { id: 'green', label: 'Green', swatch: '#12BF6A' },
 ];
 
-const ACCENT_KEY = 'afterbi.accent';
+/* v2: every device starts on blue once, whatever it held under the old key; a colour picked after that sticks. */
+const ACCENT_KEY = 'afterbi.accent.v2';
 const HEX = /^#[0-9a-f]{6}$/i;
 
 export function isPreset(accent: Accent): accent is Preset {
@@ -104,13 +105,13 @@ export function isPreset(accent: Accent): accent is Preset {
 export function getStoredAccent(): Accent {
   try {
     const stored = localStorage.getItem(ACCENT_KEY) ?? '';
-    /* A device that had chosen the old orange or yellow falls back to the default green. */
-    if (stored === 'blue' || stored === 'red') return stored;
+    /* Blue is the default; a device that had chosen the old orange or yellow falls back to it. */
+    if (stored === 'blue' || stored === 'red' || stored === 'green') return stored;
     if (HEX.test(stored)) return stored.toLowerCase() as Accent;
   } catch {
     /* blocked storage: the default */
   }
-  return 'green';
+  return 'blue';
 }
 
 /* A custom colour becomes the same five variables a preset sets in index.css. */
