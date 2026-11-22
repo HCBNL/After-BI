@@ -3,7 +3,7 @@
  * share as a link or print.
  *
  * The details live in the link (`/card#…`), so nothing about the card is
- * stored: share it, send it on WhatsApp, or let someone scan the code.
+ * stored: share the short link, or let someone scan the code.
  *
  * WHY THE CARD IS LANDSCAPE
  *
@@ -24,11 +24,10 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Copy, Download, ExternalLink, MessageCircle, Share2 } from 'lucide-react';
+import { Copy, Loader2, Printer, Share2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Alert, Button, Card, SegmentedControl, Switch, useToast } from '@/components/ui';
-import { cardLink } from '@/lib/businessCard';
+import { Alert, Card, SegmentedControl, Switch, useToast } from '@/components/ui';
 import { imageAsDataUrl, imageUrl } from '@/lib/cloudinary';
 import { saveFile } from '@/lib/download';
 import { PORTAL_ROOT } from '@/lib/tiles';
@@ -36,18 +35,28 @@ import { type BusinessCardLayout } from '@/lib/businessCardPdf';
 import { BusinessCardFace, ScaledCard, cardColour, type CardCompany } from '@/components/cards/CardFaces';
 import { cardPdf } from '@/lib/cardExport';
 import { useOrgStaffDetails } from './OrgIdCard';
+import { businessCardUrl } from '@/lib/idCards';
 
 export default function OrgCard({ embedded = false }: { embedded?: boolean } = {}) {
   const toast = useToast();
-  const { user, details, card, orgName, settings } = useOrgStaffDetails();
+  const { user, details, orgName, settings, publish } = useOrgStaffDetails();
   const [qr, setQr] = useState('');
   const [layout, setLayout] = useState<BusinessCardLayout>('card');
   const [bleed, setBleed] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const link = useMemo(() => cardLink(card), [JSON.stringify(card)]); // eslint-disable-line react-hooks/exhaustive-deps
-  /* The QR carries no images: a code holding two URLs becomes too dense to scan. */
-  const qrLink = useMemo(() => cardLink({ ...card, logo: '', photo: '' }), [JSON.stringify(card)]); // eslint-disable-line react-hooks/exhaustive-deps
+  /*
+   * The QR and the shared link are short: /card/{uid}, read from the public
+   * record (lib/idCards.ts). So the code stays easy to scan on a printed card,
+   * and whoever scans it sees the current photograph, saved with the contact.
+   */
+  const link = useMemo(() => (user ? businessCardUrl(user.id) : ''), [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const qrLink = link;
+  /* Keep the public record current with the photo and details on this page. */
+  useEffect(() => {
+    void publish();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, user?.photoURL, settings?.brandColor, settings?.logoUrl]);
   const missing = !details.position.trim() || !details.phone.trim();
   const photo = user?.photoURL ? imageUrl(user.photoURL, { width: 160 }) : '';
   /*
@@ -107,7 +116,7 @@ export default function OrgCard({ embedded = false }: { embedded?: boolean } = {
     };
   }, [qrLink]);
 
-  const message = `Hello, I am ${details.fullName}${details.position ? `, ${details.position}` : ''} at ${orgName}. Here is my contact card: ${link}`;
+  const message = `${details.fullName}${details.position ? `, ${details.position}` : ''}, ${orgName}`;
 
   const copy = () =>
     void navigator.clipboard
@@ -117,7 +126,7 @@ export default function OrgCard({ embedded = false }: { embedded?: boolean } = {
 
   const share = async () => {
     if (navigator.share) {
-      await navigator.share({ title: `${details.fullName}, ${orgName}`, text: message, url: link }).catch(() => undefined);
+      await navigator.share({ title: message, url: link }).catch(() => undefined);
     } else copy();
   };
 
@@ -157,7 +166,7 @@ export default function OrgCard({ embedded = false }: { embedded?: boolean } = {
       {!embedded && (
         <PageHeader
           title="My business card"
-        description={`A contact card anyone can open on their phone, under ${orgName}’s name and logo, with buttons to call you, WhatsApp you or save your number. The details travel in the link, so nothing is stored. Download it to print at 85 × 55 mm, the standard card size.`}
+        description={`Your card under ${orgName}’s name and logo. Scanning its code opens your contact with your photo, ready to save. Print it at 85 × 55 mm, the standard card size.`}
         />
       )}
       {missing && user && (
@@ -179,23 +188,12 @@ export default function OrgCard({ embedded = false }: { embedded?: boolean } = {
         </Alert>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+      <div className="grid gap-5 lg:grid-cols-2">
         {/*
           The preview, drawn at 85 × 55 so it is honestly the shape of the
-          thing that gets printed. `aspect-[85/55]` rather than a height, so
-          it keeps that shape at every width.
+          thing that gets printed.
         */}
-        <div className="mx-auto w-full max-w-[30rem] space-y-3">
-          <div className="flex justify-center">
-            <SegmentedControl
-              value={face}
-              onChange={setFace}
-              options={[
-                { value: 'back', label: 'Your side' },
-                { value: 'front', label: 'Company side' },
-              ]}
-            />
-          </div>
+        <div className="mx-auto flex w-full max-w-[30rem] flex-col justify-center gap-3">
           <div ref={fitRef} className="w-full">
             <ScaledCard width={340} height={220} scale={scale}>
               <BusinessCardFace side={face} person={person} company={company} photo={photoData || photo} qr={qr} />
@@ -209,43 +207,37 @@ export default function OrgCard({ embedded = false }: { embedded?: boolean } = {
           </div>
         </div>
 
-        <div className="space-y-5">
-          <Card className="space-y-4">
-            <div className="flex flex-col items-center gap-2">
-              {qr ? <img src={qr} alt="QR code to your business card" className="h-40 w-40" /> : <div className="h-40 w-40 rounded bg-[var(--surface-sunken)]" />}
-              <p className="text-[12.5px] text-muted">Let them scan this with their phone camera.</p>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <Button icon={<Share2 size={16} />} onClick={() => void share()}>
-                Share
-              </Button>
-              <a
-                href={`https://wa.me/?text=${encodeURIComponent(message)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="tap inline-flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-[14.5px] font-bold text-white hover:brightness-95"
-              >
-                <MessageCircle size={17} aria-hidden /> Send on WhatsApp
-              </a>
-              <Button variant="outline" icon={<Copy size={16} />} onClick={copy}>
-                Copy link
-              </Button>
-              <a
-                href={link}
-                target="_blank"
-                rel="noreferrer"
-                className="tap inline-flex items-center justify-center gap-2 rounded-xl border border-hairline px-4 text-[14.5px] font-bold text-primary hover:bg-[var(--surface-sunken)]"
-              >
-                <ExternalLink size={16} aria-hidden /> Open my card
-              </a>
-            </div>
-          </Card>
-
-          <Card className="space-y-4">
-            <div>
+        <Card className="flex flex-col gap-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
               <h2 className="text-[15px] font-bold text-primary">Print it</h2>
               <p className="mt-1 text-[13px] text-secondary">Front and back, at the standard 85 × 55 mm.</p>
             </div>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <IconAction label="Copy link" onClick={copy}>
+                <Copy size={17} aria-hidden />
+              </IconAction>
+              <IconAction label="Share" onClick={() => void share()}>
+                <Share2 size={17} aria-hidden />
+              </IconAction>
+              <IconAction label="Download PDF" primary onClick={() => void download()} disabled={busy}>
+                {busy ? <Loader2 size={17} className="animate-spin" aria-hidden /> : <Printer size={17} aria-hidden />}
+              </IconAction>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">Show</p>
+            <SegmentedControl
+              value={face}
+              onChange={setFace}
+              options={[
+                { value: 'back', label: 'Your side' },
+                { value: 'front', label: 'Company side' },
+              ]}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-micro font-semibold uppercase tracking-[0.12em] text-muted">Paper</p>
             <SegmentedControl
               value={layout}
               onChange={setLayout}
@@ -254,20 +246,36 @@ export default function OrgCard({ embedded = false }: { embedded?: boolean } = {
                 { value: 'a4', label: 'On A4' },
               ]}
             />
-            {layout === 'card' && (
-              <Switch
-                checked={bleed}
-                onChange={setBleed}
-                label="Add 3 mm bleed"
-                description="For a commercial print shop. Leave this off for your own printer."
-              />
-            )}
-            <Button full icon={<Download size={16} />} loading={busy} onClick={() => void download()}>
-              Download PDF
-            </Button>
-          </Card>
-        </div>
+          </div>
+          {layout === 'card' && (
+            <Switch
+              checked={bleed}
+              onChange={setBleed}
+              label="Add 3 mm bleed"
+              description="For a commercial print shop. Leave this off for your own printer."
+            />
+          )}
+        </Card>
       </div>
     </>
+  );
+}
+
+function IconAction({ label, onClick, children, primary, disabled }: { label: string; onClick: () => void; children: React.ReactNode; primary?: boolean; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className={
+        primary
+          ? 'flex h-10 w-10 items-center justify-center rounded-full bg-brand-500 text-white transition-[filter] hover:brightness-110 disabled:opacity-60'
+          : 'flex h-10 w-10 items-center justify-center rounded-full border border-hairline text-primary transition-colors hover:bg-[var(--surface-sunken)]'
+      }
+    >
+      {children}
+    </button>
   );
 }

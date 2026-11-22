@@ -96,6 +96,8 @@ export function useOrgStaffDetails() {
       position: details.position.trim(),
       company: orgName,
       logo: settings?.logoUrl ?? '',
+      photo: user.photoURL ?? '',
+      color: settings?.brandColor ?? '',
       phone: details.phone.trim(),
       email: user.email ?? '',
       website: settings?.website ?? '',

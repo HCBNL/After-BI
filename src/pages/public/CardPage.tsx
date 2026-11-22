@@ -1,134 +1,76 @@
 /**
- * `/card#…`: a digital business card. An AfterBI staff member's, or (when the
- * link carries a company) a member of staff of an organisation on AfterBI,
- * shown under that organisation's name and logo.
+ * `/card/:uid` and `/card#…`: a digital business card.
  *
- * Public, light and self-contained: no Firebase, no shell. The details come
- * from the link itself (see `src/lib/businessCard.ts`).
+ * `/card/:uid` is what a printed card's QR and a shared link open now: one
+ * public read of `idCards/{uid}` (lib/idCards.ts), so the card shows the
+ * holder's current photograph, the company's colour and whether they are
+ * still staff. `/card#…` is the older link that carries every detail in the
+ * hash (lib/businessCard.ts); it still opens, in the same design.
  */
 
 import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Download, Globe, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
-import { Mark } from '@/components/brand/Wordmark';
+import { useParams } from 'react-router-dom';
 import { Seo } from '@/components/Seo';
-import { readCardHash, vcard, whatsappNumber } from '@/lib/businessCard';
+import { ContactMissing, ContactStage, PublicContact } from '@/components/cards/PublicContact';
+import { useAsync } from '@/hooks/useAsync';
+import { readCardHash } from '@/lib/businessCard';
+import { readIdCard } from '@/lib/idCards';
 import { COMPANY } from '@/lib/company';
 import { useBootDone } from '@/lib/boot';
 
 export default function CardPage() {
   useBootDone();
-  const card = useMemo(() => readCardHash(window.location.hash), []);
+  const { uid = '' } = useParams();
+  const fromHash = useMemo(() => (uid ? null : readCardHash(window.location.hash)), [uid]);
+  const record = useAsync(() => (uid ? readIdCard(uid) : Promise.resolve(null)), [uid], { handleError: true });
+  const data = record.data;
 
-  const saveContact = () => {
-    if (!card) return;
-    const blob = new Blob([vcard(card)], { type: 'text/vcard' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${card.name.replace(/[^a-z0-9]+/gi, '_')}.vcf`;
-    a.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 2000);
-  };
-
-  const wa = card ? whatsappNumber(card.phone) : null;
-  const initials = card ? card.name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() : '';
-  const row = 'flex items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-semibold text-[#111420] ring-1 ring-inset ring-black/10 transition-colors hover:bg-black/[0.03]';
+  if (uid) {
+    return (
+      <ContactStage color={data?.color}>
+        <Seo title={data?.name || 'Contact card'} description="Contact card." path={`/card/${uid}`} noindex />
+        {data ? (
+          <PublicContact
+            status={data.active ? 'verified' : 'inactive'}
+            name={data.name}
+            position={data.position}
+            company={data.company}
+            logo={data.logo}
+            photo={data.photo}
+            color={data.color}
+            location={data.location}
+            phone={data.phone}
+            email={data.email}
+            website={data.website}
+            staffNo={data.staffNo}
+          />
+        ) : (
+          <ContactMissing loading={record.loading} />
+        )}
+      </ContactStage>
+    );
+  }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#0f1f36] px-4 py-10">
-      <Seo title={card ? card.name : 'Contact card'} description="Contact card." path="/card" noindex />
-      {!card ? (
-        <div className="max-w-sm text-center text-white">
-          <Mark className="mx-auto h-12 w-12" />
-          <p className="mt-4 text-[15px] text-white/70">This card link is incomplete. Ask for it to be sent again.</p>
-          <Link to="/" className="mt-6 inline-block font-semibold text-white underline">
-            Visit afterbi.com
-          </Link>
-        </div>
+    <ContactStage>
+      <Seo title={fromHash ? fromHash.name : 'Contact card'} description="Contact card." path="/card" noindex />
+      {fromHash ? (
+        <PublicContact
+          status="plain"
+          name={fromHash.name}
+          position={fromHash.position}
+          company={fromHash.company || COMPANY.name}
+          logo={fromHash.logo}
+          photo={fromHash.photo}
+          location={fromHash.location}
+          phone={fromHash.phone}
+          email={fromHash.email}
+          website={fromHash.company ? fromHash.website : 'afterbi.com'}
+          staffNo={fromHash.staffNo}
+        />
       ) : (
-        <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-[0_40px_100px_-40px_rgba(238,106,0,0.5)]">
-          <div className="relative bg-[#0f1f36] px-6 pb-14 pt-6 text-white">
-            {card.company ? (
-              <div className="flex items-center gap-2.5">
-                {card.logo ? (
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1">
-                    <img src={card.logo} alt="" className="max-h-full max-w-full object-contain" />
-                  </span>
-                ) : null}
-                <span className="font-display text-[1.06rem] font-semibold leading-tight tracking-[-0.02em]">{card.company}</span>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center gap-2">
-                  <Mark className="h-8 w-8" />
-                  <span className="font-display text-[1.1rem] font-semibold tracking-[-0.04em]">AfterBI</span>
-                </div>
-                <p className="mt-1 text-[12px] text-white/55">The sales and distribution platform</p>
-              </>
-            )}
-            <div className="absolute inset-x-0 bottom-0 h-1 bg-[#ee6a00]" />
-          </div>
-          <div className="-mt-10 px-6 pb-6">
-            {/* The holder's photograph when the link carries one, their
-                initials when it does not. `readCardHash` has already thrown
-                away anything that is not an https URL. */}
-            <span className="relative z-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-[#ee6a00] font-display text-[1.51rem] font-semibold text-white ring-4 ring-white">
-              {card.photo ? <img src={card.photo} alt="" className="h-full w-full object-cover" /> : initials}
-            </span>
-            <h1 className="mt-4 font-display text-[1.34rem] font-semibold leading-tight tracking-[-0.03em] text-[#111420]">{card.name}</h1>
-            {card.position && <p className="mt-1 text-[14px] font-semibold text-[#ee6a00]">{card.position}</p>}
-            {card.location && (
-              <p className="mt-1 flex items-center gap-1.5 text-[13.5px] text-[#686e7e]">
-                <MapPin size={14} aria-hidden /> {card.location}
-              </p>
-            )}
-            {card.staffNo && (
-              <p className="mt-1 text-[12px] text-[#686e7e]">
-                {`Staff no. ${card.staffNo}, ${card.company || COMPANY.name}`}
-              </p>
-            )}
-
-            <div className="mt-5 grid gap-2">
-              {card.phone && (
-                <a href={`tel:${card.phone.replace(/\s/g, '')}`} className={row}>
-                  <Phone size={18} className="text-[#ee6a00]" aria-hidden /> {card.phone}
-                </a>
-              )}
-              {wa && (
-                <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className={row}>
-                  <MessageCircle size={18} className="text-[#25D366]" aria-hidden />
-                  WhatsApp
-                </a>
-              )}
-              {card.email && (
-                <a href={`mailto:${card.email}`} className={row}>
-                  <Mail size={18} className="text-[#ee6a00]" aria-hidden /> <span className="truncate">{card.email}</span>
-                </a>
-              )}
-              {card.company ? (
-                card.website && (
-                  <a href={`https://${card.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer" className={row}>
-                    <Globe size={18} className="text-[#ee6a00]" aria-hidden /> {card.website.replace(/^https?:\/\//, '')}
-                  </a>
-                )
-              ) : (
-                <a href="https://afterbi.com" className={row}>
-                  <Globe size={18} className="text-[#ee6a00]" aria-hidden /> afterbi.com
-                </a>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={saveContact}
-              className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#ee6a00] text-[14px] font-semibold text-white hover:bg-[#c95600]"
-            >
-              <Download size={17} aria-hidden /> Save contact
-            </button>
-          </div>
-        </div>
+        <ContactMissing loading={false} />
       )}
-    </div>
+    </ContactStage>
   );
 }

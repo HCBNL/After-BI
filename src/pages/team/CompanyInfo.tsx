@@ -97,10 +97,13 @@ export default function CompanyInfo() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Company info" description={`${name}'s account details and contacts. Tap anything to copy it.`} />
+      <PageHeader
+        title="Company info"
+        description={`${name} does not recognise payment into any other account, whoever asks. If someone sends different details, check here first.`}
+      />
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start">
-        <div className="min-w-0 space-y-5">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-5">
           {banks.length === 0 ? (
             <Card>
               <div className="flex items-start gap-3">
@@ -130,22 +133,17 @@ export default function CompanyInfo() {
           )}
 
           {banks.length > 0 && (
-            <section className="flex items-center gap-4 overflow-hidden rounded-[22px] border border-hairline surface-card p-4 shadow-card sm:p-5">
-              <SecurePaymentArt className="h-20 w-20 shrink-0 sm:h-24 sm:w-24" />
-              <div className="min-w-0">
-                <p className="flex items-center gap-1.5 text-body font-bold text-primary">
-                  <ShieldCheck size={16} className="shrink-0 text-brand-700 dark:text-brand-300" aria-hidden />
-                  Pay only into these accounts
-                </p>
-                <p className="mt-1 text-label leading-snug text-secondary">
-                  {`${name} does not recognise payment into any other account, whoever asks. If someone sends different details, check here first.`}
-                </p>
-              </div>
+            <section className="flex items-center gap-3.5 overflow-hidden rounded-[22px] border border-hairline surface-card px-4 py-3 shadow-card lg:flex-1 sm:px-5">
+              <SecurePaymentArt className="h-14 w-14 shrink-0" />
+              <p className="flex min-w-0 items-center gap-1.5 text-body font-bold text-primary">
+                <ShieldCheck size={16} className="shrink-0 text-brand-700 dark:text-brand-300" aria-hidden />
+                Pay only into these accounts
+              </p>
             </section>
           )}
         </div>
 
-        <section className="min-w-0 overflow-hidden rounded-[22px] border border-hairline surface-card shadow-card">
+        <section className="min-w-0 self-start overflow-hidden rounded-[22px] border border-hairline surface-card shadow-card lg:h-full lg:self-stretch">
           <div className="ab-banner relative isolate overflow-hidden p-5 text-white">
             <CardArt index={2} />
             <div className="flex min-w-0 items-center gap-3">
@@ -219,7 +217,7 @@ function BankCard({
   const download = async () => {
     setSaving(true);
     try {
-      const blob = await bankImage({ company, bankName, accountNumber: bank.accountNumber, accountName: bank.accountName, phone });
+      const blob = await bankImage({ company, bankName, accountNumber: bank.accountNumber, accountName: bank.accountName, phone, logoUrl: profile?.logoUrl || bank.logoUrl, color: profile?.color });
       await saveFile(`${company.replace(/[^a-z0-9]+/gi, '_')}_${bankName.replace(/[^a-z0-9]+/gi, '_')}.png`, blob);
     } catch (err) {
       toast.error('Could not make the image', err instanceof Error ? err.message : 'Try again.');

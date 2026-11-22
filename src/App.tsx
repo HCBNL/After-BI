@@ -292,6 +292,7 @@ export default function App() {
           <Route path="/solutions" element={<SolutionsPage />} />
           <Route path="/solutions/:slug" element={<SolutionPage />} />
           <Route path="/card" element={<CardPage />} />
+          <Route path="/card/:uid" element={<CardPage />} />
           <Route path="/terms" element={<LegalPage kind="terms" />} />
           <Route path="/privacy" element={<LegalPage kind="privacy" />} />
           <Route path="/verify/staff/:staffNo" element={<VerifyStaffPage />} />
