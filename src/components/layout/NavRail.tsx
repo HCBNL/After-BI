@@ -7,6 +7,8 @@ import {
   Home,
   LayoutGrid,
   LogOut,
+  Maximize,
+  Minimize,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
@@ -22,6 +24,7 @@ import { isActionLocked, useEntitlements } from '@/lib/plans';
 import { fullName } from '@/lib/roles';
 import { ROLE_LABEL, type Role, type UserProfile } from '@/types';
 import { useShell } from './ShellContext';
+import { useFullscreen } from '@/lib/fullscreen';
 import { useReminders } from '@/context/RemindersContext';
 
 /**
@@ -66,6 +69,7 @@ export function NavRail({
   const { fresh } = useReminders();
   const entitlements = useEntitlements();
   const [collapsed, setCollapsed] = useState(readCollapsed);
+  const full = useFullscreen();
   const location = useLocation();
 
   /* The logo is the home button. Already home: refresh it. */
@@ -113,18 +117,31 @@ export function NavRail({
     >
       {/* the top: pinned */}
       <div className="shrink-0 px-2.5 pt-3">
-        <div className={cn('flex h-11 items-center', collapsed ? 'justify-center' : 'justify-between pl-2')}>
+        <div className={cn('flex items-center', collapsed ? 'flex-col justify-center gap-1 py-1' : 'h-11 justify-between pl-2')}>
           {!collapsed && logo}
-          <button
-            type="button"
-            onClick={() => setCollapsed((c) => !c)}
-            aria-label={collapsed ? 'Show the menu labels' : 'Show icons only'}
-            aria-expanded={!collapsed}
-            title={collapsed ? 'Expand menu' : 'Collapse menu'}
-            className={ICON_BUTTON}
-          >
-            {collapsed ? <PanelLeftOpen size={18} aria-hidden /> : <PanelLeftClose size={18} aria-hidden />}
-          </button>
+          <div className={cn('flex items-center', collapsed ? 'flex-col gap-1' : 'gap-0.5')}>
+            {full.supported && (
+              <button
+                type="button"
+                onClick={full.toggle}
+                aria-label={full.on ? 'Leave full screen' : 'Full screen'}
+                title={full.on ? 'Leave full screen (Ctrl Shift F)' : 'Full screen (Ctrl Shift F)'}
+                className={ICON_BUTTON}
+              >
+                {full.on ? <Minimize size={17} aria-hidden /> : <Maximize size={17} aria-hidden />}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setCollapsed((c) => !c)}
+              aria-label={collapsed ? 'Show the menu labels' : 'Show icons only'}
+              aria-expanded={!collapsed}
+              title={collapsed ? 'Expand menu' : 'Collapse menu'}
+              className={ICON_BUTTON}
+            >
+              {collapsed ? <PanelLeftOpen size={18} aria-hidden /> : <PanelLeftClose size={18} aria-hidden />}
+            </button>
+          </div>
         </div>
 
         {collapsed ? (

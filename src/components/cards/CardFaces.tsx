@@ -45,7 +45,7 @@ export interface CardCompany {
 
 /* ------------------------------------------------------------- colour */
 
-function mix(hex: string, other: string, share: number): string {
+export function mix(hex: string, other: string, share: number): string {
   const a = hex.replace('#', '');
   const b = other.replace('#', '');
   const c = [0, 2, 4].map((i) => {
@@ -65,7 +65,7 @@ export function cardColour(hex?: string): string {
 /* --------------------------------------------------------- security art */
 
 /** Fine wavy lines across the whole card, like a banknote's ground. */
-function Guilloche({ w, h, color, opacity }: { w: number; h: number; color: string; opacity: number }) {
+export function Guilloche({ w, h, color, opacity }: { w: number; h: number; color: string; opacity: number }) {
   const lines: string[] = [];
   for (let i = -2; i < h / 7 + 2; i += 1) {
     let d = '';
@@ -122,7 +122,7 @@ function Microtext({ text, color, className }: { text: string; color: string; cl
 }
 
 /** The owner's six petal daisy (Primary artwork), for the corner of a card. */
-function Daisy({ size, petal, centre, opacity = 1, className }: { size: number; petal: string; centre: string; opacity?: number; className?: string }) {
+export function Daisy({ size, petal, centre, opacity = 1, className }: { size: number; petal: string; centre: string; opacity?: number; className?: string }) {
   return (
     <svg aria-hidden width={size} height={size} viewBox="0 0 100 100" className={className} style={{ opacity }}>
       {[0, 60, 120, 180, 240, 300].map((r) => (
