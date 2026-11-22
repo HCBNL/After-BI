@@ -288,7 +288,7 @@ service cloud.firestore {
         && request.resource.data.uid == uid
         && request.resource.data.orgId == profile().get('orgId', '')
         && request.resource.data.active == true
-        && request.resource.data.keys().hasOnly(['uid', 'orgId', 'name', 'position', 'company', 'logo', 'phone', 'email', 'website', 'location', 'staffNo', 'active', 'updatedAt']);
+        && request.resource.data.keys().hasOnly(['uid', 'orgId', 'name', 'position', 'company', 'logo', 'photo', 'color', 'phone', 'email', 'website', 'location', 'staffNo', 'active', 'updatedAt']);
       allow update: if admin(resource.data.orgId)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active', 'updatedAt']);
       allow delete: if request.auth.uid == uid || admin(resource.data.orgId);

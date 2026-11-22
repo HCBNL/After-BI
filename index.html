@@ -24,6 +24,13 @@
     -->
     <script>
       (function () {
+        /* The app installs from app.afterbi.com only. Installed from the website, it would open the app outside its own frame and show the address bar. */
+        var h = location.hostname;
+        if (h === 'afterbi.com' || h === 'www.afterbi.com') {
+          var m = document.querySelector('link[rel="manifest"]');
+          if (m) m.parentNode.removeChild(m);
+          return;
+        }
         try {
           if (localStorage.getItem('ab.appicon') !== 'blue') return;
           document.querySelector('link[rel="apple-touch-icon"]').href = '/appicon/blue-apple-180.png';

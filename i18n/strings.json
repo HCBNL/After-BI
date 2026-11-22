@@ -204,6 +204,7 @@
   "text": "AfterBI",
   "files": [
    "src/components/brand/Wordmark.tsx",
+   "src/components/cards/PublicContact.tsx",
    "src/components/layout/Chrome.tsx",
    "src/components/marketing/VideoCard.tsx",
    "src/components/marketing/kit.tsx",
@@ -212,7 +213,6 @@
    "src/lib/company.ts",
    "src/lib/siteMeta.ts",
    "src/pages/hr/HrManage.tsx",
-   "src/pages/public/CardPage.tsx",
    "src/pages/staff/StaffCard.tsx",
    "src/pages/staff/StaffIdCard.tsx"
   ]
@@ -313,6 +313,7 @@
   "text": "Phone",
   "files": [
    "src/components/cards/CardFaces.tsx",
+   "src/components/cards/PublicContact.tsx",
    "src/lib/site.ts",
    "src/pages/admin/InvitePage.tsx",
    "src/pages/admin/SettingsPage.tsx",
@@ -394,6 +395,90 @@
   "files": [
    "src/components/cards/CardFaces.tsx",
    "src/pages/staff/StaffCard.tsx"
+  ]
+ },
+ {
+  "text": "'Plus Jakarta Sans', 'Archivo', system-ui, sans-serif",
+  "files": [
+   "src/components/cards/PublicContact.tsx"
+  ]
+ },
+ {
+  "text": "Call",
+  "files": [
+   "src/components/cards/PublicContact.tsx",
+   "src/lib/leads.ts",
+   "src/pages/sales/LeadsPage.tsx"
+  ]
+ },
+ {
+  "text": "No longer active",
+  "files": [
+   "src/components/cards/PublicContact.tsx",
+   "src/pages/public/VerifyStaffPage.tsx"
+  ]
+ },
+ {
+  "text": "Not recognised",
+  "files": [
+   "src/components/cards/PublicContact.tsx",
+   "src/pages/public/VerifyStaffPage.tsx"
+  ]
+ },
+ {
+  "text": "Save contact",
+  "files": [
+   "src/components/cards/PublicContact.tsx"
+  ]
+ },
+ {
+  "text": "Staff number",
+  "files": [
+   "src/components/cards/PublicContact.tsx"
+  ]
+ },
+ {
+  "text": "This card could not be found. Contact the company directly before dealing with the holder.",
+  "files": [
+   "src/components/cards/PublicContact.tsx"
+  ]
+ },
+ {
+  "text": "This person is no longer a member of staff of {0}. Do not deal with them on the company's behalf.",
+  "files": [
+   "src/components/cards/PublicContact.tsx"
+  ]
+ },
+ {
+  "text": "Verified",
+  "files": [
+   "src/components/cards/PublicContact.tsx"
+  ]
+ },
+ {
+  "text": "Verified with AfterBI",
+  "files": [
+   "src/components/cards/PublicContact.tsx"
+  ]
+ },
+ {
+  "text": "Website",
+  "files": [
+   "src/components/cards/PublicContact.tsx",
+   "src/lib/tiles.ts",
+   "src/pages/admin/SettingsPage.tsx",
+   "src/pages/platform/WebsitePage.tsx",
+   "src/pages/team/CompanyInfo.tsx"
+  ]
+ },
+ {
+  "text": "WhatsApp",
+  "files": [
+   "src/components/cards/PublicContact.tsx",
+   "src/components/marketing/chrome.tsx",
+   "src/lib/social.ts",
+   "src/pages/public/SignInHelpPage.tsx",
+   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -515,12 +600,6 @@
   ]
  },
  {
-  "text": "{0}/login",
-  "files": [
-   "src/components/Credentials.tsx"
-  ]
- },
- {
   "text": "Address",
   "files": [
    "src/components/Credentials.tsx",
@@ -553,6 +632,7 @@
   "text": "Email",
   "files": [
    "src/components/Credentials.tsx",
+   "src/components/cards/PublicContact.tsx",
    "src/components/marketing/chrome.tsx",
    "src/pages/admin/SettingsPage.tsx",
    "src/pages/partners/DistributorsPage.tsx",
@@ -2368,6 +2448,30 @@
   ]
  },
  {
+  "text": "Full screen",
+  "files": [
+   "src/components/layout/NavRail.tsx"
+  ]
+ },
+ {
+  "text": "Full screen (Ctrl Shift F)",
+  "files": [
+   "src/components/layout/NavRail.tsx"
+  ]
+ },
+ {
+  "text": "Leave full screen",
+  "files": [
+   "src/components/layout/NavRail.tsx"
+  ]
+ },
+ {
+  "text": "Leave full screen (Ctrl Shift F)",
+  "files": [
+   "src/components/layout/NavRail.tsx"
+  ]
+ },
+ {
   "text": "Reminders",
   "files": [
    "src/components/layout/NavRail.tsx",
@@ -2803,8 +2907,7 @@
   "files": [
    "src/components/marketing/BookDemo.tsx",
    "src/pages/platform/StaffPage.tsx",
-   "src/pages/staff/StaffCard.tsx",
-   "src/pages/team/OrgCard.tsx"
+   "src/pages/staff/StaffCard.tsx"
   ]
  },
  {
@@ -3060,17 +3163,6 @@
   "text": "Twelve capabilities, six role based workspaces, one secure cloud. See it with your own data in a guided demo.",
   "files": [
    "src/components/marketing/chrome.tsx"
-  ]
- },
- {
-  "text": "WhatsApp",
-  "files": [
-   "src/components/marketing/chrome.tsx",
-   "src/lib/social.ts",
-   "src/pages/public/CardPage.tsx",
-   "src/pages/public/SignInHelpPage.tsx",
-   "src/pages/public/VerifyIdPage.tsx",
-   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -4855,6 +4947,12 @@
  },
  {
   "text": "700 54px {0}",
+  "files": [
+   "src/lib/bankImage.ts"
+  ]
+ },
+ {
+  "text": "800 36px {0}",
   "files": [
    "src/lib/bankImage.ts"
   ]
@@ -11107,7 +11205,7 @@
   ]
  },
  {
-  "text": "They sign in at afterbi.com/login and download their ID card from My ID card.",
+  "text": "They sign in at app.afterbi.com and download their ID card from My ID card.",
   "files": [
    "src/lib/guide.ts"
   ]
@@ -11506,6 +11604,12 @@
   ]
  },
  {
+  "text": "{0}/card/{1}",
+  "files": [
+   "src/lib/idCards.ts"
+  ]
+ },
+ {
   "text": "{0}/verify/id/{1}",
   "files": [
    "src/lib/idCards.ts"
@@ -11515,13 +11619,6 @@
   "text": "Asked to confirm",
   "files": [
    "src/lib/leads.ts"
-  ]
- },
- {
-  "text": "Call",
-  "files": [
-   "src/lib/leads.ts",
-   "src/pages/sales/LeadsPage.tsx"
   ]
  },
  {
@@ -14776,15 +14873,6 @@
   "text": "The whole setup in order: depots, products, price tiers, distributors, people.",
   "files": [
    "src/lib/tiles.ts"
-  ]
- },
- {
-  "text": "Website",
-  "files": [
-   "src/lib/tiles.ts",
-   "src/pages/admin/SettingsPage.tsx",
-   "src/pages/platform/WebsitePage.tsx",
-   "src/pages/team/CompanyInfo.tsx"
   ]
  },
  {
@@ -19654,8 +19742,7 @@
  {
   "text": "Checking…",
   "files": [
-   "src/pages/hr/HrParts.tsx",
-   "src/pages/public/VerifyIdPage.tsx"
+   "src/pages/hr/HrParts.tsx"
   ]
  },
  {
@@ -24166,7 +24253,7 @@
   ]
  },
  {
-  "text": "Hello {0}, your AfterBI staff login: Site: https://afterbi.com/login Email: {1} Password: {2} Please keep it private.",
+  "text": "Hello {0}, your AfterBI staff login: Site: {1} Email: {2} Password: {3} Please keep it private.",
   "files": [
    "src/pages/platform/StaffPage.tsx"
   ]
@@ -24551,20 +24638,6 @@
   ]
  },
  {
-  "text": "{0}.vcf",
-  "files": [
-   "src/pages/public/CardPage.tsx",
-   "src/pages/public/VerifyIdPage.tsx"
-  ]
- },
- {
-  "text": "afterbi.com",
-  "files": [
-   "src/pages/public/CardPage.tsx",
-   "src/pages/public/VerifyStaffPage.tsx"
-  ]
- },
- {
   "text": "Contact card",
   "files": [
    "src/pages/public/CardPage.tsx"
@@ -24572,37 +24645,6 @@
  },
  {
   "text": "Contact card.",
-  "files": [
-   "src/pages/public/CardPage.tsx"
-  ]
- },
- {
-  "text": "Save contact",
-  "files": [
-   "src/pages/public/CardPage.tsx",
-   "src/pages/public/VerifyIdPage.tsx"
-  ]
- },
- {
-  "text": "Staff no. {0}, {1}",
-  "files": [
-   "src/pages/public/CardPage.tsx"
-  ]
- },
- {
-  "text": "The sales and distribution platform",
-  "files": [
-   "src/pages/public/CardPage.tsx"
-  ]
- },
- {
-  "text": "This card link is incomplete. Ask for it to be sent again.",
-  "files": [
-   "src/pages/public/CardPage.tsx"
-  ]
- },
- {
-  "text": "Visit afterbi.com",
   "files": [
    "src/pages/public/CardPage.tsx"
   ]
@@ -25384,29 +25426,9 @@
   ]
  },
  {
-  "text": "{0} · Staff no. {1}",
-  "files": [
-   "src/pages/public/VerifyIdPage.tsx"
-  ]
- },
- {
   "text": "Confirm a staff ID card.",
   "files": [
    "src/pages/public/VerifyIdPage.tsx"
-  ]
- },
- {
-  "text": "No longer active",
-  "files": [
-   "src/pages/public/VerifyIdPage.tsx",
-   "src/pages/public/VerifyStaffPage.tsx"
-  ]
- },
- {
-  "text": "Not recognised",
-  "files": [
-   "src/pages/public/VerifyIdPage.tsx",
-   "src/pages/public/VerifyStaffPage.tsx"
   ]
  },
  {
@@ -25417,32 +25439,13 @@
   ]
  },
  {
-  "text": "This card could not be found. Contact the company directly before dealing with the holder.",
+  "text": "{0} is not an AfterBI staff number. Contact {1} if you were shown this card.",
   "files": [
-   "src/pages/public/VerifyIdPage.tsx"
-  ]
- },
- {
-  "text": "This person is no longer an active member of staff of {0}. Do not deal with them on the company's behalf.",
-  "files": [
-   "src/pages/public/VerifyIdPage.tsx"
-  ]
- },
- {
-  "text": "Verified staff member",
-  "files": [
-   "src/pages/public/VerifyIdPage.tsx",
    "src/pages/public/VerifyStaffPage.tsx"
   ]
  },
  {
-  "text": "Verified with AfterBI",
-  "files": [
-   "src/pages/public/VerifyIdPage.tsx"
-  ]
- },
- {
-  "text": "{0} is not an AfterBI staff number. Contact {1} if you were shown this card.",
+  "text": "afterbi.com",
   "files": [
    "src/pages/public/VerifyStaffPage.tsx"
   ]
@@ -25461,6 +25464,12 @@
  },
  {
   "text": "Staff no. {0} · {1}",
+  "files": [
+   "src/pages/public/VerifyStaffPage.tsx"
+  ]
+ },
+ {
+  "text": "Verified staff member",
   "files": [
    "src/pages/public/VerifyStaffPage.tsx"
   ]
@@ -28148,8 +28157,7 @@
  {
   "text": "Let them scan this with their phone camera.",
   "files": [
-   "src/pages/staff/StaffCard.tsx",
-   "src/pages/team/OrgCard.tsx"
+   "src/pages/staff/StaffCard.tsx"
   ]
  },
  {
@@ -28170,8 +28178,7 @@
  {
   "text": "Open my card",
   "files": [
-   "src/pages/staff/StaffCard.tsx",
-   "src/pages/team/OrgCard.tsx"
+   "src/pages/staff/StaffCard.tsx"
   ]
  },
  {
@@ -28191,8 +28198,7 @@
  {
   "text": "QR code to your business card",
   "files": [
-   "src/pages/staff/StaffCard.tsx",
-   "src/pages/team/OrgCard.tsx"
+   "src/pages/staff/StaffCard.tsx"
   ]
  },
  {
@@ -28430,12 +28436,6 @@
   ]
  },
  {
-  "text": "{0}'s account details and contacts. Tap anything to copy it.",
-  "files": [
-   "src/pages/team/CompanyInfo.tsx"
-  ]
- },
- {
   "text": "{0}/settings",
   "files": [
    "src/pages/team/CompanyInfo.tsx"
@@ -28574,12 +28574,6 @@
   ]
  },
  {
-  "text": "A contact card anyone can open on their phone, under {0}’s name and logo, with buttons to call you, WhatsApp you or save your number. The details travel in the link, so nothing is stored. Download it to print at 85 × 55 mm, the standard card size.",
-  "files": [
-   "src/pages/team/OrgCard.tsx"
-  ]
- },
- {
   "text": "Actual size 85 × 55 mm, the standard business card.",
   "files": [
    "src/pages/team/OrgCard.tsx"
@@ -28628,12 +28622,6 @@
   ]
  },
  {
-  "text": "Hello, I am {0}{1} at {2}. Here is my contact card: {3}",
-  "files": [
-   "src/pages/team/OrgCard.tsx"
-  ]
- },
- {
   "text": "not ready",
   "files": [
    "src/pages/team/OrgCard.tsx"
@@ -28641,6 +28629,12 @@
  },
  {
   "text": "On A4",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Paper",
   "files": [
    "src/pages/team/OrgCard.tsx"
   ]
@@ -28664,6 +28658,12 @@
   ]
  },
  {
+  "text": "Show",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
   "text": "the ID card tab",
   "files": [
    "src/pages/team/OrgCard.tsx"
@@ -28677,6 +28677,12 @@
  },
  {
   "text": "Your card shows your initials. Add a photo on",
+  "files": [
+   "src/pages/team/OrgCard.tsx"
+  ]
+ },
+ {
+  "text": "Your card under {0}’s name and logo. Scanning its code opens your contact with your photo, ready to save. Print it at 85 × 55 mm, the standard card size.",
   "files": [
    "src/pages/team/OrgCard.tsx"
   ]
