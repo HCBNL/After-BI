@@ -45,6 +45,7 @@ const StaffShellWithProviders = lazy(() =>
 const PortalHome = lazy(() => import('@/pages/home/PortalHome'));
 const AllActions = lazy(() => import('@/pages/home/AllActions'));
 
+const SmeReport2026 = lazy(() => import('@/pages/public/reports/SmeReport2026'));
 const OrdersPage = lazy(() => import('@/pages/sales/OrdersPage'));
 const CataloguePage = lazy(() => import('@/pages/sales/CataloguePage'));
 const SellOutPage = lazy(() => import('@/pages/sales/SellOutPage'));
@@ -298,6 +299,8 @@ export default function App() {
           <Route path="/verify/staff/:staffNo" element={<VerifyStaffPage />} />
           <Route path="/verify/id/:uid" element={<VerifyIdPage />} />
           <Route path="/pricing" element={<PublicPricingPage />} />
+          <Route path="/reports" element={<Navigate to="/reports/sme-2026" replace />} />
+          <Route path="/reports/sme-2026" element={<SmeReport2026 />} />
           <Route path="/partners" element={<Navigate to="/" replace />} />
           {/* Retired with the 2026 rebrand: old links land on the front page. */}
           <Route path="/blog" element={<Navigate to="/" replace />} />

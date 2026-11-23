@@ -21,6 +21,7 @@ import { useReminders } from '@/context/RemindersContext';
 import { dueLabel, taskTiming, type Task, type TaskPriority } from '@/lib/tasks';
 import { todayISO } from '@/lib/format';
 import { cn } from '@/lib/cn';
+import { Hint } from '@/components/ui/Hint';
 
 const VIEWS = [
   { value: 'open', label: 'To do' },
@@ -110,12 +111,12 @@ export default function TasksPage() {
       {/* ------------------------------------------------------------ add */}
       <form
         onSubmit={(event) => void add(event)}
-        data-tour="task-add"
         className="mb-5 rounded-2xl border border-hairline surface-card p-4 shadow-card"
       >
         <label htmlFor="task-title" className="text-label font-semibold text-primary">
           Add a task
         </label>
+        {/* One field, full height, the same 44px as everything under it. */}
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <Input
             id="task-title"
@@ -123,17 +124,17 @@ export default function TasksPage() {
             maxLength={160}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Call Sunrise Foods about the overdue invoice"
-            className="flex-1"
+            className="h-12 w-full sm:flex-1"
           />
-          <Button type="submit" icon={<Plus size={16} />} loading={busy} disabled={!title.trim()}>
+          <Button type="submit" icon={<Plus size={16} />} loading={busy} disabled={!title.trim()} className="h-12 w-full sm:w-auto sm:px-7">
             Add
           </Button>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
           <Select
             value={(['today', 'tomorrow', 'week', 'none'] as const).find((w) => quickDue(w) === due) ?? ''}
             onChange={(e) => e.target.value && setDue(quickDue(e.target.value as 'today' | 'tomorrow' | 'week' | 'none'))}
-            className="w-auto min-w-[9rem]"
+            className="w-full sm:w-44"
             aria-label="When"
           >
             <option value="">Due</option>
@@ -142,24 +143,17 @@ export default function TasksPage() {
             <option value="week">In a week</option>
             <option value="none">No date</option>
           </Select>
-          <DateField
-            inline
-            value={due}
-            onChange={(event) => setDue(event.target.value)}
-            aria-label="Due date"
-            placeholder="Pick a day"
-            className="h-8 gap-1.5 rounded-full border-transparent surface-sunken pl-3 pr-3 text-label"
-          />
+          <DateField value={due} onChange={(event) => setDue(event.target.value)} aria-label="Due date" placeholder="Pick a day" className="w-full sm:w-48" />
           <button
             type="button"
             onClick={() => setPriority(priority === 'high' ? 'normal' : 'high')}
             aria-pressed={priority === 'high'}
             className={cn(
-              'flex h-8 items-center gap-1.5 rounded-full px-3 text-label font-semibold transition-colors',
-              priority === 'high' ? 'bg-status-critical text-white' : 'surface-sunken text-secondary hover:text-primary',
+              'col-span-2 flex h-11 items-center justify-center gap-1.5 rounded-xl border px-4 text-label font-semibold transition-colors sm:col-span-1',
+              priority === 'high' ? 'border-status-critical bg-status-critical text-white' : 'border-hairline text-secondary hover:text-primary',
             )}
           >
-            <Flag size={13} aria-hidden /> Important
+            <Flag size={14} aria-hidden /> Important
           </button>
         </div>
       </form>
@@ -199,10 +193,8 @@ export default function TasksPage() {
           <h2 className="flex items-center gap-1.5 text-lead font-semibold text-primary">
             <Sparkles size={16} className="text-brand-600 dark:text-brand-400" aria-hidden />
             Suggested from your records
+            <Hint label="About these suggestions">Worked out from your orders, invoices and stock. Keep one as a task to give it a date.</Hint>
           </h2>
-          <p className="mt-0.5 text-label text-muted">
-            Worked out from your orders, invoices and stock. Keep one as a task to give it a date.
-          </p>
           <ul className="mt-3 space-y-2">
             {suggestions.map((reminder) => (
               <li

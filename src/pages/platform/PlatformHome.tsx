@@ -3,8 +3,7 @@
  * organisations instead of orders. Every naira in the revenue figure was typed
  * by the owner on the organisation it is owed by.
  */
-import { useEffect, useMemo } from 'react';
-import { useTour } from '@/context/TourContext';
+import { useMemo } from 'react';
 import { AlertCircle, Building2, TrendingUp, Wallet } from 'lucide-react';
 import { Loading } from '@/components/brand/Loader';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
@@ -130,14 +129,6 @@ export default function PlatformHome() {
     }
     return items;
   }, [data, summary]);
-
-  const { startIfNew } = useTour();
-  const settled = !(loading && data === undefined);
-  useEffect(() => {
-    if (!settled) return;
-    const timer = window.setTimeout(startIfNew, 700);
-    return () => window.clearTimeout(timer);
-  }, [settled, startIfNew]);
 
   if (!user) return null;
   if (loading && data === undefined) return <Loading rows={4} label="Getting the platform ready" />;

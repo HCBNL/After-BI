@@ -31,7 +31,6 @@ import { QuickList } from '@/components/home/QuickList';
 import { SetupChecklist } from '@/components/home/SetupChecklist';
 import { TodoCard, type TodoItem } from '@/components/home/TodoCard';
 import { SalesTrend } from '@/components/home/SalesTrend';
-import { useTour } from '@/context/TourContext';
 import { useShell } from '@/components/layout/ShellContext';
 import { useAsync } from '@/hooks/useAsync';
 import { useHomeLayout } from '@/hooks/useHomeLayout';
@@ -290,14 +289,6 @@ export default function PortalHome() {
 
     return items;
   }, [data, role, root]);
-
-  /* The first visit plays the tour, once, after the screen has drawn. */
-  const { startIfNew } = useTour();
-  useEffect(() => {
-    if (!ready) return;
-    const timer = window.setTimeout(startIfNew, 700);
-    return () => window.clearTimeout(timer);
-  }, [ready, startIfNew]);
 
   useBootDone(ready);
   if (!user) return null;

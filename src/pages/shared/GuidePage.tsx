@@ -9,12 +9,10 @@
  */
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronDown, Compass, Lightbulb, Search, Users } from 'lucide-react';
+import { ArrowRight, ChevronDown, Lightbulb, Search, Users } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Button } from '@/components/ui';
 import { RoleCards } from '@/components/guide/RoleCards';
 import { useAuth } from '@/context/AuthContext';
-import { useTour } from '@/context/TourContext';
 import { guidesFor, searchGuides, type HowTo } from '@/lib/guide';
 import { actionsForRole, PORTAL_ROOT } from '@/lib/tiles';
 import { ROLE_LABEL, type Role } from '@/types';
@@ -35,7 +33,6 @@ const STARTERS: Partial<Record<Role, string[]>> = {
 
 export default function GuidePage() {
   const { user } = useAuth();
-  const { start } = useTour();
   const [question, setQuestion] = useState('');
   const role: Role = user?.role ?? 'staff';
 
@@ -47,12 +44,7 @@ export default function GuidePage() {
     <div>
       <PageHeader
         title="Help"
-        description="How to do anything in AfterBI, step by step, and what every role is for."
-        actions={
-          <Button variant="outline" size="sm" icon={<Compass size={15} />} onClick={start}>
-            Take the tour
-          </Button>
-        }
+        description="How to do anything in AfterBI, step by step, and what every role is for. Every screen also has its own short guide behind the (i) at its top right."
       />
 
       {/* ----------------------------------------------------------- ask */}
