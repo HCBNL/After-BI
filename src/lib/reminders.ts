@@ -1,0 +1,484 @@
+/**
+ * Reminders: the app reading its own records and saying what needs somebody.
+ *
+ * No server, no scheduler, no messages sent to anyone. Every line below is
+ * worked out in the browser from lists the app already reads, against windows
+ * an administrator sets in Settings. That keeps it honest (it can only tell
+ * you what the data says) and cheap (nothing runs while nobody is looking).
+ *
+ * Each reminder carries a stable id, so a person can snooze one until
+ * tomorrow without it coming back the moment the screen refreshes.
+ */
+import { isAdmin } from './roles';
+import { count, naira } from './format';
+import { orderNet } from './pricing';
+import type { Distributor, Invoice, Order, ReturnRecord, Role, Sale, StockAdjustment, StockPosition } from '@/types';
+import { ADJUSTMENT_SIGNERS, SIDE_LABEL, sidesToSign } from './adjustments';
+import type { Task } from './tasks';
+
+export type ReminderKey =
+  | 'approval-waiting'
+  | 'adjustment-waiting'
+  | 'order-unfulfilled'
+  | 'order-uninvoiced'
+  | 'invoice-overdue'
+  | 'credit-tight'
+  | 'stock-out'
+  | 'stock-low'
+  | 'return-waiting'
+  | 'draft-idle'
+  | 'account-dormant'
+  | 'sellout-quiet'
+  | 'task-due'
+  | 'credit-unapplied';
+
+/** `later` is worth knowing; the other two are worth doing something about. */
+export type Severity = 'critical' | 'warning' | 'later';
+
+export interface Reminder {
+  id: string;
+  key: ReminderKey;
+  severity: Severity;
+  title: string;
+  detail: string;
+  to: string;
+  since?: string;
+  days: number;
+  /** The money at stake, when there is a figure. Weighs the ranking in `brief.ts`. */
+  amount?: number;
+}
+
+export interface ReminderThresholds {
+  approvalHours: number;
+  fulfilDays: number;
+  invoiceDays: number;
+  draftDays: number;
+  dormantDays: number;
+  sellOutDays: number;
+  creditPercent: number;
+}
+
+const REMINDER_DEFAULTS: ReminderThresholds = {
+  approvalHours: 8,
+  fulfilDays: 2,
+  invoiceDays: 2,
+  draftDays: 3,
+  dormantDays: 30,
+  sellOutDays: 5,
+  creditPercent: 80,
+};
+
+/** The windows, as an administrator sees them in Settings. */
+export const REMINDER_FIELDS: { key: keyof ReminderThresholds; label: string; hint: string }[] = [
+  { key: 'approvalHours', label: 'Signature chase (hours)', hint: 'How long an order may sit unsigned before it is chased.' },
+  { key: 'fulfilDays', label: 'Fulfilment (days)', hint: 'How long an approved order may wait before the depot is chased.' },
+  { key: 'invoiceDays', label: 'Invoicing (days)', hint: 'How long a delivered order may go uninvoiced.' },
+  { key: 'draftDays', label: 'Idle drafts (days)', hint: 'How long a draft order may sit untouched.' },
+  { key: 'dormantDays', label: 'Dormant account (days)', hint: 'How long an active distributor may go without ordering.' },
+  { key: 'sellOutDays', label: 'Quiet sell-out (days)', hint: 'How long a rep may go without keying sell-out.' },
+  { key: 'creditPercent', label: 'Credit warning (%)', hint: 'How much of a credit limit may be used before it is flagged.' },
+];
+
+export function thresholdsFrom(stored?: Partial<ReminderThresholds> | null): ReminderThresholds {
+  const merged = { ...REMINDER_DEFAULTS, ...(stored ?? {}) };
+  for (const key of Object.keys(REMINDER_DEFAULTS) as (keyof ReminderThresholds)[]) {
+    const value = Number(merged[key]);
+    merged[key] = Number.isFinite(value) && value > 0 ? value : REMINDER_DEFAULTS[key];
+  }
+  return merged;
+}
+
+const DAY = 86_400_000;
+const hoursSince = (iso?: string) => (iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 3_600_000) : 0);
+const daysSince = (iso?: string) => (iso ? Math.floor((Date.now() - new Date(iso).getTime()) / DAY) : 0);
+
+/*
+ * Every title and detail below is written out whole, once for one and once for
+ * many, with only a number, an amount, a code or a name left in a slot. See
+ * the note in brief.ts: a sentence assembled from "3 days" and "is overdue"
+ * cannot be put into Chinese or French word order by a dictionary, and a
+ * whole sentence with a bare number in it can.
+ */
+
+/** When something happened, as one of a few fixed phrases ("3 hours ago"). */
+function ageLabel(iso?: string): string {
+  const hours = hoursSince(iso);
+  if (hours < 1) return 'in the last hour';
+  if (hours < 24) return hours === 1 ? '1 hour ago' : `${count(hours)} hours ago`;
+  const days = Math.floor(hours / 24);
+  return days === 1 ? '1 day ago' : `${count(days)} days ago`;
+}
+
+const RANK: Record<Severity, number> = { critical: 0, warning: 1, later: 2 };
+
+export interface ReminderInput {
+  role: Role;
+  uid: string;
+  root: string;
+  thresholds: ReminderThresholds;
+  orders: Order[];
+  invoices: Invoice[];
+  stock: StockPosition[];
+  returns: ReturnRecord[];
+  sales: Sale[];
+  distributors: Distributor[];
+  /** The person's own to do list. A task due today or late is a reminder too. */
+  tasks?: Task[];
+  /** Stock adjustments waiting for a signature. */
+  adjustments?: StockAdjustment[];
+}
+
+/**
+ * Everything the records say needs somebody, plus their own tasks. A task
+ * kept from a reminder follows that reminder: it shows today's figures, not
+ * the ones from the day it was kept, and the two are one line, not two.
+ */
+export function buildReminders(input: ReminderInput): Reminder[] {
+  return withTasks(baseReminders(input), input);
+}
+
+/**
+ * Which kinds of reminder were worked out for this role, by the id prefix
+ * they carry (`credit` for `credit:abc`). A task kept from one of these whose
+ * reminder is no longer there has been dealt with; a task kept from a kind not
+ * checked here (another role's) says nothing either way.
+ */
+export function checkedKinds(role: Role): Set<string> {
+  const office = isAdmin(role) || role === 'staff';
+  const ops = office || role === 'operations_manager' || role === 'warehouse_manager';
+  const money = isAdmin(role) || role === 'finance_manager';
+  const partner = role === 'distributor' || role === 'sales_rep';
+  const kinds = ['approval', 'draft'];
+  if (ADJUSTMENT_SIGNERS.includes(role)) kinds.push('adjustment');
+  if (ops) kinds.push('fulfil', 'stock', 'return');
+  if (money) kinds.push('invoice', 'credit', 'credit-unapplied');
+  if (money || partner) kinds.push('overdue');
+  if (office) kinds.push('dormant');
+  if (role === 'sales_rep') kinds.push('sellout');
+  return new Set(kinds);
+}
+
+/** The kind a reminder id belongs to: `credit-unapplied:x` → `credit-unapplied`. */
+export function kindOf(id: string): string {
+  return id.split(':')[0];
+}
+
+/**
+ * Tasks kept from a reminder that no longer applies: paid, delivered, limit
+ * raised. They can be ticked off; nobody needs to be told twice.
+ */
+export function resolvedTasks(base: Reminder[], tasks: Task[], role: Role): Task[] {
+  const live = new Set(base.map((r) => r.id));
+  const checked = checkedKinds(role);
+  return tasks.filter((t) => !t.done && t.source && checked.has(kindOf(t.source)) && !live.has(t.source));
+}
+
+/** The records' reminders alone, before the person's tasks are added. */
+export function baseReminders(input: ReminderInput): Reminder[] {
+  const { role, uid, root, thresholds: t } = input;
+  const office = isAdmin(role) || role === 'staff';
+  const ops = office || role === 'operations_manager' || role === 'warehouse_manager';
+  const money = isAdmin(role) || role === 'finance_manager';
+  const partner = role === 'distributor' || role === 'sales_rep';
+  const out: Reminder[] = [];
+  const today = new Date().toISOString().slice(0, 10);
+
+  /* Waiting for a signature, yours. */
+  for (const order of input.orders) {
+    if (order.status !== 'pending_approval') continue;
+    if (!(order.approvers ?? []).includes(uid) && role !== 'super_admin') continue;
+    const hours = hoursSince(order.createdAt);
+    if (hours < t.approvalHours) continue;
+    out.push({
+      id: `approval:${order.id}`,
+      key: 'approval-waiting',
+      severity: hours >= t.approvalHours * 3 ? 'critical' : 'warning',
+      title: `${order.orderNumber} is waiting for your signature`,
+      detail: `${order.distributorName}, ${naira(orderNet(order))}, raised ${ageLabel(order.createdAt)}.`,
+      to: `${root}/approvals`,
+      since: order.createdAt,
+      days: Math.floor(hours / 24),
+      amount: orderNet(order),
+    });
+  }
+
+  /* A stock adjustment waiting for your signature: stock cannot be corrected without it. */
+  for (const adj of input.adjustments ?? []) {
+    const sides = sidesToSign(adj, uid, role);
+    if (!sides.length) continue;
+    const hours = hoursSince(adj.createdAt);
+    out.push({
+      id: `adjustment:${adj.id}`,
+      key: 'adjustment-waiting',
+      severity: hours >= 48 ? 'critical' : 'warning',
+      title: `${adj.number} needs your ${sides.map((s) => SIDE_LABEL[s].toLowerCase()).join(' and ')} approval`,
+      detail: `${adj.direction === 'out' ? 'Remove' : 'Add'} ${adj.productName} at ${adj.warehouseName}, raised by ${adj.requestedByName} ${ageLabel(adj.createdAt)}.`,
+      to: `${root}/adjustments`,
+      since: adj.createdAt,
+      days: Math.floor(hours / 24),
+    });
+  }
+
+  /* Approved and still sitting in the depot. */
+  if (ops) {
+    for (const order of input.orders) {
+      if (order.status !== 'approved') continue;
+      const days = daysSince(order.approvedAt ?? order.createdAt);
+      if (days < t.fulfilDays) continue;
+      out.push({
+        id: `fulfil:${order.id}`,
+        key: 'order-unfulfilled',
+        severity: days >= t.fulfilDays * 3 ? 'critical' : 'warning',
+        title: `${order.orderNumber} is approved but not fulfilled`,
+        detail: `${order.distributorName}, ${naira(orderNet(order))}, approved ${ageLabel(order.approvedAt ?? order.createdAt)}.`,
+        to: `${root}/orders`,
+        since: order.approvedAt ?? order.createdAt,
+        days,
+        amount: orderNet(order),
+      });
+    }
+  }
+
+  /* Delivered and never billed: the quietest way to lose money. */
+  if (money) {
+    const invoiced = new Set(input.invoices.map((invoice) => invoice.orderId).filter(Boolean));
+    for (const order of input.orders) {
+      if (order.status !== 'fulfilled' || invoiced.has(order.id)) continue;
+      const days = daysSince(order.fulfilledAt ?? order.updatedAt ?? order.createdAt);
+      if (days < t.invoiceDays) continue;
+      out.push({
+        id: `invoice:${order.id}`,
+        key: 'order-uninvoiced',
+        severity: days >= t.invoiceDays * 4 ? 'critical' : 'warning',
+        title: `${order.orderNumber} was delivered but never invoiced`,
+        detail: `${order.distributorName}, ${naira(orderNet(order))}, fulfilled ${ageLabel(order.fulfilledAt)}.`,
+        to: `${root}/invoices`,
+        since: order.fulfilledAt,
+        days,
+        amount: orderNet(order),
+      });
+    }
+  }
+
+  /* Past its due date. */
+  if (money || partner) {
+    for (const invoice of input.invoices) {
+      if (!['issued', 'part_paid', 'overdue'].includes(invoice.status)) continue;
+      if (!invoice.dueOn || invoice.dueOn >= today) continue;
+      const days = daysSince(invoice.dueOn);
+      const owed = invoice.total - (invoice.amountPaid ?? 0);
+      if (owed <= 0) continue;
+      out.push({
+        id: `overdue:${invoice.id}`,
+        key: 'invoice-overdue',
+        severity: days >= 14 ? 'critical' : 'warning',
+        title: partner
+          ? days === 1
+            ? `${invoice.invoiceNumber} is 1 day overdue`
+            : `${invoice.invoiceNumber} is ${count(days)} days overdue`
+          : days === 1
+            ? `${invoice.distributorName} is 1 day late on ${invoice.invoiceNumber}`
+            : `${invoice.distributorName} is ${count(days)} days late on ${invoice.invoiceNumber}`,
+        detail: `${naira(owed)} outstanding of ${naira(invoice.total)}.`,
+        to: `${root}/invoices`,
+        since: invoice.dueOn,
+        days,
+        amount: owed,
+      });
+    }
+  }
+
+  /* Against the ceiling you set for them. */
+  if (money) {
+    const owed = new Map<string, number>();
+    for (const invoice of input.invoices) {
+      if (!['issued', 'part_paid', 'overdue'].includes(invoice.status)) continue;
+      const left = invoice.total - (invoice.amountPaid ?? 0);
+      if (left > 0) owed.set(invoice.distributorId, (owed.get(invoice.distributorId) ?? 0) + left);
+    }
+    for (const distributor of input.distributors) {
+      const limit = distributor.creditLimit ?? 0;
+      if (!limit) continue;
+      const outstanding = owed.get(distributor.id) ?? 0;
+      const used = (outstanding / limit) * 100;
+      if (used < t.creditPercent) continue;
+      out.push({
+        id: `credit:${distributor.id}`,
+        key: 'credit-tight',
+        severity: used >= 100 ? 'critical' : 'warning',
+        title: `${distributor.company} is at ${Math.round(used)}% of its credit limit`,
+        detail: `${naira(outstanding)} outstanding against ${naira(limit)}.`,
+        to: `${root}/invoices`,
+        days: 0,
+        amount: outstanding,
+      });
+    }
+  }
+
+  /* Running out, or out. */
+  if (ops) {
+    for (const position of input.stock) {
+      const empty = position.quantity <= 0;
+      out.push({
+        id: `stock:${position.id}`,
+        key: empty ? 'stock-out' : 'stock-low',
+        severity: empty ? 'critical' : 'warning',
+        title: empty ? `${position.productName} is out of stock` : `${position.productName} is below its threshold`,
+        detail: `${count(position.quantity)} ${position.unit} on hand, threshold ${count(position.threshold)}.`,
+        to: `${root}/stock`,
+        days: 0,
+      });
+    }
+
+    for (const claim of input.returns) {
+      if (claim.status !== 'requested') continue;
+      const days = daysSince(claim.createdAt);
+      if (days < 1) continue;
+      out.push({
+        id: `return:${claim.id}`,
+        key: 'return-waiting',
+        severity: days >= 5 ? 'critical' : 'warning',
+        title: `A claim from ${claim.distributorName} is waiting on a decision`,
+        detail: `${count(claim.quantity)} of ${claim.productName}, raised ${ageLabel(claim.createdAt)}.`,
+        to: `${root}/returns`,
+        since: claim.createdAt,
+        days,
+      });
+    }
+  }
+
+  /* Started and forgotten. */
+  for (const order of input.orders) {
+    if (order.status !== 'draft') continue;
+    if (order.createdBy !== uid && !office) continue;
+    const days = daysSince(order.createdAt);
+    if (days < t.draftDays) continue;
+    out.push({
+      id: `draft:${order.id}`,
+      key: 'draft-idle',
+      severity: 'later',
+      title: `${order.orderNumber} is still a draft`,
+      detail: `${order.distributorName}, ${naira(orderNet(order))}, started ${ageLabel(order.createdAt)}.`,
+      to: `${root}/orders`,
+      since: order.createdAt,
+      days,
+      amount: orderNet(order),
+    });
+  }
+
+  /* Accounts that have gone quiet. */
+  if (office) {
+    const lastOrder = new Map<string, string>();
+    for (const order of input.orders) {
+      const held = lastOrder.get(order.distributorId);
+      if (!held || order.createdAt > held) lastOrder.set(order.distributorId, order.createdAt);
+    }
+    for (const distributor of input.distributors) {
+      if (distributor.status !== 'active') continue;
+      const last = lastOrder.get(distributor.id);
+      const days = last ? daysSince(last) : t.dormantDays + 1;
+      if (days < t.dormantDays) continue;
+      out.push({
+        id: `dormant:${distributor.id}`,
+        key: 'account-dormant',
+        severity: 'later',
+        title: `${distributor.company} has not ordered in a while`,
+        detail: last ? `Last order ${ageLabel(last)}.` : 'No order on record yet.',
+        to: `${root}/distributors`,
+        since: last,
+        days,
+      });
+    }
+  }
+
+  /* A rep with nothing keyed. */
+  if (role === 'sales_rep') {
+    const newest = input.sales.reduce((latest, sale) => (sale.saleDate > latest ? sale.saleDate : latest), '');
+    const days = newest ? daysSince(newest) : t.sellOutDays + 1;
+    if (days >= t.sellOutDays) {
+      out.push({
+        id: 'sellout:quiet',
+        key: 'sellout-quiet',
+        severity: 'later',
+        title: 'No sell-out keyed lately',
+        detail: !newest
+          ? 'Nothing has been keyed yet.'
+          : days === 1
+            ? 'The last one was 1 day ago.'
+            : `The last one was ${count(days)} days ago.`,
+        to: `${root}/sell-out`,
+        days,
+      });
+    }
+  }
+
+  /* A return's credit that has not reached the account's invoices yet. */
+  if (money) {
+    for (const claim of input.returns) {
+      const left = (claim.creditValue ?? 0) - (claim.creditApplied ?? 0);
+      if (left <= 0 || !['approved', 'received'].includes(claim.status)) continue;
+      out.push({
+        id: `credit-unapplied:${claim.id}`,
+        key: 'credit-unapplied',
+        severity: 'warning',
+        title: `${claim.returnNumber} has a credit not yet on the account`,
+        detail: `${naira(left)} for ${claim.distributorName}. Apply it so their balance is right.`,
+        to: `${root}/returns`,
+        since: claim.updatedAt ?? claim.createdAt,
+        days: daysSince(claim.updatedAt ?? claim.createdAt),
+        amount: left,
+      });
+    }
+  }
+
+  return out;
+}
+
+/** The person's tasks that are due or late, merged with the reminders they came from. */
+export function withTasks(base: Reminder[], input: Pick<ReminderInput, 'role' | 'root' | 'tasks'>): Reminder[] {
+  const { root } = input;
+  const today = new Date().toISOString().slice(0, 10);
+  const byId = new Map(base.map((r) => [r.id, r]));
+  const checked = checkedKinds(input.role);
+  const merged = new Set<string>();
+  const out: Reminder[] = [];
+
+  for (const task of input.tasks ?? []) {
+    if (task.done || !task.due || task.due > today) continue;
+    const source = task.source ? byId.get(task.source) : undefined;
+    /* Kept from a reminder that has since cleared: nothing left to chase. */
+    if (task.source && !source && checked.has(kindOf(task.source))) continue;
+    const days = daysSince(task.due);
+    /* Today's words and figures when it came from a reminder, never the day-it-was-kept copy. */
+    const what = source ? source.title : task.title;
+    if (source) merged.add(source.id);
+    const own = days >= 3 || (days >= 1 && task.priority === 'high') ? 'critical' : 'warning';
+    out.push({
+      id: `task:${task.id}`,
+      key: 'task-due',
+      severity: source && RANK[source.severity] < RANK[own] ? source.severity : own,
+      title:
+        days > 1
+          ? `Your task is ${count(days)} days late: ${what}`
+          : days === 1
+            ? `Your task is 1 day late: ${what}`
+            : `Due today: ${what}`,
+      detail: source ? source.detail : task.note || 'From your own to do list.',
+      to: source?.to ?? (task.to || `${root}/tasks`),
+      since: task.due,
+      days,
+      amount: source?.amount,
+    });
+  }
+
+  return [...base.filter((r) => !merged.has(r.id)), ...out].sort(
+    (a, b) => RANK[a.severity] - RANK[b.severity] || b.days - a.days,
+  );
+}
+
+
+export function tally(reminders: Reminder[]) {
+  const critical = reminders.filter((r) => r.severity === 'critical').length;
+  const warning = reminders.filter((r) => r.severity === 'warning').length;
+  return { critical, warning, later: reminders.length - critical - warning, action: critical + warning };
+}

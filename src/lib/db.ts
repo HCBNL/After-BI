@@ -1,0 +1,2834 @@
+/**
+ * Every read and write in the app, in one module.
+ *
+ * WHY A SINGLE FILE AND NOT A HOOK PER SCREEN
+ *
+ * Because of `tenant.ts`. The whole safety argument there, that a path without
+ * an org id is not a valid path, only holds if there is one place that builds
+ * paths. Thirty screens each calling `collection(db, …)` is thirty chances to
+ * write a root collection name by habit, and the version of AfterBI this
+ * replaces did exactly that in 37 files. Here, a screen cannot reach Firestore
+ * except through a function below, and every function below goes through
+ * `orgPath`, which throws when no organisation is active.
+ *
+ * WHAT A FUNCTION IN HERE OWES ITS CALLER
+ *
+ *   - It returns plain typed objects with an `id`, never a `QuerySnapshot`. A
+ *     screen that has to know about `.docs.map(d => ({...d.data()}))` is a
+ *     screen that knows about Firestore, and those are the screens that end up
+ *     with a stray query in them.
+ *   - It never throws for "nothing found". An empty list is an empty array.
+ *   - It does its own ordering. A caller that sorts is a caller that will
+ *     disagree with the next caller.
+ */
+
+import {
+  collection,
+  deleteField,
+  onSnapshot,
+  doc,
+  getDoc,
+  getDocs,
+  getDocsFromCache,
+  limit as fsLimit,
+  orderBy,
+  query,
+  serverTimestamp,
+  Timestamp,
+  where,
+  type DocumentData,
+  type QueryConstraint,
+} from 'firebase/firestore';
+/* Writes go through here so every save tells the reminders to look again. */
+import { addDoc, deleteDoc, runTransaction, setDoc, updateDoc } from './changes';
+import { logAudit } from './audit';
+import { APPROVER_POOL } from './approvals';
+import { db } from './firebase';
+import { orgPath, requireOrg, TENANTS, type CollectionKey } from './tenant';
+import { nairaPlain, todayISO } from './format';
+import { kobo, summarise } from './pricing';
+import { newCountCode } from './countCode';
+import { countUnit, normaliseUnit, piecesFromPack, piecesOf, stockFactor } from './packs';
+import type {
+  AdjustmentSide,
+  CountEntry,
+  StockAdjustment,
+  StockCount,
+  StockCountSummary,
+  CreditNote,
+  CreditNoteLine,
+  Distributor,
+  Invoice,
+  Order,
+  OrderCredit,
+  OrderLine,
+  OrderStatus,
+  OrgSettings,
+  Payment,
+  PaymentAmendment,
+  Product,
+  InvoiceStatus,
+  ReturnRecord,
+  ReturnStatus,
+  Role,
+  Sale,
+  StockMovement,
+  StockPosition,
+  Target,
+  UserProfile,
+  Warehouse,
+} from '@/types';
+import { PRICE_TIERS, tierOf, type PriceTier } from '@/types';
+
+/* plumbing */
+
+/**
+ * A Firestore document as a typed object.
+ *
+ * `Timestamp` values are converted to ISO strings on the way out, so nothing
+ * above this line ever holds a Firestore type. That matters more than it looks:
+ * a `Timestamp` renders as `[object Object]`, sorts wrong against a string, and
+ * cannot be put in a URL: and every one of those bugs is found in the UI, a
+ * long way from the query that caused it.
+ */
+function shape<T>(id: string, data: DocumentData): T {
+  const out: DocumentData = { id };
+  for (const [key, value] of Object.entries(data)) {
+    out[key] =
+      value && typeof value === 'object' && typeof (value as { toDate?: unknown }).toDate === 'function'
+        ? (value as { toDate(): Date }).toDate().toISOString()
+        : value;
+  }
+  return out as T;
+}
+
+async function list<T>(key: CollectionKey, ...constraints: QueryConstraint[]): Promise<T[]> {
+  const snap = await getDocs(query(collection(db, orgPath(key)), ...constraints));
+  return snap.docs.map((d) => shape<T>(d.id, d.data()));
+}
+
+async function one<T>(key: CollectionKey, id: string): Promise<T | null> {
+  const snap = await getDoc(doc(db, orgPath(key), id));
+  return snap.exists() ? shape<T>(snap.id, snap.data()) : null;
+}
+
+/*
+ * Sorted here rather than in the query, so these lists need no composite
+ * index. Each is a complete, unlimited list, so the result is identical: and
+ * every index you do not need is one less thing to create by hand.
+ */
+function byText<T>(key: keyof T & string) {
+  return (rows: T[]): T[] =>
+    [...rows].sort((a, b) =>
+      String((a as Record<string, unknown>)[key] ?? '').localeCompare(
+        String((b as Record<string, unknown>)[key] ?? ''),
+        'en',
+        { sensitivity: 'base' },
+      ),
+    );
+}
+
+function newestFirst<T>(key: keyof T & string) {
+  return (rows: T[]): T[] =>
+    [...rows].sort((a, b) => {
+      const x = String((a as Record<string, unknown>)[key] ?? '');
+      const y = String((b as Record<string, unknown>)[key] ?? '');
+      return x < y ? 1 : x > y ? -1 : 0;
+    });
+}
+
+/* document numbers */
+
+/**
+ * The next `PO-2026-0041`, allocated without two people getting the same one.
+ *
+ * A counter document incremented inside a transaction, NOT `count() + 1` over
+ * the collection. Two reps submitting an order in the same second both read the
+ * same count and both write `PO-2026-0041`; the transaction makes the second
+ * one retry and get `0042`. This is the only correct way to do it in Firestore
+ * and it costs one extra document write per order.
+ *
+ * The year is part of the key, so the sequence restarts each January: which is
+ * what every Nigerian accounts department expects a PO book to do.
+ *
+ * Not exported: a document number is allocated as part of creating the document
+ * it belongs to, never on its own. A caller that could take a number without
+ * writing the record would burn one, and the gap in the sequence is exactly what
+ * somebody asks about.
+ */
+/** `202610`: the year and month a monthly number belongs to. */
+function yearMonth(when = new Date()): string {
+  return `${when.getFullYear()}${String(when.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/**
+ * Monthly document numbers: `PI-202610001` (proforma, the order itself) and
+ * `DN202610001` (delivery note). Year, month, then the count for that month,
+ * so a number says when it was raised at a glance and restarts each month.
+ */
+const MONTHLY = {
+  PI: (ym: string, seq: number) => `PI-${ym}${String(seq).padStart(3, '0')}`,
+  DN: (ym: string, seq: number) => `DN${ym}${String(seq).padStart(3, '0')}`,
+  CN: (ym: string, seq: number) => `CN${ym}${String(seq).padStart(3, '0')}`,
+  SC: (ym: string, seq: number) => `SC${ym}${String(seq).padStart(3, '0')}`,
+  ADJ: (ym: string, seq: number) => `ADJ${ym}${String(seq).padStart(3, '0')}`,
+} as const;
+
+async function nextMonthly(prefix: keyof typeof MONTHLY): Promise<string> {
+  const ym = yearMonth();
+  const ref = doc(db, orgPath('counters'), `${prefix}-${ym}`);
+  const seq = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const next = (snap.exists() ? (snap.data().value as number) : 0) + 1;
+    tx.set(ref, { value: next, updatedAt: serverTimestamp() }, { merge: true });
+    return next;
+  });
+  return MONTHLY[prefix](ym, seq);
+}
+
+/**
+ * The delivery note number for an order fulfilled before delivery notes were
+ * numbered. Given once, on first print, and kept on the order.
+ */
+export async function ensureDeliveryNumber(orderId: string): Promise<string> {
+  const ref = doc(db, orgPath('orders'), orderId);
+  const ym = yearMonth();
+  const counter = doc(db, orgPath('counters'), `DN-${ym}`);
+  return runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const existing = snap.exists() ? (snap.data() as Order).deliveryNumber : undefined;
+    if (existing) return existing;
+    const c = await tx.get(counter);
+    const next = (c.exists() ? (c.data().value as number) : 0) + 1;
+    const number = MONTHLY.DN(ym, next);
+    tx.set(counter, { value: next, updatedAt: serverTimestamp() }, { merge: true });
+    tx.update(ref, { deliveryNumber: number, updatedAt: serverTimestamp() });
+    return number;
+  });
+}
+
+async function nextNumber(prefix: 'PO' | 'INV' | 'RET'): Promise<string> {
+  const year = new Date().getFullYear();
+  const ref = doc(db, orgPath('counters'), `${prefix}-${year}`);
+
+  const seq = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const next = (snap.exists() ? (snap.data().value as number) : 0) + 1;
+    tx.set(ref, { value: next, updatedAt: serverTimestamp() }, { merge: true });
+    return next;
+  });
+
+  return `${prefix}-${year}-${String(seq).padStart(4, '0')}`;
+}
+
+/* users */
+
+/**
+ * `users/{uid}` is a ROOT collection, deliberately. See `tenant.ts`.
+ *
+ * Signing in gives us a uid and nothing else; this document is what tells us
+ * which organisation the session belongs to. A per-org user collection would
+ * need the org id to find the document that contains the org id.
+ *
+ * There is no `getProfile` here on purpose: `AuthContext` subscribes to this
+ * document with `onSnapshot` rather than reading it once, so a role change or a
+ * suspension reaches an open session in a second rather than at the next
+ * reload. A one-shot read would only have been a second, staler way to ask.
+ */
+export async function updateProfile(uid: string, patch: Partial<UserProfile>): Promise<void> {
+  const watched = patch.role || patch.firstName !== undefined || patch.lastName !== undefined || patch.employeeCode !== undefined;
+  const before = watched ? await getDoc(doc(db, 'users', uid)).catch(() => null) : null;
+  await updateDoc(doc(db, 'users', uid), { ...patch, updatedAt: serverTimestamp() });
+  const was = before?.exists() ? (before.data() as UserProfile) : null;
+  if (was) {
+    const name = `${was.firstName} ${was.lastName}`.trim();
+    const ref = was.employeeCode || name;
+    if (patch.role && patch.role !== was.role) {
+      logAudit({ area: 'people', action: 'user.role-changed', summary: `Role changed for ${name}: ${was.role} → ${patch.role}`, ref });
+    }
+    const newName = `${patch.firstName ?? was.firstName} ${patch.lastName ?? was.lastName}`.trim();
+    if (newName !== name) {
+      logAudit({ area: 'people', action: 'user.renamed', summary: `Name changed: ${name} → ${newName}`, ref });
+    }
+    if (patch.employeeCode !== undefined && patch.employeeCode !== (was.employeeCode ?? '')) {
+      logAudit({
+        area: 'people',
+        action: 'user.code-changed',
+        summary: `Employee code for ${newName}: ${was.employeeCode || 'none'} → ${patch.employeeCode}`,
+        ref: patch.employeeCode,
+      });
+    }
+  }
+}
+
+/** Detach a login from the distributor account it used to belong to. */
+export async function clearDistributorLink(uid: string): Promise<void> {
+  await updateDoc(doc(db, 'users', uid), {
+    distributorId: deleteField(),
+    distributorCategory: deleteField(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * The distributor accounts a sales rep manages. Replaces the whole list, and
+ * clears the single link older reps were given, so it lives in one place.
+ */
+export async function setRepDistributors(uid: string, distributorIds: string[]): Promise<void> {
+  await updateDoc(doc(db, 'users', uid), {
+    distributorIds: [...new Set(distributorIds)],
+    distributorId: deleteField(),
+    distributorCategory: deleteField(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Everybody in this organisation.
+ *
+ * Queried by `orgId` on the root collection rather than from a subtree: the
+ * one place in the app that filters instead of scoping, and it is safe only
+ * because the rules refuse this query to anybody whose own `orgId` does not
+ * match the filter. See the `users` block in `firestore.rules`; if that rule
+ * is ever loosened, this function becomes a way to enumerate the platform.
+ */
+/**
+ * The people who can sign an order, found one role at a time: the only part
+ * of the team a distributor or rep is allowed to list.
+ */
+export async function listApproverPool(): Promise<UserProfile[]> {
+  const orgId = requireOrg();
+  const snaps = await Promise.all(
+    APPROVER_POOL.map((role) =>
+      getDocs(query(collection(db, 'users'), where('orgId', '==', orgId), where('role', '==', role), fsLimit(500))),
+    ),
+  );
+  return byText<UserProfile>('firstName')(snaps.flatMap((snap) => snap.docs.map((d) => shape<UserProfile>(d.id, d.data()))));
+}
+
+export async function listMembers(): Promise<UserProfile[]> {
+  const snap = await getDocs(
+    query(collection(db, 'users'), where('orgId', '==', requireOrg()), fsLimit(500)),
+  );
+  return byText<UserProfile>('firstName')(snap.docs.map((d) => shape<UserProfile>(d.id, d.data())));
+}
+
+/* settings */
+
+export async function getOrgSettings(): Promise<OrgSettings | null> {
+  const snap = await getDoc(doc(db, orgPath('settings'), 'org'));
+  return snap.exists() ? (shape<OrgSettings & { id: string }>(snap.id, snap.data()) as OrgSettings) : null;
+}
+
+export async function saveOrgSettings(patch: Partial<OrgSettings>): Promise<void> {
+  await setDoc(
+    doc(db, orgPath('settings'), 'org'),
+    { ...patch, updatedAt: serverTimestamp() },
+    { merge: true },
+  );
+  /* Only the settings that change who decides or what is owed; the logo and footer are not decisions. */
+  const weighty = Object.keys(patch).filter((k) => /approv|credit|limit|threshold|terms|tax|vat|price|discount|feature|role/i.test(k));
+  if (weighty.length) {
+    logAudit({
+      area: 'settings',
+      action: 'settings.changed',
+      summary: `Company settings changed: ${weighty.map((k) => k.replace(/([A-Z])/g, ' $1').toLowerCase()).join(', ')}`,
+    });
+  }
+}
+
+/* products */
+
+export function listProducts(activeOnly = false): Promise<Product[]> {
+  return activeOnly
+    ? list<Product>('products', where('status', '==', 'active')).then((rows) => byText<Product>('name')(rows.map(withTiers)))
+    : list<Product>('products', orderBy('name')).then((rows) => rows.map(withTiers));
+}
+
+export async function saveProduct(product: Partial<Product> & { id?: string }): Promise<string> {
+  const { id, ...data } = product;
+  if (id) {
+    /* A price change is a decision worth a line in the audit log; other edits are not. */
+    const before = data.pricing ? await one<Product>('products', id).catch(() => null) : null;
+    await updateDoc(doc(db, orgPath('products'), id), { ...data, updatedAt: serverTimestamp() });
+    if (before && data.pricing && JSON.stringify(before.pricing ?? {}) !== JSON.stringify(data.pricing)) {
+      logAudit({
+        area: 'catalogue',
+        action: 'product.repriced',
+        summary: `Prices changed on ${data.name ?? before.name}: ${priceList(before.pricing)} → ${priceList(data.pricing)}`,
+        ref: data.name ?? before.name,
+      });
+    }
+    return id;
+  }
+  /* Goods get their stock count sticker code the moment they exist; services are never counted. */
+  if (!data.service && !data.countCode) {
+    const taken = (await list<Product>('products').catch(() => [] as Product[])).map((p) => p.countCode ?? '');
+    data.countCode = newCountCode(requireOrg(), taken);
+  }
+  const ref = await addDoc(collection(db, orgPath('products')), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  logAudit({
+    area: 'catalogue',
+    action: 'product.added',
+    summary: `Product added: ${data.name ?? 'unnamed'}${data.pricing ? `, ${priceList(data.pricing)}` : ''}`,
+    ref: data.name,
+  });
+  return ref.id;
+}
+
+/** "OT ₦3,000 · MT ₦2,800", for the audit log. */
+function priceList(pricing: Partial<Record<string, number>> | undefined): string {
+  const parts = Object.entries(pricing ?? {})
+    .filter(([, v]) => typeof v === 'number')
+    .map(([tier, v]) => `${tier} ${nairaPlain(v as number)}`);
+  return parts.length ? parts.join(' · ') : 'no price';
+}
+
+/**
+ * Products are retired, never deleted.
+ *
+ * A deleted product leaves every past order line pointing at nothing: and
+ * because those lines carry their own snapshot of name and price, they would
+ * still *render* correctly while any attempt to re-order or reconcile them
+ * failed with a missing document. Setting `status: 'inactive'` takes it out of
+ * the catalogue and leaves the history whole.
+ */
+export async function retireProduct(id: string): Promise<void> {
+  await updateDoc(doc(db, orgPath('products'), id), {
+    status: 'inactive',
+    updatedAt: serverTimestamp(),
+  });
+  const product = await one<Product>('products', id).catch(() => null);
+  logAudit({ area: 'catalogue', action: 'product.retired', summary: `Product retired: ${product?.name ?? id}`, ref: product?.name });
+}
+
+/* distributors */
+
+/** The given accounts, one read each: how a distributor or rep loads only its own. */
+/* Older records say "SEP" for the service-account tier; the app only ever sees SA. */
+function withTiers(product: Product): Product {
+  const stored = (product.pricing ?? {}) as Partial<Record<PriceTier | 'SEP', number>>;
+  const pricing: Partial<Record<PriceTier, number>> = {};
+  for (const tier of PRICE_TIERS) {
+    const value = tier === 'SA' ? (stored.SA ?? stored.SEP) : stored[tier];
+    if (typeof value === 'number') pricing[tier] = value;
+  }
+  /* Units and cartons only: "carton of 12" reads as Per carton with 12 units in it. */
+  const unit = product.service ? product.unit : normaliseUnit(product.unit);
+  const piecesPerUnit = product.piecesPerUnit ?? (product.service ? undefined : piecesFromPack(product.unit) ?? undefined);
+  return { ...product, pricing, unit, piecesPerUnit };
+}
+
+function withTier(distributor: Distributor): Distributor {
+  return { ...distributor, category: tierOf(distributor.category) };
+}
+
+export async function listDistributorsById(ids: string[]): Promise<Distributor[]> {
+  const snaps = await Promise.all(ids.map((id) => getDoc(doc(db, orgPath('distributors'), id))));
+  return snaps
+    .filter((snap) => snap.exists())
+    .map((snap) => withTier(shape<Distributor>(snap.id, snap.data())))
+    .sort((a, b) => a.company.localeCompare(b.company));
+}
+
+export function listDistributors(): Promise<Distributor[]> {
+  return list<Distributor>('distributors', orderBy('company')).then((rows) => rows.map(withTier));
+}
+
+export async function saveDistributor(
+  distributor: Partial<Distributor> & { id?: string },
+): Promise<string> {
+  const { id, ...data } = distributor;
+  if (id) {
+    const before = data.creditLimit !== undefined ? await one<Distributor>('distributors', id).catch(() => null) : null;
+    await updateDoc(doc(db, orgPath('distributors'), id), { ...data, updatedAt: serverTimestamp() });
+    if (before && data.creditLimit !== undefined && (before.creditLimit ?? 0) !== data.creditLimit) {
+      logAudit({
+        area: 'finance',
+        action: 'credit-limit.changed',
+        summary: `Credit limit for ${data.company ?? before.company}: ${nairaPlain(before.creditLimit ?? 0)} → ${nairaPlain(data.creditLimit ?? 0)}`,
+        ref: data.company ?? before.company,
+        amount: data.creditLimit ?? 0,
+      });
+    }
+    return id;
+  }
+  const ref = await addDoc(collection(db, orgPath('distributors')), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+/* orders */
+
+/**
+ * Which distributor accounts a list covers: one id, several, or `null` for
+ * all. An empty list covers none: a rep with nothing assigned sees nothing.
+ */
+export type DistributorScope = string | string[] | null | undefined;
+
+/**
+ * Runs a list once per account and merges the results. One `==` query per
+ * account keeps every query provably inside the rules (a partner may only
+ * read its own accounts) and is served by the same indexes as before.
+ */
+async function scopedList<T>(
+  scope: DistributorScope,
+  run: (clause: QueryConstraint[]) => Promise<T[]>,
+  sort: (rows: T[]) => T[],
+  max?: number,
+): Promise<T[]> {
+  let rows: T[];
+  if (scope == null || scope === '') {
+    rows = await run([]);
+  } else {
+    const ids = [...new Set(Array.isArray(scope) ? scope : [scope])].filter(Boolean);
+    if (!ids.length) return [];
+    rows = (await Promise.all(ids.map((id) => run([where('distributorId', '==', id)])))).flat();
+  }
+  const sorted = sort(rows);
+  return max ? sorted.slice(0, max) : sorted;
+}
+
+export interface OrderFilter {
+  status?: OrderStatus;
+  /** Set by `partnerScope()`: a distributor or rep sees only their account. */
+  distributorId?: DistributorScope;
+  max?: number;
+}
+
+export async function listOrders(filter: OrderFilter = {}): Promise<Order[]> {
+  /* Always capped: the rules refuse an uncapped list to a partner. */
+  const max = filter.max ?? 500;
+  return scopedList<Order>(
+    filter.distributorId,
+    (clause) =>
+      list<Order>(
+        'orders',
+        ...(filter.status ? [where('status', '==', filter.status)] : []),
+        ...clause,
+        orderBy('createdAt', 'desc'),
+        fsLimit(max),
+      ),
+    newestFirst<Order>('createdAt'),
+    max,
+  );
+}
+
+export const getOrder = (id: string) => one<Order>('orders', id);
+
+/**
+ * Every order raised on or after a date, for the sales analytics.
+ *
+ * A range on `createdAt` and an order on the same field, so it is served by
+ * the automatic single-field index: no composite index to create. Capped,
+ * because a report that downloads a whole year of orders on a phone is not a
+ * report anybody waits for; 5,000 orders is a long way past a quarter for
+ * the businesses this is built for.
+ */
+export function listOrdersSince(fromISO: string, max = 5000): Promise<Order[]> {
+  return list<Order>(
+    'orders',
+    where('createdAt', '>=', Timestamp.fromDate(new Date(`${fromISO}T00:00:00`))),
+    orderBy('createdAt', 'desc'),
+    fsLimit(max),
+  );
+}
+
+/**
+ * A new order, numbered and priced.
+ *
+ * The caller hands in lines with a product, a quantity and, when the person is
+ * allowed to adjust prices (`mayAdjustPrice` in lib/pricing.ts), the price they
+ * agreed. The list price always comes from the distributor's own tier and is
+ * stored beside it, so the gap between the two is a visible discount on the
+ * order, the approval and the printed proforma and invoice: never a silent one.
+ */
+export async function createOrder(input: {
+  distributor: Pick<Distributor, 'id' | 'company' | 'category'>;
+  lines: { product: Product; quantity: number; unitPrice?: number; note?: string }[];
+  note?: string;
+  discountNote?: string;
+  author: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>;
+  submit?: boolean;
+  approvers?: { uid: string; name: string }[];
+}): Promise<string> {
+  const lines: OrderLine[] = input.lines.map(({ product, quantity, unitPrice: agreed, note }) => {
+    const tierPrice = product.pricing[input.distributor.category] ?? 0;
+    const unitPrice = agreed !== undefined && agreed > 0 ? kobo(agreed) : tierPrice;
+    /* A service is priced per order (Logistics to Kano is not Logistics to
+       Ikeja), so its price is never a discount against a list. */
+    const listPrice = product.service ? unitPrice : tierPrice;
+    return {
+      productId: product.id,
+      productName: product.name,
+      category: product.category,
+      unit: product.unit,
+      quantity,
+      listPrice,
+      unitPrice,
+      lineTotal: kobo(unitPrice * quantity),
+      ...(product.service ? { service: true } : {}),
+      ...(note?.trim() ? { note: note.trim() } : {}),
+    };
+  });
+
+  const unpriced = lines.find((line) => !(line.unitPrice > 0) || !(line.quantity > 0));
+  if (unpriced) {
+    throw new Error(`${unpriced.productName} has no price or quantity for this distributor, so it cannot go on the order.`);
+  }
+  if (!lines.length) throw new Error('Add at least one line to the order.');
+
+  const priced = summarise(lines);
+  const total = kobo(priced.net);
+  const approvers = input.approvers ?? [];
+  const authorName = `${input.author.firstName} ${input.author.lastName}`;
+
+  /*
+   * AN ORDER NOBODY HAS TO SIGN IS APPROVED, NOT "AWAITING APPROVAL".
+   *
+   * This wrote `pending_approval` whenever `submit` was true, including when
+   * the approver list was empty: which is every order in an organisation that
+   * has left `approvalThreshold` at its default of zero, i.e. every new
+   * organisation. Nothing could then move it: `decideOrder` requires the caller
+   * to be in `approvers`, and the array was empty, so the order sat in the
+   * queue forever and the depot never saw it. The first thing anybody did with
+   * this product was raise an order that could not be fulfilled.
+   *
+   * Submitting with no required signature now means exactly what it says:
+   * approved, ready to pick.
+ */
+  const status: OrderStatus = !input.submit ? 'draft' : approvers.length ? 'pending_approval' : 'approved';
+
+  const orderNumber = await nextMonthly('PI');
+  const ref = await addDoc(collection(db, orgPath('orders')), {
+    orderNumber,
+    distributorId: input.distributor.id,
+    distributorName: input.distributor.company,
+    lines,
+    total,
+    grossTotal: kobo(priced.gross),
+    discountTotal: kobo(priced.discount),
+    discountNote: priced.discount > 0 ? input.discountNote?.trim() || null : null,
+    priceAdjustedBy: priced.discount > 0 ? authorName : null,
+    status,
+    ...(status === 'approved' ? { approvedAt: serverTimestamp() } : {}),
+    approvers: approvers.map((a) => a.uid),
+    approverNames: Object.fromEntries(approvers.map((a) => [a.uid, a.name])),
+    approvals: [],
+    note: input.note ?? null,
+    createdBy: input.author.id,
+    createdByName: authorName,
+    createdByRole: input.author.role,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  if (status !== 'draft') {
+    logAudit({
+      area: 'sales',
+      action: 'order.raised',
+      summary: `Raised order ${orderNumber} for ${input.distributor.company}`,
+      ref: orderNumber,
+      amount: total,
+    });
+  }
+
+  return ref.id;
+}
+
+/**
+ * One approver's decision, and the status that follows from it.
+ *
+ * The status is derived here rather than sent by the caller: one rejection is a
+ * rejection, and it takes every required approver to make an approval. A screen
+ * that computed that itself would eventually compute it differently from
+ * another screen, and an order would sit approved with a rejection on it.
+ */
+export async function decideOrder(
+  orderId: string,
+  decision: 'approved' | 'rejected',
+  approver: Pick<UserProfile, 'id' | 'firstName' | 'lastName'>,
+  note?: string,
+): Promise<OrderStatus> {
+  const ref = doc(db, orgPath('orders'), orderId);
+  let seen: Order | null = null;
+
+  const result = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('That order no longer exists.');
+    const order = snap.data() as Order;
+    seen = order;
+
+    const approvals = [
+      ...(order.approvals ?? []).filter((a) => a.uid !== approver.id),
+      {
+        uid: approver.id,
+        name: `${approver.firstName} ${approver.lastName}`,
+        decision,
+        note: note ?? null,
+        decidedAt: new Date().toISOString(),
+      },
+    ];
+
+    const rejected = approvals.some((a) => a.decision === 'rejected');
+    /* One signature is enough: any approver named on the order, or a super admin. */
+    const signed = approvals.some((a) => a.decision === 'approved');
+    const status: OrderStatus = rejected ? 'rejected' : signed ? 'approved' : 'pending_approval';
+
+    tx.update(ref, {
+      approvals,
+      status,
+      updatedAt: serverTimestamp(),
+      ...(status === 'approved' ? { approvedAt: serverTimestamp() } : {}),
+      ...(status === 'rejected' ? { rejectedAt: serverTimestamp() } : {}),
+    });
+
+    return status;
+  });
+  const order = seen as Order | null;
+  if (order) {
+    logAudit({
+      area: 'sales',
+      action: decision === 'approved' ? 'order.approved' : 'order.rejected',
+      summary: `${decision === 'approved' ? 'Approved' : 'Rejected'} order ${order.orderNumber} for ${order.distributorName}`,
+      ref: order.orderNumber,
+      amount: order.netTotal ?? order.total,
+      reason: note,
+    });
+  }
+  return result;
+}
+
+/**
+ * Fulfil an order: deduct the stock and write the ledger, or do neither.
+ *
+ * ALL OF IT IN ONE TRANSACTION, AND THAT IS THE WHOLE POINT.
+ *
+ * The version this replaces did the deduction in a loop of `updateDoc` calls in
+ * `inventoryDeduction.js` with no transaction at all. A connection dropped
+ * halfway through a six-line order left three products deducted, three not, the
+ * order marked fulfilled, and a ledger that no longer reconciled to the
+ * balances: which is discovered a month later during a stock count, by which
+ * point nobody can say which three.
+ *
+ * Reads before writes, because Firestore transactions require it: every
+ * position is read first, then every write is issued. That also means the
+ * shortfall check below sees the whole order at once, so an order that cannot
+ * be filled completely deducts nothing rather than partially emptying a depot.
+ */
+export async function fulfilOrder(
+  orderId: string,
+  warehouseId: string,
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName'>,
+): Promise<void> {
+  const orderRef = doc(db, orgPath('orders'), orderId);
+  const actorName = `${actor.firstName} ${actor.lastName}`;
+
+  await runTransaction(db, async (tx) => {
+    const orderSnap = await tx.get(orderRef);
+    if (!orderSnap.exists()) throw new Error('That order no longer exists.');
+    const order = orderSnap.data() as Order;
+
+    if (order.status !== 'approved') {
+      throw new Error('Only an approved order can be fulfilled.');
+    }
+
+    /* every read first */
+    /*
+     * Services (Logistics) are never stocked, so they are not checked or
+     * deducted. A line raised before it carried the flag is checked against
+     * the product itself, so an order already waiting goes through too.
+     */
+    const isService = await Promise.all(
+      order.lines.map(async (line) => {
+        if (line.service) return true;
+        const product = await tx.get(doc(db, orgPath('products'), line.productId));
+        return product.exists() && Boolean((product.data() as Product).service);
+      }),
+    );
+    const goods = order.lines.filter((_, index) => !isService[index]);
+
+    /* The delivery note's number, from this month's count. Read here, with every other read. */
+    const ym = yearMonth();
+    const dnRef = doc(db, orgPath('counters'), `DN-${ym}`);
+    const dnSnap = order.deliveryNumber ? null : await tx.get(dnRef);
+    const dnSeq = dnSnap ? (dnSnap.exists() ? (dnSnap.data().value as number) : 0) + 1 : 0;
+
+    const positions = await Promise.all(
+      goods.map(async (line) => {
+        const ref = doc(db, orgPath('stock'), `${warehouseId}_${line.productId}`);
+        const snap = await tx.get(ref);
+        return { line, ref, held: snap.exists() ? (snap.data().quantity as number) : 0, exists: snap.exists() };
+      }),
+    );
+
+    const short = positions.filter((p) => p.held < p.line.quantity);
+    if (short.length) {
+      throw new Error(
+        `Not enough stock in this depot for ${short
+          .map((p) => `${p.line.productName} (${p.held} of ${p.line.quantity})`)
+          .join(', ')}.`,
+      );
+    }
+
+    /* then every write */
+    for (const { line, ref, held, exists } of positions) {
+      const balanceAfter = held - line.quantity;
+
+      if (exists) {
+        tx.update(ref, { quantity: balanceAfter, updatedAt: serverTimestamp() });
+      } else {
+        tx.set(ref, {
+          warehouseId,
+          productId: line.productId,
+          productName: line.productName,
+          unit: line.unit,
+          quantity: balanceAfter,
+          threshold: 0,
+          updatedAt: serverTimestamp(),
+        });
+      }
+
+      tx.set(doc(collection(db, orgPath('movements'))), {
+        warehouseId,
+        productId: line.productId,
+        productName: line.productName,
+        type: 'order_fulfilment',
+        direction: 'out',
+        quantity: line.quantity,
+        balanceAfter,
+        referenceId: orderId,
+        note: `Order ${order.orderNumber}`,
+        createdBy: actor.id,
+        createdByName: actorName,
+        createdAt: serverTimestamp(),
+      });
+    }
+
+    if (dnSnap) tx.set(dnRef, { value: dnSeq, updatedAt: serverTimestamp() }, { merge: true });
+
+    tx.update(orderRef, {
+      status: 'fulfilled',
+      ...(dnSnap ? { deliveryNumber: MONTHLY.DN(ym, dnSeq) } : {}),
+      fulfilledAt: serverTimestamp(),
+      fulfilledBy: actor.id,
+      updatedAt: serverTimestamp(),
+    });
+  });
+}
+
+/* inventory */
+
+export function listWarehouses(): Promise<Warehouse[]> {
+  return list<Warehouse>('warehouses', orderBy('name'));
+}
+
+export async function saveWarehouse(warehouse: Partial<Warehouse> & { id?: string }): Promise<string> {
+  const { id, ...data } = warehouse;
+  if (id) {
+    await updateDoc(doc(db, orgPath('warehouses'), id), { ...data, updatedAt: serverTimestamp() });
+    return id;
+  }
+  const ref = await addDoc(collection(db, orgPath('warehouses')), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+/** Products that are services (Logistics): never part of stock. */
+async function serviceProductIds(): Promise<Set<string>> {
+  const rows = await list<Product>('products', where('service', '==', true)).catch(() => [] as Product[]);
+  return new Set(rows.map((p) => p.id));
+}
+
+/**
+ * Stock positions, without services. Anything ever recorded against a product
+ * now marked as a service (Logistics) is left out, so it never counts in
+ * inventory, low stock, the home screen or the stock export.
+ */
+export async function listStock(warehouseId?: string): Promise<StockPosition[]> {
+  const [rows, services] = await Promise.all([
+    warehouseId
+      ? list<StockPosition>('stock', where('warehouseId', '==', warehouseId)).then(byText<StockPosition>('productName'))
+      : list<StockPosition>('stock', orderBy('productName')),
+    serviceProductIds(),
+  ]);
+  return services.size ? rows.filter((row) => !services.has(row.productId)) : rows;
+}
+
+/** Positions at or below their own threshold: what the home screen counts. */
+export async function lowStock(warehouseId?: string): Promise<StockPosition[]> {
+  const rows = await listStock(warehouseId);
+  return rows.filter((row) => row.threshold > 0 && row.quantity <= row.threshold);
+}
+
+export function listMovements(warehouseId?: string, max = 100): Promise<StockMovement[]> {
+  const constraints: QueryConstraint[] = [];
+  if (warehouseId) constraints.push(where('warehouseId', '==', warehouseId));
+  constraints.push(orderBy('createdAt', 'desc'), fsLimit(max));
+  return list<StockMovement>('movements', ...constraints);
+}
+
+/**
+ * Move stock by hand: a delivery in, a count correction, a write-off.
+ *
+ * Same transaction discipline as `fulfilOrder`, for the same reason. A
+ * `quantity` here is always positive; `direction` says which way it goes. That
+ * is deliberate: a signed quantity means a caller can pass `-5` with
+ * `direction: 'in'` and the ledger disagrees with itself in a way no screen
+ * will show.
+ */
+export async function moveStock(input: {
+  warehouseId: string;
+  product: Pick<Product, 'id' | 'name' | 'unit'>;
+  type: StockMovement['type'];
+  direction: 'in' | 'out';
+  quantity: number;
+  note?: string;
+  referenceId?: string;
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName'>;
+}): Promise<number> {
+  if (input.quantity <= 0) throw new Error('A movement must be for at least one unit.');
+  if ((input.product as Partial<Product>).service) {
+    throw new Error(`${input.product.name} is a service, so it has no stock. It is priced on each order instead.`);
+  }
+
+  const ref = doc(db, orgPath('stock'), `${input.warehouseId}_${input.product.id}`);
+  const actorName = `${input.actor.firstName} ${input.actor.lastName}`;
+
+  return runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const held = snap.exists() ? (snap.data().quantity as number) : 0;
+    const balanceAfter = input.direction === 'in' ? held + input.quantity : held - input.quantity;
+
+    if (balanceAfter < 0) {
+      throw new Error(`Only ${held} in this depot. That movement would leave a negative balance.`);
+    }
+
+    tx.set(
+      ref,
+      {
+        warehouseId: input.warehouseId,
+        productId: input.product.id,
+        productName: input.product.name,
+        unit: input.product.unit,
+        quantity: balanceAfter,
+        threshold: snap.exists() ? snap.data().threshold ?? 0 : 0,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    tx.set(doc(collection(db, orgPath('movements'))), {
+      warehouseId: input.warehouseId,
+      productId: input.product.id,
+      productName: input.product.name,
+      type: input.type,
+      direction: input.direction,
+      quantity: input.quantity,
+      balanceAfter,
+      referenceId: input.referenceId ?? null,
+      note: input.note ?? null,
+      createdBy: input.actor.id,
+      createdByName: actorName,
+      createdAt: serverTimestamp(),
+    });
+
+    return balanceAfter;
+  });
+}
+
+export async function setThreshold(
+  warehouseId: string,
+  productId: string,
+  threshold: number,
+): Promise<void> {
+  await setDoc(
+    doc(db, orgPath('stock'), `${warehouseId}_${productId}`),
+    { threshold, updatedAt: serverTimestamp() },
+    { merge: true },
+  );
+}
+
+/* sales */
+
+export function listSales(
+  filter: { distributorId?: DistributorScope; from?: string; to?: string; max?: number } = {},
+): Promise<Sale[]> {
+  return scopedList<Sale>(
+    filter.distributorId,
+    (clause) =>
+      list<Sale>(
+        'sales',
+        ...clause,
+        ...(filter.from ? [where('saleDate', '>=', filter.from)] : []),
+        ...(filter.to ? [where('saleDate', '<=', filter.to)] : []),
+        orderBy('saleDate', 'desc'),
+        ...(filter.max ? [fsLimit(filter.max)] : []),
+      ),
+    newestFirst<Sale>('saleDate'),
+    filter.max,
+  );
+}
+
+export async function recordSale(input: {
+  product: Pick<Product, 'id' | 'name'>;
+  distributor: Pick<Distributor, 'id' | 'company' | 'category'>;
+  quantity: number;
+  unitPrice: number;
+  outlet?: string;
+  saleDate?: string;
+  note?: string;
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName'>;
+}): Promise<string> {
+  const ref = await addDoc(collection(db, orgPath('sales')), {
+    productId: input.product.id,
+    productName: input.product.name,
+    distributorId: input.distributor.id,
+    distributorName: input.distributor.company,
+    quantity: input.quantity,
+    unitPrice: input.unitPrice,
+    total: input.quantity * input.unitPrice,
+    outlet: input.outlet ?? null,
+    /* The day of the SALE, not the day it was keyed. See `todayISO`. */
+    saleDate: input.saleDate ?? todayISO(),
+    note: input.note ?? null,
+    capturedBy: input.actor.id,
+    capturedByName: `${input.actor.firstName} ${input.actor.lastName}`,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+/* finance */
+
+export function listInvoices(
+  filter: { distributorId?: DistributorScope; status?: Invoice['status']; max?: number } = {},
+): Promise<Invoice[]> {
+  return scopedList<Invoice>(
+    filter.distributorId,
+    (clause) =>
+      list<Invoice>(
+        'invoices',
+        ...clause,
+        ...(filter.status ? [where('status', '==', filter.status)] : []),
+        orderBy('issuedOn', 'desc'),
+        ...(filter.max ? [fsLimit(filter.max)] : []),
+      ),
+    newestFirst<Invoice>('issuedOn'),
+    filter.max,
+  );
+}
+
+/*
+ * The finance dashboard's three reads. Each is one query on a single field
+ * (no composite index to deploy), bounded by date or by status, so the cost
+ * grows with the period looked at, not with the life of the business.
+ */
+
+/** Invoices issued on or after `fromISO` (YYYY-MM-DD), newest first. */
+export function listInvoicesSince(fromISO: string, max = 3000): Promise<Invoice[]> {
+  return list<Invoice>('invoices', where('issuedOn', '>=', fromISO), orderBy('issuedOn', 'desc'), fsLimit(max));
+}
+
+/** Every invoice still owed on, whenever it was issued. */
+export function listOpenInvoices(max = 3000): Promise<Invoice[]> {
+  return list<Invoice>('invoices', where('status', 'in', ['issued', 'part_paid', 'overdue']), fsLimit(max));
+}
+
+/** Payments (cash, credit notes and return credits) on or after `fromISO`. */
+export function listPaymentsSince(fromISO: string, max = 5000): Promise<Payment[]> {
+  return list<Payment>('payments', where('paidOn', '>=', fromISO), orderBy('paidOn', 'desc'), fsLimit(max)).then(standing);
+}
+
+/** A reversed payment was posted in error: it stays on record, not on any list or total. */
+const standing = (rows: Payment[]) => rows.filter((p) => !p.reversed);
+
+/** The live (not void) invoice raised from an order, if any. Read for the proforma's payment status. */
+export async function invoiceForOrder(order: Pick<Order, 'id' | 'distributorId'>): Promise<Invoice | null> {
+  try {
+    const rows = await list<Invoice>(
+      'invoices',
+      where('orderId', '==', order.id),
+      where('distributorId', '==', order.distributorId),
+      fsLimit(5),
+    );
+    return rows.find((invoice) => invoice.status !== 'void') ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function listPayments(invoiceId: string, distributorId?: string): Promise<Payment[]> {
+  /* The account filter lets a distributor read its own payments under the rules. */
+  return list<Payment>(
+    'payments',
+    where('invoiceId', '==', invoiceId),
+    ...(distributorId ? [where('distributorId', '==', distributorId)] : []),
+  )
+    .then(standing)
+    .then(newestFirst<Payment>('paidOn'));
+}
+
+/**
+ * Every payment on an account, in one query.
+ *
+ * The statement used to call `listPayments` once per invoice: three hundred
+ * round trips to draw one page, on a connection where each one is a couple of
+ * hundred milliseconds. `Payment` already carries `distributorId` (snapshotted
+ * at the moment it is recorded, like everything else here), so the whole
+ * account is one query against one index.
+ *
+ * The per-invoice version stays: the payment history inside an invoice really
+ * does want only that invoice's payments, and asking for the account's and
+ * filtering in the browser would be the same mistake pointed the other way.
+ */
+export function listAccountPayments(distributorId: string, max = 500): Promise<Payment[]> {
+  return list<Payment>(
+    'payments',
+    where('distributorId', '==', distributorId),
+    orderBy('paidOn', 'desc'),
+    fsLimit(max),
+  ).then(standing);
+}
+
+/** Who may correct or reverse a posted payment. Nobody else, not even an admin. */
+export const PAYMENT_CORRECTORS: Role[] = ['super_admin', 'finance_manager'];
+
+/** An invoice's status from what has been paid against it. */
+function paidStatus(invoice: Invoice, paid: number): Invoice['status'] {
+  if (paid >= invoice.total - 0.009) return 'paid';
+  if (paid > 0.009) return 'part_paid';
+  return invoice.dueOn && invoice.dueOn < todayISO() ? 'overdue' : 'issued';
+}
+
+/**
+ * Correct a posted payment: amount, date, method or reference, with the
+ * reason. Or reverse it (`reverse: true`) when it was posted in error: its
+ * amount becomes 0, it leaves the statement and every total, and the record
+ * stays.
+ *
+ * ONE TRANSACTION, like posting it: the payment, its correction history, and
+ * the invoice's paid amount and status move together, so the statement and
+ * the invoice can never disagree. The history is appended, never rewritten:
+ * every correction keeps what the payment said before, who changed it and why.
+ *
+ * Credits (from a return or a credit note) are not corrected here: they come
+ * from their own documents and are put right there.
+ */
+export async function amendPayment(input: {
+  payment: Pick<Payment, 'id'>;
+  changes?: { amount: number; paidOn: string; method: Payment['method']; reference: string };
+  reverse?: boolean;
+  reason: string;
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>;
+}): Promise<void> {
+  if (!PAYMENT_CORRECTORS.includes(input.actor.role)) {
+    throw new Error('Only a super admin or the finance manager can correct a payment.');
+  }
+  const reason = input.reason.trim();
+  if (!reason) throw new Error('Say why it is being corrected. It is kept with the payment.');
+  if (!input.reverse) {
+    if (!input.changes) throw new Error('Nothing to change.');
+    if (!(input.changes.amount > 0)) throw new Error('A payment must be for more than nothing. To take it back, reverse it.');
+    if (input.changes.method === 'credit') throw new Error('Choose how the money came in.');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.changes.paidOn)) throw new Error('Choose the date it was paid.');
+  }
+
+  const paymentRef = doc(db, orgPath('payments'), input.payment.id);
+  let trail: unknown = null;
+  await runTransaction(db, async (tx) => {
+    const paySnap = await tx.get(paymentRef);
+    if (!paySnap.exists()) throw new Error('That payment no longer exists.');
+    const payment = { ...(paySnap.data() as Payment), id: paySnap.id };
+    if (payment.reversed) throw new Error('That payment has already been reversed.');
+    if (payment.method === 'credit') {
+      throw new Error('Credits come from a return or a credit note and are corrected there, not here.');
+    }
+    const invoiceRef = doc(db, orgPath('invoices'), payment.invoiceId);
+    const invSnap = await tx.get(invoiceRef);
+    if (!invSnap.exists()) throw new Error('The invoice this payment is against no longer exists.');
+    const invoice = invSnap.data() as Invoice;
+
+    const from = {
+      amount: payment.amount,
+      paidOn: payment.paidOn,
+      method: payment.method,
+      reference: payment.reference ?? null,
+    };
+    const to = input.reverse
+      ? { ...from, amount: 0 }
+      : {
+          amount: kobo(input.changes!.amount),
+          paidOn: input.changes!.paidOn,
+          method: input.changes!.method,
+          reference: input.changes!.reference.trim() || null,
+        };
+    if (
+      !input.reverse &&
+      to.amount === from.amount &&
+      to.paidOn === from.paidOn &&
+      to.method === from.method &&
+      to.reference === from.reference
+    ) {
+      throw new Error('Nothing has changed.');
+    }
+
+    const paidAfter = kobo((invoice.amountPaid ?? 0) - from.amount + to.amount);
+    if (paidAfter > invoice.total + 0.009) {
+      const room = kobo(invoice.total - (invoice.amountPaid ?? 0) + from.amount);
+      throw new Error(
+        `${invoice.invoiceNumber} is for ${nairaPlain(invoice.total, true)}, so this payment can be at most ${nairaPlain(room, true)}.`,
+      );
+    }
+
+    const amendment: PaymentAmendment = {
+      at: new Date().toISOString(),
+      by: input.actor.id,
+      byName: `${input.actor.firstName} ${input.actor.lastName}`,
+      reason: reason.slice(0, 500),
+      from,
+      to,
+      ...(input.reverse ? { reversed: true } : {}),
+    };
+
+    tx.update(paymentRef, {
+      amount: to.amount,
+      paidOn: to.paidOn,
+      method: to.method,
+      reference: to.reference,
+      amendments: [...(payment.amendments ?? []), amendment],
+      ...(input.reverse ? { reversed: true } : {}),
+      updatedAt: serverTimestamp(),
+    });
+    if (paidAfter !== kobo(invoice.amountPaid ?? 0)) {
+      tx.update(invoiceRef, {
+        amountPaid: paidAfter,
+        status: paidStatus(invoice, paidAfter),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    trail = { invoiceNumber: invoice.invoiceNumber, customer: invoice.distributorName, from, to };
+  });
+
+  const t = trail as { invoiceNumber: string; customer: string; from: PaymentAmendment['from']; to: PaymentAmendment['to'] } | null;
+  if (t) {
+    const said = (x: PaymentAmendment['from']) => `${nairaPlain(x.amount)} on ${x.paidOn}${x.reference ? ` (${x.reference})` : ''}`;
+    logAudit({
+      area: 'finance',
+      action: input.reverse ? 'payment.reversed' : 'payment.corrected',
+      summary: input.reverse
+        ? `Reversed a payment of ${said(t.from)} on ${t.invoiceNumber} for ${t.customer}`
+        : `Corrected a payment on ${t.invoiceNumber} for ${t.customer}: ${said(t.from)} → ${said(t.to)}`,
+      ref: t.invoiceNumber,
+      amount: input.reverse ? t.from.amount : t.to.amount,
+      reason,
+    });
+  }
+}
+
+/**
+ * Record a payment and move the invoice's status with it.
+ *
+ * `amountPaid` is incremented server-side rather than read-then-written,
+ * because two people in accounts posting two transfers against the same invoice
+ * at the same moment is not a hypothetical. `increment()` is applied by the
+ * server against whatever the value actually is, so neither posting is lost.
+ *
+ * The status is derived from the new total in the same write. It can only go to
+ * `part_paid` or `paid` here: an invoice never returns to `issued` because
+ * money arrived.
+ */
+export async function recordPayment(input: {
+  invoice: Pick<Invoice, 'id' | 'invoiceNumber' | 'distributorId' | 'total' | 'amountPaid'>;
+  amount: number;
+  method: Payment['method'];
+  reference?: string;
+  paidOn?: string;
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName'>;
+}): Promise<void> {
+  if (input.amount <= 0) throw new Error('A payment must be for more than nothing.');
+
+  /*
+   * ONE TRANSACTION: the payment, the new total and the status together.
+   *
+   * This was two separate writes, with the status worked out from the
+   * amount paid as the screen last saw it. Two people posting against the same
+   * invoice could each see it half paid, and it stayed "part paid" after it
+   * was settled; a dropped connection between the writes left a payment on
+   * the statement that the invoice did not know about. Now the invoice is read
+   * inside the transaction, an overpayment is refused, and both land or
+   * neither does.
+   */
+  const invoiceRef = doc(db, orgPath('invoices'), input.invoice.id);
+  const paymentRef = doc(collection(db, orgPath('payments')));
+
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(invoiceRef);
+    if (!snap.exists()) throw new Error('That invoice no longer exists.');
+    const current = snap.data() as Invoice;
+    if (current.status === 'void') throw new Error('That invoice has been voided.');
+    const paid = current.amountPaid ?? 0;
+    const owed = current.total - paid;
+    if (owed <= 0) throw new Error('That invoice is already paid in full.');
+    if (input.amount > owed) {
+      throw new Error(`Only ${nairaPlain(owed)} is owed on ${current.invoiceNumber}. Record that amount, or put the rest on account.`);
+    }
+    const paidAfter = paid + input.amount;
+
+    tx.set(paymentRef, {
+      invoiceId: input.invoice.id,
+      invoiceNumber: current.invoiceNumber,
+      distributorId: current.distributorId,
+      amount: input.amount,
+      method: input.method,
+      reference: input.reference ?? null,
+      paidOn: input.paidOn ?? todayISO(),
+      recordedBy: input.actor.id,
+      recordedByName: `${input.actor.firstName} ${input.actor.lastName}`,
+      createdAt: serverTimestamp(),
+    });
+    tx.update(invoiceRef, {
+      amountPaid: paidAfter,
+      status: paidAfter >= current.total ? 'paid' : 'part_paid',
+      updatedAt: serverTimestamp(),
+    });
+  });
+
+  logAudit({
+    area: 'finance',
+    action: 'payment.recorded',
+    summary: `Recorded payment on ${input.invoice.invoiceNumber}`,
+    ref: input.invoice.invoiceNumber,
+    amount: input.amount,
+  });
+}
+
+/* credit notes */
+
+/** Credit notes on one invoice, oldest first. */
+export async function listCreditNotes(filter: { invoiceId?: string; orderId?: string; distributorId: string }): Promise<CreditNote[]> {
+  const rows = await list<CreditNote>(
+    'creditNotes',
+    where('distributorId', '==', filter.distributorId),
+    ...(filter.invoiceId ? [where('invoiceId', '==', filter.invoiceId)] : []),
+    ...(filter.orderId ? [where('orderId', '==', filter.orderId)] : []),
+    fsLimit(100),
+  ).catch(() => [] as CreditNote[]);
+  return rows.sort((a, b) => String(a.createdAt ?? '').localeCompare(String(b.createdAt ?? '')));
+}
+
+/**
+ * Bring every order in line with its credit notes.
+ *
+ * Credit notes issued before orders carried their adjustments (or written by
+ * an older version of the app) are copied onto their orders here. Cheap: one
+ * read of the credit notes, and a write only for an order that is out of step.
+ * Run once per organisation per device by `useCreditSync`; safe to run again.
+ */
+export async function syncOrderCredits(): Promise<number> {
+  const notes = await list<CreditNote>('creditNotes', fsLimit(2000));
+  const byOrder = new Map<string, CreditNote[]>();
+  for (const n of notes) if (n.orderId) byOrder.set(n.orderId, [...(byOrder.get(n.orderId) ?? []), n]);
+  let fixed = 0;
+  for (const [orderId, group] of byOrder) {
+    const order = await one<Order>('orders', orderId).catch(() => null);
+    if (!order) continue;
+    const have = new Set((order.credits ?? []).map((c) => c.id));
+    if (group.every((n) => have.has(n.id)) && have.size === group.length) continue;
+    const credits: OrderCredit[] = group
+      .sort((a, b) => String(a.createdAt ?? '').localeCompare(String(b.createdAt ?? '')))
+      .map((n) => ({
+        id: n.id,
+        creditNumber: n.creditNumber,
+        issuedOn: n.issuedOn,
+        reason: n.reason,
+        total: n.total,
+        lines: n.lines.map((l) => ({ productId: l.productId, quantity: l.quantity, toPrice: l.toPrice, amount: l.amount })),
+      }));
+    const creditTotal = kobo(credits.reduce((sum, c) => sum + c.total, 0));
+    await updateDoc(doc(db, orgPath('orders'), orderId), {
+      credits,
+      creditTotal,
+      netTotal: kobo(order.total - creditTotal),
+      updatedAt: serverTimestamp(),
+    });
+    fixed += 1;
+  }
+  return fixed;
+}
+
+/**
+ * Lower the price on an unpaid invoice, with a numbered credit note.
+ *
+ * ONE TRANSACTION: the note, its number, the credit against the invoice and
+ * the invoice's new paid amount and status, together. The value can never be
+ * more than is still owed, so a credit note cannot put an account in credit.
+ * The invoice and the order stay exactly as issued: the note is the record of
+ * what changed, from what price to what price, why, and by whom.
+ */
+export async function issueCreditNote(input: {
+  invoice: Pick<Invoice, 'id'>;
+  lines: CreditNoteLine[];
+  reason: string;
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName'>;
+}): Promise<{ id: string; creditNumber: string }> {
+  const lines = input.lines
+    .map((l) => ({ ...l, fromPrice: kobo(l.fromPrice), toPrice: kobo(l.toPrice), amount: kobo((l.fromPrice - l.toPrice) * l.quantity) }))
+    .filter((l) => l.amount > 0);
+  if (!lines.length) throw new Error('Lower at least one price to raise a credit note.');
+  if (lines.some((l) => l.toPrice < 0)) throw new Error('A price cannot go below zero.');
+  if (!input.reason.trim()) throw new Error('Say why the price changed. It is printed on the credit note.');
+  const total = kobo(lines.reduce((sum, l) => sum + l.amount, 0));
+
+  const invoiceRef = doc(db, orgPath('invoices'), input.invoice.id);
+  const noteRef = doc(collection(db, orgPath('creditNotes')));
+  const paymentRef = doc(collection(db, orgPath('payments')));
+  const ym = yearMonth();
+  const counterRef = doc(db, orgPath('counters'), `CN-${ym}`);
+  const actorName = `${input.actor.firstName} ${input.actor.lastName}`;
+
+  let seenInvoice: Invoice | null = null;
+  const creditNumber = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(invoiceRef);
+    if (!snap.exists()) throw new Error('That invoice no longer exists.');
+    const invoice = snap.data() as Invoice;
+    if (invoice.status === 'void') throw new Error('That invoice has been voided.');
+    const owed = kobo(invoice.total - (invoice.amountPaid ?? 0));
+    if (owed <= 0) throw new Error('That invoice is already settled, so its price can no longer change.');
+    if (total > owed + 0.009) {
+      throw new Error(`Only ${nairaPlain(owed, true)} is still owed on ${invoice.invoiceNumber}, so the credit cannot be ${nairaPlain(total, true)}.`);
+    }
+    const counter = await tx.get(counterRef);
+    /* The order it came from carries the adjustment too, so analytics, the
+       order list and the proforma all show what was really sold. */
+    const orderRef = invoice.orderId ? doc(db, orgPath('orders'), invoice.orderId) : null;
+    const orderSnap = orderRef ? await tx.get(orderRef) : null;
+    const seq = (counter.exists() ? (counter.data().value as number) : 0) + 1;
+    const number = MONTHLY.CN(ym, seq);
+    const paidAfter = kobo((invoice.amountPaid ?? 0) + total);
+
+    if (orderRef && orderSnap?.exists()) {
+      const order = orderSnap.data() as Order;
+      const credits: OrderCredit[] = [
+        ...(order.credits ?? []),
+        {
+          id: noteRef.id,
+          creditNumber: number,
+          issuedOn: todayISO(),
+          reason: input.reason.trim(),
+          total,
+          lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity, toPrice: l.toPrice, amount: l.amount })),
+        },
+      ];
+      const creditTotal = kobo(credits.reduce((sum, c) => sum + c.total, 0));
+      tx.update(orderRef, { credits, creditTotal, netTotal: kobo(order.total - creditTotal), updatedAt: serverTimestamp() });
+    }
+
+    tx.set(counterRef, { value: seq, updatedAt: serverTimestamp() }, { merge: true });
+    tx.set(noteRef, {
+      creditNumber: number,
+      invoiceId: input.invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+      orderId: invoice.orderId ?? null,
+      orderNumber: invoice.orderNumber ?? null,
+      distributorId: invoice.distributorId,
+      distributorName: invoice.distributorName,
+      lines,
+      total,
+      reason: input.reason.trim(),
+      issuedOn: todayISO(),
+      createdBy: input.actor.id,
+      createdByName: actorName,
+      createdAt: serverTimestamp(),
+    });
+    tx.set(paymentRef, {
+      invoiceId: input.invoice.id,
+      invoiceNumber: invoice.invoiceNumber,
+      distributorId: invoice.distributorId,
+      amount: total,
+      method: 'credit',
+      reference: number,
+      paidOn: todayISO(),
+      recordedBy: input.actor.id,
+      recordedByName: actorName,
+      createdAt: serverTimestamp(),
+    });
+    tx.update(invoiceRef, {
+      amountPaid: paidAfter,
+      status: paidAfter >= invoice.total - 0.009 ? 'paid' : 'part_paid',
+      updatedAt: serverTimestamp(),
+    });
+    seenInvoice = invoice;
+    return number;
+  });
+
+  const inv = seenInvoice as Invoice | null;
+  logAudit({
+    area: 'finance',
+    action: 'credit-note.issued',
+    summary: `Credit note ${creditNumber} on ${inv?.invoiceNumber ?? 'an invoice'}${inv ? ` for ${inv.distributorName}` : ''}`,
+    ref: creditNumber,
+    amount: total,
+    reason: input.reason,
+  });
+  return { id: noteRef.id, creditNumber };
+}
+
+/**
+ * What a distributor owes right now, and how much of their ceiling is left.
+ *
+ * Computed from the invoices rather than stored on the distributor, because a
+ * stored balance is a number that can be wrong: and a credit check that passes
+ * against a stale balance is how an account goes ₦4m over its limit.
+ */
+export async function creditPosition(
+  distributorId: string,
+  creditLimit?: number,
+): Promise<{ outstanding: number; overdue: number; headroom: number | null }> {
+  const invoices = await listInvoices({ distributorId });
+  const open = invoices.filter((i) => i.status !== 'paid' && i.status !== 'void' && i.status !== 'draft');
+
+  const outstanding = open.reduce((sum, i) => sum + (i.total - (i.amountPaid ?? 0)), 0);
+  const today = todayISO();
+  const overdue = open
+    .filter((i) => i.dueOn < today)
+    .reduce((sum, i) => sum + (i.total - (i.amountPaid ?? 0)), 0);
+
+  return {
+    outstanding,
+    overdue,
+    headroom: creditLimit === undefined ? null : creditLimit - outstanding,
+  };
+}
+
+/* returns */
+
+export function listReturns(scope?: DistributorScope): Promise<ReturnRecord[]> {
+  if (scope == null || scope === '') return list<ReturnRecord>('returns', orderBy('createdAt', 'desc'));
+  return scopedList<ReturnRecord>(
+    scope,
+    (clause) => list<ReturnRecord>('returns', ...clause),
+    newestFirst<ReturnRecord>('createdAt'),
+  );
+}
+
+/* targets */
+
+export async function listTargets(period: string, owners?: string[] | null): Promise<Target[]> {
+  if (!owners) return list<Target>('targets', where('period', '==', period)).then(byText<Target>('ownerName'));
+  /* A partner reads only its own targets and its accounts': one query each. */
+  const ids = [...new Set(owners)].filter(Boolean);
+  const rows = await Promise.all(
+    ids.map((id) => list<Target>('targets', where('period', '==', period), where('ownerId', '==', id))),
+  );
+  return byText<Target>('ownerName')(rows.flat());
+}
+
+/* home summary */
+
+export interface HomeSummary {
+  openOrders: number;
+  awaitingMe: number;
+  lowStock: number;
+  monthSales: number;
+  outstanding: number;
+  overdue: number;
+  /** The last six months, oldest first: invoiced in each month, and how much of that is paid. */
+  trend: MonthTrend[];
+}
+
+export interface MonthTrend {
+  /** `YYYY-MM`. */
+  month: string;
+  sold: number;
+  collected: number;
+}
+
+/**
+ * The home screen's numbers, in as few reads as the shape allows.
+ *
+ * Scoped by `distributorId` when the viewer is a trading partner, so the same
+ * function answers "how is the business doing" for an administrator and "how is
+ * my account doing" for a distributor without a second implementation. A number
+ * on a home screen that disagrees with the screen it links to is worse than no
+ * number, and two implementations is how that happens.
+ */
+export async function getHomeSummary(input: {
+  role: Role;
+  uid: string;
+  distributorId?: DistributorScope;
+}): Promise<HomeSummary> {
+  const scope = input.distributorId ?? undefined;
+  const monthStart = `${todayISO().slice(0, 7)}-01`;
+
+  const [orders, pending, stock, sales, invoices] = await Promise.all([
+    listOrders({ distributorId: scope, max: 200 }),
+    listOrders({ status: 'pending_approval', distributorId: scope, max: 100 }),
+    /* Stock is inside information; a distributor or rep never reads it. */
+    input.distributorId == null ? lowStock() : Promise.resolve([] as StockPosition[]),
+    listSales({ distributorId: scope, from: monthStart, max: 500 }),
+    listInvoices({ distributorId: scope, max: 500 }),
+  ]);
+
+  const today = todayISO();
+  const open = invoices.filter((i) => i.status !== 'paid' && i.status !== 'void' && i.status !== 'draft');
+
+  /* Six months of what was sold (invoiced) and how much of it has come in. */
+  const months: string[] = [];
+  const now = new Date();
+  for (let back = 5; back >= 0; back -= 1) {
+    const d = new Date(now.getFullYear(), now.getMonth() - back, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const trend: MonthTrend[] = months.map((month) => ({ month, sold: 0, collected: 0 }));
+  const at = new Map(trend.map((row) => [row.month, row]));
+  for (const invoice of invoices) {
+    if (invoice.status === 'void' || invoice.status === 'draft') continue;
+    const row = at.get(invoice.issuedOn.slice(0, 7));
+    if (!row) continue;
+    row.sold += invoice.total;
+    row.collected += Math.min(invoice.total, invoice.amountPaid ?? 0);
+  }
+
+  return {
+    openOrders: orders.filter((o) => o.status === 'pending_approval' || o.status === 'approved').length,
+    /* The super admin may sign any pending order (see ApprovalsPage), so every
+       one is waiting on them; anybody else counts only those naming them. */
+    awaitingMe: pending.filter((o) => input.role === 'super_admin' || (o.approvers ?? []).includes(input.uid)).length,
+    lowStock: stock.length,
+    monthSales: sales.reduce((sum, s) => sum + s.total, 0),
+    outstanding: open.reduce((sum, i) => sum + (i.total - (i.amountPaid ?? 0)), 0),
+    overdue: open
+      .filter((i) => i.dueOn < today)
+      .reduce((sum, i) => sum + (i.total - (i.amountPaid ?? 0)), 0),
+    trend,
+  };
+}
+
+/* the platform */
+
+/** The signed-in organisation's own tenant record: plan and locked features. Readable by its members. */
+export async function getTenant(): Promise<import('./tenant').OrgTenant | null> {
+  const snap = await getDoc(doc(db, TENANTS, requireOrg()));
+  return snap.exists() ? shape<import('./tenant').OrgTenant>(snap.id, snap.data()) : null;
+}
+
+/**
+ * The owner's view: every tenant on the platform.
+ *
+ * The one function in this file that does not go through `orgPath`, because it
+ * is the one function that is not about an organisation: it is about all of
+ * them. The rules refuse this collection to everybody but `owner`.
+ */
+export async function listTenants(): Promise<(import('./tenant').OrgTenant)[]> {
+  const snap = await getDocs(query(collection(db, TENANTS), orderBy('name')));
+  return snap.docs.map((d) => shape<import('./tenant').OrgTenant>(d.id, d.data()));
+}
+
+
+/* amending an order */
+
+/**
+ * Edit an order that is still amendable.
+ *
+ * The caller decides WHETHER this is allowed, `orderAmendment()` in
+ * `lib/amend.ts`, and this decides what a legal edit looks like. The two are
+ * separate on purpose: the policy is shared with the screens that draw the
+ * buttons, and the shape enforcement belongs next to the write.
+ *
+ * The list price is resolved here, never by the caller: an adjusted price
+ * passed in is stored beside it, so any discount stays visible.
+ */
+export async function updateOrder(
+  orderId: string,
+  patch: {
+    lines?: { product: Product; quantity: number; unitPrice?: number; note?: string }[];
+    note?: string;
+    discountNote?: string;
+    distributor?: Pick<Distributor, 'id' | 'company' | 'category'>;
+  },
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+  options: { settled?: boolean } = {},
+): Promise<void> {
+  const ref = doc(db, orgPath('orders'), orderId);
+
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('That order no longer exists.');
+    const order = snap.data() as Order;
+
+    if (order.status === 'fulfilled') {
+      /*
+       * Lines are frozen once stock has left the building.
+       *
+       * The movement that deducted them is in the ledger and cannot be edited,
+       * so changing the lines here would make the order and the ledger disagree
+       *: and the ledger is the one a stock count reconciles against. An
+       * administrator can still fix the note, the distributor or cancel it; a
+       * quantity that went out wrong is corrected with a stock adjustment and a
+       * credit note, which is what those are for.
+ */
+      throw new Error(
+        'This order has been fulfilled, so it can no longer be edited. To reverse any of it, raise a return on the customer\'s account.',
+      );
+    }
+
+    const next: Record<string, unknown> = { updatedAt: serverTimestamp() };
+
+    if (patch.distributor) {
+      next.distributorId = patch.distributor.id;
+      next.distributorName = patch.distributor.company;
+    }
+    if (patch.note !== undefined) next.note = patch.note || null;
+
+    if (patch.lines) {
+      const tier = patch.distributor?.category ?? undefined;
+      /*
+       * A line ADDED to an order for the same distributor has no historic
+       * price, so it takes the distributor's tier price. This read is what
+       * makes that possible: before it, a new line was written at zero because
+       * the tier was not known here, while the screen showed the real price.
+       */
+      let accountTier: PriceTier | undefined;
+      if (!tier && patch.lines.some(({ product }) => !order.lines.some((l) => l.productId === product.id))) {
+        const account = await tx.get(doc(db, orgPath('distributors'), order.distributorId));
+        accountTier = account.exists() ? tierOf((account.data() as Distributor).category) : undefined;
+      }
+      const lines: OrderLine[] = patch.lines.map(({ product, quantity, unitPrice: agreed, note }) => {
+        /* If the distributor did not change, keep the list price the order was
+           raised under: an amendment is not a re-quote. */
+        const existing = order.lines.find((l) => l.productId === product.id);
+        const listPrice = tier
+          ? (product.pricing[tier] ?? 0)
+          : (existing?.listPrice ??
+             existing?.unitPrice ??
+             (accountTier ? product.pricing[accountTier] : undefined) ??
+             0);
+        if (!listPrice && !(product.service && agreed && agreed > 0)) {
+          throw new Error(`${product.name} has no price for this distributor's tier, so it cannot go on the order.`);
+        }
+        const unitPrice =
+          agreed !== undefined && agreed > 0
+            ? kobo(agreed)
+            : tier
+              ? listPrice
+              : (existing?.unitPrice ?? listPrice);
+        return {
+          productId: product.id,
+          productName: product.name,
+          category: product.category,
+          unit: product.unit,
+          quantity,
+          listPrice: product.service ? unitPrice : listPrice,
+          unitPrice,
+          lineTotal: kobo(unitPrice * quantity),
+          ...(product.service ? { service: true } : {}),
+          ...(note?.trim() ? { note: note.trim() } : {}),
+        };
+      });
+      const priced = summarise(lines);
+      const before = summarise(order.lines);
+      next.lines = lines;
+      next.total = kobo(priced.net);
+      next.grossTotal = kobo(priced.gross);
+      next.discountTotal = kobo(priced.discount);
+      if (priced.discount <= 0) {
+        next.discountNote = null;
+        next.priceAdjustedBy = null;
+      } else if (Math.abs(priced.discount - before.discount) > 0.009) {
+        next.priceAdjustedBy = `${actor.firstName} ${actor.lastName}`;
+      }
+    }
+    if (patch.discountNote !== undefined && next.discountNote !== null) {
+      next.discountNote = patch.discountNote.trim() || null;
+    }
+
+    /*
+     * An amendment after the fact is stamped, visibly.
+     *
+     * So the next person who opens the order sees, on the record itself, that
+     * it changed after it was decided. An amendment nobody can see is
+     * indistinguishable from the original having always said this.
+     */
+    if (options.settled) {
+      next.amendedAt = serverTimestamp();
+      next.amendedBy = `${actor.firstName} ${actor.lastName}`;
+    }
+
+    tx.update(ref, next);
+  });
+
+}
+
+/**
+ * Pull an order back out of the approval queue.
+ *
+ * Status returns to `draft` and every signature collected so far is cleared:
+ * which is the whole point. A recalled order that kept its approvals could be
+ * edited and then be sitting "approved" against lines nobody approved, and that
+ * is a signature forged by a state machine rather than a person.
+ *
+ * The approvers list is kept, so sending it again asks the same people.
+ */
+export async function recallOrder(
+  orderId: string,
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+  reason?: string,
+): Promise<void> {
+  const ref = doc(db, orgPath('orders'), orderId);
+
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('That order no longer exists.');
+    const order = snap.data() as Order;
+
+    if (order.status !== 'pending_approval') {
+      throw new Error('Only an order that is waiting for approval can be recalled.');
+    }
+
+    tx.update(ref, {
+      status: 'draft',
+      approvals: [],
+      recalledAt: serverTimestamp(),
+      recalledBy: `${actor.firstName} ${actor.lastName}`,
+      recallReason: reason ?? null,
+      updatedAt: serverTimestamp(),
+    });
+  });
+
+}
+
+/** Send a draft for approval. The counterpart to a recall. */
+export async function submitOrder(
+  orderId: string,
+  approvers: { uid: string; name: string }[],
+  _actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+): Promise<OrderStatus> {
+  const ref = doc(db, orgPath('orders'), orderId);
+  /* Same rule as `createOrder`: no required signature means approved. */
+  const status: OrderStatus = approvers.length ? 'pending_approval' : 'approved';
+
+  await updateDoc(ref, {
+    status,
+    approvers: approvers.map((a) => a.uid),
+    approverNames: Object.fromEntries(approvers.map((a) => [a.uid, a.name])),
+    approvals: [],
+    ...(status === 'approved' ? { approvedAt: serverTimestamp() } : {}),
+    updatedAt: serverTimestamp(),
+  });
+
+  void getDoc(ref)
+    .then((snap) => {
+      const order = snap.data() as Order | undefined;
+      if (!order) return;
+      logAudit({
+        area: 'sales',
+        action: 'order.raised',
+        summary: `Raised order ${order.orderNumber} for ${order.distributorName}`,
+        ref: order.orderNumber,
+        amount: order.total,
+      });
+    })
+    .catch(() => undefined);
+
+  return status;
+}
+
+/**
+ * End an order without deleting it.
+ *
+ * Cancelled rather than removed, because the order number has been quoted, in
+ * an email, on a waybill, to a distributor on the phone, and a number that
+ * exists and then does not is the thing somebody asks about first. A
+ * fulfilled order cannot be cancelled: the stock has gone, and pretending
+ * otherwise makes the ledger unreconcilable.
+ */
+export async function cancelOrder(
+  orderId: string,
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+  reason?: string,
+): Promise<void> {
+  const ref = doc(db, orgPath('orders'), orderId);
+  let seen: Order | null = null;
+
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('That order no longer exists.');
+    const order = snap.data() as Order;
+    seen = order;
+
+    if (order.status === 'fulfilled') {
+      throw new Error(
+        'This order has been fulfilled and the stock has left. Raise a return instead of cancelling it.',
+      );
+    }
+
+    tx.update(ref, {
+      status: 'cancelled',
+      cancelledAt: serverTimestamp(),
+      cancelledBy: `${actor.firstName} ${actor.lastName}`,
+      cancelReason: reason ?? null,
+      updatedAt: serverTimestamp(),
+    });
+  });
+
+  const order = seen as Order | null;
+  if (order) {
+    logAudit({
+      area: 'sales',
+      action: 'order.cancelled',
+      summary: `Cancelled order ${order.orderNumber} for ${order.distributorName}`,
+      ref: order.orderNumber,
+      amount: order.netTotal ?? order.total,
+      reason,
+    });
+  }
+}
+
+/* returns */
+
+export async function createReturn(input: {
+  distributor: Pick<Distributor, 'id' | 'company'>;
+  product: Pick<Product, 'id' | 'name'>;
+  quantity: number;
+  reason: string;
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>;
+}): Promise<string> {
+  const ref = await addDoc(collection(db, orgPath('returns')), {
+    returnNumber: await nextNumber('RET'),
+    distributorId: input.distributor.id,
+    distributorName: input.distributor.company,
+    productId: input.product.id,
+    productName: input.product.name,
+    quantity: input.quantity,
+    reason: input.reason,
+    status: 'requested',
+    requestedBy: input.actor.id,
+    requestedByName: `${input.actor.firstName} ${input.actor.lastName}`,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  return ref.id;
+}
+
+/**
+ * Decide a return, and, when it is received, put the stock back.
+ *
+ * `received` is the status that touches inventory, not `approved`. Approving a
+ * return is agreeing that it may come back; receiving it is somebody at the
+ * depot counting it onto a shelf. Crediting stock on approval is how a
+ * warehouse ends up with cartons it can sell twice.
+ */
+/** Who may record money against an account. Mirrors the payments rule. */
+const MONEY_ROLES: Role[] = ['super_admin', 'admin', 'finance_manager'];
+
+/**
+ * Move a return on: approve or reject it, or receive the goods back.
+ *
+ * The legal moves are checked here: requested to approved or rejected, and
+ * approved to received. Receiving puts the stock back, writes the ledger and
+ * marks the return in ONE transaction, so a dropped connection cannot leave a
+ * return "received" with no stock, or stock back twice from a second press.
+ *
+ * Approving with a credit applies it at once when the person approving can
+ * record money (see `applyReturnCredit`); otherwise it waits for finance, and
+ * the reminders say so.
+ */
+export async function decideReturn(
+  returnId: string,
+  status: ReturnStatus,
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+  options: { creditValue?: number; warehouseId?: string } = {},
+): Promise<void> {
+  const ref = doc(db, orgPath('returns'), returnId);
+  const actorName = `${actor.firstName} ${actor.lastName}`;
+
+  let seenReturn: ReturnRecord | null = null;
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('That return no longer exists.');
+    const record = shape<ReturnRecord>(snap.id, snap.data());
+    seenReturn = record;
+
+    const legal =
+      (record.status === 'requested' && (status === 'approved' || status === 'rejected')) ||
+      (record.status === 'approved' && status === 'received');
+    if (!legal) {
+      /* One whole sentence per move, so every language can word it. */
+      const REFUSED: Record<ReturnStatus, string> = {
+        requested: 'This return has already been decided, so it cannot go back to waiting.',
+        approved: 'Only a return that is waiting for a decision can be approved.',
+        rejected: 'Only a return that is waiting for a decision can be rejected.',
+        received: 'Only an approved return can be received back into stock.',
+      };
+      throw new Error(REFUSED[status]);
+    }
+
+    if (status === 'received') {
+      if (!options.warehouseId) throw new Error('Choose the depot the goods are coming back into.');
+      const stockRef = doc(db, orgPath('stock'), `${options.warehouseId}_${record.productId}`);
+      const stock = await tx.get(stockRef);
+      const held = stock.exists() ? (stock.data().quantity as number) : 0;
+      const balanceAfter = held + record.quantity;
+      tx.set(
+        stockRef,
+        {
+          warehouseId: options.warehouseId,
+          productId: record.productId,
+          productName: record.productName,
+          quantity: balanceAfter,
+          threshold: stock.exists() ? stock.data().threshold ?? 0 : 0,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      tx.set(doc(collection(db, orgPath('movements'))), {
+        warehouseId: options.warehouseId,
+        productId: record.productId,
+        productName: record.productName,
+        type: 'return',
+        direction: 'in',
+        quantity: record.quantity,
+        balanceAfter,
+        referenceId: returnId,
+        note: `Return ${record.returnNumber}`,
+        createdBy: actor.id,
+        createdByName: actorName,
+        createdAt: serverTimestamp(),
+      });
+    }
+
+    tx.update(ref, {
+      status,
+      ...(status === 'approved' && options.creditValue !== undefined && options.creditValue > 0
+        ? { creditValue: options.creditValue }
+        : {}),
+      decidedBy: actorName,
+      updatedAt: serverTimestamp(),
+    });
+  });
+
+  const decided = seenReturn as ReturnRecord | null;
+  if (decided && (status === 'approved' || status === 'rejected')) {
+    logAudit({
+      area: 'sales',
+      action: status === 'approved' ? 'return.approved' : 'return.rejected',
+      summary: `${status === 'approved' ? 'Approved' : 'Rejected'} return ${decided.returnNumber}: ${decided.quantity} × ${decided.productName} from ${decided.distributorName}${status === 'approved' && options.creditValue ? `, credit ${nairaPlain(options.creditValue)}` : ''}`,
+      ref: decided.returnNumber,
+      amount: status === 'approved' ? options.creditValue : undefined,
+    });
+  }
+
+  if (status === 'approved' && (options.creditValue ?? 0) > 0 && MONEY_ROLES.includes(actor.role)) {
+    await applyReturnCredit(returnId, actor);
+  }
+}
+
+/**
+ * Put a return's credit against what the distributor owes.
+ *
+ * Before this existed the credit was a number on the return and nothing else:
+ * the statement, the credit limit and the overdue figures never saw it, so a
+ * distributor who had sent back damaged goods still appeared to owe for them.
+ * Now the credit is recorded as payments (method `credit`) against the
+ * account's open invoices, oldest due date first, so every balance in the app
+ * already includes it. Any credit left over, with nothing open to set it
+ * against, stays on the return as unapplied and can be applied later.
+ */
+export async function applyReturnCredit(
+  returnId: string,
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+): Promise<number> {
+  const ref = doc(db, orgPath('returns'), returnId);
+  const first = await getDoc(ref);
+  if (!first.exists()) throw new Error('That return no longer exists.');
+  const distributorId = (first.data() as ReturnRecord).distributorId;
+
+  /* The candidates are found outside the transaction (a query cannot run in
+     one) and each is re-read inside it, so the figures used are current. */
+  const open = (await listInvoices({ distributorId }))
+    .filter((i) => ['issued', 'part_paid', 'overdue'].includes(i.status) && i.total - (i.amountPaid ?? 0) > 0)
+    .sort((a, b) => (a.dueOn || '').localeCompare(b.dueOn || ''));
+
+  return runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const record = shape<ReturnRecord>(snap.id, snap.data() ?? {});
+    const credit = record.creditValue ?? 0;
+    let left = credit - (record.creditApplied ?? 0);
+    if (left <= 0) return 0;
+    if (!['approved', 'received'].includes(record.status)) throw new Error('Only an approved return carries a credit.');
+
+    const invoices = await Promise.all(
+      open.map(async (invoice) => {
+        const invoiceRef = doc(db, orgPath('invoices'), invoice.id);
+        const fresh = await tx.get(invoiceRef);
+        return { invoiceRef, data: fresh.data() as Invoice | undefined, id: invoice.id };
+      }),
+    );
+
+    let applied = 0;
+    for (const { invoiceRef, data, id } of invoices) {
+      if (left <= 0 || !data) break;
+      const owed = data.total - (data.amountPaid ?? 0);
+      if (owed <= 0 || data.status === 'void') continue;
+      const amount = Math.min(owed, left);
+      const paidAfter = (data.amountPaid ?? 0) + amount;
+      tx.set(doc(collection(db, orgPath('payments'))), {
+        invoiceId: id,
+        invoiceNumber: data.invoiceNumber,
+        distributorId: data.distributorId,
+        amount,
+        method: 'credit',
+        reference: record.returnNumber,
+        paidOn: todayISO(),
+        recordedBy: actor.id,
+        recordedByName: `${actor.firstName} ${actor.lastName}`,
+        createdAt: serverTimestamp(),
+      });
+      tx.update(invoiceRef, {
+        amountPaid: paidAfter,
+        status: paidAfter >= data.total ? 'paid' : 'part_paid',
+        updatedAt: serverTimestamp(),
+      });
+      left -= amount;
+      applied += amount;
+    }
+
+    if (applied > 0) {
+      tx.update(ref, {
+        creditApplied: (record.creditApplied ?? 0) + applied,
+        creditAppliedAt: new Date().toISOString(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    return applied;
+  });
+}
+
+/* targets */
+
+export async function saveTarget(
+  target: Partial<Target> & { id?: string },
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+): Promise<string> {
+  const { id, ...data } = target;
+
+  if (id) {
+    await updateDoc(doc(db, orgPath('targets'), id), { ...data, updatedAt: serverTimestamp() });
+    return id;
+  }
+
+  const ref = await addDoc(collection(db, orgPath('targets')), {
+    ...data,
+    createdBy: actor.id,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function removeTarget(
+  targetId: string,
+  _actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+): Promise<void> {
+  await deleteDoc(doc(db, orgPath('targets'), targetId));
+}
+
+/* invoices */
+
+/**
+ * Raise an invoice, optionally from a fulfilled order.
+ *
+ * The lines are copied from the order rather than referenced, for the same
+ * reason every other snapshot in this app exists: the invoice has to keep
+ * saying what it said on the day it was issued, whatever happens to the order
+ * or the product afterwards.
+ */
+export async function createInvoice(input: {
+  distributor: Pick<Distributor, 'id' | 'company' | 'paymentTermsDays'>;
+  order?: Pick<Order, 'id' | 'orderNumber' | 'lines' | 'total' | 'discountNote'>;
+  lines?: OrderLine[];
+  total?: number;
+  issuedOn?: string;
+  dueOn?: string;
+  issue?: boolean;
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>;
+}): Promise<string> {
+  /* One invoice per order. Two people invoicing the same delivery, or one
+     double tap, would otherwise bill the distributor twice. */
+  if (input.order) {
+    const existing = await list<Invoice>('invoices', where('orderId', '==', input.order.id), fsLimit(5));
+    const live = existing.find((invoice) => invoice.status !== 'void');
+    if (live) throw new Error(`${input.order.orderNumber} is already invoiced on ${live.invoiceNumber}.`);
+  }
+
+  const lines = input.order?.lines ?? input.lines ?? [];
+  const total = input.order?.total ?? input.total ?? lines.reduce((s, l) => s + l.lineTotal, 0);
+  if (!(total > 0)) throw new Error('An invoice needs at least one priced line.');
+  const issuedOn = input.issuedOn ?? todayISO();
+
+  /* Due date from the distributor's own terms, so nobody types it wrong. */
+  const due = new Date(issuedOn);
+  due.setDate(due.getDate() + (input.distributor.paymentTermsDays ?? 30));
+  const dueOn = input.dueOn ?? todayISO(due);
+
+  const invoiceNumber = await nextNumber('INV');
+  const ref = await addDoc(collection(db, orgPath('invoices')), {
+    invoiceNumber,
+    orderId: input.order?.id ?? null,
+    orderNumber: input.order?.orderNumber ?? null,
+    distributorId: input.distributor.id,
+    distributorName: input.distributor.company,
+    lines,
+    total,
+    ...(() => {
+      const priced = summarise(lines);
+      return priced.discount > 0
+        ? {
+            grossTotal: kobo(priced.gross),
+            discountTotal: kobo(priced.discount),
+            discountNote: input.order?.discountNote ?? null,
+          }
+        : {};
+    })(),
+    amountPaid: 0,
+    status: input.issue === false ? 'draft' : 'issued',
+    issuedOn,
+    dueOn,
+    createdBy: input.actor.id,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  if (input.issue !== false) {
+    logAudit({
+      area: 'finance',
+      action: 'invoice.issued',
+      summary: `Issued invoice ${invoiceNumber} to ${input.distributor.company}`,
+      ref: invoiceNumber,
+      amount: total,
+    });
+  }
+
+  return ref.id;
+}
+
+export async function updateInvoice(
+  invoiceId: string,
+  patch: { dueOn?: string; issuedOn?: string; status?: InvoiceStatus; lines?: OrderLine[]; total?: number },
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+  options: { settled?: boolean } = {},
+): Promise<void> {
+  const ref = doc(db, orgPath('invoices'), invoiceId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) throw new Error('That invoice no longer exists.');
+  const invoice = snap.data() as Invoice;
+
+  if ((invoice.amountPaid ?? 0) > 0 && patch.total !== undefined && patch.total < invoice.amountPaid) {
+    /*
+     * An invoice cannot be edited to below what has already been paid against
+     * it. That would leave the account in credit with no credit note to explain
+     * it, and the statement's running balance would go negative for a reason
+     * nobody can point at.
+     */
+    throw new Error(
+      `${nairaPlain(invoice.amountPaid)} has already been paid against this invoice. Raise a credit note instead of reducing it below that.`,
+    );
+  }
+
+  await updateDoc(ref, {
+    ...patch,
+    ...(options.settled ? { amendedAt: serverTimestamp(), amendedBy: `${actor.firstName} ${actor.lastName}` } : {}),
+    updatedAt: serverTimestamp(),
+  });
+
+  /* Edits to what it says (lines, total, dates) are decisions; moving its status along is not. */
+  const what: string[] = [];
+  if (patch.total !== undefined && patch.total !== invoice.total) what.push(`total ${nairaPlain(invoice.total)} → ${nairaPlain(patch.total)}`);
+  else if (patch.lines) what.push('lines');
+  if (patch.issuedOn && patch.issuedOn !== invoice.issuedOn) what.push(`issued ${invoice.issuedOn} → ${patch.issuedOn}`);
+  if (patch.dueOn && patch.dueOn !== invoice.dueOn) what.push(`due ${invoice.dueOn} → ${patch.dueOn}`);
+  if (what.length) {
+    logAudit({
+      area: 'finance',
+      action: 'invoice.edited',
+      summary: `Edited invoice ${invoice.invoiceNumber} for ${invoice.distributorName}: ${what.join(', ')}`,
+      ref: invoice.invoiceNumber,
+      amount: patch.total ?? invoice.total,
+    });
+  }
+}
+
+/** Void rather than delete, for the same reason an order is cancelled. */
+export async function voidInvoice(
+  invoiceId: string,
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+  reason?: string,
+): Promise<void> {
+  const ref = doc(db, orgPath('invoices'), invoiceId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) throw new Error('That invoice no longer exists.');
+  const invoice = snap.data() as Invoice;
+
+  if ((invoice.amountPaid ?? 0) > 0) {
+    throw new Error(
+      `${nairaPlain(invoice.amountPaid)} has been paid against this invoice, so it cannot be voided. Raise a credit note.`,
+    );
+  }
+
+  await updateDoc(ref, {
+    status: 'void',
+    voidReason: reason ?? null,
+    voidedBy: `${actor.firstName} ${actor.lastName}`,
+    updatedAt: serverTimestamp(),
+  });
+
+  logAudit({
+    area: 'finance',
+    action: 'invoice.voided',
+    summary: `Voided invoice ${invoice.invoiceNumber} for ${invoice.distributorName}`,
+    ref: invoice.invoiceNumber,
+    amount: invoice.total,
+    reason,
+  });
+}
+
+/* sales */
+
+/**
+ * Correct a sell-out record.
+ *
+ * `saleStage()` decides who may: inside the current month the person who keyed
+ * it can fix their own typo, and once the month is reported it takes an
+ * administrator. See `lib/amend.ts`.
+ */
+export async function updateSale(
+  saleId: string,
+  patch: { quantity?: number; unitPrice?: number; outlet?: string; saleDate?: string; note?: string },
+  actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+  options: { settled?: boolean } = {},
+): Promise<void> {
+  const ref = doc(db, orgPath('sales'), saleId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) throw new Error('That record no longer exists.');
+  const sale = snap.data() as Sale;
+
+  const quantity = patch.quantity ?? sale.quantity;
+  const unitPrice = patch.unitPrice ?? sale.unitPrice;
+
+  if (quantity <= 0) throw new Error('A sell-out record needs a quantity of at least one.');
+
+  await updateDoc(ref, {
+    ...patch,
+    quantity,
+    unitPrice,
+    /* Kept in step here rather than computed on read, because every report sums
+       `total` and a stale one would quietly disagree with its own line. */
+    total: quantity * unitPrice,
+    ...(options.settled ? { amendedAt: serverTimestamp(), amendedBy: `${actor.firstName} ${actor.lastName}` } : {}),
+    updatedAt: serverTimestamp(),
+  });
+
+}
+
+/**
+ * Remove a sell-out record.
+ *
+ * The one thing in this app that is genuinely deleted rather than cancelled,
+ * and it is worth saying why: a sale that never happened has no counterpart to
+ * point at. An order has a number somebody quoted, an invoice has a number in
+ * an accounts ledger, a stock movement has a balance that follows from it: a
+ * duplicated sell-out line has none of those. Leaving it as a "cancelled sale"
+ * would mean every report had to remember to filter it out, and one day one
+ * would not.
+ */
+export async function deleteSale(
+  saleId: string,
+  _actor: Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role'>,
+): Promise<void> {
+  await deleteDoc(doc(db, orgPath('sales'), saleId));
+}
+
+
+
+/* sticker codes */
+
+/**
+ * Give every goods product without a stock count code one. Administrators
+ * only (the rules refuse anyone else a product write). Returns how many were
+ * given a code.
+ */
+export async function assignMissingCountCodes(): Promise<number> {
+  const products = await list<Product>('products');
+  const taken = products.map((p) => p.countCode ?? '').filter(Boolean);
+  const org = requireOrg();
+  let given = 0;
+  for (const product of products) {
+    if (product.service || product.countCode) continue;
+    const code = newCountCode(org, taken);
+    taken.push(code);
+    await updateDoc(doc(db, orgPath('products'), product.id), { countCode: code, updatedAt: serverTimestamp() });
+    given += 1;
+  }
+  return given;
+}
+
+/** A new code for one product, replacing a lost or damaged sticker run. The old stickers stop working. */
+export async function reissueCountCode(productId: string): Promise<string> {
+  const products = await list<Product>('products');
+  const code = newCountCode(requireOrg(), products.map((p) => p.countCode ?? '').filter(Boolean));
+  await updateDoc(doc(db, orgPath('products'), productId), { countCode: code, updatedAt: serverTimestamp() });
+  const product = products.find((p) => p.id === productId);
+  logAudit({ area: 'stock', action: 'sticker.reissued', summary: `New sticker code for ${product?.name ?? productId}. Old stickers for it no longer scan.`, ref: product?.name });
+  return code;
+}
+
+/* never waiting for ever */
+
+/**
+ * A promise, or a readable error once `ms` has passed. A phone with a weak
+ * signal, or a tab the browser has put to sleep, can leave a request
+ * unanswered indefinitely; a screen must say so rather than spin.
+ */
+function within<T>(work: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer = 0;
+  const late = new Promise<never>((_, reject) => {
+    timer = window.setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([work, late]).finally(() => window.clearTimeout(timer));
+}
+
+const OFFLINE =
+  'AfterBI could not reach the server. Check the connection (or close other AfterBI tabs on this phone) and try again.';
+
+/**
+ * The server's answer if it comes within `ms`; otherwise whatever this
+ * device already holds, so a list shows what it can instead of waiting.
+ * The server is still asked, and the next look gets its answer.
+ */
+async function listSoon<T>(key: CollectionKey, ms: number, ...constraints: QueryConstraint[]): Promise<T[]> {
+  const q = query(collection(db, orgPath(key)), ...constraints);
+  const server = getDocs(q);
+  server.catch(() => undefined);
+  try {
+    const snap = await within(server, ms, OFFLINE);
+    return snap.docs.map((d) => shape<T>(d.id, d.data()));
+  } catch (err) {
+    if (err instanceof Error && err.message !== OFFLINE) throw err;
+    const local = await getDocsFromCache(q).catch(() => null);
+    if (local) return local.docs.map((d) => shape<T>(d.id, d.data()));
+    throw err;
+  }
+}
+
+/* stock counts */
+
+type Actor = Pick<UserProfile, 'id' | 'firstName' | 'lastName'>;
+const actorName = (a: Actor) => `${a.firstName} ${a.lastName}`.trim();
+
+/** Counts, newest first. `warehouseIds` limits them to those depots (a warehouse manager's). */
+export async function listCounts(warehouseIds?: string[] | null, max = 100): Promise<StockCount[]> {
+  const rows = await listSoon<StockCount>('stockCounts', 8000, orderBy('startedAt', 'desc'), fsLimit(max));
+  return warehouseIds ? rows.filter((c) => warehouseIds.includes(c.warehouseId)) : rows;
+}
+
+export const getCount = (id: string) => one<StockCount>('stockCounts', id);
+
+/** Live: the count itself, as other counters and the closing manager change it. */
+export function watchCount(id: string, onChange: (count: StockCount | null) => void, onError?: (err: Error) => void): () => void {
+  return onSnapshot(
+    doc(db, orgPath('stockCounts'), id),
+    { includeMetadataChanges: true },
+    (snap) => {
+      /* Not on this phone yet is not the same as not existing: wait for the server. */
+      if (!snap.exists() && snap.metadata.fromCache) return;
+      onChange(snap.exists() ? shape<StockCount>(snap.id, snap.data()) : null);
+    },
+    (err) => onError?.(err),
+  );
+}
+
+/** Live: every entry in a count, as each counter saves one. Oldest first. */
+export function watchCountEntries(countId: string, onChange: (entries: CountEntry[]) => void, onError?: (err: Error) => void): () => void {
+  return onSnapshot(
+    query(collection(db, `${orgPath('stockCounts')}/${countId}/entries`), orderBy('createdAt', 'asc')),
+    (snap) => onChange(snap.docs.map((d) => shape<CountEntry>(d.id, d.data()))),
+    (err) => onError?.(err),
+  );
+}
+
+export async function listCountEntries(countId: string): Promise<CountEntry[]> {
+  const snap = await getDocs(query(collection(db, `${orgPath('stockCounts')}/${countId}/entries`), orderBy('createdAt', 'asc')));
+  return snap.docs.map((d) => shape<CountEntry>(d.id, d.data()));
+}
+
+/**
+ * Open a count of one depot, with the system's figures as they stand now.
+ *
+ * Only one open count per depot: two would split the counters between them
+ * and neither would be complete.
+ */
+export async function startCount(input: {
+  warehouse: Warehouse;
+  note?: string;
+  actor: Actor;
+  /** The catalogue the screen already holds, so starting costs no extra read. */
+  products: Product[];
+}): Promise<string> {
+  /* What is open here, and what the system holds here: asked at the same time, each with a limit. */
+  const [open, positions] = await Promise.all([
+    listSoon<StockCount>('stockCounts', 8000, where('warehouseId', '==', input.warehouse.id)).catch(() => [] as StockCount[]),
+    listSoon<StockPosition>('stock', 10000, where('warehouseId', '==', input.warehouse.id)),
+  ]);
+  const running = open.find((c) => c.status === 'open');
+  if (running) throw new Error(`${running.number} is still open for ${input.warehouse.name}. Open it from the list, or cancel it first.`);
+
+  const byId = new Map(input.products.map((p) => [p.id, p]));
+  const snapshot: StockCount['snapshot'] = {};
+  for (const pos of positions) {
+    const product = byId.get(pos.productId);
+    if (product?.service) continue;
+    snapshot[pos.productId] = {
+      productName: product?.name ?? pos.productName,
+      unit: product ? countUnit(product) : pos.unit,
+      quantity: Number(pos.quantity) || 0,
+      piecesPerUnit: piecesOf(product),
+      stockFactor: product ? stockFactor(product) : piecesOf(product),
+    };
+  }
+
+  const number = await within(nextMonthly('SC'), 12000, OFFLINE);
+  const ref = doc(collection(db, orgPath('stockCounts')));
+  const write = setDoc(ref, {
+    number,
+    warehouseId: input.warehouse.id,
+    warehouseName: input.warehouse.name,
+    status: 'open',
+    note: input.note?.trim() || null,
+    snapshot,
+    startedBy: input.actor.id,
+    startedByName: actorName(input.actor),
+    startedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  /*
+   * A refusal (the rules) comes back fast and is shown. A slow confirmation
+   * is not waited for: the count is already on this phone and opens now, and
+   * the write reaches the server when the signal does.
+   */
+  try {
+    await within(write, 8000, OFFLINE);
+  } catch (err) {
+    if (!(err instanceof Error && err.message === OFFLINE)) throw err;
+    write.catch(() => undefined);
+  }
+  logAudit({ area: 'stock', action: 'count.started', summary: `Stock count ${number} started at ${input.warehouse.name}`, ref: number });
+  return ref.id;
+}
+
+export interface EntryInput {
+  productId: string;
+  productName: string;
+  location: string;
+  lines: number;
+  perLine: number;
+  extra: number;
+  loose: number;
+  piecesPerUnit: number;
+}
+
+function cleanEntry(input: EntryInput) {
+  const whole = (n: number) => Math.max(0, Math.round(Number(n) || 0));
+  return {
+    productId: input.productId,
+    productName: input.productName,
+    location: input.location.trim().slice(0, 40) || 'Unspecified',
+    lines: whole(input.lines),
+    perLine: whole(input.perLine),
+    extra: whole(input.extra),
+    loose: whole(input.loose),
+    piecesPerUnit: Math.max(1, whole(input.piecesPerUnit)),
+  };
+}
+
+/**
+ * A counter on the warehouse floor must not stand waiting for the signal. A
+ * refusal from the server comes back at once and is shown; a slow
+ * confirmation is not waited for, because the stack is already saved on the
+ * phone, shows in the count straight away, and reaches the server when the
+ * signal does.
+ */
+async function savedSoon(write: Promise<void>): Promise<void> {
+  try {
+    await within(write, 5000, OFFLINE);
+  } catch (err) {
+    if (!(err instanceof Error && err.message === OFFLINE)) throw err;
+    write.catch(() => undefined);
+  }
+}
+
+export async function addCountEntry(countId: string, input: EntryInput, actor: Actor): Promise<string> {
+  const ref = doc(collection(db, `${orgPath('stockCounts')}/${countId}/entries`));
+  await savedSoon(
+    setDoc(ref, {
+      ...cleanEntry(input),
+      countedBy: actor.id,
+      countedByName: actorName(actor),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  return ref.id;
+}
+
+export async function updateCountEntry(countId: string, entryId: string, input: EntryInput): Promise<void> {
+  await savedSoon(
+    updateDoc(doc(db, `${orgPath('stockCounts')}/${countId}/entries`, entryId), {
+      ...cleanEntry(input),
+      updatedAt: serverTimestamp(),
+    }),
+  );
+}
+
+/** Struck out, not deleted: a count's trail is part of the report. */
+export async function voidCountEntry(countId: string, entryId: string, actor: Actor): Promise<void> {
+  await savedSoon(
+    updateDoc(doc(db, `${orgPath('stockCounts')}/${countId}/entries`, entryId), {
+      void: true,
+      voidedBy: actorName(actor),
+      voidedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
+}
+
+/** Close a count. From here it is a report: nothing in it can change, and it changes nothing. */
+export async function closeCount(countId: string, summary: StockCountSummary, actor: Actor): Promise<void> {
+  const ref = doc(db, orgPath('stockCounts'), countId);
+  const number = await within(runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('That count no longer exists.');
+    const data = snap.data() as StockCount;
+    if (data.status !== 'open') throw new Error('That count is already closed.');
+    tx.update(ref, {
+      status: 'closed',
+      summary,
+      closedAt: serverTimestamp(),
+      closedBy: actor.id,
+      closedByName: actorName(actor),
+      updatedAt: serverTimestamp(),
+    });
+    return data.number;
+  }), 15000, OFFLINE);
+  const issues = summary.short + summary.over + summary.notCounted + summary.notInSystem;
+  logAudit({
+    area: 'stock',
+    action: 'count.closed',
+    summary: `Stock count ${number} closed: ${summary.lines} lines, ${summary.matched} matched, ${issues} with a variance`,
+    ref: number,
+  });
+}
+
+export async function cancelCount(countId: string, reason: string, actor: Actor): Promise<void> {
+  const ref = doc(db, orgPath('stockCounts'), countId);
+  const before = await one<StockCount>('stockCounts', countId);
+  if (!before || before.status !== 'open') throw new Error('Only an open count can be cancelled.');
+  await updateDoc(ref, {
+    status: 'cancelled',
+    cancelReason: reason.trim() || 'No reason given',
+    cancelledAt: serverTimestamp(),
+    cancelledBy: actorName(actor),
+    updatedAt: serverTimestamp(),
+  });
+  logAudit({ area: 'stock', action: 'count.cancelled', summary: `Stock count ${before.number} cancelled`, ref: before.number, reason });
+}
+
+/* stock adjustments */
+
+export function listAdjustments(max = 200): Promise<StockAdjustment[]> {
+  return listSoon<StockAdjustment>('stockAdjustments', 8000, orderBy('createdAt', 'desc'), fsLimit(max));
+}
+
+export function listPendingAdjustments(): Promise<StockAdjustment[]> {
+  return listSoon<StockAdjustment>('stockAdjustments', 8000, where('status', '==', 'pending')).then(newestFirst<StockAdjustment>('createdAt'));
+}
+
+/**
+ * Ask for a stock balance to be corrected. Nothing moves yet: it waits for a
+ * finance signature and an operations signature (lib/adjustments.ts).
+ */
+export async function raiseAdjustment(input: {
+  warehouse: Pick<Warehouse, 'id' | 'name'>;
+  product: Product;
+  direction: 'in' | 'out';
+  /** In units of STOCK (pieces for a product kept in pieces); may carry a fraction. */
+  quantity: number;
+  reason: string;
+  count?: Pick<StockCount, 'id' | 'number'> | null;
+  signers: Record<AdjustmentSide, { uid: string; name: string }[]>;
+  actor: Actor;
+}): Promise<string> {
+  if (!(input.quantity > 0)) throw new Error('An adjustment needs a quantity.');
+  if (input.product.service) throw new Error(`${input.product.name} is a service, so it has no stock.`);
+  if (!input.reason.trim()) throw new Error('Say why the stock needs adjusting.');
+  if (!input.signers.finance.length || !input.signers.operations.length) {
+    throw new Error('Nobody can sign this yet. The organisation needs a finance manager, an operations manager or a super admin.');
+  }
+  const number = await within(nextMonthly('ADJ'), 12000, OFFLINE);
+  const signerIds = [...new Set([...input.signers.finance, ...input.signers.operations].map((s) => s.uid))];
+  const ref = doc(collection(db, orgPath('stockAdjustments')));
+  await savedSoon(setDoc(ref, {
+    number,
+    warehouseId: input.warehouse.id,
+    warehouseName: input.warehouse.name,
+    productId: input.product.id,
+    productName: input.product.name,
+    unit: input.product.unit,
+    piecesPerUnit: stockFactor(input.product),
+    cartonPieces: piecesOf(input.product),
+    countUnit: countUnit(input.product),
+    direction: input.direction,
+    quantity: Math.round(input.quantity * 1e6) / 1e6,
+    reason: input.reason.trim().slice(0, 500),
+    countId: input.count?.id ?? null,
+    countNumber: input.count?.number ?? null,
+    status: 'pending',
+    signers: input.signers,
+    signerIds,
+    signatures: {},
+    requestedBy: input.actor.id,
+    requestedByName: actorName(input.actor),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  }));
+  logAudit({
+    area: 'stock',
+    action: 'adjustment.raised',
+    summary: `${number}: ${input.direction === 'in' ? 'add' : 'remove'} ${input.product.name} at ${input.warehouse.name}, waiting for finance and operations`,
+    ref: number,
+    reason: input.reason.trim().slice(0, 300),
+  });
+  return ref.id;
+}
+
+/**
+ * Sign the sides given. When this completes both sides the adjustment is
+ * applied in the same transaction: the position, an `adjustment` movement and
+ * the request marked applied, or none of them.
+ */
+export async function signAdjustment(id: string, sides: AdjustmentSide[], actor: Actor): Promise<'signed' | 'applied'> {
+  if (!sides.length) throw new Error('You are not a signer on this adjustment.');
+  const ref = doc(db, orgPath('stockAdjustments'), id);
+  const name = actorName(actor);
+  const outcome = await within(runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('That adjustment no longer exists.');
+    const adj = shape<StockAdjustment>(snap.id, snap.data());
+    if (adj.status !== 'pending') throw new Error('That adjustment has already been decided.');
+    const signatures = { ...(adj.signatures ?? {}) } as StockAdjustment['signatures'];
+    const at = new Date().toISOString();
+    for (const side of sides) {
+      if (signatures[side]) continue;
+      if (!(adj.signers?.[side] ?? []).some((s) => s.uid === actor.id)) throw new Error('You are not a signer on this adjustment.');
+      signatures[side] = { uid: actor.id, name, at };
+    }
+    const complete = Boolean(signatures.finance && signatures.operations);
+    if (!complete) {
+      tx.update(ref, { signatures, updatedAt: serverTimestamp() });
+      return { state: 'signed' as const, adj };
+    }
+
+    const posRef = doc(db, orgPath('stock'), `${adj.warehouseId}_${adj.productId}`);
+    const pos = await tx.get(posRef);
+    const held = pos.exists() ? Number(pos.data().quantity) || 0 : 0;
+    const per = Math.max(1, adj.piecesPerUnit || 1);
+    /* In pieces, so a fraction of a carton never leaves 0.000001 behind. */
+    const afterPieces = Math.round(held * per) + (adj.direction === 'in' ? 1 : -1) * Math.round(adj.quantity * per);
+    if (afterPieces < 0) throw new Error(`Only ${held} in this depot now. Removing that much would leave a negative balance.`);
+    const balanceAfter = Math.round((afterPieces / per) * 1e6) / 1e6;
+
+    tx.set(
+      posRef,
+      {
+        warehouseId: adj.warehouseId,
+        productId: adj.productId,
+        productName: adj.productName,
+        unit: adj.unit,
+        quantity: balanceAfter,
+        threshold: pos.exists() ? pos.data().threshold ?? 0 : 0,
+        lastAdjustmentId: adj.id,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+    tx.set(doc(collection(db, orgPath('movements'))), {
+      warehouseId: adj.warehouseId,
+      productId: adj.productId,
+      productName: adj.productName,
+      type: 'adjustment',
+      direction: adj.direction,
+      quantity: adj.quantity,
+      balanceAfter,
+      referenceId: adj.id,
+      note: `${adj.number}: ${adj.reason}`.slice(0, 300),
+      createdBy: actor.id,
+      createdByName: name,
+      createdAt: serverTimestamp(),
+    });
+    tx.update(ref, {
+      signatures,
+      status: 'applied',
+      appliedAt: serverTimestamp(),
+      appliedBy: actor.id,
+      appliedByName: name,
+      balanceAfter,
+      updatedAt: serverTimestamp(),
+    });
+    return { state: 'applied' as const, adj };
+  }), 15000, OFFLINE);
+
+  logAudit({
+    area: 'stock',
+    action: outcome.state === 'applied' ? 'adjustment.applied' : 'adjustment.signed',
+    summary:
+      outcome.state === 'applied'
+        ? `${outcome.adj.number} applied: ${outcome.adj.productName} at ${outcome.adj.warehouseName}`
+        : `${outcome.adj.number} signed for ${sides.join(' and ')}`,
+    ref: outcome.adj.number,
+  });
+  return outcome.state;
+}
+
+export async function declineAdjustment(id: string, reason: string, actor: Actor): Promise<void> {
+  const ref = doc(db, orgPath('stockAdjustments'), id);
+  const adj = await one<StockAdjustment>('stockAdjustments', id);
+  if (!adj || adj.status !== 'pending') throw new Error('That adjustment has already been decided.');
+  await updateDoc(ref, {
+    status: 'declined',
+    declineReason: reason.trim() || 'No reason given',
+    declinedAt: serverTimestamp(),
+    declinedBy: actor.id,
+    declinedByName: actorName(actor),
+    updatedAt: serverTimestamp(),
+  });
+  logAudit({ area: 'stock', action: 'adjustment.declined', summary: `${adj.number} declined`, ref: adj.number, reason });
+}
+
+/** The person who raised it takes it back before anyone decides. */
+export async function cancelAdjustment(id: string): Promise<void> {
+  await updateDoc(doc(db, orgPath('stockAdjustments'), id), {
+    status: 'cancelled',
+    cancelledAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
