@@ -45,7 +45,7 @@ export function split(): boolean {
 }
 
 /** Website pages. */
-const SITE = /^\/(?:$|features|product|solutions|pricing|partners|blog|roles|about|demo|terms|privacy)(?:\/|$)/;
+const SITE = /^\/(?:$|features|product|solutions|pricing|partners|blog|reports|roles|about|demo|terms|privacy)(?:\/|$)/;
 /** Public pages that answer on both addresses. */
 const BOTH = /^\/(?:card|verify|help)(?:\/|$)/;
 

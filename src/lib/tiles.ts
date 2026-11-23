@@ -648,6 +648,11 @@ export function actionById(id: string): AppAction | undefined {
   return BY_ID.get(id);
 }
 
+/** The menu action a page title belongs to (for its icon and colour), if any. */
+export function actionByLabel(label: string): AppAction | undefined {
+  return ACTIONS.find((a) => a.label === label);
+}
+
 /**
  * The portal root for a role.
  *
