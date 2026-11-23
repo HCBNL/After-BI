@@ -7,7 +7,7 @@
  * header, the home screens, sign in and the public site), so a refresh is two
  * steps: splash, then the page. Never splash, shell, splash, page.
  *
- * A safety timer removes it anyway after 9 seconds, so a page that forgot to
+ * A safety timer removes it anyway after 20 seconds (a cold start on a slow connection can take most of that), so a page that forgot to
  * say it is ready can never be hidden behind it.
  */
 
@@ -58,5 +58,5 @@ export function useBootDone(ready = true): void {
 }
 
 export function startBootTimer(): void {
-  window.setTimeout(bootDone, 9000);
+  window.setTimeout(bootDone, 20000);
 }

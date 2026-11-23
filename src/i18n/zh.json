@@ -5011,5 +5011,10 @@
 "Fold the menu (Ctrl B)": "收起菜单（Ctrl B）",
 "Open the menu (Ctrl B)": "展开菜单（Ctrl B）",
 "About these suggestions": "关于这些建议",
-"How to do anything in AfterBI, step by step, and what every role is for. Every screen also has its own short guide behind the (i) at its top right.": "如何在 AfterBI 中完成每一件事的分步说明，以及每个角色的职责。每个页面右上角的 (i) 里也有该页的简短指南。"
+"How to do anything in AfterBI, step by step, and what every role is for. Every screen also has its own short guide behind the (i) at its top right.": "如何在 AfterBI 中完成每一件事的分步说明，以及每个角色的职责。每个页面右上角的 (i) 里也有该页的简短指南。",
+"Smart distribution, made simple.": "智能分销，化繁为简。",
+"This account is not ready yet": "此账户尚未准备就绪",
+"Your account has not been fully set up. Ask your administrator to finish setting it up, then sign in again.": "你的账户尚未完成设置。请联系管理员完成设置后再登录。",
+"The sign-in service did not load. Check your connection and refresh the page. If it keeps happening, contact info@afterbi.com.": "登录服务未能加载。请检查网络并刷新页面。如果问题持续，请联系 info@afterbi.com。",
+"This account has been switched off. Ask your administrator.": "此账户已被停用。请联系你的管理员。"
 }
