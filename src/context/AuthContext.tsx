@@ -20,7 +20,7 @@ import { hadSession, isPublicPath, rememberSession } from '@/lib/session';
 import { setActiveOrg, TENANTS } from '@/lib/tenant';
 import { PORTAL_ROOT } from '@/lib/tiles';
 import { setEntitlements } from '@/lib/plans';
-import { setAuditActor } from '@/lib/audit';
+import { setAuditActor } from '@/lib/auditActor';
 import { tierOf, type Role, type UserProfile } from '@/types';
 
 export type AuthProblem =

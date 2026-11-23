@@ -395,3 +395,27 @@
     stroke-dashoffset: 0 !important;
   }
 }
+
+/* ------------------------------------------------ the cover opening
+   The picture first fills the whole screen (its soft edge pushed out of
+   sight), then shrinks into place under the title while the title rises. */
+@property --rp-m1 { syntax: '<percentage>'; inherits: false; initial-value: 62%; }
+@property --rp-m2 { syntax: '<percentage>'; inherits: false; initial-value: 82%; }
+.rp-cover-img {
+  -webkit-mask-image: radial-gradient(120% 100% at 50% 45%, #000 var(--rp-m1), transparent var(--rp-m2));
+  mask-image: radial-gradient(120% 100% at 50% 45%, #000 var(--rp-m1), transparent var(--rp-m2));
+  transition: --rp-m1 1.5s ease, --rp-m2 1.5s ease;
+}
+.rp-cover-img.is-full { --rp-m1: 160%; --rp-m2: 170%; }
+.rp-cover-head > * {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.9s cubic-bezier(.2,.8,.2,1);
+}
+.rp-cover-head.is-shown > * { opacity: 1; transform: none; }
+.rp-cover-head.is-shown > *:nth-child(1) { transition-delay: 0.35s; }
+.rp-cover-head.is-shown > *:nth-child(2) { transition-delay: 0.5s; }
+.rp-cover-head.is-shown > *:nth-child(3) { transition-delay: 0.65s; }
+@media (prefers-reduced-motion: reduce) {
+  .rp-cover-head > * { opacity: 1; transform: none; transition: none; }
+}

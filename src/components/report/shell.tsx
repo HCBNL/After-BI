@@ -14,6 +14,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -296,13 +297,68 @@ export function Film({
 export function Cover({
   src,
   alt,
-  children,
+  head,
+  headClassName,
+  reveal = false,
+  play = true,
 }: {
   src: string;
   alt: string;
-  children?: ReactNode;
+  /** The title, kicker and line, drawn ABOVE the picture. */
+  head?: ReactNode;
+  headClassName?: string;
+  /** Open with the picture filling the whole screen, then shrink it into place. */
+  reveal?: boolean;
+  /** Hold the full screen picture until this turns true (the film has ended). */
+  play?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  /* full: the picture covers the screen. shrink: on its way to its place. rest: in place. */
+  const [stage, setStage] = useState<"full" | "shrink" | "rest">(
+    reveal ? "full" : "rest",
+  );
+
+  /* While full, the picture is scaled and moved to cover the screen edge to edge,
+     measured from where it really sits, so shrinking is one smooth move back home. */
+  useLayoutEffect(() => {
+    if (stage !== "full") return;
+    const el = box.current;
+    if (!el) return;
+    const fit = () => {
+      el.style.transition = "none";
+      el.style.transform = "none";
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const k = Math.max(vw / r.width, vh / r.height) * 1.04;
+      const dx = vw / 2 - (r.left + r.width / 2);
+      const dy = vh / 2 - (r.top + r.height / 2);
+      el.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${k})`;
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage !== "full" || !play) return;
+    const t = window.setTimeout(() => setStage("shrink"), 350);
+    return () => window.clearTimeout(t);
+  }, [stage, play]);
+
+  useEffect(() => {
+    if (stage !== "shrink") return;
+    const el = box.current;
+    if (el) {
+      el.style.transition = "transform 1.5s cubic-bezier(.65,0,.2,1)";
+      el.style.transform = "";
+    }
+    const t = window.setTimeout(() => setStage("rest"), 1550);
+    return () => window.clearTimeout(t);
+  }, [stage]);
+
   useEffect(() => {
     const el = ref.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches)
@@ -340,71 +396,81 @@ export function Cover({
     transition: "transform 0.6s cubic-bezier(.2,.8,.2,1)",
   });
 
+  const shown = stage !== "full";
+
   return (
-    <div
-      ref={ref}
-      className="relative mx-auto w-full max-w-[1500px] px-2 pt-28 sm:pt-28"
-    >
-      <div className="relative">
-        <div className="relative" style={layer(-10)}>
-          <img
-            src={src}
-            alt={alt}
-            fetchPriority="high"
-            decoding="async"
-            className="block w-full select-none"
-            style={{
-              WebkitMaskImage:
-                "radial-gradient(120% 100% at 50% 45%, #000 62%, transparent 82%)",
-              maskImage:
-                "radial-gradient(120% 100% at 50% 45%, #000 62%, transparent 82%)",
-            }}
-          />
+    <div ref={ref} className="relative overflow-x-clip pt-28">
+      {head && (
+        <div className={cn("rp-cover-head", headClassName, shown && "is-shown")}>
+          {head}
         </div>
-        {/* the tile in the sky over the man's head */}
+      )}
+      <div className="relative mx-auto mt-8 w-full max-w-[1500px] px-2 sm:mt-10">
         <div
-          className="absolute left-[43%] top-[2%] w-[11.5%] sm:top-[3%]"
-          style={layer(22)}
+          ref={box}
+          className={cn(
+            "relative origin-center will-change-transform",
+            stage !== "rest" && "z-[70]",
+          )}
         >
-          <div className="aspect-square rounded-[16%] bg-[var(--rp-brand)] p-[8%] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]">
-            <ReportTile />
+          <div className="relative" style={layer(-10)}>
+            <img
+              src={src}
+              alt={alt}
+              width={1800}
+              height={768}
+              fetchPriority="high"
+              decoding="async"
+              className={cn(
+                "rp-cover-img block h-auto w-full select-none",
+                stage === "full" && "is-full",
+              )}
+            />
           </div>
-        </div>
-        {/* the owner's shapes, drifting at their own depths */}
-        <div aria-hidden className="pointer-events-none absolute inset-0">
+          {/* the tile in the sky over the man's head */}
           <div
-            className="absolute left-[58%] top-[14%] w-[5%]"
-            style={layer(34)}
+            className="absolute left-[43%] top-[2%] w-[11.5%] sm:top-[3%]"
+            style={layer(22)}
           >
-            <Art name="spark" className="w-full" />
+            <div className="aspect-square rounded-[16%] bg-[var(--rp-brand)] p-[8%] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]">
+              <ReportTile />
+            </div>
           </div>
-          <div
-            className="absolute left-[4%] top-[18%] w-[6%]"
-            style={layer(28)}
-          >
-            <Art name="bloom" shift={1} className="w-full" />
-          </div>
-          <div
-            className="absolute left-[26%] top-[54%] w-[5%]"
-            style={layer(40)}
-          >
-            <Art name="kite" shift={2} className="w-full" />
-          </div>
-          <div
-            className="absolute right-[5%] top-[52%] w-[6%]"
-            style={layer(30)}
-          >
-            <Art name="orbit" shift={3} className="w-full" />
-          </div>
-          <div
-            className="absolute right-[24%] top-[64%] w-[4.5%]"
-            style={layer(46)}
-          >
-            <Art name="droplet" shift={4} className="w-full" />
+          {/* the owner's shapes, drifting at their own depths */}
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <div
+              className="absolute left-[58%] top-[14%] w-[5%]"
+              style={layer(34)}
+            >
+              <Art name="spark" className="w-full" />
+            </div>
+            <div
+              className="absolute left-[4%] top-[18%] w-[6%]"
+              style={layer(28)}
+            >
+              <Art name="bloom" shift={1} className="w-full" />
+            </div>
+            <div
+              className="absolute left-[26%] top-[54%] w-[5%]"
+              style={layer(40)}
+            >
+              <Art name="kite" shift={2} className="w-full" />
+            </div>
+            <div
+              className="absolute right-[5%] top-[52%] w-[6%]"
+              style={layer(30)}
+            >
+              <Art name="orbit" shift={3} className="w-full" />
+            </div>
+            <div
+              className="absolute right-[24%] top-[64%] w-[4.5%]"
+              style={layer(46)}
+            >
+              <Art name="droplet" shift={4} className="w-full" />
+            </div>
           </div>
         </div>
       </div>
-      {children}
     </div>
   );
 }
