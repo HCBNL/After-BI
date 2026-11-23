@@ -311,8 +311,10 @@ service cloud.firestore {
         && request.resource.data.orgId == profile().get('orgId', '')
         && request.resource.data.active == true
         && request.resource.data.keys().hasOnly(['uid', 'orgId', 'name', 'position', 'company', 'logo', 'photo', 'color', 'phone', 'email', 'website', 'location', 'staffNo', 'active', 'updatedAt']);
+      /* An administrator suspends or restores a card, or swaps in the company's new logo. */
       allow update: if admin(resource.data.orgId)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active', 'updatedAt']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active', 'updatedAt', 'logo'])
+        && request.resource.data.get('logo', '') is string;
       allow delete: if request.auth.uid == uid || admin(resource.data.orgId);
     }
 
