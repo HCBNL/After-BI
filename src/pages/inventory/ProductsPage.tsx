@@ -29,6 +29,7 @@ import { displayCode } from '@/lib/countCode';
 import { naira, count } from '@/lib/format';
 import { cloudinaryConfigured } from '@/lib/cloudinary';
 import { ImagePicker } from '@/components/ImagePicker';
+import { deleteImages } from '@/lib/cloudinary';
 import { GalleryManager } from '@/components/GalleryManager';
 import { ProductShot } from '@/components/catalogue/ProductShot';
 import { PRICE_TIERS, TIER_LABEL, type PriceTier, type Product } from '@/types';
@@ -272,6 +273,8 @@ function ProductModal({
         features: (draft.features ?? []).map((f) => f.trim()).filter(Boolean).slice(0, 12),
         specs: (draft.specs ?? []).map((x) => ({ label: x.label.trim(), value: x.value.trim() })).filter((x) => x.label && x.value).slice(0, 16),
       });
+      /* Pictures taken off the product are deleted from Cloudinary for good. */
+      deleteImages([product.imageUrl, ...(product.images ?? [])], [draft.imageUrl, ...(draft.images ?? [])]);
       onSaved();
     } catch (err) {
       toast.error('Not saved', err instanceof Error ? err.message : undefined);

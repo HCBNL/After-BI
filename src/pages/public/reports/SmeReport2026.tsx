@@ -1040,7 +1040,7 @@ function GrowthChapter() {
         src={`${IMG}/grow.webp`}
         alt="A shop owner and an office owner, arms crossed, under the question: Why do some businesses grow while others struggle to survive?"
         loading="lazy"
-        className="mx-auto w-full max-w-[760px] rounded-[18px] bg-white"
+        className="mx-auto w-full max-w-[760px]"
       />
       <div>
         <Lead color="var(--rp-pink)">

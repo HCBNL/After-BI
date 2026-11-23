@@ -168,13 +168,6 @@ export default function TargetsPage() {
               ? 'Set one per rep, per distributor or per product line, and it is measured against invoiced sales automatically.'
               : 'An administrator sets targets per rep, per distributor or per product line.'
           }
-          action={
-            canSet ? (
-              <Button icon={<Plus size={16} />} onClick={() => setEditing({ period, ownerType: 'distributor' })}>
-                Set a target
-              </Button>
-            ) : undefined
-          }
         />
       ) : (
         <ul className="space-y-2.5">

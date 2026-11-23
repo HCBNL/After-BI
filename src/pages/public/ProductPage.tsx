@@ -9,10 +9,10 @@ import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
 import { IconArt } from '@/components/ui/IconArt';
-import { IconBadge, ModuleIcon, Section, SectionHead, SiteImage, useSiteImages } from '@/components/marketing/site-ui';
+import { IconBadge, ModuleIcon, Section, SectionHead } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
-import { MODULES, MONTH_STEPS, PRODUCT_GROUPS, type SiteImageKey } from '@/lib/site';
+import { MODULES, MONTH_STEPS, PRODUCT_GROUPS } from '@/lib/site';
 import { Scene } from '@/components/marketing/scenes';
 import { FEATURE_STORIES } from '@/lib/featureStories';
 
@@ -64,14 +64,6 @@ function Body() {
               </a>
             ))}
           </nav>
-
-          <SiteImage
-            slot="features-hero"
-            alt="The AfterBI platform"
-            eager
-            width={1400}
-            className="mx-auto mt-12 aspect-[21/9] max-w-6xl rounded-[2rem] shadow-[0_30px_70px_-34px_rgba(15,31,54,0.45)]"
-          />
         </div>
       </section>
 
@@ -130,12 +122,10 @@ function Body() {
   );
 }
 
-/* The module's screenshot when one is uploaded; until then, its illustration. */
-function ModuleVisual({ slug, name }: { slug: string; name: string }) {
-  const images = useSiteImages();
-  const key = `module-${slug}` as SiteImageKey;
+/* The module's illustration. */
+function ModuleVisual({ slug }: { slug: string; name?: string }) {
   const scene = FEATURE_STORIES[slug]?.scenes[0];
-  if (images[key] || !scene) return <SiteImage slot={key} alt={`${name} in AfterBI`} className="aspect-[16/10]" />;
+  if (!scene) return null;
   return (
     <div className="relative aspect-[16/8]" style={{ background: 'repeating-linear-gradient(0deg, #d6eafb 0 3px, #f3f9ff 3px 7px)' }}>
       <Scene name={scene} className="absolute bottom-[4%] right-[6%] aspect-square h-[88%] w-auto" />

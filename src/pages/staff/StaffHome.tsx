@@ -3,13 +3,13 @@
  */
 
 import { Link } from 'react-router-dom';
-import { ArrowRight, Contact, FileText, IdCard } from 'lucide-react';
+import { ArrowRight, BookOpen, Contact, IdCard } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { staffNumber } from '@/lib/staff';
 import { useBootDone } from '@/lib/boot';
 
 const TILES = [
-  { to: 'proposals', label: 'Proposals', icon: FileText, text: 'Make a prospect their own proposal on the spot, signed and ready to send.' },
+  { to: 'handbook', label: 'Handbook', icon: BookOpen, text: 'The AfterBI Handbook as a PDF, ready to send to a company coming on board.' },
   { to: 'id-card', label: 'My ID card', icon: IdCard, text: 'Your AfterBI staff ID card, signed by the CEO, ready to print.' },
   { to: 'card', label: 'My business card', icon: Contact, text: 'Send your contact card to anyone you meet.' },
 ];

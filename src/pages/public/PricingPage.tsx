@@ -9,7 +9,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container } from '@/components/marketing/tokens';
-import { SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { SectionHead } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
 import { PLANS, PRICING_NOTES, yearly, type Plan } from '@/lib/site';
@@ -125,14 +125,6 @@ function PlanCard({ plan, cycle, onBook }: { plan: Plan; cycle: Cycle; onBook: (
           Most popular
         </span>
       )}
-      <SiteImage
-        /* Keyed by the plan's id, never its name: a rename must not orphan
-           the picture the owner has already uploaded for this card. */
-        slot={`plan-${plan.id}`}
-        alt={`${plan.name} plan`}
-        width={480}
-        className="-mx-5 mb-6 aspect-[16/9] rounded-[1.1rem]"
-      />
       <h2 className="font-display text-[1.38rem] font-semibold tracking-[-0.03em] text-navy-900">{plan.name}</h2>
       <p className="mt-1.5 min-h-[3rem] text-[14px] text-navy-600">{plan.forWho}</p>
 

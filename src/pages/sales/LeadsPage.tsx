@@ -192,11 +192,6 @@ export default function LeadsPage() {
           icon={<Users size={24} />}
           title="No leads yet"
           description="Add a business you are following up, then log each visit, call and message on its trail."
-          action={
-            <Button size="sm" icon={<Plus size={16} />} onClick={() => setEditing('new')}>
-              New lead
-            </Button>
-          }
         />
       ) : (
         <>

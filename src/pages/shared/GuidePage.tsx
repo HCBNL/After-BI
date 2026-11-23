@@ -28,7 +28,7 @@ const STARTERS: Partial<Record<Role, string[]>> = {
   warehouse_manager: ['fulfil an order', 'stock in', 'receive a return'],
   operations_manager: ['approve an order', 'fulfil an order', 'stuck orders'],
   finance_manager: ['raise an invoice', 'record a payment', 'credit limit'],
-  owner: ['write a proposal', 'founder photo', 'write a blog article'],
+  owner: ['send the handbook', 'founder photo', 'write a blog article'],
 };
 
 export default function GuidePage() {

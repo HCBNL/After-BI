@@ -17,7 +17,7 @@ import { Scene } from '@/components/marketing/scenes';
 import { Link } from 'react-router-dom';
 import { Seo } from '@/components/Seo';
 import { PublicShell } from '@/components/marketing/kit';
-import { Accordion, SiteImage } from '@/components/marketing/site-ui';
+import { Accordion } from '@/components/marketing/site-ui';
 import { btn } from '@/components/marketing/tokens';
 import { SUPPORT_EMAIL, WHATSAPP_URL } from '@/lib/site';
 
@@ -81,13 +81,9 @@ export default function SignInHelpPage() {
                 </a>
               </div>
              </div>
-              <SiteImage
-                slot="help-contact"
-                alt="AfterBI support"
-                width={480}
-                scene="customer-support"
-                className="min-h-[14rem] bg-brand-50"
-              />
+              <div aria-hidden className="flex min-h-[14rem] items-center justify-center bg-brand-50">
+                <Scene name="customer-support" className="h-[78%] max-h-72 w-[78%] max-w-72" />
+              </div>
             </div>
           </div>
         </section>

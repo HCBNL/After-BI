@@ -126,7 +126,7 @@ const OrganisationsPage = lazy(() => import('@/pages/platform/OrganisationsPage'
 const PricingPage = lazy(() => import('@/pages/platform/PricingPage'));
 const BanksPage = lazy(() => import('@/pages/platform/BanksPage'));
 const WebsitePage = lazy(() => import('@/pages/platform/WebsitePage'));
-const ProposalsPage = lazy(() => import('@/pages/platform/ProposalsPage'));
+const HandbookPage = lazy(() => import('@/pages/platform/HandbookPage'));
 const GuidePage = lazy(() => import('@/pages/shared/GuidePage'));
 const TasksPage = lazy(() => import('@/pages/shared/TasksPage'));
 const HrPage = lazy(() => import('@/pages/hr/HrPage'));
@@ -360,7 +360,8 @@ export default function App() {
             <Route path="website" element={<WebsitePage />} />
             <Route path="blog" element={<BlogAdminPage />} />
             <Route path="requests" element={<SignupRequestsPage />} />
-            <Route path="proposals" element={<ProposalsPage />} />
+            <Route path="handbook" element={<HandbookPage />} />
+            <Route path="proposals" element={<Navigate to="../handbook" replace />} />
             <Route path="staff" element={<StaffPage />} />
             <Route path="guide" element={<GuidePage />} />
             <Route path="profile" element={<ProfilePage />} />
@@ -379,7 +380,8 @@ export default function App() {
           >
             <Route index element={<StaffHome />} />
             <Route path="all" element={<AllActions />} />
-            <Route path="proposals" element={<ProposalsPage />} />
+            <Route path="handbook" element={<HandbookPage />} />
+            <Route path="proposals" element={<Navigate to="../handbook" replace />} />
             <Route path="id-card" element={<StaffIdCard />} />
             <Route path="card" element={<StaffCard />} />
             <Route path="guide" element={<GuidePage />} />

@@ -26,6 +26,8 @@ import { useAuth } from '@/context/AuthContext';
 import { DEMO_PASSWORD, topUpDemo, type DemoProgress } from '@/lib/demo';
 import { saveOrgSettings } from '@/lib/db';
 import { ImagePicker } from '@/components/ImagePicker';
+import { deleteImages } from '@/lib/cloudinary';
+import { refreshCardLogos } from '@/lib/idCards';
 import { BankLogo } from '@/components/brand/BankLogo';
 import { listBankProfiles } from '@/lib/bankProfiles';
 import { useAsync } from '@/hooks/useAsync';
@@ -143,6 +145,9 @@ export default function SettingsPage() {
     setBusy(true);
     try {
       await saveOrgSettings({ ...draft, banks, name: draft.name.trim(), currency: 'NGN' });
+      /* A replaced logo goes onto every staff card first, then the old one is deleted for good. */
+      if (settings?.logoUrl && settings.logoUrl !== draft.logoUrl && user?.orgId) await refreshCardLogos(user.orgId, draft.logoUrl ?? '');
+      deleteImages([settings?.logoUrl, settings?.signatureUrl], [draft.logoUrl, draft.signatureUrl]);
       reload();
       setLocked(true);
       toast.success('Settings saved', 'Locked again. Tap the lock to edit.');

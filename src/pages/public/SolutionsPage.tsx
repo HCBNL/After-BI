@@ -10,7 +10,7 @@ import { Seo } from '@/components/Seo';
 import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { btn, container, eyebrow } from '@/components/marketing/tokens';
-import { CheckList, ModuleIcon, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { CheckList, ModuleIcon, Section, SectionHead } from '@/components/marketing/site-ui';
 import { breadcrumbJsonLd } from '@/lib/siteJsonLd';
 import { cn } from '@/lib/cn';
 import { MODULES, SOLUTIONS } from '@/lib/site';
@@ -41,13 +41,6 @@ function Body() {
             kicker="Solutions"
             title="Built for your part of the value chain"
             body="From manufacturer to modern trade, one platform configured to how you sell."
-          />
-          <SiteImage
-            slot="solutions-hero"
-            alt="AfterBI across the value chain"
-            eager
-            width={1400}
-            className="mx-auto mt-10 aspect-[21/9] max-w-6xl rounded-[2rem] shadow-[0_30px_70px_-34px_rgba(15,31,54,0.45)]"
           />
           <div className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-2.5">
             {SOLUTIONS.map((s) => (

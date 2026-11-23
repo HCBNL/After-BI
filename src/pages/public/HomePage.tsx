@@ -50,7 +50,7 @@ import { PublicShell, useAsk } from '@/components/marketing/kit';
 import { GetApp } from '@/components/marketing/GetApp';
 import { Reveal } from '@/components/marketing/bits';
 import { container } from '@/components/marketing/tokens';
-import { Accordion, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
+import { Accordion, Section, SectionHead } from '@/components/marketing/site-ui';
 import { VideoCard } from '@/components/marketing/VideoCard';
 import { Art, SpinBadge, type ArtName } from '@/components/marketing/art';
 import { Scene, type SceneName } from '@/components/marketing/scenes';
@@ -307,12 +307,7 @@ function FeatureGrid() {
         <FeatureCard
           label="Product catalogue"
           className="h-[27rem] lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:h-auto"
-          front={
-            <>
-              <CatalogueScene />
-              <SiteImage slot="hero-catalogue" alt="Product catalogue" width={720} className="!absolute inset-0 h-full w-full" />
-            </>
-          }
+          front={<CatalogueScene />}
           back={{
             bg: '#0f1f36',
             art: 'bloom',
@@ -350,12 +345,7 @@ function FeatureGrid() {
         <FeatureCard
           label="Finance and analytics"
           className="min-h-[18rem] lg:col-start-2 lg:row-start-2 lg:min-h-0"
-          front={
-            <>
-              <FinanceScene />
-              <SiteImage slot="hero-finance" alt="Finance and analytics" width={720} className="!absolute inset-0 h-full w-full" />
-            </>
-          }
+          front={<FinanceScene />}
           back={{
             bg: '#0b6b47',
             art: 'daisy',
@@ -369,12 +359,7 @@ function FeatureGrid() {
         <FeatureCard
           label="Stock and deliveries"
           className="h-[27rem] lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:h-auto"
-          front={
-            <>
-              <StockScene />
-              <SiteImage slot="hero-stock" alt="Stock and deliveries" width={720} className="!absolute inset-0 h-full w-full" />
-            </>
-          }
+          front={<StockScene />}
           back={{
             bg: '#3a1f8f',
             art: 'orbit',

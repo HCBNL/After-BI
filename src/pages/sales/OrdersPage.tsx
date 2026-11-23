@@ -242,11 +242,7 @@ export default function OrdersPage() {
              is the point of the screen, so it does not hide behind an (i). */
           loud
           description="Check your connection and try again."
-          action={
-            <Button variant="outline" onClick={reload}>
-              Try again
-            </Button>
-          }
+          onRetry={reload}
         />
       ) : (
         <DataTable

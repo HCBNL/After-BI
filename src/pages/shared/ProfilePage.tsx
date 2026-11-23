@@ -49,7 +49,8 @@ import { AccentPicker } from '@/components/AccentPicker';
 import { useAuth } from '@/context/AuthContext';
 import { useOptionalOrg } from '@/context/OrgContext';
 import { updateProfile } from '@/lib/db';
-import { cloudinaryConfigured, imageUrl, shrinkImage, uploadImage } from '@/lib/cloudinary';
+import { cloudinaryConfigured, deleteImages, imageUrl, shrinkImage, uploadImage } from '@/lib/cloudinary';
+import { refreshCardPhoto } from '@/lib/idCards';
 import { useBrand } from '@/lib/brand';
 import { fullName, partnerScope } from '@/lib/roles';
 import { formatDate } from '@/lib/format';
@@ -91,7 +92,10 @@ export default function ProfilePage() {
     setUploading(true);
     try {
       const url = await uploadImage(await shrinkImage(file, 640), 'avatar');
+      const before = user.photoURL;
       await updateProfile(user.id, { photoURL: url });
+      await refreshCardPhoto(user.id, url);
+      deleteImages([before], [url]);
       toast.success('Picture updated');
     } catch (err) {
       toast.error('Picture not updated', err instanceof Error ? err.message : undefined);
@@ -104,7 +108,10 @@ export default function ProfilePage() {
   const removePhoto = async () => {
     setUploading(true);
     try {
+      const before = user.photoURL;
       await updateProfile(user.id, { photoURL: '' });
+      await refreshCardPhoto(user.id, '');
+      deleteImages([before]);
       toast.success('Picture removed');
     } catch (err) {
       toast.error('Not removed', err instanceof Error ? err.message : undefined);

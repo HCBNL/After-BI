@@ -21,11 +21,9 @@ import { Scene } from '@/components/marketing/scenes';
 import { useAsk } from '@/components/marketing/kit';
 import { Reveal } from '@/components/marketing/bits';
 import { container } from '@/components/marketing/tokens';
-import { SiteImage, useSiteImages } from '@/components/marketing/site-ui';
 import { IconArt } from '@/components/ui/IconArt';
 import { cn } from '@/lib/cn';
 import type { FeatureStory } from '@/lib/featureStories';
-import type { SiteImageKey } from '@/lib/site';
 
 const BLUE = '#0866F5';
 
@@ -132,9 +130,6 @@ function Mosaic({ story }: { story: FeatureStory }) {
 }
 
 function MosaicTile({ tile, story }: { tile: Tile; story: FeatureStory }) {
-  const images = useSiteImages();
-  const slot = `feature-${story.key}-1` as SiteImageKey;
-  const hasPhoto = tile.kind === 'photo' && Boolean(images[slot]);
   const blue = tile.kind === 'text' || tile.kind === 'figure' || tile.kind === 'words';
 
   return (
@@ -163,11 +158,7 @@ function MosaicTile({ tile, story }: { tile: Tile; story: FeatureStory }) {
 
       {tile.kind === 'words' && <WordCloud words={story.words} />}
 
-      {tile.kind === 'photo' && hasPhoto && (
-        <SiteImage slot={slot} alt="" width={700} className="absolute inset-0" imgClassName="h-full w-full object-cover" />
-      )}
-
-      {(tile.kind === 'art' || (tile.kind === 'photo' && !hasPhoto)) && tile.scene !== undefined && (
+      {(tile.kind === 'art' || tile.kind === 'photo') && tile.scene !== undefined && (
         <Scene
           name={story.scenes[tile.scene % story.scenes.length]}
           className="absolute bottom-[6%] left-1/2 h-[86%] w-[86%] -translate-x-1/2"
@@ -295,16 +286,7 @@ function bolden(source: string): ReactNode[] {
 }
 
 function PersonCard({ story }: { story: FeatureStory }) {
-  const images = useSiteImages();
-  const slot = `feature-${story.key}-2` as SiteImageKey;
-  if (images[slot]) {
-    return (
-      <div className="relative h-full min-h-[16rem] overflow-hidden rounded-[1.75rem]">
-        <SiteImage slot={slot} alt="" width={700} className="absolute inset-0" imgClassName="h-full w-full object-cover" />
-      </div>
-    );
-  }
-  /* No picture yet: an illustration in the same frame. */
+  /* An illustration in the frame. */
   return (
     <div className="relative h-full min-h-[16rem] overflow-hidden rounded-[1.75rem]" style={GROUND.stripes}>
       <Scene name={story.scenes[3 % story.scenes.length]} className="absolute bottom-[4%] left-1/2 h-[84%] w-[84%] -translate-x-1/2" />
