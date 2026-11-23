@@ -232,12 +232,12 @@ export class ErrorBoundary extends Component<Props, State> {
           </div>
 
           {/*
-            The message itself, small and last. A teacher will not read it, but
-            it is the difference between a useful screenshot and a useless one.
+            The raw error only while developing. On the live site it can name
+            internal paths and ids, so it goes to the browser console instead.
           */}
-          <p className="mt-6 break-words font-mono text-caption leading-relaxed text-muted">
-            {error.message}
-          </p>
+          {import.meta.env.DEV && (
+            <p className="mt-6 break-words font-mono text-caption leading-relaxed text-muted">{error.message}</p>
+          )}
         </div>
       </div>
     );

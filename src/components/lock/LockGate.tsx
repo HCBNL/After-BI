@@ -29,7 +29,7 @@ export function LockGate() {
 
   return (
     <Suspense
-      fallback={cover ? <Wallpaper className="fixed inset-0 z-[400] h-[100dvh]" aria-hidden /> : null}
+      fallback={cover ? <Wallpaper className="fixed inset-0 z-[400] h-[100dvh]" aria-hidden logo /> : null}
     >
       <ScreenLock key={user.id} hidden={hidden} />
     </Suspense>

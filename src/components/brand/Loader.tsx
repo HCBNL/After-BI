@@ -65,7 +65,7 @@ export function SiteSkeleton() {
   return <div className="surface-page fixed inset-0 z-[60]" role="status" aria-label="Loading AfterBI" />;
 }
 
-/** The whole screen while the app is on its way: the moving wallpaper, no spinner, no logo. */
+/** The whole screen while the app is on its way: the moving wallpaper with the opening screen's bars, no spinner. */
 export function ShellSkeleton() {
   return <Wallpaper className="fixed inset-0 z-[60]" label="Loading AfterBI" />;
 }
