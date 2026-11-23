@@ -225,19 +225,20 @@ export function NavRail({
       </div>
       {/*
         Folding the menu: there is no button for it. Hovering the border
-        between the menu and the page shows a line and a small round handle;
+        between the menu and the page shows a faint line (the page's own ink,
+        never a colour) and a small round handle half way down;
         a click folds the menu to its icons, or opens it again. Ctrl B (Cmd B
         on a Mac) does the same.
       */}
       <div className="group/edge absolute inset-y-0 -right-3 z-20 w-6">
-        <span aria-hidden className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-brand-500 opacity-0 transition-opacity duration-150 group-hover/edge:opacity-100" />
+        <span aria-hidden className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--text-primary)] opacity-0 transition-opacity duration-150 group-hover/edge:opacity-[0.12]" />
         <button
           type="button"
           onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? 'Open the menu' : 'Fold the menu'}
           aria-expanded={!collapsed}
           title={collapsed ? 'Open the menu (Ctrl B)' : 'Fold the menu (Ctrl B)'}
-          className="absolute left-1/2 top-[84px] flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full border border-hairline surface-card text-secondary opacity-0 shadow-card transition-[opacity,color] duration-150 hover:text-primary focus-visible:opacity-100 group-hover/edge:opacity-100"
+          className="absolute left-1/2 top-1/2 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-hairline surface-card text-secondary opacity-0 shadow-card transition-[opacity,color] duration-150 hover:text-primary focus-visible:opacity-100 group-hover/edge:opacity-100"
         >
           {collapsed ? <ChevronRight size={15} aria-hidden /> : <ChevronLeft size={15} aria-hidden />}
         </button>

@@ -3,14 +3,12 @@
  *
  *   Section      a full-width band in one of four tones
  *   SectionHead  eyebrow, title and lead, left or centred
- *   SiteImage    a picture slot that draws its own stand-in until a file exists
  *   Accordion    questions that open one at a time
  *   CheckList    ticked lines
  *   ModuleIcon   one icon per module
  */
 
-import { Scene, type SceneName } from './scenes';
-import { createContext, useContext, useEffect, useId, useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import {
   Apple,
   Baby,
@@ -38,13 +36,11 @@ import {
   Target,
   Truck,
   Wheat,
-  Image as ImageIcon,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { IconArt } from '@/components/ui/IconArt';
-import { imageUrl } from '@/lib/cloudinary';
-import { SITE_IMAGES, type IndustryIcon as IndustryKey, type SiteImageKey } from '@/lib/site';
+import type { IndustryIcon as IndustryKey } from '@/lib/site';
 import { container, eyebrow, eyebrowBase } from './tokens';
 
 /* ------------------------------------------------------------------ section */
@@ -134,112 +130,6 @@ export function SectionHead({
   );
 }
 
-/* -------------------------------------------------------------- the picture */
-
-/** The owner's uploaded pictures, slot to address. Provided by PublicShell. */
-const SiteImagesContext = createContext<Record<string, string>>({});
-export const SiteImagesProvider = SiteImagesContext.Provider;
-export function useSiteImages(): Record<string, string> {
-  return useContext(SiteImagesContext);
-}
-
-/**
- * A picture slot.
- *
- * Draws the picture uploaded for this slot in Platform, Website (or an
- * explicit `override`). That is the only source: the slot used to go on to
- * try three file names under /site/ as well, which on a site with no files
- * there meant three failed requests for every empty slot on every page view.
- *
- * THE SLOT IS ONLY A SHAPE
- *
- * No colour, no shadow, no padding, no border: the frame keeps its size and
- * place on the page, and the picture covers it edge to edge (object cover,
- * centred), so pictures of different sizes still fill matching tiles.
- * `fit="contain"` is for the rare slot that must show the whole picture.
- * Until something is uploaded the slot is simply empty space of the right
- * size: no stand in, no coloured card.
- */
-export function SiteImage({
-  slot,
-  override,
-  alt,
-  className,
-  imgClassName,
-  fit = 'cover',
-  eager = false,
-  width = 1000,
-  placeholder = false,
-  scene,
-}: {
-  slot: SiteImageKey;
-  override?: string;
-  alt: string;
-  className?: string;
-  imgClassName?: string;
-  /** cover (default): fill the frame. contain: show the whole picture. */
-  fit?: 'cover' | 'contain';
-  eager?: boolean;
-  /** Widest it will draw, in CSS pixels, so Cloudinary sends no more than that. */
-  width?: number;
-  /** Keep the frame when empty (a clean outline). Otherwise an empty slot draws nothing at all. */
-  placeholder?: boolean;
-  /** One of the owner's artworks, drawn while no picture is uploaded, so the space is never blank. */
-  scene?: SceneName;
-}) {
-  /* A retired slot draws nothing, even if a picture was uploaded to it once. */
-  const images = useSiteImages();
-  const known = slot in SITE_IMAGES;
-  const uploaded = known ? images[slot] : undefined;
-  const first = override || uploaded;
-  const source = first ? imageUrl(first, { width }) : '';
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    setLoaded(false);
-    setFailed(false);
-  }, [source]);
-
-  if ((!source || failed) && scene) {
-    return (
-      <div className={cn('relative flex items-center justify-center overflow-hidden', className)} aria-hidden>
-        <Scene name={scene} className="h-[78%] max-h-72 w-[78%] max-w-72" />
-      </div>
-    );
-  }
-  if ((!source || failed) && !placeholder) return null;
-  if (!source || failed) {
-    /* The one designed empty state: a clean frame waiting for its picture. */
-    return (
-      <div className={cn('relative flex items-center justify-center overflow-hidden', className)} aria-hidden>
-        <ImageIcon size={30} strokeWidth={1.4} className="opacity-35" />
-      </div>
-    );
-  }
-
-  return (
-    <div className={cn('relative overflow-hidden bg-transparent', className, '!bg-none !shadow-none')}>
-      {source && !failed && (
-        <img
-          key={source}
-          src={source}
-          alt={alt}
-          loading={eager ? 'eager' : 'lazy'}
-          decoding="async"
-          onLoad={() => setLoaded(true)}
-          onError={() => setFailed(true)}
-          className={cn(
-            'relative h-full w-full object-center transition-opacity duration-500',
-            fit === 'contain' ? 'object-contain' : 'object-cover',
-            loaded ? 'opacity-100' : 'opacity-0',
-            imgClassName,
-          )}
-        />
-      )}
-    </div>
-  );
-}
 
 /* --------------------------------------------------------------- accordion */
 
@@ -361,37 +251,15 @@ export function IconBadge({ children, id = '', className }: { children: ReactNod
 }
 
 /**
- * One category tile. With a photo uploaded the photo is the card, the icon a
- * small badge and the name over a soft shade; without one it is a plain tile,
- * icon and name, rather than an empty frame.
+ * One category tile: icon and name.
  */
 export function IndustryCard({ icon, name, className }: { icon: IndustryKey; name: string; className?: string }) {
-  const photo = useSiteImages()[`industry-${icon}`];
-  if (!photo) {
-    return (
-      <div className={cn('flex h-full items-center gap-3 rounded-2xl border border-navy-900/10 bg-white p-4 sm:p-5', className)}>
-        <IconArt id={icon} size={44} halo={0.6}>
-          <IndustryIcon icon={icon} size={18} />
-        </IconArt>
-        <span className="text-[14px] font-medium leading-tight text-navy-900">{name}</span>
-      </div>
-    );
-  }
   return (
-    <div className={cn('group relative overflow-hidden rounded-2xl', className)}>
-      <SiteImage
-        slot={`industry-${icon}`}
-        alt={name}
-        width={480}
-        className="aspect-[4/3]"
-        imgClassName="transition-transform duration-500 group-hover:scale-[1.05]"
-      />
-      <IconBadge>
-        <IndustryIcon icon={icon} size={17} />
-      </IconBadge>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/85 via-navy-950/35 to-transparent px-4 pb-3.5 pt-12">
-        <span className="text-[14px] font-semibold leading-tight text-white">{name}</span>
-      </div>
+    <div className={cn('flex h-full items-center gap-3 rounded-2xl border border-navy-900/10 bg-white p-4 sm:p-5', className)}>
+      <IconArt id={icon} size={44} halo={0.6}>
+        <IndustryIcon icon={icon} size={18} />
+      </IconArt>
+      <span className="text-[14px] font-medium leading-tight text-navy-900">{name}</span>
     </div>
   );
 }

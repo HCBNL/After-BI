@@ -72,7 +72,6 @@ export function ImagePicker({
   const input = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const [busy, setBusy] = useState(false);
-
   const choose = async (file: File | undefined) => {
     if (!file) return;
     setBusy(true);

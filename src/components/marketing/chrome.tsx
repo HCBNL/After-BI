@@ -40,7 +40,7 @@ import {
   type SocialKey,
 } from '@/lib/site';
 import { btn, container } from './tokens';
-import { ModuleIcon, SiteImage } from './site-ui';
+import { ModuleIcon } from './site-ui';
 
 type MenuKey = 'products' | 'solutions' | 'resources' | 'support';
 
@@ -304,7 +304,6 @@ function ProductsPanel({ onBook }: { onBook: () => void }) {
         </div>
       ))}
       <PromoCard
-        slot="menu-platform"
         title="Explore the platform"
         body="Twelve capabilities, six role based workspaces, one secure cloud. See it with your own data in a guided demo."
         link={{ to: '/features', label: 'Platform overview' }}
@@ -368,7 +367,6 @@ function SupportPanel({ onBook }: { onBook: () => void }) {
         </a>
       </div>
       <PromoCard
-        slot="menu-support"
         title="Already a customer?"
         body="Sign in to your workspace. Every team and partner lands on their own dashboard."
         link={{ to: '/login', label: 'Sign in' }}
@@ -379,13 +377,11 @@ function SupportPanel({ onBook }: { onBook: () => void }) {
 }
 
 function PromoCard({
-  slot,
   title,
   body,
   link,
   onBook,
 }: {
-  slot: string;
   title: string;
   body: string;
   link: { to: string; label: string };
@@ -393,12 +389,6 @@ function PromoCard({
 }) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-navy-900 p-6 text-white">
-      <SiteImage
-        slot={slot}
-        alt=""
-        width={320}
-        className="-mx-6 -mt-6 mb-5 aspect-[16/9]"
-      />
       <div aria-hidden className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-navy-400/30 blur-2xl" />
       <p className="relative font-display text-[1.15rem] font-semibold tracking-[-0.03em]">{title}</p>
       <p className="relative mt-2 text-[14px] leading-relaxed text-white/70">{body}</p>

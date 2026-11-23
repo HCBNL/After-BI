@@ -32,7 +32,6 @@ import { SiteFooter, SiteHeader } from './chrome';
 import { BookDemo } from './BookDemo';
 import { HelpBubble } from './HelpBubble';
 import { btn } from './tokens';
-import { SiteImagesProvider } from './site-ui';
 import { Art } from './art';
 import { LOGOS } from '@/lib/site';
 
@@ -144,15 +143,6 @@ export function PublicShell({
   const book = useCallback(() => setBooking(true), []);
   const ask = useMemo(() => ({ book, home }), [book, home]);
 
-  /* Every uploaded picture, slot to address. The older per module field is
-     read too, so pictures published before slots existed still show. */
-  const images = useMemo(() => {
-    const out: Record<string, string> = {};
-    for (const [slug, url] of Object.entries(home?.moduleImages ?? {})) if (url) out[`module-${slug}`] = url;
-    for (const [slot, url] of Object.entries(home?.images ?? {})) if (url) out[slot] = url;
-    return out;
-  }, [home]);
-
   /*
    * Dark past the page's edges too.
    *
@@ -180,7 +170,6 @@ export function PublicShell({
 
   return (
     <AskContext.Provider value={ask}>
-     <SiteImagesProvider value={images}>
       {/*
        * Everything public lives inside `.site`, the float and the sheet
        * included.
@@ -205,7 +194,6 @@ export function PublicShell({
         <HelpBubble onBook={book} />
         <BookDemo open={booking} onClose={() => setBooking(false)} />
       </div>
-     </SiteImagesProvider>
     </AskContext.Provider>
   );
 }

@@ -2,8 +2,11 @@ import {
   forwardRef,
   useContext,
   useId,
+  useLayoutEffect,
+  useRef,
   useState,
   type ButtonHTMLAttributes,
+  type RefObject,
   type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -515,12 +518,66 @@ export function Skeleton({ className }: { className?: string }) {
  * what to do next, so a state that reports a fault passes `loud` and keeps its
  * description in the open. Same carve-out `Alert` makes for `critical`.
  */
+/**
+ * Centres an empty state in the middle of its section.
+ *
+ * When the empty state is the last thing on the page (nothing below it but
+ * the bottom bar), it grows to fill the rest of the screen under it, so its
+ * petal and words sit in the middle of the dark section, not at its top.
+ * Measured again when the window changes (a folded menu, a turned phone).
+ * Inside a dialog, or with more of the page below it, it keeps its own size.
+ */
+function useCentreInSection(ref: RefObject<HTMLDivElement | null>) {
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const main = el.closest('main');
+    if (!main || el.closest('[role="dialog"]')) return;
+
+    const isLast = () => {
+      let node: HTMLElement | null = el;
+      while (node && node !== main) {
+        let next = node.nextElementSibling as HTMLElement | null;
+        while (next) {
+          const st = getComputedStyle(next);
+          if (st.display !== 'none' && st.position !== 'absolute' && st.position !== 'fixed' && next.offsetHeight > 0) return false;
+          next = next.nextElementSibling as HTMLElement | null;
+        }
+        node = node.parentElement;
+      }
+      return true;
+    };
+
+    let raf = 0;
+    const fit = () => {
+      raf = 0;
+      el.style.minHeight = '';
+      if (!isLast()) return;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const below = parseFloat(getComputedStyle(main).paddingBottom) || 0;
+      const room = window.innerHeight - top - below - 24;
+      if (room > el.offsetHeight) el.style.minHeight = `${Math.round(room)}px`;
+    };
+    const later = () => {
+      if (!raf) raf = requestAnimationFrame(fit);
+    };
+    fit();
+    const t = window.setTimeout(later, 250);
+    window.addEventListener('resize', later);
+    return () => {
+      window.removeEventListener('resize', later);
+      window.clearTimeout(t);
+      cancelAnimationFrame(raf);
+    };
+  }, [ref]);
+}
+
 export function EmptyState({
   icon,
   title,
   description,
-  action,
   loud = false,
+  onRetry,
   className,
 }: {
   icon?: ReactNode;
@@ -531,13 +588,19 @@ export function EmptyState({
   title: string;
   /** The reason. Shown only when `loud` (a failure); an empty list just shows its title. */
   description?: string;
-  action?: ReactNode;
   /** Keep the description visible. For a failure, never for an empty table. */
   loud?: boolean;
+  /**
+   * A failure only: one quiet Try again. An empty list never carries a
+   * button here; the page's own add button, top right, is the only one.
+   */
+  onRetry?: () => void;
   className?: string;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useCentreInSection(ref);
   return (
-    <div className={cn('flex flex-col items-center justify-center px-6 py-14 text-center', className)}>
+    <div ref={ref} className={cn('flex flex-col items-center justify-center px-6 py-14 text-center', className)}>
       {icon && (
         <IconArt id={title} size={60} className="mb-4">
           {icon}
@@ -551,7 +614,14 @@ export function EmptyState({
         <p className="mt-1.5 max-w-sm text-body leading-relaxed text-muted">{description}</p>
       )}
 
-      {action && <div className="mt-5">{action}</div>}
+      {loud && onRetry && (
+        <div className="mt-5">
+          <Button variant="outline" onClick={onRetry}>
+            Try again
+          </Button>
+        </div>
+      )}
+
     </div>
   );
 }
