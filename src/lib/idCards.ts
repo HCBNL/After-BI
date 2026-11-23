@@ -8,7 +8,7 @@
  * Suspending someone in People marks their card inactive at once.
  */
 import { publicOrigin } from './hosts';
-import { doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { db } from './firebase';
 import { restGet } from './firestoreRest';
 
@@ -55,6 +55,30 @@ export async function publishIdCard(record: Omit<IdCardRecord, 'active' | 'updat
     active: true,
     updatedAt: serverTimestamp(),
   });
+}
+
+/**
+ * A new profile picture onto the holder's public card, so the card never
+ * points at a picture that has just been deleted. No card yet is fine.
+ */
+export async function refreshCardPhoto(uid: string, photo: string): Promise<void> {
+  try {
+    await updateDoc(doc(db, 'idCards', uid), { photo: /^https:\/\//.test(photo) ? photo : '', updatedAt: serverTimestamp() });
+  } catch {
+    /* no card made yet */
+  }
+}
+
+/** The company's new logo onto every staff card it has issued, before the old logo is deleted. */
+export async function refreshCardLogos(orgId: string, logo: string): Promise<void> {
+  try {
+    const snap = await getDocs(query(collection(db, 'idCards'), where('orgId', '==', orgId)));
+    await Promise.all(
+      snap.docs.map((d) => updateDoc(d.ref, { logo: /^https:\/\//.test(logo) ? logo : '', updatedAt: serverTimestamp() }).catch(() => undefined)),
+    );
+  } catch {
+    /* cards keep the old address; nothing breaks until it is deleted */
+  }
 }
 
 /** An administrator suspending or restoring someone. A missing card is fine. */

@@ -5070,5 +5070,11 @@
 "Back to waiting": "Remettre en attente",
 "Nobody waiting": "Personne en attente",
 "New sign up request": "Nouvelle demande d’inscription",
-"New sign up requests": "Nouvelles demandes d’inscription"
+"New sign up requests": "Nouvelles demandes d’inscription",
+"Handbook": "Guide",
+"Prepared for": "Préparé pour",
+"Handbook downloaded": "Guide téléchargé",
+"Ready to send.": "Prêt à envoyer.",
+"Could not make the PDF": "Impossible de créer le PDF",
+"Send a company the AfterBI Handbook": "Envoyer le guide AfterBI à une entreprise"
 }

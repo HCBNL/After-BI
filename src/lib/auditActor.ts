@@ -5,7 +5,7 @@
  */
 import type { UserProfile } from '@/types';
 
-export type AuditActor = Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role' | 'employeeCode'>;
+export type AuditActor = Pick<UserProfile, 'id' | 'firstName' | 'lastName' | 'role' | 'employeeCode'> & { orgId?: string };
 
 let actor: AuditActor | null = null;
 

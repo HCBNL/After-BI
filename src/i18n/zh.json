@@ -5070,5 +5070,11 @@
 "Back to waiting": "退回待处理",
 "Nobody waiting": "无人等待",
 "New sign up request": "新的注册申请",
-"New sign up requests": "新的注册申请"
+"New sign up requests": "新的注册申请",
+"Handbook": "手册",
+"Prepared for": "致",
+"Handbook downloaded": "手册已下载",
+"Ready to send.": "可以发送了。",
+"Could not make the PDF": "无法生成 PDF",
+"Send a company the AfterBI Handbook": "向公司发送 AfterBI 手册"
 }

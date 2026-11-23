@@ -3,8 +3,8 @@
  *
  * The marketing site belongs to AfterBI, not to a tenant, so it ships in the
  * bundle: the front page paints on the first frame with no database read, it
- * costs nothing to serve, and a copy change is a reviewed commit. Only the
- * pictures are owner-published (see `siteDoc.ts` and SITE_IMAGES below).
+ * costs nothing to serve, and a copy change is a reviewed commit. No picture
+ * on it is uploaded: the site draws the owner's artworks.
  *
  * VOICE
  *
@@ -13,7 +13,6 @@
  * walkthrough: no invented customer counts, logos or testimonials.
  */
 
-import { FEATURE_STORIES, SOLUTION_STORIES } from './featureStories';
 import { WHATSAPP_URL } from './siteMeta';
 
 export { SUPPORT_EMAIL, WHATSAPP_URL } from './siteMeta';
@@ -550,7 +549,6 @@ export interface Solution {
   blurb: string;
   points: string[];
   modules: string[];
-  image: SiteImageKey;
 }
 
 export const SOLUTIONS: Solution[] = [
@@ -564,7 +562,6 @@ export const SOLUTIONS: Solution[] = [
       'Targets and scorecards for every sales review',
     ],
     modules: ['orders', 'sell-out', 'targets'],
-    image: 'solution-manufacturers',
   },
   {
     slug: 'importers',
@@ -576,7 +573,6 @@ export const SOLUTIONS: Solution[] = [
       'Credit policy enforced at the point of order',
     ],
     modules: ['stock', 'credit', 'invoices'],
-    image: 'solution-importers',
   },
   {
     slug: 'distributors',
@@ -588,7 +584,6 @@ export const SOLUTIONS: Solution[] = [
       'Live on a single site within a week',
     ],
     modules: ['orders', 'stock', 'deliveries'],
-    image: 'solution-distributors',
   },
   {
     slug: 'modern-trade',
@@ -600,7 +595,6 @@ export const SOLUTIONS: Solution[] = [
       'Returns and credit notes matched to the original line',
     ],
     modules: ['deliveries', 'invoices', 'credit'],
-    image: 'solution-modern-trade',
   },
 ];
 
@@ -612,78 +606,3 @@ export const SOLUTIONS: Solution[] = [
  */
 export const LOGOS: { name: string; src: string }[] = [{ name: 'Haiqing', src: '/site/logos/haiqing.png' }];
 
-/* ------------------------------------------------------------ the pictures */
-
-/**
- * Every picture slot on the public site, grouped the way Platform, Website
- * lists them.
- *
- * Each one is uploaded from Platform, Website (stored on `site/home` as
- * `images[key]`). Until one is, the slot is empty space of the right shape.
- */
-export const SLOT_GROUPS = ['Front page', 'Platform page', 'Feature pages', 'Solutions', 'Product screenshots'] as const;
-export type SlotGroup = (typeof SLOT_GROUPS)[number];
-
-export interface SiteSlot {
-  group: SlotGroup;
-  /** What the owner sees above the upload box. */
-  label: string;
-  /** Pixel size to export at. */
-  size: string;
-  /** The shape the slot draws at, as a CSS aspect ratio (`4/5`). */
-  ratio: string;
-  /** What to put in it. Shown behind the (i). */
-  what: string;
-}
-
-
-const MODULE_PHOTO: Record<string, string> = {
-  leads: 'Screenshot: the Leads pipeline board.',
-  orders: 'Screenshot: the Orders screen.',
-  targets: 'Screenshot: Targets or Scorecards.',
-  'distributor-portal': 'Screenshot: the distributor (partner) portal on a phone.',
-  stock: 'Screenshot: the Stock screen.',
-  deliveries: 'Screenshot: the Deliveries screen.',
-  invoices: 'Screenshot: an invoice or a customer statement.',
-  credit: 'Screenshot: the Credit screen with ageing.',
-  'sell-out': 'Screenshot: the Sell out screen.',
-  analytics: 'Screenshot: the Analytics screen or territory map.',
-  automation: 'Screenshot: Reminders, Tasks or Approvals.',
-  access: 'Screenshot: the Users screen showing roles.',
-};
-
-
-
-
-/*
- * Only a few pictures on the whole site, each where a picture earns its place.
- * Every slot is optional: an empty one draws nothing at all (no grey box),
- * except the front page's hero frame, which shows a clean empty frame until a
- * picture is added. Earlier slots (industries, plan cards, menu cards, steps,
- * demo boxes, solution photos) were removed: their old uploads no longer show.
- */
-function buildSlots(): Record<string, SiteSlot> {
-  const slots: Record<string, SiteSlot> = {
-    'hero-catalogue': { group: 'Front page', label: 'Left tall card: Product catalogue', size: '900 × 1300', ratio: '9/13', what: 'The tall card on the left under the headline. Products on shelves, or the catalogue on a phone. Empty shows a drawn catalogue.' },
-    'hero-finance': { group: 'Front page', label: 'Middle bottom card: Finance', size: '1100 × 800', ratio: '11/8', what: 'The lower card in the middle. A person smiling at a laptop or phone, or a chart. Empty shows a drawn chart.' },
-    'hero-stock': { group: 'Front page', label: 'Right tall card: Stock', size: '900 × 1300', ratio: '9/13', what: 'The tall card on the right. A warehouse or cartons on racks. Empty shows the drawn flowers.' },
-    'features-hero': { group: 'Platform page', label: 'Platform page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Platform page (/features). The whole product: laptop and phone with AfterBI.' },
-    'solutions-hero': { group: 'Solutions', label: 'Solutions page banner', size: '2100 × 900', ratio: '21/9', what: 'A wide banner under the title of the Solutions page. The value chain in one picture.' },
-  };
-  const stories = [
-    ...Object.entries(FEATURE_STORIES).map(([slug, st]) => ({ key: st.key, name: MODULES.find((m) => m.slug === slug)?.name ?? st.eyebrow })),
-    ...Object.values(SOLUTION_STORIES).map((st) => ({ key: st.key, name: st.eyebrow })),
-  ];
-  for (const { key, name } of stories) {
-    slots[`feature-${key}-1`] = { group: 'Feature pages', label: `${name}: person in the strip`, size: '800 × 800', ratio: '1/1', what: `One person at work for the ${name} page, in the strip of tiles under the headline. A real face, smiling or busy. Empty shows an illustration.` };
-    slots[`feature-${key}-2`] = { group: 'Feature pages', label: `${name}: person in the grid`, size: '900 × 900', ratio: '1/1', what: `A second person for the ${name} page, in the card grid lower down. Empty shows an illustration.` };
-  }
-  for (const m of MODULES) {
-    slots[`module-${m.slug}`] = { group: 'Product screenshots', label: m.name, size: '1600 × 1000', ratio: '16/10', what: `The ${m.name} picture: its card on the Platform page and the top of its own page. ${MODULE_PHOTO[m.slug] ?? 'A screenshot of this part of AfterBI.'}` };
-  }
-  return slots;
-}
-
-export const SITE_IMAGES: Record<string, SiteSlot> = buildSlots();
-
-export type SiteImageKey = string;

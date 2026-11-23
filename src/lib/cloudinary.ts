@@ -29,6 +29,8 @@
  * a file is chosen.
  */
 
+import { auditActor } from './auditActor';
+
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string | undefined;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string | undefined;
 
@@ -78,6 +80,9 @@ export async function uploadImage(file: File, kind: UploadKind): Promise<string>
   form.append('file', file);
   form.append('upload_preset', UPLOAD_PRESET!);
   form.append('folder', `afterbi/${kind}`);
+  /* Who it belongs to, so it can be deleted later by its owner and nobody else (see deleteImages). */
+  const tags = ownerTags();
+  if (tags) form.append('tags', tags);
 
   let response: Response;
   try {
@@ -248,4 +253,56 @@ export async function imageAsDataUrl(url: string | undefined, size = 480): Promi
   } catch {
     return '';
   }
+}
+
+
+/* ------------------------------------------------------------- deleting */
+
+/**
+ * Tags written on every upload: the organisation and the person.
+ *
+ * The delete endpoint (`api/media-delete.js`) reads them back from Cloudinary
+ * and only removes a file whose tags match the person asking, so one
+ * organisation can never delete another's pictures, even knowing the URL.
+ * The platform owner may delete any AfterBI file.
+ */
+function ownerTags(): string {
+  const who = auditActor();
+  if (!who) return '';
+  return [who.orgId ? `org_${who.orgId}` : '', `user_${who.id}`].filter(Boolean).join(',');
+}
+
+/** True for a file in this account's Cloudinary, the only kind we can delete. */
+export function isOurImage(url: string | undefined | null): url is string {
+  return Boolean(url && CLOUD_NAME && url.startsWith(`https://res.cloudinary.com/${CLOUD_NAME}/`));
+}
+
+/**
+ * Delete pictures from Cloudinary for good.
+ *
+ * Called after a save has replaced or removed them, never before: a picture
+ * is only deleted once nothing points at it any more. Fire and forget: the
+ * save has already succeeded, and a file that fails to delete costs a little
+ * storage, never a broken page. Anything in `keep` is never deleted, so
+ * passing (old, new) values from a form is always safe.
+ */
+export function deleteImages(urls: (string | undefined | null)[], keep: (string | undefined | null)[] = []): void {
+  const keepSet = new Set(keep.filter(Boolean));
+  const gone = [...new Set(urls.filter(isOurImage))].filter((url) => !keepSet.has(url));
+  if (!gone.length) return;
+  void (async () => {
+    try {
+      const { auth } = await import('./firebase');
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) return;
+      await fetch('/api/media-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ urls: gone }),
+        keepalive: true,
+      });
+    } catch {
+      /* Not deleted this time. Never worth an error on screen. */
+    }
+  })();
 }
