@@ -7,7 +7,7 @@
 import { useSelfPhoto } from '@/lib/selfPhoto';
 import { Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { ComponentType } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Avatar } from '@/components/ui';
@@ -44,6 +44,17 @@ export function Chrome({
   const photo = useSelfPhoto(user);
   const navigate = useNavigate();
   const location = useLocation();
+  const navType = useNavigationType();
+  /*
+   * Every new page opens at its top, panel and title in view. Without this a
+   * page kept the scroll of the one before, so a long list left you landing
+   * in the middle of the next screen. Back and forward (POP) keep the browser's
+   * own memory of where you were.
+   */
+  useEffect(() => {
+    if (navType === 'POP') return;
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+  }, [location.pathname, navType]);
   const { heading, panel } = usePageHeading();
 
   const [menuOpen, setMenuOpen] = useState(false);

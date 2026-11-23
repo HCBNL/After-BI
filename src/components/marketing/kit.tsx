@@ -210,6 +210,28 @@ export function PublicShell({
   );
 }
 
+/* ----------------------------------------------- the ending, on its own */
+
+/**
+ * The site's closing band and footer for a page that has its own header and
+ * so is not inside `PublicShell` (a report). Same band, same footer, same
+ * create account sheet.
+ */
+export function SiteEnd() {
+  const [booking, setBooking] = useState(false);
+  const book = useCallback(() => setBooking(true), []);
+  const ask = useMemo(() => ({ book, home: undefined }), [book]);
+  return (
+    <AskContext.Provider value={ask}>
+      <div className="site" id="site-end" style={{ background: 'transparent' }}>
+        <ClosingBand />
+        <SiteFooter />
+        <BookDemo open={booking} onClose={() => setBooking(false)} />
+      </div>
+    </AskContext.Provider>
+  );
+}
+
 /* ------------------------------------------------------- the closing band */
 
 /**

@@ -529,7 +529,7 @@ export function EmptyState({
    * Anything that needs a verb and an object belongs in `description`.
    */
   title: string;
-  /** The reason, shown when the (i) is pressed. */
+  /** The reason. Shown only when `loud` (a failure); an empty list just shows its title. */
   description?: string;
   action?: ReactNode;
   /** Keep the description visible. For a failure, never for an empty table. */
@@ -544,17 +544,8 @@ export function EmptyState({
         </IconArt>
       )}
 
-      <div className="flex items-center gap-1.5">
-        <h3 className="text-lead font-semibold text-primary">{title}</h3>
-        {description && !loud && (
-          /* `align="right"` so the panel opens back across the screen rather
-             than off its right edge: the (i) sits at the centre of the page,
-             and the panel is wider than the gap to the right of it. */
-          <Hint label="Why this is empty" align="right">
-            {description}
-          </Hint>
-        )}
-      </div>
+      {/* Just the title. What the page is for is in its guide, top right; an (i) here repeated it. */}
+      <h3 className="text-lead font-semibold text-primary">{title}</h3>
 
       {description && loud && (
         <p className="mt-1.5 max-w-sm text-body leading-relaxed text-muted">{description}</p>

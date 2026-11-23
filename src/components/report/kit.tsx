@@ -73,7 +73,7 @@ export function useCycle<T extends HTMLElement = HTMLDivElement>(loop = 9000) {
           timer = window.setInterval(() => setCycle((c) => c + 1), loop);
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0.15 },
     );
     io.observe(el);
     return () => {
@@ -122,7 +122,7 @@ export function CountUp({
   const places = decimals(value);
   useEffect(() => {
     if (cycle === 0) return;
-    if (reduced()) {
+    if (reduced() || document.hidden) {
       setShown(value);
       return;
     }

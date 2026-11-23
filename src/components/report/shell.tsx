@@ -411,13 +411,7 @@ export function Cover({
 
 /* ------------------------------------------------------------ the bar */
 
-export function ReportBar({
-  title,
-  onDownload,
-}: {
-  title: string;
-  onDownload: () => void;
-}) {
+export function ReportBar({ title }: { title: string }) {
   const [solid, setSolid] = useState(false);
   const [note, setNote] = useState("");
   useEffect(() => {
@@ -468,10 +462,13 @@ export function ReportBar({
               {note}
             </span>
           )}
+          {/* Off for now: the download will come with sign up, once the PDF is finished. */}
           <button
             type="button"
-            onClick={onDownload}
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-[var(--rp-blue)] px-4 text-[13.5px] font-bold text-white hover:brightness-110 sm:px-5"
+            disabled
+            aria-disabled="true"
+            title="Download coming soon"
+            className="inline-flex h-10 cursor-not-allowed items-center gap-2 rounded-full bg-white/10 px-4 text-[13.5px] font-bold text-white/40 sm:px-5"
           >
             <Download size={16} aria-hidden className="sm:hidden" />
             <span className="hidden sm:inline">Download report</span>
@@ -583,8 +580,17 @@ export function ChapterTab({
     els.forEach((e) => io.observe(e));
     return () => io.disconnect();
   }, [chapters]);
+  /* Out of the way once the site's own footer comes up. */
+  const [atEnd, setAtEnd] = useState(false);
+  useEffect(() => {
+    const end = document.getElementById('site-end');
+    if (!end) return;
+    const io = new IntersectionObserver(([e]) => setAtEnd(e.isIntersecting));
+    io.observe(end);
+    return () => io.disconnect();
+  }, []);
   const now = chapters.find((c) => c.id === current);
-  if (!now) return null;
+  if (!now || atEnd) return null;
   return (
     <div className="rp-noprint fixed bottom-0 right-0 z-40 w-[160px] sm:right-4 sm:w-[210px]">
       {open && (

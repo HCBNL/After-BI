@@ -9,6 +9,7 @@
  *   ModuleIcon   one icon per module
  */
 
+import { Scene, type SceneName } from './scenes';
 import { createContext, useContext, useEffect, useId, useState, type ReactNode } from 'react';
 import {
   Apple,
@@ -169,6 +170,7 @@ export function SiteImage({
   eager = false,
   width = 1000,
   placeholder = false,
+  scene,
 }: {
   slot: SiteImageKey;
   override?: string;
@@ -182,6 +184,8 @@ export function SiteImage({
   width?: number;
   /** Keep the frame when empty (a clean outline). Otherwise an empty slot draws nothing at all. */
   placeholder?: boolean;
+  /** One of the owner's artworks, drawn while no picture is uploaded, so the space is never blank. */
+  scene?: SceneName;
 }) {
   /* A retired slot draws nothing, even if a picture was uploaded to it once. */
   const images = useSiteImages();
@@ -197,6 +201,13 @@ export function SiteImage({
     setFailed(false);
   }, [source]);
 
+  if ((!source || failed) && scene) {
+    return (
+      <div className={cn('relative flex items-center justify-center overflow-hidden', className)} aria-hidden>
+        <Scene name={scene} className="h-[78%] max-h-72 w-[78%] max-w-72" />
+      </div>
+    );
+  }
   if ((!source || failed) && !placeholder) return null;
   if (!source || failed) {
     /* The one designed empty state: a clean frame waiting for its picture. */

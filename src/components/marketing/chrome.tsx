@@ -20,7 +20,7 @@ import { useBootDone } from '@/lib/boot';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, ChevronDown, LifeBuoy, Mail, MessageCircle, PlayCircle, X } from 'lucide-react';
+import { ArrowRight, BarChart3, ChevronDown, LifeBuoy, Mail, MessageCircle, Newspaper, PlayCircle, Tag, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { LanguageSwitch } from '@/components/LanguageSwitch';
@@ -30,6 +30,7 @@ import {
   COMPANY_URL,
   MODULES,
   NAV,
+  RESOURCES,
   PRODUCT_GROUPS,
   SOCIAL,
   SOLUTIONS,
@@ -41,7 +42,7 @@ import {
 import { btn, container } from './tokens';
 import { ModuleIcon, SiteImage } from './site-ui';
 
-type MenuKey = 'products' | 'solutions' | 'support';
+type MenuKey = 'products' | 'solutions' | 'resources' | 'support';
 
 function useDoor(): { label: string; to: string } {
   const { user, loading } = useAuth();
@@ -182,8 +183,17 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
           </div>
         </div>
 
+        {/* Resources: one card dropping from the word, as a short list should. */}
+        {menu === 'resources' && (
+          <div className="absolute inset-x-0 top-full hidden lg:block" onMouseEnter={() => openSoon('resources')}>
+            <div className={cn(container, 'flex justify-center')}>
+              <ResourcesCard onPick={() => setMenu(null)} />
+            </div>
+          </div>
+        )}
+
         {/* The menu panel, laptops only. */}
-        {menu && (
+        {menu && menu !== 'resources' && (
           <div
             className="absolute inset-x-0 top-full hidden border-b border-navy-900/10 bg-white shadow-[0_24px_48px_-24px_rgba(15,31,54,0.35)] lg:block"
             onMouseEnter={() => openSoon(menu)}
@@ -203,6 +213,53 @@ export function SiteHeader({ onBook }: { onBook: () => void; overlay?: boolean }
 }
 
 /* -------------------------------------------------------------- the panels */
+
+const RESOURCE_ICON: Record<string, ReactNode> = {
+  reports: <BarChart3 size={19} aria-hidden />,
+  blog: <Newspaper size={19} aria-hidden />,
+  pricing: <Tag size={19} aria-hidden />,
+  help: <LifeBuoy size={19} aria-hidden />,
+};
+const RESOURCE_TONE = { reports: 'pink', blog: 'blue', pricing: 'green', help: 'orange' } as const;
+const RESOURCE_SHAPE = { reports: 'scallop', blog: 'bloom', pricing: 'pinwheel', help: 'daisy' } as const;
+
+function ResourcesCard({ onPick }: { onPick: () => void }) {
+  return (
+    <div className="mt-2 grid w-[min(640px,100%)] grid-cols-2 gap-x-4 gap-y-2 rounded-[24px] bg-white p-5 shadow-[0_30px_60px_-24px_rgba(15,31,54,0.45)] ring-1 ring-navy-900/8 animate-scale-in">
+      {RESOURCES.map((r) => {
+        const body = (
+          <>
+            <IconArt
+              id={r.id}
+              tone={RESOURCE_TONE[r.id as keyof typeof RESOURCE_TONE]}
+              shape={RESOURCE_SHAPE[r.id as keyof typeof RESOURCE_SHAPE]}
+              size={50}
+              halo={0.6}
+            >
+              {RESOURCE_ICON[r.id]}
+            </IconArt>
+            <span className="min-w-0">
+              <span className="flex items-center gap-2 text-[15.5px] font-semibold text-navy-900">
+                {r.label}
+                {r.soon && <span className="rounded-full bg-navy-100 px-2 py-0.5 text-[11px] font-semibold text-navy-600">Soon</span>}
+              </span>
+              <span className="mt-0.5 block text-[13px] leading-snug text-navy-600">{r.body}</span>
+            </span>
+          </>
+        );
+        return r.soon ? (
+          <div key={r.id} aria-disabled className="flex items-center gap-3.5 rounded-2xl p-3 opacity-60">
+            {body}
+          </div>
+        ) : (
+          <Link key={r.id} to={r.to} onClick={onPick} className="flex items-center gap-3.5 rounded-2xl p-3 transition-colors hover:bg-navy-50">
+            {body}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
 
 function PanelLink({ to, title, body, icon, id }: { to: string; title: string; body?: string; icon?: ReactNode; id?: string }) {
   return (
@@ -385,6 +442,7 @@ function MenuSheet({ onClose, onBook }: { onClose: () => void; onBook: () => voi
       return [...MODULES.map((m) => ({ label: m.name, to: `/features/${m.slug}` })), { label: 'Platform overview', to: '/features' }];
     if (key === 'solutions')
       return [...SOLUTIONS.map((s) => ({ label: s.name, to: `/solutions/${s.slug}` })), { label: 'All solutions', to: '/solutions' }];
+    if (key === 'resources') return RESOURCES.filter((r) => !r.soon).map((r) => ({ label: r.label, to: r.to }));
     return [
       { label: 'Sign in help', to: '/help/sign-in' },
       { label: 'WhatsApp us', to: WHATSAPP_URL, external: true },
