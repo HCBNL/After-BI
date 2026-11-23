@@ -73,3 +73,28 @@ export async function restGet(path: string): Promise<Record<string, unknown> | n
   return decodeFields(body.fields);
 }
 
+
+/**
+ * A simple public query: every document in `collection` whose `field` equals
+ * `value` (a string), newest first by `orderBy` when given. Empty on refusal.
+ */
+export async function restQuery(collection: string, field: string, value: string): Promise<Record<string, unknown>[]> {
+  if (!BASE) return [];
+  const response = await call(`${BASE}:runQuery${KEY ? `?key=${KEY}` : ''}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: collection }],
+        where: { fieldFilter: { field: { fieldPath: field }, op: 'EQUAL', value: { stringValue: value } } },
+        limit: 200,
+      },
+    }),
+  });
+  if (response.status === 403 || response.status === 404) return [];
+  if (!response.ok) throw new Error(`Firestore answered ${response.status}`);
+  const rows = (await response.json()) as { document?: { name: string; fields?: Record<string, RestValue> } }[];
+  return rows
+    .filter((r) => r.document)
+    .map((r) => ({ id: r.document!.name.split('/').pop(), ...decodeFields(r.document!.fields) }));
+}

@@ -40,11 +40,23 @@ export const META_DESCRIPTION =
  * The top bar. Platform, Solutions and Support open a menu panel; the rest are
  * plain links. The footer is built from the same lists so the two never drift.
  */
-export const NAV: { label: string; href: string; menu?: 'products' | 'solutions' | 'support' }[] = [
+export const NAV: { label: string; href: string; menu?: 'products' | 'solutions' | 'resources' | 'support' }[] = [
   { label: 'Platform', href: '/features', menu: 'products' },
   { label: 'Solutions', href: '/solutions', menu: 'solutions' },
-  { label: 'Pricing', href: '/pricing' },
+  { label: 'Resources', href: '/reports', menu: 'resources' },
   { label: 'Support', href: '/help/sign-in', menu: 'support' },
+];
+
+/**
+ * What sits under Resources: one card that drops from the word, two columns
+ * of links, each icon on one of the owner's petals. `soon` is shown, greyed,
+ * but goes nowhere until its page is built.
+ */
+export const RESOURCES: { id: string; label: string; to: string; body: string; soon?: boolean }[] = [
+  { id: 'reports', label: 'Reports', to: '/reports/sme-2026', body: 'The SME Report 2026, in numbers.' },
+  { id: 'blog', label: 'Blog', to: '/blog', body: 'Guides on pricing, stock, credit and sales.' },
+  { id: 'pricing', label: 'Pricing', to: '/pricing', body: 'Plans from ₦7,500 per user.' },
+  { id: 'help', label: 'Help centre', to: '/help/sign-in', body: 'Sign in, passwords and access.' },
 ];
 
 export type SocialKey = 'linkedin' | 'x' | 'whatsapp';

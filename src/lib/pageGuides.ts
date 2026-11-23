@@ -103,7 +103,7 @@ export const PAGE_GUIDES: Record<string, GuideSlide[]> = {
   ],
   'My tasks': [
     { title: 'Your own list', body: 'Add anything you need to do, give it a day, and flag it Important when it is.' },
-    { title: 'Suggested from your records', body: 'AfterBI reads your orders, invoices and stock and suggests follow ups. Tap Keep to make one a task due today.' },
+    { title: 'Reminders do the watching', body: 'Late invoices, low stock and accounts over their limit are in Reminders. This list is only what you add yourself.' },
     { title: 'Done', body: 'Tick a task when it is done. Finished tasks stay for 30 days, then clear themselves.' },
   ],
 };

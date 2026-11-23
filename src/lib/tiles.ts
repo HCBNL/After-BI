@@ -68,6 +68,7 @@ import {
   ScanLine,
   Scale,
   Barcode,
+  Newspaper,
 } from 'lucide-react';
 import type { Role } from '@/types';
 import { isActionLocked } from './plans';
@@ -225,6 +226,15 @@ const ACTIONS: AppAction[] = [
     description: 'Demo videos, follow links, the Custom offer and the Partner Programme.',
     icon: Image,
     to: 'website',
+    roles: ['owner'],
+    group: 'Content',
+  },
+  {
+    id: 'platform-blog',
+    label: 'Blog',
+    description: 'Write, publish and take down articles on the public blog.',
+    icon: Newspaper,
+    to: 'blog',
     roles: ['owner'],
     group: 'Content',
   },
