@@ -30,7 +30,7 @@ export function readable(code: string): string {
     case 'auth/network-request-failed':
       return 'We could not reach the server. Check your internet connection.';
     case 'auth/user-disabled':
-      return 'This account has been switched off in Firebase Authentication.';
+      return 'This account has been switched off. Ask your administrator.';
     default:
       return 'We could not sign you in. Try again in a moment.';
   }
@@ -45,21 +45,19 @@ export function readable(code: string): string {
  * forward to their administrator.
  */
 export function problemText(problem: AuthProblem): { title: string; body: string } {
+  /*
+   * Never anything technical here. This screen is public: whoever typed the
+   * password sees it, so it names no database, collection, document id,
+   * organisation id or hosting setting. It says what is wrong in plain words
+   * and who can fix it. The details are in Firebase for the platform owner.
+   */
   switch (problem.kind) {
     case 'no-profile':
-      return {
-        title: 'This sign-in has no profile yet',
-        body: 'The password is right, but Firestore has no users document for this account. In Firebase console → Firestore → users, add a document with the ID below. This screen moves on by itself once it exists.',
-      };
     case 'no-org':
-      return {
-        title: 'Not attached to an organisation',
-        body: 'This account has no orgId on its profile. The organisation’s administrator, or the platform owner, needs to fix it.',
-      };
     case 'org-missing':
       return {
-        title: 'The organisation does not exist',
-        body: `The profile points at “${problem.orgId}”, but there is no orgs/${problem.orgId} document. Create the organisation from the platform console first.`,
+        title: 'This account is not ready yet',
+        body: 'Your account has not been fully set up. Ask your administrator to finish setting it up, then sign in again.',
       };
     case 'account-suspended':
       return {
@@ -74,9 +72,7 @@ export function problemText(problem: AuthProblem): { title: string; body: string
     case 'not-configured':
       return {
         title: 'AfterBI could not connect',
-        body: /is not set/.test(problem.message)
-          ? `${problem.message} Add it in Vercel (Settings, Environment Variables) and redeploy.`
-          : 'The sign-in service did not load. Check your connection and refresh the page.',
+        body: 'The sign-in service did not load. Check your connection and refresh the page. If it keeps happening, contact info@afterbi.com.',
       };
   }
 }

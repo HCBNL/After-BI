@@ -2127,3 +2127,19 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 /* Settings while locked: fields stay easy to read, they just cannot be typed in. */
 .ab-locked :is(input, textarea, select):disabled { opacity: 1; cursor: not-allowed; background-color: var(--surface-sunken); }
 .ab-locked button:disabled { cursor: not-allowed; }
+
+/* A waiting wallpaper inside the app wears the opening screen's bars and name (see #splash in index.html). */
+.ab-wait-logo { position: absolute; left: 50%; top: 50%; width: clamp(88px, 24vw, 112px); transform: translate(-50%, -50%); z-index: 1; }
+.ab-wait-logo svg { display: block; width: 100%; height: auto; overflow: visible; animation: ab-wait-breathe 2.6s ease-in-out infinite; }
+.ab-wait-foot { position: absolute; left: 0; right: 0; bottom: calc(var(--safe-bottom, 0px) + 9vh); text-align: center; color: #fff; z-index: 1; }
+.ab-wait-name { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.ab-wait-line { margin: 6px 0 0; font-size: 13.5px; font-weight: 500; opacity: 0.78; }
+.ab-wait-line sup { font-size: 0.6em; margin-left: 1px; }
+@media (min-width: 1024px) {
+  .ab-wait-logo { width: 168px; }
+  .ab-wait-foot { bottom: 7vh; }
+  .ab-wait-name { font-size: 22px; }
+  .ab-wait-line { font-size: 14.5px; }
+}
+@keyframes ab-wait-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@media (prefers-reduced-motion: reduce) { .ab-wait-logo svg { animation: none; } }

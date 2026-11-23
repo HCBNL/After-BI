@@ -30,14 +30,14 @@
  * All of the account-problem handling. Those five states, no profile, no
  * organisation, a missing organisation, a suspended account, a suspended
  * organisation, are the difference between "this software is broken" and
- * "somebody needs to finish setting you up", and the copy-the-UID affordance
- * is how a platform owner bootstraps their own account.
+ * "somebody needs to finish setting you up". They are worded for the public:
+ * no database names, ids or settings are ever shown (see authText.ts).
  */
 
 import { siteUrl } from '@/lib/hosts';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, Copy, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { Seo } from '@/components/Seo';
 import { PetalBackdrop } from '@/components/brand/PetalBackdrop';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -53,34 +53,12 @@ import { useBootDone } from '@/lib/boot';
 /* ------------------------------------------------------- the account problem */
 
 function ProblemBox({ problem, onSignOut }: { problem: AuthProblem; onSignOut: () => void }) {
-  const [copied, setCopied] = useState(false);
   const { title, body } = problemText(problem);
-  const uid = problem.kind === 'no-profile' ? problem.uid : null;
 
   return (
     <div className="rounded-xl border border-gold-400/40 bg-gold-400/10 p-4">
       <p className="text-body font-semibold text-primary">{title}</p>
       <p className="mt-1 text-label leading-relaxed text-secondary">{body}</p>
-      {uid && (
-        <div className="mt-3 flex items-center gap-2">
-          <code className="min-w-0 flex-1 break-all rounded-lg surface-sunken px-2.5 py-1.5 font-mono text-label text-primary">
-            {uid}
-          </code>
-          <button
-            type="button"
-            onClick={() => {
-              void navigator.clipboard?.writeText(uid).then(() => {
-                setCopied(true);
-                window.setTimeout(() => setCopied(false), 2000);
-              });
-            }}
-            aria-label="Copy the UID"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg surface-sunken text-secondary transition-colors hover:text-primary"
-          >
-            {copied ? <Check size={16} /> : <Copy size={16} />}
-          </button>
-        </div>
-      )}
       {(problem.kind === 'no-profile' || problem.kind === 'no-org' || problem.kind === 'org-missing') && (
         <button
           type="button"
