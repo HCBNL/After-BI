@@ -90,9 +90,11 @@
       html, body { margin: 0; height: 100%; background: var(--sk-page); }
       /*
         While the app opens: the moving wallpaper (AfterBI blue drifting through
-        purple, pink, teal and night blue) with the petals turning. No spinner,
-        no logo. It goes the moment the PIN screen (or the first page) has
-        drawn; see src/lib/boot.ts. A copy of .ab-wall in src/index.css.
+        purple, pink, teal and night blue) with the petals turning, the three
+        white bars of the logo in the middle and the name and line at the foot.
+        When the PIN screen (or sign in) has drawn, the bars rush forward,
+        filling the screen and fading, and the page shows through them; see
+        src/lib/boot.ts. A copy of .ab-wall in src/index.css.
         The public website opens on its plain page colour instead.
       */
       #splash { position: fixed; inset: 0; z-index: 9999; overflow: hidden; isolation: isolate; background: #1238e6; transition: opacity .25s ease; }
@@ -115,7 +117,34 @@
       @keyframes ab-wall-fade { 0%, 100% { opacity: 0; } 50% { opacity: .9; } }
       @keyframes ab-wall-dark { 0%, 30%, 100% { opacity: 0; } 60%, 72% { opacity: .78; } }
       @keyframes ab-turn { to { transform: rotate(360deg); } }
-      @media (prefers-reduced-motion: reduce) { #splash * { animation: none !important; } }
+      /* The logo: the three bars alone, white, in the middle. Bolder on a big screen. */
+      #splash .sp-logo { position: absolute; left: 50%; top: 50%; width: clamp(88px, 24vw, 112px); transform: translate(-50%, -50%); animation: sp-in .55s cubic-bezier(.2,.9,.25,1) both; }
+      #splash .sp-logo svg { position: static; display: block; width: 100%; height: auto; overflow: visible; animation: sp-breathe 2.6s ease-in-out .6s infinite; }
+      #splash .sp-foot { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 9vh); text-align: center; color: #fff; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; animation: sp-in .6s ease .15s both; }
+      #splash .sp-name { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+      #splash .sp-line { margin: 6px 0 0; font-size: 13.5px; font-weight: 500; opacity: .78; }
+      #splash .sp-line sup { font-size: .6em; margin-left: 1px; }
+      @media (min-width: 1024px) {
+        #splash .sp-logo { width: 168px; }
+        #splash .sp-foot { bottom: 7vh; }
+        #splash .sp-name { font-size: 22px; }
+        #splash .sp-line { font-size: 14.5px; }
+      }
+      /* The way out: the bars rush forward and fade, the page shows through them. */
+      #splash.zoom { transition: background-color .45s ease .2s; background-color: transparent; pointer-events: none; }
+      #splash.zoom .ab-wall-l, #splash.zoom > svg { opacity: 0 !important; transition: opacity .4s ease .18s; }
+      #splash.zoom .sp-foot { opacity: 0; transition: opacity .2s ease; }
+      #splash.zoom .sp-logo { animation: sp-zoom .78s cubic-bezier(.65,0,.25,1) forwards; }
+      #splash.zoom .sp-logo svg { animation: none; }
+      @keyframes sp-in { from { opacity: 0; transform: translate(-50%, -50%) scale(.82); } }
+      @keyframes sp-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+      @keyframes sp-zoom {
+        0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        18% { transform: translate(-50%, -50%) scale(.9); opacity: 1; }
+        70% { opacity: .38; }
+        100% { transform: translate(-50%, -50%) scale(26); opacity: 0; }
+      }
+      @media (prefers-reduced-motion: reduce) { #splash *, #splash.zoom .sp-logo { animation: none !important; } }
     </style>
 
     <!--
@@ -141,14 +170,16 @@
       <div id="boot"></div>
     </div>
     <!--
-      THE ONE OPENING SCREEN: the moving wallpaper and petals, no spinner, no
-      logo. Outside #root, so React mounting does not remove it: it
+      THE ONE OPENING SCREEN: the moving wallpaper and petals, the white bars
+      in the middle and the name at the foot. Outside #root, so React mounting does not remove it: it
       stays until the first real page has drawn, then fades (src/lib/boot.ts).
     -->
     <div id="splash" role="status" aria-label="Loading AfterBI">
       <i class="ab-wall-l ab-wall-a"></i><i class="ab-wall-l ab-wall-b"></i><i class="ab-wall-l ab-wall-c"></i><i class="ab-wall-l ab-wall-d"></i>
       <svg class="p1" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><g opacity=".1"><path d="M50 50 Q22 18 50 4 Q78 18 50 50 Z"/><path d="M50 50 Q22 18 50 4 Q78 18 50 50 Z" transform="rotate(90 50 50)"/><path d="M50 50 Q22 18 50 4 Q78 18 50 50 Z" transform="rotate(180 50 50)"/><path d="M50 50 Q22 18 50 4 Q78 18 50 50 Z" transform="rotate(270 50 50)"/></g></svg>
       <svg class="p2" viewBox="0 0 100 100" fill="currentColor" opacity=".08" aria-hidden="true"><ellipse cx="50" cy="26" rx="14" ry="24"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(60 50 50)"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(120 50 50)"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(180 50 50)"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(240 50 50)"/><ellipse cx="50" cy="26" rx="14" ry="24" transform="rotate(300 50 50)"/><circle cx="50" cy="50" r="22"/></svg>
+      <div class="sp-logo" aria-hidden="true"><svg viewBox="14 26 72 48" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round"><path d="M22.0 68.0L33.6 46.1M40.5 68.0L56.1 38.6M59.0 68.0L78.0 32.0"/></svg></div>
+      <div class="sp-foot"><p class="sp-name">AfterBI</p><p class="sp-line">Smart distribution, made simple.<sup>™</sup></p></div>
     </div>
     <!--
       A BOOT FAILURE THAT SAYS WHAT IS WRONG, RATHER THAN A WHITE SCREEN.
@@ -193,27 +224,21 @@
               'BlinkMacSystemFont,Segoe UI,Arial,sans-serif;color:#1a1d21'
           );
 
+          /* Plain words only: this page is public, so the details go to the console, never on screen. */
+          if (message) console.error('AfterBI could not start:', message);
           var h = document.createElement('h1');
           h.setAttribute('style', 'font-size:19px;font-weight:800;margin:0 0 .75rem');
-          h.textContent = missing
-            ? 'This deployment is missing its configuration'
-            : 'AfterBI could not start';
+          h.textContent = 'AfterBI could not start';
 
           var p = document.createElement('p');
           p.setAttribute('style', 'margin:0 0 1rem;color:#41474d');
-          p.textContent = missing
-            ? missing[1] +
-              ' is not set. The Firebase web config has to be set as an environment variable ' +
-              'wherever this is hosted, and then the site rebuilt. A variable added after a ' +
-              'build is not in the bundle, because these values are written in at build time.'
-            : message || 'The application bundle did not load.';
+          p.textContent = 'Something went wrong while opening the app. Check your connection and refresh the page.';
 
           var q = document.createElement('p');
           q.setAttribute('style', 'margin:0;font-size:13px;color:#7a8087');
           q.textContent = missing
-            ? 'The full list is in .env.example. None of it is secret: a Firebase web key ' +
-              'identifies the project, it does not grant access; firestore.rules does that.'
-            : 'The full error is in the browser console.';
+            ? 'The site is being updated. Please try again in a few minutes.'
+            : 'If it keeps happening, contact info@afterbi.com.';
 
           box.appendChild(h);
           box.appendChild(p);

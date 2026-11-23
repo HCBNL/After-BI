@@ -321,6 +321,28 @@
       "permanent": false
     },
     {
+      "source": "/reports",
+      "has": [
+        {
+          "type": "host",
+          "value": "app\\.afterbi\\.com"
+        }
+      ],
+      "destination": "https://afterbi.com/reports",
+      "permanent": false
+    },
+    {
+      "source": "/reports/:path+",
+      "has": [
+        {
+          "type": "host",
+          "value": "app\\.afterbi\\.com"
+        }
+      ],
+      "destination": "https://afterbi.com/reports/:path+",
+      "permanent": false
+    },
+    {
       "source": "/pricing",
       "has": [
         {
