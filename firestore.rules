@@ -262,6 +262,10 @@ service cloud.firestore {
       (a query on status), which these rules allow; a listing that might
       include a draft is refused as a whole.
     */
+    match /blogPosts/{slug} {
+      allow read: if resource.data.get('status', '') == 'published' || owner();
+      allow write: if owner();
+    }
     /* Proposals to prospects: the owner sees all; an AfterBI staff member only their own. */
     match /proposals/{proposalId} {
       allow read, write: if owner();

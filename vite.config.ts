@@ -26,6 +26,9 @@ function seoFiles(mode: string): Plugin {
       const sBlock = source.slice(source.indexOf('export const SOLUTIONS'), source.indexOf('];', source.indexOf('export const SOLUTIONS')));
       const solutions = [...sBlock.matchAll(/slug: '([a-z0-9-]+)'/g)].map((m) => m[1]);
       const today = new Date().toISOString().slice(0, 10);
+      /* Every built in blog article, with its own date. */
+      const blogSource = readFileSync(path.resolve(rootDir, 'src/lib/blogPosts.ts'), 'utf8');
+      const articles = [...blogSource.matchAll(/slug: '([a-z0-9-]+)',\s*title:[^\n]*\n[^\n]*\n[^\n]*\n\s*date: '([0-9-]+)'/g)].map((m) => ({ slug: m[1], date: m[2] }));
       const pages = [
         { loc: '/', priority: '1.0' },
         { loc: '/features', priority: '0.9' },
@@ -34,6 +37,8 @@ function seoFiles(mode: string): Plugin {
         ...solutions.map((slug) => ({ loc: `/solutions/${slug}`, priority: '0.7' })),
         { loc: '/pricing', priority: '0.8' },
         { loc: '/reports/sme-2026', priority: '0.8' },
+        { loc: '/blog', priority: '0.8' },
+        ...articles.map((a) => ({ loc: `/blog/${a.slug}`, priority: '0.7', date: a.date })),
         { loc: '/terms', priority: '0.3' },
         { loc: '/privacy', priority: '0.3' },
       ];
