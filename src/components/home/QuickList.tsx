@@ -22,7 +22,6 @@ export function QuickList({ role, onMore, className }: { role: Role; onMore: () 
   return (
     <section
       aria-label="Shortcuts"
-      data-tour="shortcuts"
       className={cn('overflow-hidden rounded-[22px] border border-hairline surface-card shadow-card', className)}
     >
       <ul className="grid grid-cols-2">

@@ -32,7 +32,6 @@ export function Slider({
   tone = 'page',
   className,
   trackClassName,
-  dataTour,
   slideClassName,
 }: {
   label: string;
@@ -44,7 +43,6 @@ export function Slider({
   className?: string;
   /** Padding and bleed for the track, so the peek reaches the screen edge. */
   trackClassName?: string;
-  dataTour?: string;
   /** Extra classes for each card's slot: three to a view on a laptop, say. */
   slideClassName?: string;
 }) {
@@ -145,7 +143,6 @@ export function Slider({
     <section
       aria-roledescription="carousel"
       aria-label={label}
-      data-tour={dataTour}
       className={cn('min-w-0', className)}
       onMouseEnter={() => {
         held.current = true;

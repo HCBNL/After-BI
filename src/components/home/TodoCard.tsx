@@ -75,7 +75,6 @@ export function TodoCard({
   return (
     <section
       aria-labelledby="todo-heading"
-      data-tour="todo"
       className={cn('rounded-[22px] border border-hairline surface-card p-4 shadow-card sm:p-5', className)}
     >
       <h2 id="todo-heading" className="text-title font-semibold text-primary">

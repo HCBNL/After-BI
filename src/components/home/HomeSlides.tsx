@@ -124,14 +124,14 @@ export function KpiGlass({ items, failed = false, onRetry }: { items: Kpi[]; fai
   if (!items.length) {
     if (!failed) return null;
     return (
-      <section aria-label="Summary" data-tour="summary" className="px-4">
+      <section aria-label="Summary" className="px-4">
         <Failure onRetry={onRetry} />
       </section>
     );
   }
 
   return (
-    <Slider label="Summary" tone="hero" dataTour="summary" trackClassName="px-4 scroll-px-4">
+    <Slider label="Summary" tone="hero" trackClassName="px-4 scroll-px-4">
       {items.map((item) => (
         <GlassCard key={item.key} item={item} />
       ))}
@@ -144,7 +144,7 @@ export function KpiGlass({ items, failed = false, onRetry }: { items: Kpi[]; fai
 export function KpiGlassGrid({ items, failed = false, onRetry }: { items: Kpi[]; failed?: boolean; onRetry?: () => void }) {
   if (!items.length && !failed) return null;
   return (
-    <section aria-label="Summary" data-tour="summary" className="grid grid-cols-3 gap-4">
+    <section aria-label="Summary" className="grid grid-cols-3 gap-4">
       {items.length ? (
         items.map((item) => <GlassCard key={item.key} item={item} />)
       ) : (

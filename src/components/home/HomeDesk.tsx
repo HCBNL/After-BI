@@ -19,6 +19,7 @@ import { KpiGlassGrid } from './HomeSlides';
 import { BrandBars } from './HomeArt';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
 import { displayName, greeting, ProfilePhoto } from './HomeHero';
+import { GuideButton } from '@/components/guide/PageGuide';
 import { dateLocale } from '@/lib/locale';
 
 const HERO_ICON =
@@ -110,7 +111,7 @@ function DeskTiles({ role }: { role: Role }) {
   const actions = useMemo(() => actionsForRole(role).filter((a) => !a.soon), [role]);
   return (
     <>
-    <div className="grid grid-cols-6 gap-x-3 gap-y-2 xl:grid-cols-8" data-tour="shortcuts">
+    <div className="grid grid-cols-6 gap-x-3 gap-y-2 xl:grid-cols-8">
       {actions.map((action, i) => {
         const Icon = action.icon;
         return (
@@ -160,6 +161,7 @@ export function DeskHero({
       <div className="px-5 pt-6">
         <div className="flex items-center justify-between gap-4">
           <p className="text-body font-medium text-white/65">{today}</p>
+          <GuideButton title="Home" />
         </div>
 
         <div className="mt-4 flex items-center gap-5">
@@ -216,7 +218,7 @@ export function DeskShortcuts({ role }: { role: Role }) {
         </button>
       </div>
 
-      <div className="mt-3 grid grid-cols-4 gap-2 xl:grid-cols-8" data-tour="shortcuts">
+      <div className="mt-3 grid grid-cols-4 gap-2 xl:grid-cols-8">
         {actions.map((action, i) => {
           const Icon = action.icon;
           return (

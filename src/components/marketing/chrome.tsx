@@ -561,6 +561,7 @@ export function SiteFooter() {
             items={[
               { label: 'Platform overview', to: '/features' },
               { label: 'Pricing', to: '/pricing' },
+              { label: 'SME Report 2026', to: '/reports/sme-2026' },
               { label: 'Create account', to: '/?demo=1' },
               { label: 'Sign in', to: '/login' },
             ]}

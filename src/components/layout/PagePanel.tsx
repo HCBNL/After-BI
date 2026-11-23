@@ -12,27 +12,16 @@ import { ArrowLeft } from 'lucide-react';
 import { useBrowserChrome } from '@/hooks/useBrowserChrome';
 import { BrandBars } from '@/components/home/HomeArt';
 import { cn } from '@/lib/cn';
-import { Hint } from '@/components/ui/Hint';
+import { GuideButton } from '@/components/guide/PageGuide';
 import { usePageHeading } from './PageHeading';
 import { useAuth } from '@/context/AuthContext';
 import { PORTAL_ROOT } from '@/lib/tiles';
 
-/**
- * What a page is for, behind an (i) beside its title.
- *
- * Every page used to carry a sentence of description under the title. On a
- * phone that sentence wrapped to three lines and pushed the page's own
- * buttons, and the content, a third of a screen further down: on the
- * twentieth visit to Invoices nobody needs telling what Invoices is. The
- * title stands on its own; the sentence is one tap away for the first visit.
+/*
+ * What a page is for sits behind the (i) at the top right: a short story for
+ * the pages with several things worth knowing, one card for the rest
+ * (components/guide/PageGuide.tsx). It mirrors the back button on the left.
  */
-function About({ title, text }: { title: string; text: string }) {
-  return (
-    <Hint label={`About ${title}`} className="shrink-0 [&>button]:text-white/70 [&>button:hover]:text-white">
-      {text}
-    </Hint>
-  );
-}
 
 export function PagePanel({
   title,
@@ -81,10 +70,8 @@ export function PagePanel({
           >
             <ArrowLeft size={20} aria-hidden />
           </button>
-          <div className="flex max-w-[72%] items-center gap-1.5">
-            <h1 className="truncate text-title font-bold">{title}</h1>
-            {description && <About title={title} text={description} />}
-          </div>
+          <h1 className="max-w-[68%] truncate text-title font-bold">{title}</h1>
+          <GuideButton title={title} description={description} className="absolute -right-1" />
         </div>
 
         {/*
@@ -106,11 +93,16 @@ export function PagePanel({
               <ArrowLeft size={20} aria-hidden />
             </button>
             <h1 className="truncate font-display text-display font-extrabold leading-tight tracking-[-0.03em]">{title}</h1>
-            {description && <About title={title} text={description} />}
           </div>
           {actions && (
             <div className="ab-on-panel mt-1 flex flex-wrap items-center justify-center gap-2 lg:col-start-2 lg:row-start-1 lg:mt-0 lg:justify-end">
               {actions}
+              <GuideButton title={title} description={description} className="hidden lg:flex" />
+            </div>
+          )}
+          {!actions && (
+            <div className="hidden lg:col-start-2 lg:row-start-1 lg:flex lg:justify-end">
+              <GuideButton title={title} description={description} />
             </div>
           )}
         </div>

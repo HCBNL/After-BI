@@ -15,7 +15,6 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HomeChooser } from '@/components/home/HomeChooser';
 import { useAuth } from '@/context/AuthContext';
 import { RemindersProvider } from '@/context/RemindersContext';
-import { TourProvider } from '@/context/TourContext';
 import { actionsForRole, resolveTo, PORTAL_ROOT } from '@/lib/tiles';
 import { fullName } from '@/lib/roles';
 import { useEntitlements } from '@/lib/plans';
@@ -108,7 +107,6 @@ export function Chrome({
   return (
     <ShellProvider value={shell}>
       <RemindersProvider>
-      <TourProvider>
       <div className="flex min-h-dvh surface-page">
         <NavRail role={role} person={user} orgName={orgName} onSignOut={() => void handleSignOut()} />
 
@@ -211,7 +209,6 @@ export function Chrome({
         {/* Language, balances, theme and home screen: one floating button, bottom right. */}
         <QuickDial />
       </div>
-      </TourProvider>
       </RemindersProvider>
     </ShellProvider>
   );

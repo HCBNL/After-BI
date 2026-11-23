@@ -7,16 +7,14 @@ import {
   Home,
   LayoutGrid,
   LogOut,
-  Maximize,
-  Minimize,
-  PanelLeftClose,
-  PanelLeftOpen,
+  ChevronLeft,
+  ChevronRight,
   Search,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { IconArt } from '@/components/ui/IconArt';
-import { Wordmark } from '@/components/brand/Wordmark';
+import { MarkSolid, Wordmark } from '@/components/brand/Wordmark';
 import { OrgPlanBadge } from '@/components/brand/PlanBadge';
 import { Avatar } from '@/components/ui';
 import { actionsForRole, GROUP_ORDER, PORTAL_ROOT, resolveTo, type ActionGroup, type AppAction } from '@/lib/tiles';
@@ -24,7 +22,6 @@ import { isActionLocked, useEntitlements } from '@/lib/plans';
 import { fullName } from '@/lib/roles';
 import { ROLE_LABEL, type Role, type UserProfile } from '@/types';
 import { useShell } from './ShellContext';
-import { useFullscreen } from '@/lib/fullscreen';
 import { useReminders } from '@/context/RemindersContext';
 
 /**
@@ -69,7 +66,6 @@ export function NavRail({
   const { fresh } = useReminders();
   const entitlements = useEntitlements();
   const [collapsed, setCollapsed] = useState(readCollapsed);
-  const full = useFullscreen();
   const location = useLocation();
 
   /* The logo is the home button. Already home: refresh it. */
@@ -84,6 +80,20 @@ export function NavRail({
       <Wordmark className="text-[1.5rem]" />
     </Link>
   );
+
+  /* Ctrl B (Cmd B) folds or opens the menu, as in most desktop apps. */
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'b') {
+        const t = e.target as HTMLElement | null;
+        if (t && (t.isContentEditable || /^(INPUT|TEXTAREA)$/.test(t.tagName))) return;
+        e.preventDefault();
+        setCollapsed((c) => !c);
+      }
+    };
+    window.addEventListener('keydown', key);
+    return () => window.removeEventListener('keydown', key);
+  }, []);
 
   useEffect(() => {
     try {
@@ -106,42 +116,25 @@ export function NavRail({
 
   return (
     <nav
-      data-tour="nav"
       aria-label="Main"
       className={cn(
         'hidden lg:flex lg:flex-col',
-        'sticky top-0 h-dvh shrink-0 border-r border-hairline surface-card',
+        'sticky top-0 z-30 h-dvh shrink-0 border-r border-hairline surface-card',
         'transition-[width] duration-200 ease-out',
         collapsed ? 'w-[72px]' : 'w-[244px]',
       )}
     >
       {/* the top: pinned */}
       <div className="shrink-0 px-2.5 pt-3">
-        <div className={cn('flex items-center', collapsed ? 'flex-col justify-center gap-1 py-1' : 'h-11 justify-between pl-2')}>
-          {!collapsed && logo}
-          <div className={cn('flex items-center', collapsed ? 'flex-col gap-1' : 'gap-0.5')}>
-            {full.supported && (
-              <button
-                type="button"
-                onClick={full.toggle}
-                aria-label={full.on ? 'Leave full screen' : 'Full screen'}
-                title={full.on ? 'Leave full screen (Ctrl Shift F)' : 'Full screen (Ctrl Shift F)'}
-                className={ICON_BUTTON}
-              >
-                {full.on ? <Minimize size={17} aria-hidden /> : <Maximize size={17} aria-hidden />}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setCollapsed((c) => !c)}
-              aria-label={collapsed ? 'Show the menu labels' : 'Show icons only'}
-              aria-expanded={!collapsed}
-              title={collapsed ? 'Expand menu' : 'Collapse menu'}
-              className={ICON_BUTTON}
-            >
-              {collapsed ? <PanelLeftOpen size={18} aria-hidden /> : <PanelLeftClose size={18} aria-hidden />}
-            </button>
-          </div>
+        {/* Only the logo up here. The menu folds from its edge (see the handle below). */}
+        <div className={cn('flex h-11 items-center', collapsed ? 'justify-center' : 'pl-2')}>
+          {collapsed ? (
+            <Link to={root} onClick={goHome} title="Home" aria-label="Home" className="rounded-lg p-1 text-primary transition-opacity hover:opacity-80">
+              <MarkSolid className="h-[22px] w-[36px]" />
+            </Link>
+          ) : (
+            logo
+          )}
         </div>
 
         {collapsed ? (
@@ -229,6 +222,25 @@ export function NavRail({
             <LogOut size={17} aria-hidden />
           </button>
         </div>
+      </div>
+      {/*
+        Folding the menu: there is no button for it. Hovering the border
+        between the menu and the page shows a line and a small round handle;
+        a click folds the menu to its icons, or opens it again. Ctrl B (Cmd B
+        on a Mac) does the same.
+      */}
+      <div className="group/edge absolute inset-y-0 -right-3 z-20 w-6">
+        <span aria-hidden className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-brand-500 opacity-0 transition-opacity duration-150 group-hover/edge:opacity-100" />
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? 'Open the menu' : 'Fold the menu'}
+          aria-expanded={!collapsed}
+          title={collapsed ? 'Open the menu (Ctrl B)' : 'Fold the menu (Ctrl B)'}
+          className="absolute left-1/2 top-[84px] flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full border border-hairline surface-card text-secondary opacity-0 shadow-card transition-[opacity,color] duration-150 hover:text-primary focus-visible:opacity-100 group-hover/edge:opacity-100"
+        >
+          {collapsed ? <ChevronRight size={15} aria-hidden /> : <ChevronLeft size={15} aria-hidden />}
+        </button>
       </div>
     </nav>
   );

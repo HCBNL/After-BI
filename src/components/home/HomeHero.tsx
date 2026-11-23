@@ -21,6 +21,7 @@ import { actionsForRole, PORTAL_ROOT, resolveTo } from '@/lib/tiles';
 import { monthPosition } from '@/lib/month';
 import { cn } from '@/lib/cn';
 import { IconArt, menuShape } from '@/components/ui/IconArt';
+import { GuideButton } from '@/components/guide/PageGuide';
 import type { UserProfile } from '@/types';
 import type { Kpi } from './HomeSlides';
 import { KpiGlass } from './HomeSlides';
@@ -57,7 +58,7 @@ export function ProfilePhoto({ user, size = 'sm' }: { user: UserProfile; size?: 
     <Link
       to={`${PORTAL_ROOT[user.role]}/profile`}
       aria-label="Your profile"
-      data-tour="profile"
+     
       className={cn(
         'flex shrink-0 rounded-full border-2 border-white/45 transition-opacity hover:opacity-90',
         PHOTO[size].gap,
@@ -124,13 +125,14 @@ function TilesPanel({ user, orgName }: { user: UserProfile; orgName: string }) {
           </h1>
           <p className="mt-1.5 truncate text-label text-white/55">{orgName}</p>
         </div>
-        <div className="flex shrink-0 items-center">
+        <div className="flex shrink-0 items-center gap-2">
+          <GuideButton title="Home" />
           <ProfilePhoto user={user} size="md" />
         </div>
       </div>
 
       <div className="px-4">
-        <div className="grid grid-cols-4 gap-x-2 gap-y-1.5" data-tour="shortcuts">
+        <div className="grid grid-cols-4 gap-x-2 gap-y-1.5">
           {shown.map((action) => {
             const Icon = action.icon;
             return (
@@ -189,7 +191,8 @@ function CardsPanel({
             <Search size={20} strokeWidth={2} aria-hidden />
           </HeroButton>
         </div>
-        <div className="flex items-center pr-2">
+        <div className="flex items-center gap-2 pr-2">
+          <GuideButton title="Home" />
           <ProfilePhoto user={user} />
         </div>
       </div>

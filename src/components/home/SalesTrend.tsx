@@ -76,7 +76,6 @@ export function SalesTrend({
 
   return (
     <section
-      data-tour="brief"
       aria-labelledby="sales-trend-title"
       className={cn('rounded-[22px] border border-hairline surface-card p-4 shadow-card sm:p-6', className)}
     >

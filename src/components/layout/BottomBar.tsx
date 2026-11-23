@@ -51,7 +51,6 @@ export function BottomBar({
     >
       <ul
         className="ab-dock pointer-events-auto flex h-[3.5rem] w-full max-w-[25rem] items-center gap-1 rounded-full px-1.5"
-        data-tour="nav"
       >
         {slots.map((slot) => {
           /* the menu */
