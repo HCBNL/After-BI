@@ -262,6 +262,24 @@ service cloud.firestore {
       (a query on status), which these rules allow; a listing that might
       include a draft is refused as a whole.
     */
+    /* Create account requests from the website: anybody may leave one (four
+       short strings, stamped now, marked new); only the owner reads, marks or
+       removes them. */
+    match /signupRequests/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'company', 'phone', 'email', 'status', 'page', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 120
+        && request.resource.data.company is string && request.resource.data.company.size() >= 2 && request.resource.data.company.size() <= 160
+        && request.resource.data.phone is string && request.resource.data.phone.size() >= 7 && request.resource.data.phone.size() <= 40
+        && request.resource.data.email is string && request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$') && request.resource.data.email.size() <= 160
+        && request.resource.data.status == 'new'
+        && request.resource.data.get('page', '') is string && request.resource.data.get('page', '').size() <= 120
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.createdAt > request.time - duration.value(10, 'm')
+        && request.resource.data.createdAt < request.time + duration.value(10, 'm');
+      allow read, delete: if owner();
+      allow update: if owner() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+    }
+
     match /blogPosts/{slug} {
       allow read: if resource.data.get('status', '') == 'published' || owner();
       allow write: if owner();
