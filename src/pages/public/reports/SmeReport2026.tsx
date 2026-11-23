@@ -6,6 +6,7 @@
  * reading their numbers out. Every figure comes from sme2026.ts, which keeps
  * the source of each one.
  */
+import { useBootDone } from '@/lib/boot';
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Seo } from "@/components/Seo";
@@ -101,12 +102,17 @@ const kwh: Fmt = (v) =>
 const mwFmt: Fmt = (v) => Math.round(v).toLocaleString("en-NG");
 
 export default function SmeReport2026() {
+  /* The page draws from what ships with it, so the loading screen goes at once. */
+  useBootDone();
   const [film, setFilm] = useState(
     () =>
       typeof window !== "undefined" &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
       !window.location.hash,
   );
+
+  /* The full screen cover opens the page only when the film plays before it. */
+  const [opening] = useState(film);
 
   useEffect(() => {
     document.documentElement.classList.add("rp-page");
@@ -139,18 +145,23 @@ export default function SmeReport2026() {
         <Cover
           src={`${IMG}/cover.webp`}
           alt="A business owner holds his head among damaged cartons, with the central bank, a container port, a cargo plane and naira notes around him."
+          reveal={opening}
+          play={!film}
+          headClassName={wrap}
+          head={
+            <>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-white/60">
+                AfterBI research · {REPORT.publishedLabel}
+              </p>
+              <h1 className="rp-display mt-3 text-[clamp(2.8rem,7.6vw,5.8rem)]">
+                The SME Report <span className="text-[var(--rp-yellow)]">2026</span>
+              </h1>
+              <p className="mt-5 max-w-[36rem] text-[clamp(1.05rem,2vw,1.3rem)] leading-snug text-white/80">
+                {REPORT.subtitle}
+              </p>
+            </>
+          }
         />
-        <div className={cn(wrap, "relative mt-4")}>
-          <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-white/60">
-            AfterBI research · {REPORT.publishedLabel}
-          </p>
-          <h1 className="rp-display mt-3 text-[clamp(2.8rem,7.6vw,5.8rem)]">
-            The SME Report <span className="text-[var(--rp-yellow)]">2026</span>
-          </h1>
-          <p className="mt-5 max-w-[36rem] text-[clamp(1.05rem,2vw,1.3rem)] leading-snug text-white/80">
-            {REPORT.subtitle}
-          </p>
-        </div>
       </section>
 
       {/* ---------------------------------------------------------- foreword */}

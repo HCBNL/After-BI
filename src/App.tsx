@@ -48,6 +48,7 @@ const AllActions = lazy(() => import('@/pages/home/AllActions'));
 const BlogIndex = lazy(() => import('@/pages/public/blog/BlogIndex'));
 const BlogArticle = lazy(() => import('@/pages/public/blog/BlogArticle'));
 const BlogAdminPage = lazy(() => import('@/pages/platform/BlogAdminPage'));
+const SignupRequestsPage = lazy(() => import('@/pages/platform/SignupRequestsPage'));
 const SmeReport2026 = lazy(() => import('@/pages/public/reports/SmeReport2026'));
 const OrdersPage = lazy(() => import('@/pages/sales/OrdersPage'));
 const CataloguePage = lazy(() => import('@/pages/sales/CataloguePage'));
@@ -358,6 +359,7 @@ export default function App() {
             <Route path="banks" element={<BanksPage />} />
             <Route path="website" element={<WebsitePage />} />
             <Route path="blog" element={<BlogAdminPage />} />
+            <Route path="requests" element={<SignupRequestsPage />} />
             <Route path="proposals" element={<ProposalsPage />} />
             <Route path="staff" element={<StaffPage />} />
             <Route path="guide" element={<GuidePage />} />

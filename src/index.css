@@ -2143,3 +2143,18 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display
 }
 @keyframes ab-wait-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 @media (prefers-reduced-motion: reduce) { .ab-wait-logo svg { animation: none; } }
+
+/* ------------------------------------------- create account: the confirmation */
+.ab-done { color: #1238e6; }
+.ab-done-ring { stroke-dasharray: 277; stroke-dashoffset: 277; animation: ab-draw 0.7s cubic-bezier(.65,0,.35,1) forwards; }
+.ab-done-tick { stroke-dasharray: 60; stroke-dashoffset: 60; animation: ab-draw 0.45s 0.6s cubic-bezier(.65,0,.35,1) forwards; }
+.ab-done { animation: ab-pop 0.5s 0.95s ease-out both; }
+.ab-done-timer { width: 0; animation: ab-fill linear forwards; }
+@keyframes ab-draw { to { stroke-dashoffset: 0; } }
+@keyframes ab-pop { 0% { transform: scale(1); } 40% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes ab-fill { to { width: 100%; } }
+.ab-signup { animation: ab-signup-in 0.35s cubic-bezier(.2,.8,.2,1); }
+@keyframes ab-signup-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ab-done, .ab-done-ring, .ab-done-tick, .ab-signup { animation: none; stroke-dashoffset: 0; }
+}

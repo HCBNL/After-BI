@@ -4,7 +4,8 @@
  * by the owner on the organisation it is owed by.
  */
 import { useMemo } from 'react';
-import { AlertCircle, Building2, TrendingUp, Wallet } from 'lucide-react';
+import { AlertCircle, Building2, TrendingUp, UserPlus, Wallet } from 'lucide-react';
+import { countNewSignupRequests } from '@/lib/signupRequests';
 import { Loading } from '@/components/brand/Loader';
 import { DeskHero, DeskShortcuts, MonthCard } from '@/components/home/HomeDesk';
 import { HomeHero } from '@/components/home/HomeHero';
@@ -28,6 +29,7 @@ export default function PlatformHome() {
   const { openMenu } = useShell();
   const { data, loading, error, reload } = useAsync(() => listTenants(), [], { handleError: true });
   useBootDone(data !== undefined || Boolean(error));
+  const { data: waiting } = useAsync(() => countNewSignupRequests(), []);
 
   const summary = useMemo(() => {
     const all = data ?? [];
@@ -76,6 +78,17 @@ export default function PlatformHome() {
   const todo = useMemo<TodoItem[]>(() => {
     if (!data) return [];
     const items: TodoItem[] = [];
+    if (waiting) {
+      items.push({
+        id: 'signups',
+        state: 'todo',
+        icon: UserPlus,
+        to: `${ROOT}/requests`,
+        count: waiting,
+        title: waiting === 1 ? 'New sign up request' : 'New sign up requests',
+        detail: 'They asked for an account on the website. Call within 48 hours.',
+      });
+    }
     items.push(
       summary.all.length
         ? {
@@ -128,7 +141,7 @@ export default function PlatformHome() {
       });
     }
     return items;
-  }, [data, summary]);
+  }, [data, summary, waiting]);
 
   if (!user) return null;
   if (loading && data === undefined) return <Loading rows={4} label="Getting the platform ready" />;
