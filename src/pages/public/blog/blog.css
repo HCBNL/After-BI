@@ -1,0 +1,159 @@
+/* The blog: dark by default, a light mode one tap away. Loaded with the blog only. */
+
+.bl {
+  --bl-bg: #141414;
+  --bl-nav: #242424;
+  --bl-card: #222222;
+  --bl-card-hover: #292929;
+  --bl-ink: #ffffff;
+  --bl-soft: #d4d4d4;
+  --bl-muted: #9b9b9b;
+  --bl-line: rgba(255, 255, 255, 0.09);
+  --bl-tag: #93b8ff;
+  --bl-btn: #3a3a3a;
+  --bl-btn-hover: #474747;
+  background: var(--bl-bg);
+  color: var(--bl-ink);
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+.bl[data-mode='light'] {
+  --bl-bg: #f3f3f1;
+  --bl-nav: #ffffff;
+  --bl-card: #ffffff;
+  --bl-card-hover: #fafafa;
+  --bl-ink: #111214;
+  --bl-soft: #2f3237;
+  --bl-muted: #63666d;
+  --bl-line: rgba(0, 0, 0, 0.08);
+  --bl-tag: #1d4ef5;
+  --bl-btn: #ebebea;
+  --bl-btn-hover: #e0e0de;
+}
+
+.bl-head {
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+}
+.bl-title {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.18;
+}
+.bl-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bl-muted);
+}
+
+/* A cover: the owner's artwork on a pale ground, under fine wavy lines. */
+.bl-cover {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.bl-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='10'><path d='M0 5 Q12 0 24 5 T48 5' fill='none' stroke='%23000' stroke-opacity='.07' stroke-width='1.1'/></svg>");
+  background-size: 48px 10px;
+}
+
+/* The "This week" pill: a gradient edge. */
+.bl-pill {
+  background:
+    linear-gradient(var(--bl-bg), var(--bl-bg)) padding-box,
+    linear-gradient(90deg, #7c9cff, #ff78a8, #ffbe45) border-box;
+  border: 1.5px solid transparent;
+}
+
+.bl-card {
+  background: var(--bl-card);
+  transition: background-color 0.2s ease, transform 0.25s ease;
+}
+.bl-card:hover {
+  background: var(--bl-card-hover);
+}
+.bl-card:hover .bl-cover > svg,
+.bl-card:hover .bl-cover > img {
+  transform: scale(1.04);
+}
+.bl-cover > svg,
+.bl-cover > img {
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* An article's body. */
+.bl-prose {
+  color: var(--bl-soft);
+  font-size: 1.075rem;
+  line-height: 1.78;
+}
+.bl-prose > * + * {
+  margin-top: 1.15em;
+}
+.bl-prose h2 {
+  margin-top: 2em;
+  color: var(--bl-ink);
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.bl-prose strong {
+  color: var(--bl-ink);
+  font-weight: 700;
+}
+.bl-prose a {
+  color: var(--bl-tag);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.bl-prose ul,
+.bl-prose ol {
+  padding-left: 1.3em;
+}
+.bl-prose ul {
+  list-style: disc;
+}
+.bl-prose ol {
+  list-style: decimal;
+}
+.bl-prose li + li {
+  margin-top: 0.45em;
+}
+.bl-prose li::marker {
+  color: var(--bl-tag);
+  font-weight: 700;
+}
+.bl-prose blockquote {
+  border-left: 3px solid var(--bl-tag);
+  padding: 0.2em 0 0.2em 1.1em;
+  color: var(--bl-ink);
+  font-weight: 600;
+}
+
+@keyframes bl-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.bl-fade {
+  animation: bl-fade 0.45s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bl *,
+  .bl *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}

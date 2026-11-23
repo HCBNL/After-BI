@@ -53,6 +53,7 @@ import { container } from '@/components/marketing/tokens';
 import { Accordion, Section, SectionHead, SiteImage } from '@/components/marketing/site-ui';
 import { VideoCard } from '@/components/marketing/VideoCard';
 import { Art, SpinBadge, type ArtName } from '@/components/marketing/art';
+import { Scene, type SceneName } from '@/components/marketing/scenes';
 import { homeTestimonials, homeVideos } from '@/lib/siteDoc';
 import { imageUrl } from '@/lib/cloudinary';
 import { initials } from '@/lib/format';
@@ -722,18 +723,35 @@ function Leaders() {
               )}
               <blockquote className="mt-5 text-[16.5px] leading-[1.7] text-navy-700">{t.quote}</blockquote>
               <figcaption className="mt-5 flex flex-wrap items-baseline gap-x-2 text-[15px]">
-                <span className="font-display font-bold text-navy-900">— {t.name}</span>
+                <span className="font-display font-bold text-navy-900">{t.name}</span>
                 {(t.role || t.company) && (
                   <span className="text-[13.5px] text-navy-500">{[t.role, t.company].filter(Boolean).join(', ')}</span>
                 )}
               </figcaption>
             </figure>
           ))}
+          {/* With fewer than three voices, the row is finished with artwork on wide screens, never left half empty. */}
+          {FILLERS.slice(0, (3 - (items.length % 3)) % 3).map((f) => (
+            <div
+              key={f.scene}
+              aria-hidden
+              className="relative hidden min-h-[17rem] overflow-hidden rounded-[1.75rem] lg:flex lg:w-[calc((100%-3.5rem)/3)] lg:flex-col lg:justify-between lg:p-9"
+              style={{ background: f.ground }}
+            >
+              <p className="max-w-[16ch] font-display text-[1.2rem] font-bold leading-snug tracking-[-0.02em] text-navy-900">{f.line}</p>
+              <Scene name={f.scene} className="ml-auto h-36 w-36" />
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
+
+const FILLERS: { scene: SceneName; ground: string; line: string }[] = [
+  { scene: 'growth-analytics', ground: '#dcf7e3', line: 'Every order, delivery and payment in one place.' },
+  { scene: 'team-members', ground: '#ecd5f5', line: 'Reps, depots and distributors on one screen.' },
+];
 
 /* ------------------------------------------------------------------ videos */
 
@@ -760,12 +778,44 @@ function Videos() {
 
 /* ---------------------------------------------------------------- questions */
 
+/**
+ * Under the heading, so the left column is never empty beside the answers:
+ * the owner's FAQ artwork on the soft ground, with a chat bubble and the
+ * support headset pinned to its corners, and the way to ask a person.
+ */
+function FaqArt() {
+  const { book } = useAsk();
+  return (
+    <div className="mt-9 hidden max-w-[30rem] lg:block">
+      <div aria-hidden className="relative aspect-[6/5] overflow-hidden rounded-[1.75rem] bg-[var(--site-top)] ring-1 ring-inset ring-navy-900/5">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Scene name="faqs" className="h-[66%] w-[66%]" />
+        </div>
+        <span className="absolute right-5 top-5 flex h-[26%] w-[26%] items-center justify-center rounded-2xl bg-white shadow-[0_18px_36px_-22px_rgba(15,31,54,0.45)]">
+          <Scene name="live-chat" still className="h-[82%] w-[82%]" />
+        </span>
+        <span className="absolute bottom-5 left-5 flex h-[24%] w-[24%] items-center justify-center rounded-2xl bg-white shadow-[0_18px_36px_-22px_rgba(15,31,54,0.45)]">
+          <Scene name="customer-support" still className="h-[80%] w-[80%]" />
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={book}
+        className="tap mt-6 inline-flex h-12 items-center justify-center rounded-xl bg-navy-900 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-navy-800"
+      >
+        Ask us anything
+      </button>
+    </div>
+  );
+}
+
 function Questions() {
   return (
     <Section>
       <div className="grid items-start gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-        <div className="relative">
+        <div className="relative lg:sticky lg:top-28">
           <SectionHead title="Frequently asked questions" body="Still unsure? Book a short walkthrough and ask us anything." />
+          <FaqArt />
         </div>
         <Accordion items={FAQ} />
       </div>

@@ -13,7 +13,7 @@
  */
 import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Flag, ListPlus, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { Check, Flag, Plus, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Alert, Button, DateField, EmptyState, Input, SegmentedControl, Select, useToast } from '@/components/ui';
 import { Loading } from '@/components/brand/Loader';
@@ -21,7 +21,6 @@ import { useReminders } from '@/context/RemindersContext';
 import { dueLabel, taskTiming, type Task, type TaskPriority } from '@/lib/tasks';
 import { todayISO } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { Hint } from '@/components/ui/Hint';
 
 const VIEWS = [
   { value: 'open', label: 'To do' },
@@ -56,7 +55,7 @@ function taskLine(total: number, late: number, today: number): string {
 }
 
 export default function TasksPage() {
-  const { tasks, tasksLoading, tasksError, createTask, toggleTask, deleteTask, editTask, brief, keepAsTask } = useReminders();
+  const { tasks, tasksLoading, tasksError, createTask, toggleTask, deleteTask, editTask } = useReminders();
   const toast = useToast();
   const [view, setView] = useState('open');
   const [title, setTitle] = useState('');
@@ -85,8 +84,6 @@ export default function TasksPage() {
     }
   };
 
-  const suggestions = brief?.suggestions ?? [];
-
   return (
     <div>
       <PageHeader
@@ -94,7 +91,7 @@ export default function TasksPage() {
         description={
           open.length
             ? taskLine(open.length, late, today)
-            : 'Nothing on your list. Add something, or keep one of the suggestions below.'
+            : 'Nothing on your list. Add what you need to do, and tick it off when it is done.'
         }
       >
         <SegmentedControl size="sm" value={view} onChange={setView} options={VIEWS} />
@@ -167,7 +164,7 @@ export default function TasksPage() {
           title={view === 'open' ? 'Nothing to do' : 'Nothing finished yet'}
           description={
             view === 'open'
-              ? 'Your list is clear. The suggestions below come from your own records.'
+              ? 'Your list is clear.'
               : 'Finished tasks stay here for 30 days, then clear themselves.'
           }
         />
@@ -187,43 +184,6 @@ export default function TasksPage() {
         </ul>
       )}
 
-      {/* ----------------------------------------------------- suggestions */}
-      {view === 'open' && suggestions.length > 0 && (
-        <section className="mt-8">
-          <h2 className="flex items-center gap-1.5 text-lead font-semibold text-primary">
-            <Sparkles size={16} className="text-brand-600 dark:text-brand-400" aria-hidden />
-            Suggested from your records
-            <Hint label="About these suggestions">Worked out from your orders, invoices and stock. Keep one as a task to give it a date.</Hint>
-          </h2>
-          <ul className="mt-3 space-y-2">
-            {suggestions.map((reminder) => (
-              <li
-                key={reminder.id}
-                className="flex items-start gap-3 rounded-2xl border border-hairline surface-card p-3.5 shadow-card"
-              >
-                <div className="min-w-0 flex-1">
-                  <Link to={reminder.to} className="text-body font-semibold text-primary hover:underline">
-                    {reminder.title}
-                  </Link>
-                  <p className="mt-0.5 text-label leading-snug text-secondary">{reminder.detail}</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  icon={<ListPlus size={15} />}
-                  onClick={() =>
-                    void keepAsTask(reminder)
-                      .then(() => toast.success('Added to your tasks', 'Due today.'))
-                      .catch(() => toast.error('Could not add it', 'Check the connection.'))
-                  }
-                >
-                  Keep
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   );
 }

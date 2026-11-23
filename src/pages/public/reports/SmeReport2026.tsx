@@ -6,12 +6,12 @@
  * reading their numbers out. Every figure comes from sme2026.ts, which keeps
  * the source of each one.
  */
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Seo } from "@/components/Seo";
 import { cn } from "@/lib/cn";
 import { Art } from "@/components/marketing/art";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { SiteEnd } from "@/components/marketing/kit";
 import { appUrl } from "@/lib/hosts";
 import {
   Asked,
@@ -107,7 +107,6 @@ export default function SmeReport2026() {
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
       !window.location.hash,
   );
-  const download = useCallback(() => window.print(), []);
 
   useEffect(() => {
     document.documentElement.classList.add("rp-page");
@@ -132,7 +131,7 @@ export default function SmeReport2026() {
         }}
       />
       {film && <Film paragraphs={INTRO} onDone={() => setFilm(false)} />}
-      <ReportBar title={REPORT.title} onDownload={download} />
+      <ReportBar title={REPORT.title} />
       <ChapterTab chapters={CHAPTERS.map(({ id, title }) => ({ id, title }))} />
 
       {/* ---------------------------------------------------------- cover */}
@@ -267,22 +266,9 @@ export default function SmeReport2026() {
       <Conclusion />
       <Sources />
 
-      <footer className="rp-noprint border-t border-white/10 py-10">
-        <div
-          className={cn(
-            wrap,
-            "flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center",
-          )}
-        >
-          <Link to="/" className="text-[24px]" aria-label="AfterBI home">
-            <Wordmark onInk />
-          </Link>
-          <p className="text-[13px] text-white/55">
-            © {new Date().getFullYear()} AfterBI. Figures belong to their
-            publishers; see sources.
-          </p>
-        </div>
-      </footer>
+      <div className="rp-noprint">
+        <SiteEnd />
+      </div>
     </div>
   );
 }

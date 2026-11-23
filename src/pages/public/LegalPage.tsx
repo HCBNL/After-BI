@@ -8,6 +8,7 @@ import { PublicShell } from '@/components/marketing/kit';
 import { container } from '@/components/marketing/tokens';
 import { COMPANY } from '@/lib/company';
 import { cn } from '@/lib/cn';
+import { Scene } from '@/components/marketing/scenes';
 
 type Kind = 'terms' | 'privacy';
 
@@ -50,8 +51,13 @@ export default function LegalPage({ kind }: { kind: Kind }) {
       <Seo title={page.title} description={page.intro} path={`/${kind}`} />
       <section className="site-wash">
         <div className={cn(container, 'max-w-3xl pb-20 pt-14 sm:pt-20')}>
-          <h1 className="font-display text-[2.02rem] font-semibold tracking-[-0.04em] text-navy-900 sm:text-[2.52rem]">{page.title}</h1>
-          <p className="mt-2 text-[14px] text-navy-500">{`Last updated ${UPDATED}`}</p>
+          <div className="flex items-center justify-between gap-6">
+            <div>
+              <h1 className="font-display text-[2.02rem] font-semibold tracking-[-0.04em] text-navy-900 sm:text-[2.52rem]">{page.title}</h1>
+              <p className="mt-2 text-[14px] text-navy-500">{`Last updated ${UPDATED}`}</p>
+            </div>
+            <Scene name={kind === 'privacy' ? 'security-and-privacy' : 'forms-and-feedback'} className="hidden h-28 w-28 shrink-0 sm:block" />
+          </div>
           <p className="mt-6 text-[15.5px] leading-relaxed text-navy-700">{page.intro}</p>
           <div className="mt-10 space-y-8">
             {page.sections.map((section) => (

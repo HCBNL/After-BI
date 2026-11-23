@@ -14,6 +14,8 @@ import { PublicShell } from '@/components/marketing/kit';
 import { btn, container } from '@/components/marketing/tokens';
 import { SUPPORT_EMAIL } from '@/lib/site';
 import { useBootDone } from '@/lib/boot';
+import { Scene } from '@/components/marketing/scenes';
+import { cn } from '@/lib/cn';
 
 export default function NotFoundPage() {
   useBootDone();
@@ -23,7 +25,8 @@ export default function NotFoundPage() {
 
       <PublicShell closing={false}>
         <section className="site-wash pb-28 pt-20 sm:pb-36 sm:pt-28">
-          <div className={container}>
+          <div className={cn(container, 'lg:grid lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16')}>
+            <div>
             <p className="tabular font-display text-[4.2rem] font-semibold leading-none tracking-[-0.05em] text-navy-100 sm:text-[5.88rem]">404</p>
             <h1 className="mt-4 max-w-2xl font-display text-[2.02rem] font-semibold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[2.69rem]">
               That page is not here
@@ -46,6 +49,13 @@ export default function NotFoundPage() {
                 {SUPPORT_EMAIL}
               </a>
             </p>
+            </div>
+            <div aria-hidden className="relative mx-auto mt-14 hidden aspect-square w-[22rem] items-center justify-center rounded-[2rem] bg-[var(--site-top)] sm:flex lg:mt-0 xl:w-[26rem]">
+              <Scene name="site-search" className="h-[70%] w-[70%]" />
+              <span className="absolute -bottom-5 left-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-white shadow-[0_18px_36px_-22px_rgba(15,31,54,0.45)]">
+                <Scene name="location-and-maps" still className="h-[82%] w-[82%]" />
+              </span>
+            </div>
           </div>
         </section>
       </PublicShell>

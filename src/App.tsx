@@ -45,6 +45,9 @@ const StaffShellWithProviders = lazy(() =>
 const PortalHome = lazy(() => import('@/pages/home/PortalHome'));
 const AllActions = lazy(() => import('@/pages/home/AllActions'));
 
+const BlogIndex = lazy(() => import('@/pages/public/blog/BlogIndex'));
+const BlogArticle = lazy(() => import('@/pages/public/blog/BlogArticle'));
+const BlogAdminPage = lazy(() => import('@/pages/platform/BlogAdminPage'));
 const SmeReport2026 = lazy(() => import('@/pages/public/reports/SmeReport2026'));
 const OrdersPage = lazy(() => import('@/pages/sales/OrdersPage'));
 const CataloguePage = lazy(() => import('@/pages/sales/CataloguePage'));
@@ -303,8 +306,8 @@ export default function App() {
           <Route path="/reports/sme-2026" element={<SmeReport2026 />} />
           <Route path="/partners" element={<Navigate to="/" replace />} />
           {/* Retired with the 2026 rebrand: old links land on the front page. */}
-          <Route path="/blog" element={<Navigate to="/" replace />} />
-          <Route path="/blog/:slug" element={<Navigate to="/" replace />} />
+          <Route path="/blog" element={<BlogIndex />} />
+          <Route path="/blog/:slug" element={<BlogArticle />} />
           <Route path="/roles" element={<Navigate to="/" replace />} />
           <Route path="/about" element={<Navigate to="/" replace />} />
           {/* No demos any more: the old address opens the create account form on the front page. */}
@@ -354,6 +357,7 @@ export default function App() {
             <Route path="pricing" element={<PricingPage />} />
             <Route path="banks" element={<BanksPage />} />
             <Route path="website" element={<WebsitePage />} />
+            <Route path="blog" element={<BlogAdminPage />} />
             <Route path="proposals" element={<ProposalsPage />} />
             <Route path="staff" element={<StaffPage />} />
             <Route path="guide" element={<GuidePage />} />

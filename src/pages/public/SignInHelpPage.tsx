@@ -13,6 +13,7 @@
  * about signing into somebody else's software.
  */
 
+import { Scene } from '@/components/marketing/scenes';
 import { Link } from 'react-router-dom';
 import { Seo } from '@/components/Seo';
 import { PublicShell } from '@/components/marketing/kit';
@@ -47,11 +48,16 @@ export default function SignInHelpPage() {
       <PublicShell closing={false}>
         <section className="site-wash pb-20 pt-14 sm:pt-20">
           <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-navy-500">Support</p>
-            <h1 className="mt-3 font-display text-[2.18rem] font-semibold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[2.86rem]">
-              Can’t get in?
-            </h1>
-            <p className="mt-5 max-w-xl text-[16px] leading-[1.65] text-navy-700/85">Four things go wrong, in the order they are likely.</p>
+            <div className="flex items-end justify-between gap-6">
+              <div>
+                <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-navy-500">Support</p>
+                <h1 className="mt-3 font-display text-[2.18rem] font-semibold leading-[1.05] tracking-[-0.04em] text-navy-900 sm:text-[2.86rem]">
+                  Can’t get in?
+                </h1>
+                <p className="mt-5 max-w-xl text-[16px] leading-[1.65] text-navy-700/85">Four things go wrong, in the order they are likely.</p>
+              </div>
+              <Scene name="security-and-privacy" className="hidden h-36 w-36 shrink-0 sm:block lg:h-44 lg:w-44" />
+            </div>
 
             <div className="mt-10 rounded-2xl bg-white px-6 ring-1 ring-navy-900/10 sm:px-8">
               <Accordion items={TROUBLE} className="border-y-0" />
@@ -79,7 +85,8 @@ export default function SignInHelpPage() {
                 slot="help-contact"
                 alt="AfterBI support"
                 width={480}
-                className="min-h-[14rem]"
+                scene="customer-support"
+                className="min-h-[14rem] bg-brand-50"
               />
             </div>
           </div>
