@@ -185,14 +185,25 @@ service cloud.firestore {
         );
 
       /*
-        Yourself: your photograph only (and an AfterBI staff member's position
-        and base). NEVER your name, title, phone or employee code: those are
-        who the audit log says acted, so only an administrator sets them. A
-        person who could rename themselves could act under another name.
+        Yourself: your photograph only. NEVER your name, title, phone, code,
+        position or base: those are who the audit log says acted and what your
+        ID card says you are, so the super admin sets them (People).
       */
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['photoURL', 'updatedAt', 'lastSeenAt']);
+
+      /* AfterBI's own staff keep setting their own job title and base for their card. */
+      allow update: if signedIn() && request.auth.uid == uid
+        && resource.data.get('role', '') == 'agent'
+        && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['photoURL', 'position', 'location', 'updatedAt', 'lastSeenAt']);
+
+      /* The super admin, nobody above them, sets their own position, phone and base. Never their own role. */
+      allow update: if signedIn() && request.auth.uid == uid
+        && resource.data.get('role', '') == 'super_admin'
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['photoURL', 'position', 'location', 'phone', 'updatedAt', 'lastSeenAt']);
 
       /*
         The one exception, once: a super admin who has no employee code yet
@@ -219,7 +230,13 @@ service cloud.firestore {
         && request.resource.data.role != 'owner'
         && (
           role() == 'super_admin'
-          || (resource.data.role != 'super_admin' && request.resource.data.role != 'super_admin')
+          || (
+            resource.data.role != 'super_admin'
+            && request.resource.data.role != 'super_admin'
+            /* Who someone is (name, code, role, position, phone, base) is the super admin's to set. */
+            && !request.resource.data.diff(resource.data).affectedKeys()
+                 .hasAny(['role', 'firstName', 'lastName', 'title', 'phone', 'position', 'location', 'employeeCode'])
+          )
         );
 
       /* The owner, on anybody but another owner. */
