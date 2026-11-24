@@ -31,11 +31,13 @@ import { Alert, Card, SegmentedControl, Switch, useToast } from '@/components/ui
 import { imageAsDataUrl, imageUrl } from '@/lib/cloudinary';
 import { saveFile } from '@/lib/download';
 import { PORTAL_ROOT } from '@/lib/tiles';
-import { type BusinessCardLayout } from '@/lib/businessCardPdf';
 import { BusinessCardFace, ScaledCard, cardColour, type CardCompany } from '@/components/cards/CardFaces';
 import { cardPdf } from '@/lib/cardExport';
 import { useOrgStaffDetails } from './OrgIdCard';
 import { businessCardUrl } from '@/lib/idCards';
+
+/** At card size for a print shop, or two up on A4 with cut marks for an office printer. */
+type BusinessCardLayout = 'card' | 'a4';
 
 export default function OrgCard({ embedded = false }: { embedded?: boolean } = {}) {
   const toast = useToast();

@@ -14,6 +14,7 @@ import { Checklist } from '@/components/Checklist';
 import { Alert, Button, Field, Input, LinkButton, Select } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
+import { LocationSelect } from '@/components/people/LocationSelect';
 import { createAccount, needsEmployeeCode, nextEmployeeCode, suggestPassword } from '@/lib/accounts';
 import { useBrand } from '@/lib/brand';
 import { saveDistributor } from '@/lib/db';
@@ -42,6 +43,8 @@ export default function InvitePage() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [position, setPosition] = useState('');
+  const [location, setLocation] = useState('');
   const [employeeCode, setEmployeeCode] = useState('');
   const brand = useBrand();
   const [role, setRole] = useState<TeamRole>('sales_rep');
@@ -75,6 +78,8 @@ export default function InvitePage() {
     setLastName('');
     setEmail('');
     setPhone('');
+    setPosition('');
+    setLocation('');
     setDistributorId('');
     setWarehouseIds([]);
     setDistributorIds([]);
@@ -109,6 +114,8 @@ export default function InvitePage() {
         firstName,
         lastName,
         phone,
+        position: role === 'distributor' ? undefined : position,
+        location: role === 'distributor' ? undefined : location,
         orgName: brand.name,
         distributorId: needsDistributor ? distributorId : undefined,
         distributorCategory: needsDistributor ? distributor?.category : undefined,
@@ -262,6 +269,16 @@ export default function InvitePage() {
             <Field label="Phone">
               <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="off" />
             </Field>
+            {role !== 'distributor' && (
+              <>
+                <Field label="Position" hint="Printed on their ID and business card. Only you can change it later.">
+                  <Input value={position} onChange={(e) => setPosition(e.target.value)} placeholder={ROLE_LABEL[role]} maxLength={40} />
+                </Field>
+                <Field label="Location" hint="Head office or one of your depots.">
+                  <LocationSelect value={location} onChange={setLocation} />
+                </Field>
+              </>
+            )}
 
             <Field label="Password" required hint="At least six characters. They can change it later.">
               <div className="flex gap-2">

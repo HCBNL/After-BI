@@ -9,11 +9,10 @@
 import { useMemo, useState } from 'react';
 import { Check, Mail, MessageCircle, Phone, RotateCcw, Trash2, UserPlus } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Badge, Button, Card, EmptyState, useToast } from '@/components/ui';
+import { Badge, Button, Card, EmptyState, Select, useToast } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { whatsappLink, whatsappNumber } from '@/lib/businessCard';
 import { deleteSignupRequest, listSignupRequests, setSignupStatus, type SignupRequest } from '@/lib/signupRequests';
-import { cn } from '@/lib/cn';
 
 const PROMISE_MS = 48 * 3_600_000;
 
@@ -67,21 +66,10 @@ export default function SignupRequestsPage() {
         title="Sign up requests"
         description="People who asked for an account on the website. They were told you will call within 48 hours."
         actions={
-          <div className="flex rounded-xl bg-[var(--surface-sunken)] p-1">
-            {(['new', 'all'] as const).map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setView(v)}
-                className={cn(
-                  'h-9 rounded-lg px-4 text-label font-semibold transition-colors',
-                  view === v ? 'surface-card text-primary shadow-sm' : 'text-muted hover:text-primary',
-                )}
-              >
-                {v === 'new' ? `Waiting (${waiting.length})` : `All (${all.length})`}
-              </button>
-            ))}
-          </div>
+          <Select aria-label="Show" value={view} onChange={(e) => setView(e.target.value as 'new' | 'all')} className="w-44">
+            <option value="new">{`Waiting (${waiting.length})`}</option>
+            <option value="all">{`All (${all.length})`}</option>
+          </Select>
         }
       />
 

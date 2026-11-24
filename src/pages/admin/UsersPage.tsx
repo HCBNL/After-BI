@@ -32,6 +32,9 @@ import {
 import { useAsync } from '@/hooks/useAsync';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
+import { cn } from '@/lib/cn';
+import { LockButton, useEditLock } from '@/components/lock/EditLock';
+import { LocationSelect } from '@/components/people/LocationSelect';
 import { clearDistributorLink, listMembers, setRepDistributors, updateProfile } from '@/lib/db';
 import { assertCodeFree, needsEmployeeCode, nextEmployeeCode, normaliseEmployeeCode, withRoleSuffix } from '@/lib/accounts';
 import { fullName, partnerScope } from '@/lib/roles';
@@ -92,7 +95,14 @@ export default function UsersPage() {
       key: 'role',
       header: 'Role',
       sortValue: (row) => row.role,
-      cell: (row) => <Badge tone="brand">{ROLE_SHORT[row.role]}</Badge>,
+      cell: (row) => (
+        <div className="min-w-0">
+          <Badge tone="brand">{ROLE_SHORT[row.role]}</Badge>
+          {(row.position || row.location) && (
+            <p className="mt-1 truncate text-caption text-muted">{[row.position, row.location].filter(Boolean).join(' · ')}</p>
+          )}
+        </div>
+      ),
     },
     {
       key: 'account',
@@ -181,7 +191,11 @@ function MemberModal({
   const [lastName, setLastName] = useState(member?.lastName ?? '');
   const [code, setCode] = useState(member?.employeeCode ?? '');
   const [phone, setPhone] = useState(member?.phone ?? '');
+  const [position, setPosition] = useState(member?.position ?? '');
+  const [location, setLocation] = useState(member?.location ?? '');
   const [busy, setBusy] = useState(false);
+  /* Opens locked, like Settings: nothing about a person moves by a stray tap. */
+  const { locked, toggle, lock } = useEditLock();
   const [seed, setSeed] = useState(member?.id);
 
   if (member && member.id !== seed) {
@@ -196,14 +210,26 @@ function MemberModal({
     setLastName(member.lastName);
     setCode(member.employeeCode ?? '');
     setPhone(member.phone ?? '');
+    setPosition(member.position ?? '');
+    setLocation(member.location ?? '');
+    lock();
   }
 
   if (!member) return null;
 
   const self = user?.id === member.id;
   const needsDistributor = role === 'distributor';
+  const superAdmin = user?.role === 'super_admin';
   /* Only a super admin may change a super admin, or make one. The rules say the same. */
-  const canTouch = user?.role === 'super_admin' || member.role !== 'super_admin';
+  const canTouch = superAdmin || member.role !== 'super_admin';
+  /*
+   * Who a person is (name, code, role, position, phone, location) is set by
+   * the super admin alone, for everybody. A super admin also sets their own
+   * position, phone and location, never their own role. An admin can still
+   * suspend people and change what they manage.
+   */
+  const canIdentity = superAdmin && !self;
+  const canOwnCard = superAdmin && self;
   const roleOptions = ASSIGNABLE.filter(
     (r) => r !== 'super_admin' || user?.role === 'super_admin' || member.role === 'super_admin',
   );
@@ -220,26 +246,34 @@ function MemberModal({
     }
     setBusy(true);
     try {
+      /* Your own card line: position, phone and base. Nothing else about yourself. */
+      if (canOwnCard) {
+        await updateProfile(member.id, { position: position.trim(), phone: phone.trim(), location });
+        onSaved();
+        return;
+      }
       /* Staff without a code get the next one, the same way a new account does. */
-      if (!self && needsEmployeeCode(role) && !employeeCode && member.orgId) {
+      if (canIdentity && needsEmployeeCode(role) && !employeeCode && member.orgId) {
         employeeCode = await nextEmployeeCode(member.orgId, role);
       }
-      if (!self && employeeCode && employeeCode !== (member.employeeCode ?? '') && member.orgId) {
+      if (canIdentity && employeeCode && employeeCode !== (member.employeeCode ?? '') && member.orgId) {
         await assertCodeFree(member.orgId, employeeCode, member.id);
       }
       const distributor = distributors.find((d) => d.id === distributorId);
       await updateProfile(member.id, {
-        role,
         active,
-        /* Identity: set here by an administrator, never by the person (firestore.rules). */
-        ...(self
-          ? {}
-          : {
+        /* Identity: set here by the super admin, never by the person (firestore.rules). */
+        ...(canIdentity
+          ? {
+              role,
               firstName: firstName.trim(),
               lastName: lastName.trim(),
               phone: phone.trim(),
+              position: position.trim(),
+              location,
               ...(employeeCode ? { employeeCode } : {}),
-            }),
+            }
+          : {}),
         distributorId: needsDistributor ? distributorId : undefined,
         /* The tier is snapshotted onto the profile so the catalogue needs no
            join: see `UserProfile.distributorCategory`. It has to be rewritten
@@ -275,28 +309,44 @@ function MemberModal({
           <Button variant="ghost" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
-          <Button onClick={() => void save()} loading={busy} disabled={!canTouch}>
+          <Button onClick={() => void save()} loading={busy} disabled={!canTouch || locked}>
             Save
           </Button>
         </>
       }
     >
-      <div className="space-y-4">
-        {!self && (
+      <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-[var(--surface-sunken)] px-4 py-3">
+        <p className="text-label leading-snug text-secondary">
+          {locked ? 'Locked. Unlock to change anything.' : 'Editing. Saving locks it again.'}
+        </p>
+        <LockButton surface locked={locked} onToggle={toggle} />
+      </div>
+      <fieldset disabled={locked} className={cn('m-0 min-w-0 space-y-4 border-0 p-0', locked && 'ab-locked')}>
+        {(!self || canOwnCard) && (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="First name" required>
-              <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={!canTouch} />
-            </Field>
-            <Field label="Last name">
-              <Input value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={!canTouch} />
-            </Field>
-            {needsEmployeeCode(role) && (
-              <Field label="Employee code" hint="Company letters, staff number, then the role (SA, FN, OP, WH, SR, HR, ST). Changing the role changes the ending.">
-                <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Assigned on save" maxLength={24} disabled={!canTouch} />
-              </Field>
+            {!self && (
+              <>
+                <Field label="First name" required>
+                  <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={!canIdentity} />
+                </Field>
+                <Field label="Last name">
+                  <Input value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={!canIdentity} />
+                </Field>
+                {needsEmployeeCode(role) && (
+                  <Field label="Employee code" hint="Company letters, staff number, then the role (SA, FN, OP, WH, SR, HR, ST). Changing the role changes the ending.">
+                    <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Assigned on save" maxLength={24} disabled={!canIdentity} />
+                  </Field>
+                )}
+              </>
             )}
+            <Field label="Position" hint="Printed on their ID and business card, e.g. Managing Director.">
+              <Input value={position} onChange={(e) => setPosition(e.target.value)} placeholder={ROLE_LABEL[role]} maxLength={40} disabled={!(canIdentity || canOwnCard)} />
+            </Field>
             <Field label="Phone">
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} disabled={!canTouch} />
+              <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={!(canIdentity || canOwnCard)} />
+            </Field>
+            <Field label="Location">
+              <LocationSelect value={location} onChange={setLocation} disabled={!(canIdentity || canOwnCard)} />
             </Field>
           </div>
         )}
@@ -308,7 +358,7 @@ function MemberModal({
               setRole(next);
               if (code) setCode(withRoleSuffix(code, next));
             }}
-            disabled={self || !canTouch}
+            disabled={!canIdentity}
           >
             {roleOptions.map((r) => (
               <option key={r} value={r}>
@@ -383,6 +433,11 @@ function MemberModal({
             Only a super admin can change another super admin.
           </p>
         )}
+        {canTouch && !superAdmin && (
+          <p className="text-caption leading-snug text-muted">
+            Name, role, position, phone and location are set by your super admin.
+          </p>
+        )}
 
         <div className="rounded-xl border border-hairline p-4">
           <Switch
@@ -408,11 +463,10 @@ function MemberModal({
  */}
         {self && (
           <p className="text-caption leading-snug text-muted">
-            This is your own account. You cannot change your own role or suspend yourself. Ask
-            another administrator.
+            This is your own account. You can set your own position, phone and location, but not your own role, and you cannot suspend yourself.
           </p>
         )}
-      </div>
+      </fieldset>
     </Modal>
   );
 }

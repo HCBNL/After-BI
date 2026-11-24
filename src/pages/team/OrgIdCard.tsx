@@ -3,9 +3,10 @@
  * that organisation (its logo, name, RC number, contacts and signatory).
  *
  * The same card as AfterBI's own staff card (`pages/staff/StaffIdCard.tsx`),
- * with the organisation as issuer. The person fills in their position,
- * location and phone (saved to their own profile, so the business card uses
- * the same details), frames a photo, and downloads the PDF. The photo is never
+ * with the organisation as issuer. Position, location and phone are set by
+ * the super admin (People) for everybody; the super admin alone sets their
+ * own here, locked again after each save. The person frames a photo and
+ * downloads the PDF. The photo is never
  * uploaded. The QR code on the back opens their digital business card.
  */
 
@@ -17,6 +18,9 @@ import { PhotoCropper } from '@/components/PhotoCropper';
 import { useAuth } from '@/context/AuthContext';
 import { useOrg } from '@/context/OrgContext';
 import { updateProfile } from '@/lib/db';
+import { LockButton, useEditLock } from '@/components/lock/EditLock';
+import { LocationSelect } from '@/components/people/LocationSelect';
+import { cn } from '@/lib/cn';
 import { publicDataUrl } from '@/lib/staff';
 import { saveFile } from '@/lib/download';
 import { type BusinessCard } from '@/lib/businessCard';
@@ -108,8 +112,10 @@ export function useOrgStaffDetails() {
   const save = async () => {
     setSaving(true);
     try {
-      /* Name and phone are set by an administrator (firestore.rules); only position and location are yours. */
-      if (user) await updateProfile(user.id, { position: details.position.trim(), location: details.location.trim() });
+      /* Only a super admin sets their own position, base and phone (firestore.rules); everyone else's are set in People. */
+      if (user?.role === 'super_admin') {
+        await updateProfile(user.id, { position: details.position.trim(), location: details.location.trim(), phone: details.phone.trim() });
+      }
       await publish();
     } finally {
       setSaving(false);
@@ -241,6 +247,15 @@ export default function OrgIdCard({ embedded = false }: { embedded?: boolean } =
 
   const set = (key: keyof typeof details) => (e: { target: { value: string } }) => setDetails((d) => ({ ...d, [key]: e.target.value }));
   const isAdmin = user?.role === 'super_admin' || user?.role === 'admin';
+  /* The super admin sets their own line on the card; it locks again after each save. */
+  const ownsDetails = user?.role === 'super_admin';
+  const { locked, lock, toggle } = useEditLock();
+  const editable = ownsDetails && !locked;
+  /* Everyone else's card follows what the super admin set: the public record is refreshed on every visit. */
+  useEffect(() => {
+    if (!ownsDetails) void publish();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownsDetails]);
 
   return (
     <>
@@ -258,34 +273,46 @@ export default function OrgIdCard({ embedded = false }: { embedded?: boolean } =
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">
         <div className="space-y-5">
           <Card>
-            <h2 className="text-[15px] font-bold text-primary">Your details</h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <Field label="Full name" hint="As set by your administrator when your account was made.">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-[15px] font-bold text-primary">Your details</h2>
+              {ownsDetails && <LockButton surface locked={locked} onToggle={toggle} />}
+            </div>
+            <div className={cn('mt-4 grid gap-4 sm:grid-cols-2', ownsDetails && locked && 'ab-locked')}>
+              <Field label="Full name" hint="As set when your account was made.">
                 <Input value={details.fullName} readOnly />
               </Field>
-              <Field label="Position">
-                <Input value={details.position} onChange={set('position')} placeholder="Sales supervisor" maxLength={40} />
+              <Field label="Position" hint={ownsDetails ? undefined : 'Set by your super admin.'}>
+                <Input value={details.position} onChange={set('position')} placeholder="Managing Director" maxLength={40} readOnly={!editable} />
               </Field>
-              <Field label="Location">
-                <Input value={details.location} onChange={set('location')} placeholder="City or depot" maxLength={40} />
+              <Field label="Location" hint={ownsDetails ? undefined : 'Set by your super admin.'}>
+                {editable ? (
+                  <LocationSelect value={details.location} onChange={(v) => setDetails((d) => ({ ...d, location: v }))} />
+                ) : (
+                  <Input value={details.location || 'Not set'} readOnly />
+                )}
               </Field>
-              <Field label="Phone" hint="As set by your administrator.">
-                <Input value={details.phone} readOnly />
+              <Field label="Phone" hint={ownsDetails ? undefined : 'Set by your super admin.'}>
+                <Input type="tel" value={details.phone} onChange={set('phone')} readOnly={!editable} placeholder={editable ? '0803 000 0000' : 'Not set'} />
               </Field>
             </div>
-            <Button
-              variant="outline"
-              className="mt-4"
-              icon={<Save size={16} />}
-              loading={saving}
-              onClick={() =>
-                void save()
-                  .then(() => toast.success('Saved', 'Your card details are updated.'))
-                  .catch((err: unknown) => toast.error('Not saved', err instanceof Error ? err.message : undefined))
-              }
-            >
-              Save my details
-            </Button>
+            {editable && (
+              <Button
+                variant="outline"
+                className="mt-4"
+                icon={<Save size={16} />}
+                loading={saving}
+                onClick={() =>
+                  void save()
+                    .then(() => {
+                      lock();
+                      toast.success('Saved and locked', 'Your card details are updated.');
+                    })
+                    .catch((err: unknown) => toast.error('Not saved', err instanceof Error ? err.message : undefined))
+                }
+              >
+                Save my details
+              </Button>
+            )}
           </Card>
 
           <Card>

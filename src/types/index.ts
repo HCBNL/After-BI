@@ -173,7 +173,7 @@ export interface UserProfile {
   /** For a `warehouse_manager`: the depots they may move stock in. */
   warehouseIds?: string[];
 
-  /** AfterBI staff (`agent`): job title and base, printed on their ID card. */
+  /** Job title and base, printed on the ID and business card. Set by the super admin (AfterBI staff set their own). */
   position?: string;
   location?: string;
 

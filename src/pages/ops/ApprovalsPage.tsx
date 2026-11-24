@@ -26,6 +26,7 @@ import { ADJUSTMENT_SIGNERS, adjustmentAmount, sidesToSign, SIDE_LABEL, waitingL
 import { formatDate, naira, count } from '@/lib/format';
 import { orderNet, summarise } from '@/lib/pricing';
 import { PORTAL_ROOT } from '@/lib/tiles';
+import { DECISIONS, RecentActivity } from '@/components/home/RecentActivity';
 
 export default function ApprovalsPage() {
   const { user } = useAuth();
@@ -180,6 +181,19 @@ export default function ApprovalsPage() {
             </li>
           ))}
         </ul>
+      )}
+
+      {/* What this person decided lately, newest first: the last five. */}
+      {user && (
+        <RecentActivity
+          uid={user.id}
+          role={user.role}
+          root={root}
+          title="Recent approvals"
+          actions={DECISIONS}
+          empty="Orders and stock adjustments you approve or turn down will show here, newest first."
+          className="mt-6"
+        />
       )}
     </div>
   );

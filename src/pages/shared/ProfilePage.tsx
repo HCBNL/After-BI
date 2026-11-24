@@ -206,7 +206,9 @@ export default function ProfilePage() {
         <dl className="mt-4 border-t border-hairline">
           <Row label="Name" value={fullName(user)} />
           {user.role !== 'distributor' && <Row label="Employee code" value={user.employeeCode || 'Not set'} />}
+          {user.position && <Row label="Position" value={user.position} />}
           <Row label="Phone" value={user.phone || 'Not set'} />
+          {user.location && <Row label="Location" value={user.location} />}
         </dl>
 
       </section>
