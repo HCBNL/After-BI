@@ -100,7 +100,6 @@ export const nairaWhole: Fmt = (v) =>
   `₦${Math.round(v).toLocaleString("en-NG")}`;
 export const plain: Fmt = (v) =>
   v.toLocaleString("en-NG", { maximumFractionDigits: 2 });
-export const mw: Fmt = (v) => `${Math.round(v).toLocaleString("en-NG")}`;
 export const millions: Fmt = (v) => `${(v / 1_000_000).toFixed(2)}m`;
 
 /** A number that counts up from nothing each time its chart replays. */

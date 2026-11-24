@@ -5,9 +5,8 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Moon, Search, Sun } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Search } from 'lucide-react';
 import { useShell } from '@/components/layout/ShellContext';
-import { setStoredTheme } from '@/lib/theme';
 import { actionsForRole, resolveTo } from '@/lib/tiles';
 import { monthPosition } from '@/lib/month';
 import { cn } from '@/lib/cn';
@@ -22,9 +21,6 @@ import { displayName, greeting, ProfilePhoto } from './HomeHero';
 import { GuideButton } from '@/components/guide/PageGuide';
 import { dateLocale } from '@/lib/locale';
 
-const HERO_ICON =
-  'relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.12] text-white transition-colors hover:bg-white/20 active:bg-white/25';
-
 /** "Sunday, 20 September", in Lagos. */
 function todayLine(): string {
   return new Intl.DateTimeFormat(dateLocale('en-NG'), {
@@ -33,31 +29,6 @@ function todayLine(): string {
     month: 'long',
     timeZone: 'Africa/Lagos',
   }).format(new Date());
-}
-
-/** Light or dark in one press, dressed for the panel. Follows the theme however it was changed. */
-export function HeroThemeButton() {
-  const [dark, setDark] = useState(() => document.documentElement.dataset.theme === 'dark');
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const watcher = new MutationObserver(() => setDark(root.dataset.theme === 'dark'));
-    watcher.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => watcher.disconnect();
-  }, []);
-
-  const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
-  return (
-    <button
-      type="button"
-      onClick={() => setStoredTheme(dark ? 'light' : 'dark')}
-      aria-label={label}
-      title={label}
-      className={HERO_ICON}
-    >
-      {dark ? <Sun size={18} aria-hidden /> : <Moon size={18} aria-hidden />}
-    </button>
-  );
 }
 
 /**

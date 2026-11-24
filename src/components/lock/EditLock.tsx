@@ -21,7 +21,18 @@ export function useEditLock(startLocked = true) {
   return { locked, lock, unlock, toggle };
 }
 
-export function LockButton({ locked, onToggle, className }: { locked: boolean; onToggle: () => void; className?: string }) {
+export function LockButton({
+  locked,
+  onToggle,
+  className,
+  surface = false,
+}: {
+  locked: boolean;
+  onToggle: () => void;
+  className?: string;
+  /** On a card or a dialog rather than the coloured hero. */
+  surface?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -30,7 +41,11 @@ export function LockButton({ locked, onToggle, className }: { locked: boolean; o
       title={locked ? 'Locked. Tap to edit.' : 'Editing. Tap to lock again.'}
       className={cn(
         'inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-label font-semibold transition-colors',
-        locked ? 'bg-white/15 text-white ring-1 ring-inset ring-white/25 hover:bg-white/25' : 'bg-[#f5c518] text-[#141414] hover:brightness-95',
+        locked
+          ? surface
+            ? 'bg-[var(--surface-sunken)] text-primary ring-1 ring-inset ring-[var(--border-strong)] hover:brightness-95'
+            : 'bg-white/15 text-white ring-1 ring-inset ring-white/25 hover:bg-white/25'
+          : 'bg-[#f5c518] text-[#141414] hover:brightness-95',
         className,
       )}
     >

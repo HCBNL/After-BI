@@ -249,17 +249,3 @@ export function IconBadge({ children, id = '', className }: { children: ReactNod
     </IconArt>
   );
 }
-
-/**
- * One category tile: icon and name.
- */
-export function IndustryCard({ icon, name, className }: { icon: IndustryKey; name: string; className?: string }) {
-  return (
-    <div className={cn('flex h-full items-center gap-3 rounded-2xl border border-navy-900/10 bg-white p-4 sm:p-5', className)}>
-      <IconArt id={icon} size={44} halo={0.6}>
-        <IndustryIcon icon={icon} size={18} />
-      </IconArt>
-      <span className="text-[14px] font-medium leading-tight text-navy-900">{name}</span>
-    </div>
-  );
-}

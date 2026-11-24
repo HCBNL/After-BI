@@ -18,7 +18,6 @@ import { Button } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import {
   HOME_LAYOUTS,
-  markChooserSeen,
   useHomeLayout,
   type HomeLayout,
 } from '@/hooks/useHomeLayout';
@@ -261,7 +260,6 @@ export function HomeChooser({ open, onClose, uid }: { open: boolean; onClose: ()
   useEffect(() => {
     if (!open) return;
     setPicked(layout);
-    markChooserSeen();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') closeRef.current();
     };

@@ -66,6 +66,8 @@ const KIND: Record<string, { title: string; icon: LucideIcon; tone: Tone }> = {
   'product.retired': { title: 'Product retired', icon: Package, tone: 'slate' },
   'adjustment.raised': { title: 'Stock adjustment raised', icon: Boxes, tone: 'gold' },
   'adjustment.declined': { title: 'Stock adjustment declined', icon: Boxes, tone: 'red' },
+  'adjustment.signed': { title: 'Stock adjustment signed', icon: Check, tone: 'green' },
+  'adjustment.applied': { title: 'Stock adjustment approved', icon: Check, tone: 'green' },
   'count.started': { title: 'Stock count started', icon: Boxes, tone: 'gold' },
   'count.closed': { title: 'Stock count closed', icon: Boxes, tone: 'green' },
   'count.cancelled': { title: 'Stock count cancelled', icon: Boxes, tone: 'red' },
@@ -124,16 +126,27 @@ function forWhomOf(entry: AuditEntry): string | undefined {
   return /\b(?:for|to) ([^:,]+)$/.exec(entry.summary)?.[1];
 }
 
+/** The decisions shown on Approvals: what this person approved, signed or turned down. */
+export const DECISIONS = ['order.approved', 'order.rejected', 'adjustment.signed', 'adjustment.applied', 'adjustment.declined'];
+
 export function RecentActivity({
   uid,
   role,
   root,
   className,
+  title = 'Recent activity',
+  actions,
+  empty,
 }: {
   uid: string;
   role: Role;
   root: string;
   className?: string;
+  /** Another heading, for a narrower list (Recent approvals). */
+  title?: string;
+  /** Only these kinds of line. Read from the person's last 80, so no extra index is needed. */
+  actions?: string[];
+  empty?: string;
 }) {
   const [rows, setRows] = useState<AuditEntry[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -141,8 +154,8 @@ export function RecentActivity({
 
   useEffect(() => {
     let live = true;
-    listMyAudit(uid, SHOWN)
-      .then((got) => live && setRows(got))
+    listMyAudit(uid, actions ? 80 : SHOWN)
+      .then((got) => live && setRows(actions ? got.filter((e) => actions.includes(e.action)).slice(0, SHOWN) : got))
       .catch(() => {
         if (!live) return;
         setRows([]);
@@ -151,7 +164,8 @@ export function RecentActivity({
     return () => {
       live = false;
     };
-  }, [uid]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uid, actions?.join()]);
 
   const more = isAdmin(role) ? `${root}/audit` : null;
 
@@ -159,7 +173,7 @@ export function RecentActivity({
     <section aria-labelledby="recent-activity" className={cn('rounded-[22px] border border-hairline surface-card px-4 pb-1 pt-3.5 shadow-card sm:px-5', className)}>
       <div className="flex items-center justify-between pb-1">
         <h2 id="recent-activity" className="text-body font-semibold text-secondary">
-          Recent activity
+          {title}
         </h2>
         {more && (
           <Link to={more} aria-label="See the full activity log" className="-mr-1.5 rounded-full p-1.5 text-muted transition-colors hover:bg-[var(--surface-sunken)] hover:text-primary">
@@ -185,7 +199,7 @@ export function RecentActivity({
         <p className="py-5 text-label leading-relaxed text-muted">
           {failed
             ? 'Your recent activity could not load just now. It will show next time you open home.'
-            : 'Nothing yet. Orders you raise, approvals you give, invoices and payments you record will show here, newest first.'}
+            : (empty ?? 'Nothing yet. Orders you raise, approvals you give, invoices and payments you record will show here, newest first.')}
         </p>
       ) : (
         <ul className="divide-y divide-[var(--border-hairline)]">

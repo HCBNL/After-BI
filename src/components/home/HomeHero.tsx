@@ -12,11 +12,11 @@
 import { useSelfPhoto } from '@/lib/selfPhoto';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronUp, Menu, PanelsTopLeft, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp, Menu, Search } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { useShell } from '@/components/layout/ShellContext';
 import { useBrowserChrome } from '@/hooks/useBrowserChrome';
-import { useChooserSeen, type HomeLayout } from '@/hooks/useHomeLayout';
+import type { HomeLayout } from '@/hooks/useHomeLayout';
 import { actionsForRole, PORTAL_ROOT, resolveTo } from '@/lib/tiles';
 import { monthPosition } from '@/lib/month';
 import { cn } from '@/lib/cn';
@@ -66,29 +66,6 @@ export function ProfilePhoto({ user, size = 'sm' }: { user: UserProfile; size?: 
     >
       <Avatar name={`${user.firstName} ${user.lastName}`} src={photo} size={PHOTO[size].avatar} />
     </Link>
-  );
-}
-
-/** Opens "Choose your home screen". Wears a gold dot until it has been opened once. */
-export function LayoutButton() {
-  const { openHomeChooser } = useShell();
-  const seen = useChooserSeen();
-  return (
-    <button
-      type="button"
-      onClick={openHomeChooser}
-      aria-label="Change home screen"
-      title="Change home screen"
-      className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.12] text-white transition-colors hover:bg-white/20 active:bg-white/25"
-    >
-      <PanelsTopLeft size={19} strokeWidth={1.9} aria-hidden />
-      {!seen && (
-        <span
-          className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-gold-400 ring-2 ring-[color:var(--hero)]"
-          aria-hidden
-        />
-      )}
-    </button>
   );
 }
 

@@ -246,21 +246,6 @@ export function Art({
   );
 }
 
-/** A square tile holding one shape, set inline in a headline the way the Contoric site does. */
-export function ArtTile({ name, shift, className }: { name: ArtName; shift?: number; className?: string }) {
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        'mx-[0.18em] inline-flex h-[0.95em] w-[1.25em] translate-y-[0.08em] items-center justify-center rounded-[0.32em] bg-navy-900 align-baseline',
-        className,
-      )}
-    >
-      <Art name={name} shift={shift} className="h-[0.72em] w-[0.72em]" />
-    </span>
-  );
-}
-
 /** Text running round a circle, turning: the badge in the trust strip. */
 export function SpinBadge({ text, children, className }: { text: string; children?: ReactNode; className?: string }) {
   return (
